@@ -17,7 +17,7 @@ secrets, local configuration or application data.
 
 - [x] Named, hashed, scoped, expiring, individually revocable API tokens (`v3.2.6-sr94.1`, deployed and verified 2026-09-13).
 - [x] Token domain restrictions and idempotent link creation (`v3.2.6-sr94.2`, deployed and verified 2026-09-13).
-- [ ] Link pause, scheduled start/end, maximum visits and request-time expiry.
+- [x] Link pause, scheduled start/end, maximum visits and request-time expiry (`v3.2.6-sr94.3`, deployed and verified 2026-09-13).
 - [ ] History, trash and restore without silently reusing retired aliases.
 - [ ] Stable OIDC identities, access revocation and authentication diagnostics.
 
@@ -71,6 +71,21 @@ upstream PR has been submitted yet.
   was retained. Container healthy, zero restarts, all three probes successful.
 - Wrapper scan: zero critical/high, six medium and one low findings.
 
-Current candidate `3.2.6-sr94.3` implements link lifecycle controls; its checkbox
-remains open until release and deployment validation. PostgreSQL/MySQL and human
-MFA acceptance remain separate validation work; deployment evidence is for SQLite.
+## Third deployment evidence
+
+- [Published release](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.3)
+  and [passing CI](https://github.com/RobinMJD/kutt/actions/runs/34780009689).
+- Source digest: `sha256:dde17fa796ae69eb40359de65fc80368daf6e1e433dc930d2b406ddd2c51c448`.
+- Hardened-image regressions passed: concurrent redirect caps, password paths,
+  schedules, expiry retention, ownership/CSRF, old idempotency keys and guarded
+  schema rollback/reapply. Desktop/mobile editing passed without browser errors.
+- Off-host pre-upgrade backup restore was byte-verified, migrated and write-tested
+  on the exact hardened image, retaining existing users and links.
+- Live HTTPS/WAF checks passed for pause/resume and quota exhaustion, plus previous
+  domain/replay/revocation/public-redirect tests. Production healthy, zero restarts,
+  three green probes, no Kutt alerts, no failed units or unhealthy containers.
+- Wrapper scan: zero critical/high, six medium and one low findings. Existing
+  WAF, SSO and backend isolation were unchanged.
+
+PostgreSQL/MySQL and human MFA acceptance remain separate validation work;
+deployment evidence is for SQLite. History/trash/restore is the next milestone.

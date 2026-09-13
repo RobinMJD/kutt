@@ -28,6 +28,8 @@ the previous relative expiry; the form exposes this as Remove previous expiry.
 Invalid input returns 400 and another owner's link returns 404. The same new
 policy fields are accepted by link creation and included in its idempotency
 fingerprint. Creation without them and existing retry keys remain compatible.
+With `reuse: true`, an existing matching link is returned unchanged; use this
+PATCH endpoint to change its policy rather than relying on creation to update it.
 
 Responses include `paused`, UTC `starts_at`/`ends_at`, `max_visits`,
 `redirect_count` and `lifecycle_status`. Existing `expire_in` remains supported;
