@@ -32,6 +32,16 @@ Coverage:
   restart, conflicts return 409, expired records are reusable, and failed
   creations roll back their reservations. Stored records contain no raw secrets.
 - Latest additive migration down/up preserves existing accounts and links.
+- Lifecycle validation, owner/domain/CSRF checks, concurrent visit caps, password
+  flows, HEAD and info semantics, restart persistence, retained expired records
+  and guarded policy schema rollback.
+
+For rendered lifecycle UI, install Playwright in your test runtime and run
+`tests/browser-lifecycle.cjs` with `KUTT_BROWSER_DISPOSABLE=1` and a loopback
+`KUTT_TEST_URL` for a fresh disposable instance. `PLAYWRIGHT_MODULE` can point to
+an external installation. The test refuses an initialized app, checks desktop
+and mobile controls, persists/reloads policies, verifies public redirects and
+captures screenshots to `KUTT_EVIDENCE_DIR` (or a fresh temporary directory).
 
 This is not an OIDC provider, SMTP, PostgreSQL, MySQL or browser test. It does
 not demonstrate compatibility with every persisted database or CPU platform.

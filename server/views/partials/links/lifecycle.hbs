@@ -1,0 +1,21 @@
+<form id="lifecycle-{{id}}" class="link-lifecycle"
+  hx-patch="/api/links/{{id}}/lifecycle" hx-select="#lifecycle-{{id}}" hx-swap="outerHTML">
+  <fieldset>
+    <legend>Availability</legend>
+    <label><input type="checkbox" name="paused" {{#if paused}}checked{{/if}} /> Paused</label>
+    <label>Start (UTC)<input type="datetime-local" step="1" name="starts_at" value="{{starts_at_input}}" /></label>
+    <label>End (UTC)<input type="datetime-local" step="1" name="ends_at" value="{{ends_at_input}}" /></label>
+    <label>Maximum redirects<input type="number" name="max_visits" min="1" max="2147483647" step="1" value="{{max_visits}}" /></label>
+    {{#if expire_in}}
+      <label><input type="checkbox" name="clear_expiry" /> Remove previous expiry</label>
+    {{/if}}
+    <p>{{lifecycle_status}} &middot; {{redirect_count}} redirects</p>
+    <button type="submit" class="primary">Save availability</button>
+  </fieldset>
+  <div class="response" role="status">
+    {{#if error}}<p class="error">{{error}}</p>{{else if success}}<p class="success">{{success}}</p>{{/if}}
+  </div>
+  {{#if success}}
+    <template><p id="lifecycle-status-{{id}}" class="description" hx-swap-oob="true">{{lifecycle_status}}</p></template>
+  {{/if}}
+</form>

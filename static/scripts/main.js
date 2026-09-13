@@ -244,17 +244,17 @@ function onSearchInputLoad() {
   const linkSearchInput = document.getElementById("search");
   if (!linkSearchInput) return;
   const linkClearButton = linkSearchInput.parentElement.querySelector("button.clear")
-  linkClearButton.style.display = linkSearchInput.value.length > 0 ? "block" : "none";
+  if (linkClearButton) linkClearButton.style.display = linkSearchInput.value.length > 0 ? "block" : "none";
 
   const userSearchInput = document.getElementById("search_user");
   if (!userSearchInput) return;
   const userClearButton = userSearchInput.parentElement.querySelector("button.clear")
-  userClearButton.style.display = userSearchInput.value.length > 0 ? "block" : "none";
+  if (userClearButton) userClearButton.style.display = userSearchInput.value.length > 0 ? "block" : "none";
 
   const domainSearchInput = document.getElementById("search_domain");
   if (!domainSearchInput) return;
   const domainClearButton = domainSearchInput.parentElement.querySelector("button.clear")
-  domainClearButton.style.display = domainSearchInput.value.length > 0 ? "block" : "none";
+  if (domainClearButton) domainClearButton.style.display = domainSearchInput.value.length > 0 ? "block" : "none";
 }
 
 onSearchInputLoad();

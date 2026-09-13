@@ -281,6 +281,7 @@ const sanitize = {
     return {
       ...link,
       ...timestamps,
+      ...require("../link-lifecycle").describe(link),
       banned_by_id: undefined,
       domain_id: undefined,
       user_id: undefined,
@@ -296,6 +297,7 @@ const sanitize = {
     return {
       ...link,
       ...timestamps,
+      ...require("../link-lifecycle").describe(link),
       banned_by_id: undefined,
       domain_id: undefined,
       user_id: undefined,
@@ -314,6 +316,7 @@ const sanitize = {
     return {
       ...link,
       ...timestamps,
+      ...require("../link-lifecycle").describe(link),
       domain: link.domain || env.DEFAULT_DOMAIN,
       id: link.uuid,
       relative_created_at: getTimeAgo(timestamps.created_at),

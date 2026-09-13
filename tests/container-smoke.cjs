@@ -143,16 +143,26 @@ async function main() {
       throw new Error(`Restart failed: ${output}`);
     };
     await require("./token-domains-idempotency.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart });
+    await require("./link-lifecycle.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, idempotencySecret: env.JWT_SECRET });
+    const refusedDown = spawnSync(process.execPath, [
+      path.join(root, "node_modules/knex/bin/cli.js"),
+      "--knexfile", path.join(root, "knexfile.js"), "migrate:down"
+    ], { cwd: directory, env, encoding: "utf8", timeout: 60000 });
+    assert.notEqual(refusedDown.status, 0, "Schema rollback must refuse to discard live policies");
+    const Database = require("better-sqlite3");
+    const policyDb = new Database(env.DB_FILENAME);
+    policyDb.prepare("UPDATE links SET paused = 0, starts_at = NULL, ends_at = NULL, max_visits = NULL").run();
+    policyDb.close();
     for (const action of ["migrate:down", "migrate:latest"]) {
       const migration = spawnSync(process.execPath, [
         path.join(root, "node_modules/knex/bin/cli.js"),
         "--knexfile", path.join(root, "knexfile.js"), action
       ], { cwd: directory, env, encoding: "utf8", timeout: 60000 });
       assert.equal(migration.status, 0, `Token schema rollback/reapply failed: ${migration.stderr}`);
-      assert.equal((await request("GET", "/api/v2/links", undefined, token)).status, 200);
     }
+    assert.equal((await request("GET", "/api/v2/links", undefined, token)).status, 200);
     assert.equal((await request("GET", "/api/v2/tokens", undefined, token)).status, 200);
-    console.log("PASS: additive token migration rollback and reapply preserve existing accounts and links");
+    console.log("PASS: additive migration rollback and reapply preserve existing accounts and links");
     console.log("PASS: migrations, SQLite cleanup, bootstrap, login, access control, link CRUD and public redirect");
   } finally {
     if (server) {

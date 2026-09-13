@@ -44,6 +44,14 @@ router.post(
 );
 
 router.patch(
+  "/:id/lifecycle",
+  locals.viewTemplate("partials/links/lifecycle"),
+  asyncHandler(auth.apikey),
+  asyncHandler(auth.jwt),
+  asyncHandler(link.lifecycle)
+);
+
+router.patch(
   "/:id",
   locals.viewTemplate("partials/links/edit"),
   asyncHandler(auth.apikey),

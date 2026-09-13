@@ -9,7 +9,7 @@ token in a public client application.
 | --- | --- |
 | `links:read` | List the owner's links |
 | `links:create` | Create links as the owner |
-| `links:update` | Edit the owner's links |
+| `links:update` | Edit the owner's links and [lifecycle policies](LINK-LIFECYCLE.md) |
 | `links:delete` | Delete the owner's links |
 | `stats:read` | Read statistics for the owner's links |
 

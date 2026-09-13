@@ -21,6 +21,11 @@ const selectable = [
   "links.visit_count",
   "links.user_id",
   "links.uuid",
+  "links.paused",
+  "links.starts_at",
+  "links.ends_at",
+  "links.max_visits",
+  "links.redirect_count",
   "domains.address as domain"
 ];
 
@@ -176,8 +181,8 @@ async function getAdmin(match, params) {
   return query;
 }
 
-async function find(match) {
-  if (match.address && match.domain_id !== undefined && env.REDIS_ENABLED) {
+async function find(match, { fresh = false } = {}) {
+  if (!fresh && match.address && match.domain_id !== undefined && env.REDIS_ENABLED) {
     const key = redis.key.link(match.address, match.domain_id);
     const cachedLink = await redis.client.get(key);
     if (cachedLink) return JSON.parse(cachedLink);
@@ -189,7 +194,7 @@ async function find(match) {
     .leftJoin("domains", "links.domain_id", "domains.id")
     .first();
   
-  if (link && env.REDIS_ENABLED) {
+  if (link && !fresh && env.REDIS_ENABLED) {
     const key = redis.key.link(link.address, link.domain_id);
     redis.client.set(key, JSON.stringify(link), "EX", 60 * 15);
   }
@@ -215,6 +220,10 @@ async function create(params, db = knex) {
       address: params.address,
       description: params.description || null,
       expire_in: params.expire_in || null,
+      paused: params.paused || false,
+      starts_at: params.starts_at ?? null,
+      ends_at: params.ends_at ?? null,
+      max_visits: params.max_visits ?? null,
       target: params.target
     },
     "*"

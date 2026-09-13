@@ -5,7 +5,7 @@
       hx-patch="/api/links/{id}"
       hx-ext="path-params"
       hx-vals='{"id":"{{id}}"}' 
-      hx-select="form"
+      hx-select="#edit-form-{{id}}"
       hx-swap="outerHTML"
       hx-sync="this:replace"
       class="{{class}}"
@@ -111,6 +111,7 @@
         {{> links/tr}}
       </template>
     </form>
+    {{> links/lifecycle}}
   {{else}}
     <p class="no-data">No link was found.</p>
   {{/if}}

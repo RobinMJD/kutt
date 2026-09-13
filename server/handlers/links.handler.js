@@ -12,6 +12,7 @@ const query = require("../queries");
 const queue = require("../queues");
 const utils = require("../utils");
 const env = require("../env");
+const linkLifecycle = require("../link-lifecycle");
 
 const CustomError = utils.CustomError;
 const dnsLookup = promisify(dns.lookup);
@@ -98,6 +99,7 @@ async function getAdmin(req, res) {
 };
 
 async function create(req, res) {
+  req.linkLifecycle = linkLifecycle.parse(req.body, {}, req.isHTML);
   const { reuse, password, customurl, description, target, fetched_domain, expire_in } = req.body;
   const domain_id = fetched_domain ? fetched_domain.id : null;
   if (req.apiTokenDomain !== undefined && domain_id !== req.apiTokenDomain) {
@@ -123,7 +125,7 @@ async function create(req, res) {
     }
     const link = await query.link.create({
       password, address: customurl || generatedAddress, domain_id, description,
-      target, expire_in, user_id: req.user && req.user.id
+      target, expire_in, ...req.linkLifecycle, user_id: req.user && req.user.id
     }, db);
     return { status: 201, data: utils.sanitize.link({ ...link, domain: fetched_domain?.address }) };
   });
@@ -144,6 +146,26 @@ async function create(req, res) {
   return res
     .status(result.status)
     .send(result.data);
+}
+
+async function lifecycle(req, res) {
+  let originHost;
+  try { if (req.get("Origin")) originHost = new URL.URL(req.get("Origin")).host; } catch { originHost = "invalid"; }
+  if (req.get("Sec-Fetch-Site") === "cross-site" || (originHost && originHost !== env.DEFAULT_DOMAIN)) {
+    throw new CustomError("Invalid request origin.", 403);
+  }
+  const link = await query.link.find({ uuid: req.params.id, user_id: req.user.id }, { fresh: true });
+  if (!link) throw new CustomError("Link was not found.", 404);
+  res.locals.id = link.uuid;
+  Object.assign(res.locals, utils.sanitize.link_html(link));
+  const update = linkLifecycle.parse(req.body, link, req.isHTML);
+  if (!Object.keys(update).length) throw new CustomError("Provide at least one lifecycle setting.", 400);
+  const [updated] = await query.link.update({ id: link.id, user_id: req.user.id }, update);
+  res.set("Cache-Control", "no-store");
+  if (req.isHTML) return res.render("partials/links/lifecycle", {
+    ...utils.sanitize.link_html(updated), success: "Lifecycle updated."
+  });
+  return res.json(utils.sanitize.link(updated));
 }
 
 async function edit(req, res) {
@@ -461,7 +483,7 @@ async function redirect(req, res, next) {
   const link = await query.link.find({
     address,
     domain_id: domain ? domain.id : null
-  });
+  }, { fresh: true });
 
   // 3. When no link, if has domain redirect to domain's homepage
   // otherwise redirect to 404
@@ -473,6 +495,9 @@ async function redirect(req, res, next) {
   if (link.banned) {
     return res.redirect("/banned");
   }
+
+  res.set("Cache-Control", "no-store");
+  if (!await linkLifecycle.allow(link)) return unavailable(res);
 
   // 5. If wants to see link info, then redirect
   const isRequestingInfo = /.*\+$/gi.test(req.params.id);
@@ -502,7 +527,7 @@ async function redirect(req, res, next) {
           if (colon !== -1) {
             const password = decoded.slice(colon + 1);
             const matches = await bcrypt.compare(password, link.password);
-            if (matches) return res.redirect(link.target);
+            if (matches) return finishRedirect(req, res, link);
           }
         }
       }
@@ -514,9 +539,16 @@ async function redirect(req, res, next) {
     return;
   }
 
-  // 7. Create link visit
-  const isBot = isbot(req.headers["user-agent"]);
-  if (link.user_id && !isBot) {
+  return finishRedirect(req, res, link);
+};
+
+function unavailable(res) {
+  res.set("Cache-Control", "no-store");
+  return res.status(410).send("This short link is not currently available.");
+}
+
+function recordVisit(req, link) {
+  if (req.method !== "HEAD" && link.user_id && !isbot(req.headers["user-agent"])) {
     queue.visit.add({
       userAgent: req.headers["user-agent"],
       ip: req.ip,
@@ -526,14 +558,19 @@ async function redirect(req, res, next) {
     });
   }
 
-  // 8. Redirect to target
+}
+
+async function finishRedirect(req, res, link) {
+  res.set("Cache-Control", "no-store");
+  if (!await linkLifecycle.allow(link, req.method !== "HEAD")) return unavailable(res);
+  recordVisit(req, link);
   return res.redirect(link.target);
-};
+}
 
 async function redirectProtected(req, res) {
   // 1. Get link
   const uuid = req.params.id;
-  const link = await query.link.find({ uuid });
+  const link = await query.link.find({ uuid }, { fresh: true });
 
   // 2. Throw error if no link
   if (!link || !link.password) {
@@ -547,16 +584,9 @@ async function redirectProtected(req, res) {
     throw new CustomError("Password is not correct.", 401);
   }
 
-  // 4. Create visit
-  if (link.user_id) {
-    queue.visit.add({
-      userAgent: req.headers["user-agent"],
-      ip: req.ip,
-      country: req.get("cf-ipcountry"),
-      referrer: req.get("Referrer"),
-      link
-    });
-  }
+  res.set("Cache-Control", "no-store");
+  if (!await linkLifecycle.allow(link, true)) return unavailable(res);
+  recordVisit(req, link);
 
   // 5. Send target
   if (req.isHTML) {
@@ -633,6 +663,7 @@ async function stats(req, res) {
 };
 
 module.exports = {
+  lifecycle,
   ban,
   create,
   edit,

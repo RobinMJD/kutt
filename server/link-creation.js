@@ -12,10 +12,12 @@ async function run(req, operation) {
     throw new CustomError("Idempotency-Key requires an authenticated JSON request and 8-128 safe characters.", 400);
   }
   const body = req.body;
+  const { expire_in: ignoredLegacyExpiry, ...lifecycle } = req.linkLifecycle || {};
   const input = {
     target: body.target, customurl: body.customurl || null, description: body.description || null,
     password: body.password || null, reuse: body.reuse === true || body.reuse === "true",
-    domain: body.fetched_domain?.uuid || "default", expire_in: req.linkExpiryInput || null
+    domain: body.fetched_domain?.uuid || "default", expire_in: req.linkExpiryInput || null,
+    ...(Object.keys(lifecycle).length && { lifecycle })
   };
   // A keyed digest prevents offline guessing of short link passwords from a DB dump.
   const requestHash = createHmac("sha256", env.JWT_SECRET).update(JSON.stringify(input)).digest("hex");

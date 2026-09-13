@@ -71,5 +71,6 @@ upstream PR has been submitted yet.
   was retained. Container healthy, zero restarts, all three probes successful.
 - Wrapper scan: zero critical/high, six medium and one low findings.
 
-Next: link lifecycle controls. PostgreSQL/MySQL and human MFA acceptance remain
-separate validation work; deployment evidence here is for SQLite.
+Current candidate `3.2.6-sr94.3` implements link lifecycle controls; its checkbox
+remains open until release and deployment validation. PostgreSQL/MySQL and human
+MFA acceptance remain separate validation work; deployment evidence is for SQLite.

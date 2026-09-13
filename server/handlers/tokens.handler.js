@@ -8,6 +8,7 @@ const routes = [
   ["GET", /^\/links\/?$/i, "links:read"],
   ["POST", /^\/links\/?$/i, "links:create"],
   ["PATCH", /^\/links\/([a-f0-9-]{36})\/?$/i, "links:update"],
+  ["PATCH", /^\/links\/([a-f0-9-]{36})\/lifecycle\/?$/i, "links:update"],
   ["DELETE", /^\/links\/([a-f0-9-]{36})\/?$/i, "links:delete"],
   ["GET", /^\/links\/([a-f0-9-]{36})\/stats\/?$/i, "stats:read"]
 ];
