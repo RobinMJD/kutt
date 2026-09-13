@@ -1,0 +1,59 @@
+<section id="tokens-wrapper">
+  <h2>API tokens</h2>
+  {{#if newToken}}
+    <div class="token-result">
+      <label>New token <small>(shown once)</small>
+        <input type="text" aria-label="New API token" readonly value="{{newToken}}" />
+      </label>
+      <button type="button" class="secondary" aria-label="Copy API token" title="Copy API token"
+        hx-on:click="handleShortURLCopyLink(this);" data-url="{{newToken}}">
+        {{> icons/copy}}
+      </button>
+    </div>
+  {{/if}}
+  {{#if error}}<p class="error" role="alert">{{error}}</p>{{/if}}
+  <ul class="api-token-list">
+    {{#each apiTokens}}
+      <li>
+        <div class="api-token-details">
+          <strong>{{name}}</strong> <small>{{status}}</small>
+          <code>{{prefix}}...</code>
+          <small>{{scopesLabel}}</small>
+          <small>Expires: {{#if expires_at}}{{expires_at}}{{else}}Never{{/if}}</small>
+        </div>
+        {{#if active}}
+          <button type="button" class="secondary" aria-label="Revoke {{name}}" title="Revoke token"
+            hx-delete="/api/tokens/{{id}}" hx-target="#tokens-wrapper" hx-swap="outerHTML"
+            hx-confirm="Revoke this token? Applications using it will lose access.">
+            {{> icons/trash}}
+          </button>
+        {{/if}}
+      </li>
+    {{else}}
+      <li>No API tokens</li>
+    {{/each}}
+  </ul>
+  <form hx-post="/api/tokens" hx-target="#tokens-wrapper" hx-swap="outerHTML" hx-disabled-elt="button[type=submit]">
+    <div class="inputs">
+      <label>Name <input type="text" name="name" required maxlength="80" autocomplete="off" /></label>
+      <label>Expires in
+        <select name="expires_in_days">
+          <option value="7">7 days</option>
+          <option value="30" selected>30 days</option>
+          <option value="90">90 days</option>
+          <option value="365">1 year</option>
+          <option value="never">Never</option>
+        </select>
+      </label>
+    </div>
+    <fieldset class="token-scopes">
+      <legend>Permissions</legend>
+      {{#each tokenScopes}}
+        <label><input type="checkbox" name="scopes" value="{{value}}" /> {{label}}</label>
+      {{/each}}
+    </fieldset>
+    <button type="submit" class="secondary">
+      <span>{{> icons/zap}}</span><span>{{> icons/spinner}}</span>Create token
+    </button>
+  </form>
+</section>

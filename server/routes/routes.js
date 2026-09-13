@@ -8,12 +8,17 @@ const health = require("./health.routes");
 const link = require("./link.routes");
 const user = require("./user.routes");
 const auth = require("./auth.routes");
+const tokens = require("./tokens.routes");
+const tokenHandlers = require("../handlers/tokens.handler");
+const asyncHandler = require("../utils/asyncHandler");
 
 const renderRouter = Router();
 renderRouter.use(renders);
 
 const apiRouter = Router();
 apiRouter.use(locals.noLayout);
+apiRouter.use(asyncHandler(tokenHandlers.authenticate));
+apiRouter.use("/tokens", tokens);
 apiRouter.use("/domains", domains);
 apiRouter.use("/health", health);
 apiRouter.use("/links", link);

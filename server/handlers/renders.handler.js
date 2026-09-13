@@ -53,7 +53,9 @@ function notFound(req, res) {
   });
 }
 
-function settings(req, res) {
+async function settings(req, res) {
+  res.set("Cache-Control", "no-store");
+  await require("./tokens.handler").load(req, res, () => {});
   res.render("settings", {
     title: "Settings"
   });

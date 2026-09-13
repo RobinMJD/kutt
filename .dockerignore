@@ -1,2 +1,7 @@
 .git
 node_modules
+.env
+.env.*
+!.env.example
+*.sqlite*
+secrets

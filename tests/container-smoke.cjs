@@ -70,8 +70,8 @@ async function main() {
     server.stdout.on("data", data => { output += data; });
     server.stderr.on("data", data => { output += data; });
     const url = `http://127.0.0.1:${port}`;
-    async function request(method, pathname, body, token) {
-      const headers = { "Content-Type": "application/json", Accept: "application/json" };
+    async function request(method, pathname, body, token, extraHeaders = {}) {
+      const headers = { "Content-Type": "application/json", Accept: "application/json", ...extraHeaders };
       if (token) headers.Cookie = `token=${token}`;
       try {
         return await fetch(url + pathname, {
@@ -118,6 +118,17 @@ async function main() {
     response = await request("GET", "/smoke-check");
     assert.equal(response.status, 302);
     assert.equal(response.headers.get("location"), "/404");
+    await require("./api-tokens.cjs")({ request, session: token, database: env.DB_FILENAME, account });
+    for (const action of ["migrate:down", "migrate:latest"]) {
+      const migration = spawnSync(process.execPath, [
+        path.join(root, "node_modules/knex/bin/cli.js"),
+        "--knexfile", path.join(root, "knexfile.js"), action
+      ], { cwd: directory, env, encoding: "utf8", timeout: 60000 });
+      assert.equal(migration.status, 0, `Token schema rollback/reapply failed: ${migration.stderr}`);
+      assert.equal((await request("GET", "/api/v2/links", undefined, token)).status, 200);
+    }
+    assert.equal((await request("GET", "/api/v2/tokens", undefined, token)).status, 200);
+    console.log("PASS: additive token migration rollback and reapply preserve existing accounts and links");
     console.log("PASS: migrations, SQLite cleanup, bootstrap, login, access control, link CRUD and public redirect");
   } finally {
     if (server) {

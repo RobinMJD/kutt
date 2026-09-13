@@ -50,6 +50,8 @@ function newPassword(req, res, next) {
 }
 
 function createLink(req, res, next) {
+  // This field is produced by domain ownership validation, never by the caller.
+  delete req.body.fetched_domain;
   res.locals.show_advanced = !!req.body.show_advanced;
   next();
 }

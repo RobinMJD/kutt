@@ -2,6 +2,24 @@
 
 # Kutt.to
 
+## RobinMJD fork
+
+This fork develops tested, incremental improvements to upstream Kutt.
+The first feature release is `v3.2.6-sr94.1`: [scoped API tokens](docs/API-TOKENS.md).
+See the [feature roadmap and release gates](docs/FEATURE-ROADMAP.md) for remaining
+work; it is not a claim that the entire roadmap is implemented.
+
+Fork CI tests an isolated SQLite database on each main-branch push. Version tags
+matching `v*-sr94.*` publish the tested amd64 image to `ghcr.io/robinmjd/kutt`.
+Production deployment is a separate backup/test/approval-controlled operation,
+not an automatic replacement of a running instance. Pin image digests in
+production. Existing upstream Docker Hub workflows do not publish from forks.
+
+Run regression tests with `docker build -t kutt-test .` followed by
+`docker run --rm --network none --entrypoint node kutt-test tests/container-smoke.cjs`.
+SQLite is exercised end-to-end; PostgreSQL and MySQL remain unvalidated for this
+feature release. Do not substitute a production database into the test harness.
+
 **Kutt** is a modern URL shortener with support for custom domains. Create and edit links, view statistics, manage users, and more.
 
 [https://kutt.to](https://kutt.to)
@@ -258,4 +276,3 @@ Download Kutt's extension for web browsers via below links.
 Pull requests are welcome. Open a discussion for feedback, requesting features, or discussing ideas.
 
 Special thanks to [Thomas](https://github.com/trgwii) and [Muthu](https://github.com/MKRhere). Logo design by [Muthu](https://github.com/MKRhere).
-
