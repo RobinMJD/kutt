@@ -15,7 +15,7 @@ secrets, local configuration or application data.
 
 ## Foundation
 
-- [ ] Named, hashed, scoped, expiring, individually revocable API tokens (in progress).
+- [x] Named, hashed, scoped, expiring, individually revocable API tokens (`v3.2.6-sr94.1`, deployed and verified 2026-09-13).
 - [ ] Token domain restrictions and idempotent link creation.
 - [ ] Link pause, scheduled start/end, maximum visits and request-time expiry.
 - [ ] History, trash and restore without silently reusing retired aliases.
@@ -41,3 +41,23 @@ secrets, local configuration or application data.
 Unicode aliases and extra database engines are optional follow-ups. Each item
 needs tests and migration/rollback notes before completion. No feature-bundle
 upstream PR has been submitted yet.
+
+## First deployment evidence
+
+- [Published release](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.1).
+- [Passing release CI](https://github.com/RobinMJD/kutt/actions/runs/34776637819).
+- Production source image digest: `sha256:6e51b77fa2a6cb6ed15778d5bd7af68085560b3f166bf71f4851d9f94d303974`.
+- Isolated SQLite regressions, schema rollback/reapply and migration of an
+  off-host restored production database passed. No existing user/link loss.
+- Browser create/copy/reload/revoke passed at 1440x1000 and 390x844. Mobile layout
+  was corrected after screenshot review. No browser runtime errors remained.
+- Public HTTPS tests passed through the existing WAF: OIDC initiation accepted,
+  anonymous management denied, scoped CRUD/revocation enforced, cookie privilege
+  escalation denied, and public short-link redirects preserved.
+- Healthy production container, zero restarts and three successful probes after
+  deployment. No WAF/SSO policy relaxation or newly published backend ports.
+
+Next item: domain restrictions and idempotent link creation. Other unchecked
+items remain unimplemented; no unattended continuation or deployment timer is
+implied by this checklist. PostgreSQL/MySQL and human MFA acceptance remain
+separate validation work.
