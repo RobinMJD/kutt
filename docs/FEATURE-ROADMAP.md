@@ -16,7 +16,7 @@ secrets, local configuration or application data.
 ## Foundation
 
 - [x] Named, hashed, scoped, expiring, individually revocable API tokens (`v3.2.6-sr94.1`, deployed and verified 2026-09-13).
-- [ ] Token domain restrictions and idempotent link creation.
+- [x] Token domain restrictions and idempotent link creation (`v3.2.6-sr94.2`, deployed and verified 2026-09-13).
 - [ ] Link pause, scheduled start/end, maximum visits and request-time expiry.
 - [ ] History, trash and restore without silently reusing retired aliases.
 - [ ] Stable OIDC identities, access revocation and authentication diagnostics.
@@ -57,8 +57,19 @@ upstream PR has been submitted yet.
 - Healthy production container, zero restarts and three successful probes after
   deployment. No WAF/SSO policy relaxation or newly published backend ports.
 
-Current release candidate: `3.2.6-sr94.2` implements domain restrictions and
-idempotent link creation. API, concurrency, restart and desktop/mobile tests have
-passed; the checkbox stays open until publication and production validation.
-Continue with link lifecycle controls after those gates. PostgreSQL/MySQL and
-human MFA acceptance remain separate validation work.
+## Second deployment evidence
+
+- [Published release](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.2)
+  and [passing CI](https://github.com/RobinMJD/kutt/actions/runs/34778278203).
+- Source digest: `sha256:79c259f3cd0c1ada72bc8ecf50b829f0cb08ddbeb6f1aab6fc39f8554941314b`.
+- Restricted-domain authorization, concurrent retries, restart replay, conflicts,
+  schema rollback/reapply, legacy compatibility and desktop/mobile UI passed.
+- An off-host backup was restored, byte-verified and migrated on the exact
+  hardened release image with integrity, foreign-key and write checks passing.
+- Live HTTPS/WAF checks passed for domain denial, identical idempotent replay,
+  deletion/revocation, cookie non-escalation and public redirects. Existing data
+  was retained. Container healthy, zero restarts, all three probes successful.
+- Wrapper scan: zero critical/high, six medium and one low findings.
+
+Next: link lifecycle controls. PostgreSQL/MySQL and human MFA acceptance remain
+separate validation work; deployment evidence here is for SQLite.
