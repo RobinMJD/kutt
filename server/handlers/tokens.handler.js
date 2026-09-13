@@ -20,7 +20,7 @@ async function authenticate(req, res, next) {
   if (supplied.some(value => typeof value !== "string" || !value || value.length > 256)) {
     return res.status(401).json({ error: "Invalid API credential." });
   }
-  if (!supplied.some(value => value.startsWith("kutt_"))) {
+  if (!supplied.some(value => value.startsWith("kutt_") && value.length !== 40)) {
     // Invalid explicit credentials must not fall back to an unrelated cookie.
     const legacy = supplied.length === 1 && await knex("users").where({ apikey: supplied[0] }).first();
     if (!legacy || legacy.banned || !legacy.verified) {
@@ -41,11 +41,14 @@ async function authenticate(req, res, next) {
   const id = req.path.match(route[1])[1];
   if (id) {
     const owned = await knex("links").where({ uuid: id, user_id: resolved.user.id }).first();
-    if (!owned) return res.status(404).json({ error: "Link was not found." });
+    if (!owned || (resolved.domainId !== undefined && owned.domain_id !== resolved.domainId)) {
+      return res.status(404).json({ error: "Link was not found." });
+    }
   }
   // Never inherit administrator privileges or elevate using a browser cookie.
   req.user = { ...resolved.user, admin: false };
   req.apiToken = resolved.row.id;
+  req.apiTokenDomain = resolved.domainId;
   res.locals.isAdmin = false;
   if (resolved.row.last_used_at == null || Number(resolved.row.last_used_at) < Date.now() - 60000) {
     await knex("api_tokens").where({ id: resolved.row.id }).update({ last_used_at: Date.now() });
@@ -72,8 +75,13 @@ function sessionOnly(req, res, next) {
 }
 
 async function load(req, res, next) {
+  const domains = await knex("domains").where({ user_id: req.user.id, banned: false });
+  res.locals.tokenDomains = domains;
   res.locals.apiTokens = (await tokens.list(req.user.id)).map(token => ({
-    ...token, active: token.status === "Active", scopesLabel: token.scopes.join(", ")
+    ...token, active: token.status === "Active", scopesLabel: token.scopes.join(", "),
+    domainLabel: token.domain_scope === "all" ? "All owned domains" :
+      token.domain_scope === "default" ? env.DEFAULT_DOMAIN :
+        domains.find(domain => domain.uuid === token.domain_scope)?.address || "Unavailable domain (access denied)"
   }));
   res.locals.tokenScopes = Object.entries(tokens.SCOPES).map(([value, label]) => ({ value, label }));
   next();

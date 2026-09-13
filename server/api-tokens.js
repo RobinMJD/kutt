@@ -17,6 +17,7 @@ function sanitize(row) {
   return {
     id: row.id, name: row.name, prefix: row.prefix,
     scopes: JSON.parse(row.scopes),
+    domain_scope: row.domain_scope,
     created_at: timestamp(row.created_at), expires_at: timestamp(row.expires_at),
     revoked_at: timestamp(row.revoked_at), last_used_at: timestamp(row.last_used_at),
     status: row.revoked_at != null ? "Revoked" :
@@ -38,6 +39,14 @@ async function create(userId, input) {
       scopes.some(scope => typeof scope !== "string" || !Object.hasOwn(SCOPES, scope))) {
     throw new CustomError("Select at least one valid permission.", 400);
   }
+  const domainScope = input.domain_scope === undefined ? "all" : input.domain_scope;
+  if (typeof domainScope !== "string" || !/^(all|default|[a-f0-9-]{36})$/.test(domainScope)) {
+    throw new CustomError("Select a valid domain restriction.", 400);
+  }
+  if (domainScope !== "all" && domainScope !== "default") {
+    const domain = await knex("domains").where({ uuid: domainScope, user_id: userId, banned: false }).first();
+    if (!domain) throw new CustomError("Domain was not found.", 400);
+  }
   let expires = null;
   if (input.expires_at != null) {
     if (typeof input.expires_at !== "string" ||
@@ -56,11 +65,13 @@ async function create(userId, input) {
   } else {
     expires = Date.now() + 30 * 86400000;
   }
-  const token = "kutt_" + randomBytes(32).toString("base64url");
+  // Older releases reject this prefix instead of ignoring the restriction.
+  const token = (domainScope === "all" ? "kutt_" : "kutt_d_") + randomBytes(32).toString("base64url");
   const row = {
     id: randomUUID(), user_id: userId, name,
     token_hash: hash(token), prefix: token.slice(0, 13),
     scopes: JSON.stringify([...new Set(scopes)]),
+    domain_scope: domainScope,
     created_at: Date.now(), expires_at: expires, revoked_at: null, last_used_at: null
   };
   await knex("api_tokens").insert(row);
@@ -76,14 +87,22 @@ async function revoke(userId, id) {
 }
 
 async function resolve(value) {
-  if (!/^kutt_[A-Za-z0-9_-]{43}$/.test(value)) return null;
+  if (!/^kutt_(?:d_)?[A-Za-z0-9_-]{43}$/.test(value)) return null;
   const row = await knex("api_tokens").where({ token_hash: hash(value) }).first();
   if (!row || row.revoked_at != null ||
       (row.expires_at != null && Number(row.expires_at) <= Date.now())) return null;
+  if (value.length === 50 && row.domain_scope === "all") return null;
   // Bypass the user cache so bans and verification changes apply immediately.
   const user = await knex("users").where({ id: row.user_id }).first();
   if (!user || user.banned || !user.verified) return null;
-  return { row, user };
+  let domainId;
+  if (row.domain_scope === "default") domainId = null;
+  else if (row.domain_scope !== "all") {
+    const domain = await knex("domains").where({ uuid: row.domain_scope, user_id: user.id, banned: false }).first();
+    if (!domain) return null;
+    domainId = domain.id;
+  }
+  return { row, user, domainId };
 }
 
 module.exports = { SCOPES, create, list, revoke, resolve };

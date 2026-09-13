@@ -24,6 +24,14 @@ Coverage:
 - Authenticated creation, listing and deletion of a short link.
 - Public redirection without credentials, including the missing-link redirect
   after deletion.
+- Token scopes, expiry, revocation, owner bans, legacy key compatibility,
+  cross-user access denial, CSRF and explicit credential precedence over cookies.
+- Domain-restricted list totals, CRUD and statistics; domain deletion, recreation,
+  bans and ownership transfer; fail-closed older-image token format.
+- Eight concurrent idempotent creates produce one link, replay survives server
+  restart, conflicts return 409, expired records are reusable, and failed
+  creations roll back their reservations. Stored records contain no raw secrets.
+- Latest additive migration down/up preserves existing accounts and links.
 
 This is not an OIDC provider, SMTP, PostgreSQL, MySQL or browser test. It does
 not demonstrate compatibility with every persisted database or CPU platform.

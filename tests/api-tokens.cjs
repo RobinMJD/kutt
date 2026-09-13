@@ -109,7 +109,7 @@ module.exports = async function testTokens({ request, session, database, account
     assert.equal((await request("DELETE", `/api/v2/tokens/${read.id}`, undefined, session)).status, 204);
     assert.equal((await request("DELETE", `/api/v2/tokens/${read.id}`, undefined, session)).status, 204);
     assert.equal((await keyed("GET", "/api/v2/links", undefined, read.token, session)).status, 401);
-    const legacy = randomBytes(20).toString("hex");
+    const legacy = "kutt_" + randomBytes(18).toString("hex").slice(0, 35);
     db.prepare("UPDATE users SET apikey = ? WHERE id = ?").run(legacy, owner.id);
     assert.equal((await keyed("GET", "/api/v2/links", undefined, legacy)).status, 200);
     assert.equal((await keyed("GET", "/api/v2/links/admin", undefined, legacy)).status, 200);

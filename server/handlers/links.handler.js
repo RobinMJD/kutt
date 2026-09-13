@@ -22,7 +22,8 @@ async function get(req, res) {
   const userId = req.user.id;
 
   const match = {
-    user_id: userId
+    user_id: userId,
+    ...(req.apiTokenDomain !== undefined && { domain_id: req.apiTokenDomain })
   };
 
   const [data, total] = await Promise.all([
@@ -99,56 +100,41 @@ async function getAdmin(req, res) {
 async function create(req, res) {
   const { reuse, password, customurl, description, target, fetched_domain, expire_in } = req.body;
   const domain_id = fetched_domain ? fetched_domain.id : null;
+  if (req.apiTokenDomain !== undefined && domain_id !== req.apiTokenDomain) {
+    throw new CustomError("API token does not permit this domain.", 403);
+  }
   
   const targetDomain = utils.removeWww(URL.parse(target).hostname);
   
-  const tasks = await Promise.all([
-    reuse &&
-      query.link.find({
-        target,
-        user_id: req.user.id,
-        domain_id
-      }),
-    customurl &&
-      query.link.find({
-        address: customurl,
-        domain_id
-      }),
+  const [generatedAddress] = await Promise.all([
     !customurl && utils.generateId(query, domain_id),
     validators.bannedDomain(targetDomain),
     validators.bannedHost(targetDomain)
   ]);
-  
-  // if "reuse" is true, try to return
-  // the existent URL without creating one
-  if (tasks[0]) {
-    return res.json(utils.sanitize.link(tasks[0]));
-  }
-  
-  // Check if custom link already exists
-  if (tasks[1]) {
-    const error = "Custom URL is already in use.";
-    res.locals.errors = { customurl: error };
-    throw new CustomError(error);
-  }
-
-  // Create new link
-  const address = customurl || tasks[2];
-  const link = await query.link.create({
-    password,
-    address,
-    domain_id,
-    description,
-    target,
-    expire_in,
-    user_id: req.user && req.user.id
+  const result = await require("../link-creation").run(req, async db => {
+    if (reuse === true || reuse === "true") {
+      const existing = await db("links").where({ target, user_id: req.user.id, domain_id }).first();
+      if (existing) return { status: 200, data: utils.sanitize.link({ ...existing, domain: fetched_domain?.address }) };
+    }
+    if (customurl && await db("links").where({ address: customurl, domain_id }).first()) {
+      const error = "Custom URL is already in use.";
+      res.locals.errors = { customurl: error };
+      throw new CustomError(error, 400);
+    }
+    const link = await query.link.create({
+      password, address: customurl || generatedAddress, domain_id, description,
+      target, expire_in, user_id: req.user && req.user.id
+    }, db);
+    return { status: 201, data: utils.sanitize.link({ ...link, domain: fetched_domain?.address }) };
   });
-
-  link.domain = fetched_domain?.address;
+  if (req.get("Idempotency-Key") !== undefined) {
+    res.set("Idempotency-Replayed", result.replayed ? "true" : "false");
+    res.set("Cache-Control", "no-store");
+  }
   
   if (req.isHTML) {
     res.setHeader("HX-Trigger", "reloadMainTable");
-    const shortURL = utils.getShortURL(link.address, link.domain);
+    const shortURL = utils.getShortURL(result.data.address, result.data.domain);
     return res.render("partials/shortener", {
       link: shortURL.link, 
       url: shortURL.url,
@@ -156,8 +142,8 @@ async function create(req, res) {
   }
   
   return res
-    .status(201)
-    .send(utils.sanitize.link({ ...link }));
+    .status(result.status)
+    .send(result.data);
 }
 
 async function edit(req, res) {

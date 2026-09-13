@@ -197,7 +197,7 @@ async function find(match) {
   return link;
 }
 
-async function create(params) {
+async function create(params, db = knex) {
   let encryptedPassword = null;
   
   if (params.password) {
@@ -205,7 +205,7 @@ async function create(params) {
     encryptedPassword = await bcrypt.hash(params.password, salt);
   }
   
-  let [link] = await knex(
+  let [link] = await db(
     "links"
   ).insert(
     {
@@ -223,7 +223,7 @@ async function create(params) {
   // mysql doesn't return the whole link, but rather the id number only
   // so we need to fetch the link ourselves
   if (typeof link === "number") {
-    link = await knex("links").where("id", link).first();
+    link = await db("links").where("id", link).first();
   }
 
   return link;

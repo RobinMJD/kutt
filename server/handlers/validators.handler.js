@@ -86,10 +86,11 @@ const createLink = [
     .withMessage("Domain should be string.")
     .customSanitizer(value => value.toLowerCase())
     .custom(async (address, { req }) => {
-      const domain = await query.domain.find({
+      const domain = await knex("domains").where({
         address,
-        user_id: req.user.id
-      });
+        user_id: req.user.id,
+        banned: false
+      }).first();
       req.body.fetched_domain = domain || null;
 
       if (!domain) return Promise.reject();

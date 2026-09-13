@@ -40,6 +40,8 @@ async function main() {
       DISALLOW_LOGIN_FORM: "false",
       ENABLE_RATE_LIMIT: "false",
       TRUST_PROXY: "false",
+      // Offline test DNS failures must not serialize libuv's four resolver workers.
+      UV_THREADPOOL_SIZE: "16",
       NODE_APP_INSTANCE: "1"
     };
     // An empty cwd prevents dotenv from loading the checkout's real .env.
@@ -119,6 +121,28 @@ async function main() {
     assert.equal(response.status, 302);
     assert.equal(response.headers.get("location"), "/404");
     await require("./api-tokens.cjs")({ request, session: token, database: env.DB_FILENAME, account });
+    const restart = async () => {
+      server.kill("SIGTERM");
+      if (!await Promise.race([exit, delay(5000).then(() => null)])) {
+        server.kill("SIGKILL");
+        await exit;
+      }
+      server = spawn(process.execPath, [path.join(root, "server/server.js")], {
+        cwd: directory, env, stdio: ["ignore", "pipe", "pipe"]
+      });
+      exit = new Promise(resolve => {
+        server.once("exit", (code, signal) => resolve({ code, signal }));
+        server.once("error", error => resolve({ error }));
+      });
+      server.stdout.on("data", data => { output += data; });
+      server.stderr.on("data", data => { output += data; });
+      for (let attempt = 0; attempt < 100; attempt++) {
+        try { if ((await request("GET", "/api/v2/health")).status === 200) return; } catch {}
+        await delay(100);
+      }
+      throw new Error(`Restart failed: ${output}`);
+    };
+    await require("./token-domains-idempotency.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart });
     for (const action of ["migrate:down", "migrate:latest"]) {
       const migration = spawnSync(process.execPath, [
         path.join(root, "node_modules/knex/bin/cli.js"),
@@ -144,6 +168,6 @@ async function main() {
 }
 
 main().catch(error => {
-  console.error(error.message);
+  console.error(error.stack);
   process.exitCode = 1;
 });

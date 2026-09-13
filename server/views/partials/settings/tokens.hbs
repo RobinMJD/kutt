@@ -19,6 +19,7 @@
           <strong>{{name}}</strong> <small>{{status}}</small>
           <code>{{prefix}}...</code>
           <small>{{scopesLabel}}</small>
+          <small>Domain: {{domainLabel}}</small>
           <small>Expires: {{#if expires_at}}{{expires_at}}{{else}}Never{{/if}}</small>
         </div>
         {{#if active}}
@@ -43,6 +44,13 @@
           <option value="90">90 days</option>
           <option value="365">1 year</option>
           <option value="never">Never</option>
+        </select>
+      </label>
+      <label>Domain
+        <select name="domain_scope" aria-label="Domain">
+          <option value="all">All owned domains</option>
+          <option value="default">{{default_domain}}</option>
+          {{#each tokenDomains}}<option value="{{uuid}}">{{address}}</option>{{/each}}
         </select>
       </label>
     </div>

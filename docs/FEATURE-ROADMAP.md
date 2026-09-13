@@ -57,7 +57,8 @@ upstream PR has been submitted yet.
 - Healthy production container, zero restarts and three successful probes after
   deployment. No WAF/SSO policy relaxation or newly published backend ports.
 
-Next item: domain restrictions and idempotent link creation. Other unchecked
-items remain unimplemented; no unattended continuation or deployment timer is
-implied by this checklist. PostgreSQL/MySQL and human MFA acceptance remain
-separate validation work.
+Current release candidate: `3.2.6-sr94.2` implements domain restrictions and
+idempotent link creation. API, concurrency, restart and desktop/mobile tests have
+passed; the checkbox stays open until publication and production validation.
+Continue with link lifecycle controls after those gates. PostgreSQL/MySQL and
+human MFA acceptance remain separate validation work.
