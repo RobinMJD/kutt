@@ -1,0 +1,102 @@
+{{> header}}
+<main class="link-archive library workspaces">
+  <header class="archive-heading"><h1>Workspaces</h1><a href="/settings/library">Personal library</a><a href="/">Links</a></header>
+  {{#if error}}<p class="library-error" role="alert">{{error}}</p>{{/if}}
+  <nav class="workspace-tabs" aria-label="Workspaces"><a href="/settings/workspaces">All workspaces</a>{{#each all.data}}<a href="/settings/workspaces/{{id}}">{{name}}</a>{{/each}}</nav>
+  {{#unless selected}}
+    <form method="post" action="/settings/workspaces" class="workspace-form" aria-label="Create workspace">
+      <input type="hidden" name="operation" value="create" />
+      <label>Workspace name<input name="name" required maxlength="80" /></label><button type="submit" class="primary">Create workspace</button>
+    </form>
+    <h2>Your workspaces</h2><ul class="workspace-list">
+      {{#each all.data}}<li><a href="/settings/workspaces/{{id}}">{{name}}</a><span>{{role}}</span></li>{{else}}<li>No workspaces yet.</li>{{/each}}
+    </ul>
+    <h2>Invitations</h2><ul class="workspace-list">
+      {{#each all.invitations}}<li><div><strong>{{name}}</strong><p>{{owner}} · {{role}}</p></div>
+        <form method="post" action="/settings/workspaces" class="workspace-actions" aria-label="Invitation to {{name}}">
+          <input type="hidden" name="invitation_id" value="{{id}}" />
+          <button name="operation" value="accept" class="primary">Accept</button><button name="operation" value="decline">Decline</button>
+        </form></li>{{else}}<li>No pending invitations.</li>{{/each}}
+    </ul>
+  {{/unless}}
+  {{#with selected}}
+    <header class="archive-heading"><h2>{{name}}</h2><span>{{role}}</span>
+      {{#unless owner}}<form method="post" action="{{@root.action_url}}"><input type="hidden" name="operation" value="remove_member" /><input type="hidden" name="member_id" value="{{membership_id}}" /><button type="submit" data-confirm="Leave this workspace? You will lose access to its shared links.">Leave workspace</button></form>{{/unless}}
+    </header>
+    {{#if owner}}
+      <details class="workspace-manage" {{#if share_q}}open{{/if}}><summary>Workspace and members</summary>
+        <form method="post" action="{{@root.action_url}}" class="workspace-form" aria-label="Rename workspace">
+          <input type="hidden" name="operation" value="rename" /><label>Name<input name="name" value="{{name}}" required maxlength="80" /></label><button type="submit" title="Save name" aria-label="Save workspace name" class="library-icon">{{> icons/check}}</button>
+        </form>
+        <form method="post" action="{{@root.action_url}}" class="workspace-form" aria-label="Invite member">
+          <input type="hidden" name="operation" value="invite" /><label>Account email<input name="email" type="email" required maxlength="255" autocomplete="off" /></label>
+          <label>Role<select name="role" aria-label="Role"><option value="viewer">Viewer</option><option value="editor">Editor</option></select></label><button type="submit">Invite</button>
+        </form>
+        <ul class="workspace-list">{{#each members}}<li><div><strong>{{email}}</strong><p>{{#if accepted}}Member{{else}}Invitation pending{{/if}}{{#if unavailable}} · Account unavailable{{/if}}</p></div>
+          <form method="post" action="{{@root.action_url}}" class="workspace-actions" aria-label="Member {{email}}">
+            <input type="hidden" name="member_id" value="{{id}}" /><label>Role<select name="role" aria-label="Role"><option value="viewer" {{#unless editor}}selected{{/unless}}>Viewer</option><option value="editor" {{#if editor}}selected{{/if}}>Editor</option></select></label>
+            <button name="operation" value="role" title="Save role" aria-label="Save role" class="library-icon">{{> icons/check}}</button>
+            <button name="operation" value="remove_member" title="Remove member or invitation" aria-label="Remove member or invitation" class="library-icon" data-confirm="Revoke this workspace membership or invitation?">{{> icons/trash}}</button>
+          </form></li>{{else}}<li>No other members.</li>{{/each}}</ul>
+        <form method="get" action="{{@root.action_url}}" class="workspace-form" aria-label="Find personal link">
+          <label>Find personal link<input type="search" name="share_q" value="{{share_q}}" maxlength="200" /></label><button type="submit">Search</button>
+        </form>
+        <form method="post" action="{{@root.action_url}}" class="workspace-form" aria-label="Share existing link">
+          <input type="hidden" name="operation" value="share" /><label>Personal link<select name="link_id" aria-label="Personal link" required><option value="">Select a link</option>{{#each share_candidates}}<option value="{{id}}">{{#if domain}}{{domain}}/{{/if}}{{address}}</option>{{/each}}</select></label><button type="submit" data-confirm="Share this link's destination and settings with all accepted workspace members? Editors will be able to change it.">Share link</button>
+        </form>
+        <form method="post" action="{{@root.action_url}}" class="workspace-close">
+          <input type="hidden" name="operation" value="close" /><input type="hidden" name="confirm" value="{{id}}" />
+          <button type="submit" data-confirm="Close this workspace and remove all memberships? Links will remain in your personal library and keep redirecting.">Close workspace</button>
+        </form>
+      </details>
+    {{/if}}
+    {{#if editor}}<details class="workspace-manage"><summary>Create shared link</summary>
+      <form method="post" action="{{@root.action_url}}" class="workspace-form" aria-label="Create shared link">
+        <input type="hidden" name="operation" value="create_link" />
+        <label class="workspace-wide">Destination<input name="target" type="url" required maxlength="2040" placeholder="https://example.com/" /></label>
+        <label>Alias<input name="address" maxlength="64" /></label>
+        <label>Domain<select name="domain" aria-label="Domain"><option value="">Default domain</option>{{#each domains}}<option value="{{address}}">{{address}}</option>{{/each}}</select></label>
+        <label>Description<input name="description" maxlength="2040" /></label>
+        <label>Link password<input name="password" type="password" minlength="3" maxlength="64" autocomplete="new-password" /></label>
+        <button type="submit" class="primary">Create link</button>
+      </form>
+    </details>{{/if}}
+    <form class="workspace-form" method="get" action="{{@root.action_url}}" aria-label="Filter shared links">
+      <label>Search<input type="search" name="q" value="{{q}}" maxlength="200" /></label>
+      <label>State<select name="state" aria-label="State"><option value="active" {{#unless trash}}selected{{/unless}}>Active</option><option value="trash" {{#if trash}}selected{{/if}}>Trash</option></select></label><button type="submit">Filter</button>
+    </form>
+    <p>{{total}} links</p><ul class="workspace-links">
+      {{#each data}}<li>
+        <div class="workspace-link-heading"><a href="{{link}}" target="_blank" rel="noopener noreferrer">{{link}}</a><span>{{lifecycle_status}}</span></div>
+        <p class="library-target">{{target}}</p>{{#if description}}<p>{{description}}</p>{{/if}}
+        {{#if password}}<p>Password protected</p>{{/if}}
+        <div class="workspace-actions">
+          <button type="button" data-copy="{{link}}" title="Copy short link" aria-label="Copy short link" class="library-icon">{{> icons/copy}}</button>
+          {{#if can_unshare}}<form method="post" action="{{@root.action_url}}"><input type="hidden" name="operation" value="unshare" /><input type="hidden" name="link_id" value="{{id}}" /><button type="submit" data-confirm="Remove this share? The link will remain in your personal library.">Unshare</button></form>{{/if}}
+          {{#if can_edit}}<form method="post" action="{{@root.action_url}}"><input type="hidden" name="link_id" value="{{id}}" />
+            {{#if trashed}}<button name="operation" value="restore_link">Restore</button>{{else}}<button name="operation" value="trash_link" title="Move to trash" aria-label="Move to trash" class="library-icon" data-confirm="Move this shared link to trash? Its public redirect will stop.">{{> icons/trash}}</button>{{/if}}
+          </form>{{/if}}
+        </div>
+        {{#if can_edit}}{{#unless trashed}}<details class="workspace-edit"><summary>Edit link</summary>
+          <form method="post" action="{{@root.action_url}}" class="workspace-form" aria-label="Edit {{address}}">
+            <input type="hidden" name="operation" value="edit_link" /><input type="hidden" name="link_id" value="{{id}}" /><input type="hidden" name="policy" value="on" />
+            <label class="workspace-wide">Destination<input name="target" type="url" value="{{target}}" required maxlength="2040" /></label>
+            <label>Alias<input name="address" value="{{address}}" required maxlength="64" /></label>
+            <label>Description<input name="description" value="{{description}}" maxlength="2040" /></label>
+            <label>New password<input name="password" type="password" minlength="3" maxlength="64" autocomplete="new-password" /></label>
+            {{#if password}}<label class="workspace-checkbox"><input type="checkbox" name="clear_password" />Remove password</label>{{/if}}
+            <label class="workspace-checkbox"><input name="paused" type="checkbox" {{#if paused}}checked{{/if}} />Paused</label>
+            <label>Start (UTC)<input type="datetime-local" name="starts_at" value="{{starts_at_input}}" step="1" /></label>
+            <label>End (UTC)<input type="datetime-local" name="ends_at" value="{{ends_at_input}}" step="1" /></label>
+            <label>Maximum redirects<input type="number" name="max_visits" min="1" max="2147483647" value="{{max_visits}}" /></label>
+            <button type="submit" class="primary">Save link</button>
+          </form>
+        </details>{{/unless}}{{/if}}
+      </li>{{else}}<li>No matching shared links.</li>{{/each}}
+    </ul>
+    <nav class="archive-nav" aria-label="Shared link pages">{{#if @root.previous}}<a href="{{@root.previous}}">Previous</a>{{/if}}<span>Page {{page}}</span>{{#if @root.next}}<a href="{{@root.next}}">Next</a>{{/if}}</nav>
+  {{/with}}
+  <output id="workspace-notice" role="status" aria-live="polite"></output>
+</main>
+<script src="/scripts/workspaces.js" defer></script>
+{{> footer}}

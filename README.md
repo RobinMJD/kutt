@@ -20,6 +20,8 @@ The [transfer guide](docs/TRANSFER.md) covers CSV/JSON downloads, dry-run import
 alias conflicts, protected links, scoped authorization and retry recovery.
 The [QR guide](docs/QR-CODES.md) covers owner-only PNG/SVG downloads, printing,
 scoped API use and independent decoder/browser validation.
+The [Workspaces guide](docs/WORKSPACES.md) covers accepted invitations,
+owner/editor/viewer permissions, shared-link APIs and non-destructive closure.
 
 Fork CI tests an isolated SQLite database on each main-branch push. Version tags
 matching `v*-sr94.*` publish the tested amd64 image to `ghcr.io/robinmjd/kutt`.

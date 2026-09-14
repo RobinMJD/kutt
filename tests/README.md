@@ -87,3 +87,17 @@ tests, then run `node tests/browser-qr.cjs`. `PLAYWRIGHT_MODULE` and
 The script refuses an already initialized instance, checks desktop/mobile actual
 PNG/SVG downloads with jsQR, renders print mode/PDF, and checks image failure
 recovery. These dependencies are not application runtime dependencies.
+
+## Workspace validation
+
+`workspaces.cjs` is included in the full container suite. It covers accepted
+invitations, roles, revocation, owner/account/domain boundaries, separate API
+scopes, CSRF, transactional edits, alias conflicts, restart and guarded migration
+rollback. `KUTT_TEST_ONLY=workspaces` selects only that focused fixture for local
+debugging; it never replaces the full release suite.
+
+`browser-workspaces.cjs` uses a fresh loopback-only disposable instance and the
+same Playwright environment as the other browser tests. It creates three local
+test accounts and exercises desktop/mobile creation, invitations/acceptance,
+sharing, editing, role changes, trash/restore, clipboard, revocation and closure.
+Public redirects must survive closure. It refuses an initialized instance.

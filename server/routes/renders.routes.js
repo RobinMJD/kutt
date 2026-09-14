@@ -9,6 +9,17 @@ const env = require("../env");
 
 const router = Router();
 
+router.get(["/settings/workspaces", "/settings/workspaces/:id"], require("../handlers/tokens.handler").sessionOnly,
+  asyncHandler(auth.jwtPage), asyncHandler(locals.user), require("../handlers/workspaces.handler").boundary,
+  asyncHandler((req, res) => require("../handlers/workspaces.handler").page(req, res)));
+router.post(["/settings/workspaces", "/settings/workspaces/:id"], require("../handlers/tokens.handler").sessionOnly,
+  asyncHandler(auth.jwtPage), asyncHandler(locals.user), require("../handlers/workspaces.handler").boundary,
+  helpers.rateLimit({ window: 60, limit: 60 }), asyncHandler(require("../handlers/workspaces.handler").submit));
+router.use("/settings/workspaces", (error, req, res, next) => {
+  res.status(error.statusCode || 500);
+  next(error);
+});
+
 router.get("/link/qr/:id", require("../handlers/tokens.handler").sessionOnly,
   asyncHandler(auth.jwtPage), asyncHandler(locals.user), asyncHandler(require("../handlers/qr.handler").page));
 

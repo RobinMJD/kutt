@@ -12,11 +12,16 @@ token in a public client application.
 | `links:update` | Edit the owner's links and [lifecycle policies](LINK-LIFECYCLE.md), restore owned trash |
 | `links:delete` | Move the owner's links to [trash](LINK-HISTORY.md) |
 | `stats:read` | Read statistics for the owner's links |
+| `workspaces:read` | List accepted/owned workspaces and their shared links |
+| `workspaces:write` | Create/edit/trash/restore shared links as a current workspace owner/editor |
 
 Both `/api` and `/api/v2` are supported. Tokens never confer administrator
 privileges. Other routes, account changes, domain administration and token
 management are denied. A cookie cannot elevate a scoped request. Public
 short-link redirects need no token.
+Workspace scopes do not grant membership or personal-link access. Invitations,
+roles and sharing require a session; domain-restricted tokens cannot use workspace
+routes. See [Workspaces](WORKSPACES.md) for the separate authorization model.
 
 ## Management API (session authentication only)
 

@@ -5,6 +5,10 @@ const { CustomError } = require("../utils");
 
 // New API routes are unavailable to scoped tokens unless explicitly allowlisted.
 const routes = [
+  ["GET", /^\/workspaces(?:\/[a-f0-9-]{36})?\/?$/i, "workspaces:read"],
+  ["POST", /^\/workspaces\/[a-f0-9-]{36}\/links(?:\/[a-f0-9-]{36}\/restore)?\/?$/i, "workspaces:write"],
+  ["PATCH", /^\/workspaces\/[a-f0-9-]{36}\/links\/[a-f0-9-]{36}\/?$/i, "workspaces:write"],
+  ["DELETE", /^\/workspaces\/[a-f0-9-]{36}\/links\/[a-f0-9-]{36}\/?$/i, "workspaces:write"],
   ["GET", /^\/transfer\/export\/?$/i, "links:read"],
   ["POST", /^\/transfer\/(?:preview|commit)\/?$/i, "links:create"],
   ["GET", /^\/library\/?$/i, "links:read"],
@@ -74,7 +78,7 @@ function sessionOnly(req, res, next) {
   res.set("Cache-Control", "no-store");
   if (req.apiToken || req.get("X-API-Key") !== undefined ||
       req.body?.apikey !== undefined || req.query.apikey !== undefined) {
-    throw new CustomError("Use your signed-in session to manage API tokens.", 403);
+    throw new CustomError("Use your signed-in session for this operation.", 403);
   }
   if (req.method !== "GET" && req.method !== "HEAD") {
     if (req.get("Sec-Fetch-Site") === "cross-site") throw new CustomError("Invalid request origin.", 403);

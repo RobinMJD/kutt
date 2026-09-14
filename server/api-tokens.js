@@ -7,7 +7,9 @@ const SCOPES = Object.freeze({
   "links:create": "Create links",
   "links:update": "Edit links",
   "links:delete": "Delete links",
-  "stats:read": "Read statistics"
+  "stats:read": "Read statistics",
+  "workspaces:read": "Read joined workspaces",
+  "workspaces:write": "Manage shared workspace links"
 });
 
 const hash = value => createHash("sha256").update(value).digest("hex");
@@ -35,7 +37,7 @@ async function create(userId, input) {
   const name = typeof input.name === "string" ? input.name.trim() : "";
   const scopes = typeof input.scopes === "string" ? [input.scopes] : input.scopes;
   if (!name || name.length > 80) throw new CustomError("Name must be 1 to 80 characters.", 400);
-  if (!Array.isArray(scopes) || !scopes.length || scopes.length > 5 ||
+  if (!Array.isArray(scopes) || !scopes.length || scopes.length > Object.keys(SCOPES).length ||
       scopes.some(scope => typeof scope !== "string" || !Object.hasOwn(SCOPES, scope))) {
     throw new CustomError("Select at least one valid permission.", 400);
   }
