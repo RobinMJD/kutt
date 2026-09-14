@@ -1,7 +1,7 @@
 # Ordered redirect rules
 
-Release `.10` implementation and isolated regression/browser checks are ready.
-Publication and deployment gates remain pending until recorded in the feature roadmap.
+Release `.10` passed publication and deployment checks. Compatibility follow-up
+`.10.1` is being validated before closing the roadmap item.
 
 ## Model
 
@@ -80,9 +80,11 @@ is `400`; ownership/domain denial is `404` or `410`; invalid credentials are `40
 
 Limits: 32 KB serialized policy, 80-character rule names, 20 values per condition
 kind, 10 query conditions, 80-character query keys, 200-character query values,
-2,048-character preview/redirect query, and 2,040-character targets. At least one
+2,048-character preview/rule-enabled redirect query, and 2,040-character targets. At least one
 condition is required per rule. Save/preview application limits are 30/60 requests
 per minute per path/client when enabled; existing WAF controls remain active.
+Default-only links retain the old behavior of ignoring incoming query strings,
+including password forms; `.10.1` corrects that compatibility edge case in `.10`.
 
 ## Persistence and recovery
 

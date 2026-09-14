@@ -137,4 +137,10 @@ async function resolve(req, link, suppliedQuery) {
   }
   return result.target;
 }
-module.exports = { normalize, queryString, previewContext, context, choose, storedPolicy, policy, owned, checkTargets, save, resolve };
+async function protectedQuery(req, link) {
+  const { rules } = await policy(link.id);
+  // Legacy protected links ignore incoming queries. Do not impose a new
+  // routing-input limit on links that do not use routing at all.
+  return rules.length ? queryString(new URL(req.originalUrl, "http://local.invalid").search) : "";
+}
+module.exports = { normalize, queryString, previewContext, context, choose, storedPolicy, policy, owned, checkTargets, save, resolve, protectedQuery };

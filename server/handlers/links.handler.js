@@ -539,7 +539,7 @@ async function redirect(req, res, next) {
     res.render("protected", {
       title: "Protected short link",
       id: link.uuid,
-      routing_query: require("../link-routing").queryString(new URL.URL(req.originalUrl, "http://local.invalid").search)
+      routing_query: await require("../link-routing").protectedQuery(req, link)
     });
     return;
   }

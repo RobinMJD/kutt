@@ -25,6 +25,13 @@ module.exports = async ({ request, session, database, account, restart, root, di
     assert.equal((await request("GET", "/link/routing/" + link.id)).status, 401);
     response = await request("GET", api, undefined, session);
     assert.deepEqual(await response.json(), { revision: 0, rules: [], fallback });
+    db.prepare("UPDATE links SET password=? WHERE uuid=?").run(require("bcryptjs").hashSync("legacy-password", 4), link.id);
+    response = await request("GET", "/" + address + "?legacy=" + "x".repeat(2500), undefined, undefined, { Accept: "text/html" });
+    assert.equal(response.status, 200, "Default-only protected links must keep ignoring legacy query strings");
+    assert.match(await response.text(), /name="routing_query" value=""/);
+    response = await request("POST", "/api/links/" + link.id + "/protected", { password: "legacy-password" }, undefined, { "User-Agent": ua });
+    assert.equal((await response.json()).target, fallback);
+    db.prepare("UPDATE links SET password=NULL WHERE uuid=?").run(link.id);
     await put(rules);
     response = await request("GET", "/" + address + "?campaign=winter&campaign=summer", undefined, undefined, { "User-Agent": ua, "Accept-Language": "fr-FR" });
     assert.equal(response.status, 302); assert.equal(response.headers.get("location"), rules[0].target);
@@ -112,6 +119,7 @@ module.exports = async ({ request, session, database, account, restart, root, di
     assert.equal((await (await request("GET", api, undefined, session)).json()).revision, revision);
     await restart(); assert.deepEqual((await (await request("GET", api, undefined, session)).json()).rules, rules);
     db.prepare("UPDATE links SET password=? WHERE uuid=?").run(require("bcryptjs").hashSync("secret-route", 4), link.id);
+    assert.equal((await request("GET", "/" + address + "?campaign=" + "x".repeat(2500))).status, 400, "Active routing still bounds its query input");
     response = await request("GET", "/" + address + "?campaign=summer", undefined, undefined, { Accept: "text/html" });
     assert.equal(response.status, 200); const html = await response.text(); assert.match(html, /name="routing_query" value="campaign(?:=|&#x3D;)summer"/);
     assert(!html.includes(rules[0].target));
