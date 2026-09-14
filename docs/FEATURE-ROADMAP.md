@@ -34,13 +34,38 @@ secrets, local configuration or application data.
 - [x] Analytics date ranges, exports, tag summaries and consistent bot filtering (`v3.2.6-sr94.11`, deployed and verified 2026-09-14).
 - [x] Per-link tracking opt-outs and configurable analytics retention (`v3.2.6-sr94.12`, deployed and verified 2026-09-14).
 - [x] Signed asynchronous webhooks and authenticated live updates (`v3.2.6-sr94.13`, deployed and verified 2026-09-14).
-- [ ] Multi-segment aliases and allowlisted query/path forwarding.
+- [x] Multi-segment aliases and allowlisted query/path forwarding (`v3.2.6-sr94.14.1`, deployed and verified 2026-09-14).
 - [ ] SSRF-safe destination health checks and actionable monitoring.
 - [ ] Scoped-token iOS Shortcut example.
 
 Unicode aliases and extra database engines are optional follow-ups. Each item
 needs tests and migration/rollback notes before completion. No feature-bundle
 upstream PR has been submitted yet.
+
+## Fourteenth deployment evidence
+
+- [Published release](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.14.1)
+  and [passing release CI](https://github.com/RobinMJD/kutt/actions/runs/34850132212).
+  Source commit `9ed67e2`; main CI also passed. Source image digest:
+  `sha256:692c9ab3aa8397b2de217d54003fbe715dfa1966065302eb1a21ca2b0efa16f4`.
+- Full source and exact-wrapper regressions passed, including nested aliases,
+  child/tombstone precedence, bounded allowlists, query precedence, protected and
+  Basic/HEAD/routing/quota paths, authorization, conflicts, restart, transfer and
+  guarded downgrade. Exact-image desktop/mobile controls and protected forwarding
+  passed with reviewed screenshots, no overflow and no browser errors.
+- The `.14` public test exposed CRS 930120 matching the JSON field name
+  `forwarding_path`. `.14.1` uses `suffix_path`, retains legacy application
+  compatibility and rejects conflicting fields. No WAF rule was relaxed.
+- Fresh NAS backup was byte-restored, migrated and write-tested on the exact
+  wrapper. Original record fingerprints, integrity and foreign keys are unchanged.
+  Full public regression and real Authentik signed logout/replay passed. Disposable
+  fixtures were removed; a clean post-release backup was copied to NAS.
+- Two post-restart samples passed: exact image, healthy/zero restarts, three
+  fresh probes and no Kutt alerts, failed units or unhealthy containers. Whole-lab
+  validation passed with existing unrelated warnings. Scan: zero critical/high,
+  six medium and one low, retained for the final security pass.
+- Preserve the new policy tables and aliases on recovery. Older images cannot
+  safely route this database; see [forwarding recovery](FORWARDING.md).
 
 ## Thirteenth deployment evidence
 

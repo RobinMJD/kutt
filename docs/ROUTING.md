@@ -22,7 +22,8 @@ conditions are all ANDed. Rules are routing preferences, never access controls.
 - Query keys/values are decoded with URLSearchParams and are case-sensitive.
   `present` includes empty values, `absent` excludes all occurrences, and
   `equals` matches any duplicate occurrence equal to the given literal value.
-  There are no regular expressions or scripts. Query data is not forwarded.
+  There are no regular expressions or scripts. Query data is not forwarded
+  unless the owner separately enables explicit [forwarding allowlists](FORWARDING.md).
 
 Targets are absolute HTTP(S) URLs without embedded credentials. Destination
 validation/ban checks run before saving, outside the write transaction. No
