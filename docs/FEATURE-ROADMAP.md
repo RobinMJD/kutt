@@ -25,7 +25,7 @@ secrets, local configuration or application data.
 
 - [x] Tags, collections, saved filters and ownership-safe bulk actions (`v3.2.6-sr94.6.1`, deployed and verified 2026-09-14).
 - [x] CSV/JSON import/export with dry run and explicit alias-conflict handling (`v3.2.6-sr94.7`, deployed and verified 2026-09-14).
-- [ ] QR code PNG/SVG export and print.
+- [x] QR code PNG/SVG export and print (`v3.2.6-sr94.8.1`, deployed and verified 2026-09-14).
 - [ ] Shared workspaces with owner/editor/viewer permissions.
 
 ## Advanced routing and operations
@@ -171,6 +171,32 @@ upstream PR has been submitted yet.
   passed with pre-existing unrelated environment-template warnings. Wrapper scan:
   zero critical/high, six medium and one low; WAF/SSO/isolation unchanged.
 
+## Eighth deployment evidence
+
+- [Published release](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.8.1)
+  and [passing CI](https://github.com/RobinMJD/kutt/actions/runs/34815596416).
+- Source digest: `sha256:2eb264bea9aa1b2b2f79f395bd89e893b35cd82a6f8d056d18c6470ceb281720`.
+  Immutable `.8` failed release CI before image publication/deployment because
+  the QR library rounded certain PNG dimensions. `.8.1` fixes it with an exact
+  integer canvas and deterministic regression; the original tag was not reused.
+- Exact hardened-image regressions passed for PNG pixels/quiet zone/dimensions,
+  SVG headers, owner/domain/token/cookie boundaries, password/lifecycle privacy,
+  zero visit side effects and restart/revocation, plus all earlier features.
+- Desktop/mobile navigation, settings, downloads independently decoded with
+  jsQR, print/PDF and image-load failure/recovery passed. Screenshots showed
+  readable, non-overlapping controls. Physical printer/phone acceptance is not
+  inferred from automated browser checks.
+- Fresh NAS restore was byte-verified, migrated and write-tested on the exact
+  release wrapper. A post-release snapshot was copied to NAS. Public HTTPS/WAF
+  tests passed for the QR page, PNG dimensions,
+  SVG attachment and authorization, plus prior features and real Authentik
+  signed logout/replay with revoked-cookie denial.
+- Production healthy, zero restarts, original user/link/identity retained,
+  clean integrity/foreign keys, three green probes and no Kutt alerts or failed
+  units/unhealthy containers after a health interval. Whole-lab validation
+  passed with existing unrelated environment-template warnings. Wrapper scan:
+  zero critical/high, six medium and one low. WAF/SSO/isolation unchanged.
+
 PostgreSQL/MySQL application support and human MFA acceptance remain separate
-validation work; application deployment evidence is for SQLite. QR export and
-print is next.
+validation work; application deployment evidence is for SQLite. Shared workspaces
+are next.
