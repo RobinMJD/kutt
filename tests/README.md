@@ -37,6 +37,9 @@ Coverage:
 - History/trash/restore, retained policies, secret-free audit payloads, pagination,
   ownership/domain/scoped-token boundaries, CSRF, concurrent alias claims,
   retired alias protection and domain/account deletion recovery behavior.
+- Disposable signed OIDC authorization code/PKCE, stable identities and email
+  collision denial, absolute session expiry, logout/replay, private diagnostics,
+  session revocation, bans, provider outage recovery and guarded identity migration.
 
 For rendered lifecycle UI, install Playwright in your test runtime and run
 `tests/browser-lifecycle.cjs` with `KUTT_BROWSER_DISPOSABLE=1` and a loopback
@@ -49,6 +52,10 @@ captures screenshots to `KUTT_EVIDENCE_DIR` (or a fresh temporary directory).
 fresh instance. It exercises delete confirmation, trash, history, restore and
 reload at desktop/mobile sizes, checks public redirects and captures screenshots.
 
-This is not an OIDC provider, SMTP, PostgreSQL, MySQL or browser test. It does
+`tests/browser-security.cjs` uses the same isolation settings on a fresh instance
+to check desktop/mobile security diagnostics, revoke all sessions, copied-cookie
+denial and re-login. The protocol fixture does not require a human IdP login.
+
+This is not a production OIDC provider, SMTP, PostgreSQL or MySQL acceptance test. It does
 not demonstrate compatibility with every persisted database or CPU platform.
 Take a database backup before upgrading an existing deployment.

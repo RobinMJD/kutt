@@ -58,10 +58,8 @@ async function add(params, user) {
     redis.remove.user(user);
   }
   
-  return {
-    ...user,
-    ...data
-  };
+  // Callers mint sessions immediately; include the persisted ID and auth version.
+  return knex("users").where({ email: data.email }).first();
 }
 
 async function update(match, update, methods) {
@@ -75,6 +73,7 @@ async function update(match, update, methods) {
     if (!user) return {};
     
     const updateQuery = trx("users").where("id", user.id);
+    if (update.password !== undefined || update.banned !== undefined) updateQuery.increment("auth_version", 1);
     if (methods?.increments) {
       methods.increments.forEach(columnName => {
         updateQuery.increment(columnName);

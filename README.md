@@ -9,6 +9,11 @@ The first feature release is `v3.2.6-sr94.1`: [scoped API tokens](docs/API-TOKEN
 See the [feature roadmap and release gates](docs/FEATURE-ROADMAP.md) for remaining
 work; it is not a claim that the entire roadmap is implemented.
 
+Identity migration and logout requirements for the OIDC security release are in
+[OIDC security](docs/OIDC-SECURITY.md). Existing accounts need verified bindings;
+do not upgrade an email-based deployment without the documented backup and
+migration procedure.
+
 Fork CI tests an isolated SQLite database on each main-branch push. Version tags
 matching `v*-sr94.*` publish the tested amd64 image to `ghcr.io/robinmjd/kutt`.
 Production deployment is a separate backup/test/approval-controlled operation,

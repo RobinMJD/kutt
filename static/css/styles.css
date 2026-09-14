@@ -2359,6 +2359,16 @@ svg.map path.active { stroke: hsl(261, 46%, 50%); stroke-width: 1.5; }
 }
 
 .link-archive { display: block; text-align: left; width: 100%; max-width: 960px; margin: 2rem auto; padding: 0 1rem; box-sizing: border-box; }
+.account-security { overflow-wrap: anywhere; }
+.account-security hr { margin: 1.5rem 0; }
+.account-security form { align-items: flex-start; }
+.account-security form button { width: auto; max-width: 100%; min-height: 44px; font-size: 14px; }
+.account-security dl { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 0.75rem 1rem; }
+.account-security dd { margin: 0; }
+@media (max-width: 480px) {
+  .account-security dl { grid-template-columns: minmax(0, 1fr); gap: 0.4rem; }
+  .account-security dd { margin-bottom: 0.65rem; }
+}
 .archive-heading, .archive-actions, .archive-nav { display: flex; align-items: center; flex-wrap: wrap; gap: 1rem; }
 .archive-heading h1 { font-size: 26px; margin-right: auto; }
 .link-archive h2 { font-size: 17px; margin: 0 0 0.5rem; }

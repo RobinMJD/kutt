@@ -7,7 +7,8 @@ const Database = require("better-sqlite3");
 module.exports = function ({ root, directory, env }) {
   const filename = path.join(directory, "history-upgrade.sqlite");
   const migrate = action => spawnSync(process.execPath, [path.join(root, "node_modules/knex/bin/cli.js"),
-    "--knexfile", path.join(root, "knexfile.js"), action], {
+    "--knexfile", path.join(root, "knexfile.js"), action,
+    ...(action === "migrate:down" ? ["20260914001000_link_history_trash.js"] : [])], {
     cwd: directory, env: { ...env, DB_FILENAME: filename }, encoding: "utf8", timeout: 60000
   });
   assert.equal(migrate("migrate:latest").status, 0);

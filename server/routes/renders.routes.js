@@ -9,6 +9,9 @@ const env = require("../env");
 
 const router = Router();
 
+router.get("/settings/security", asyncHandler(auth.jwtPage), asyncHandler(locals.user),
+  asyncHandler(require("../handlers/security.handler").status));
+
 router.get("/settings/trash", asyncHandler(auth.jwtPage), asyncHandler(locals.user),
   asyncHandler(require("../handlers/link-history.handler").trash));
 router.get("/link/history/:id", asyncHandler(auth.jwtPage), asyncHandler(locals.user),
@@ -34,7 +37,7 @@ router.get(
   "/login/oidc", 
   locals.viewTemplate("login"),
   auth.featureAccess([env.OIDC_ENABLED]),
-  asyncHandler(auth.jwtLoosePage),
+  asyncHandler(require("../passport").prepareOIDC),
   asyncHandler(auth.oidc),
   asyncHandler(auth.login)
 );

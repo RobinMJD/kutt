@@ -22,6 +22,8 @@ function authenticate(type, error, isStrict, redirect) {
         (err || info instanceof Error) &&
         type === "oidc"
       ) {
+        require("../oidc-client").failure(err?.authCode || info?.authCode);
+        res.status(401).set("Cache-Control", "no-store");
         return next(new CustomError("OIDC authentication failed.", 401));
       };
 
@@ -59,6 +61,7 @@ function authenticate(type, error, isStrict, redirect) {
       }
 
       if (user) {
+        req.authInfo = info || {};
         res.locals.isAdmin = utils.isAdmin(user);
         req.user = {
           ...user,
@@ -70,7 +73,7 @@ function authenticate(type, error, isStrict, redirect) {
         if (info?.exp && req.isHTML && redirect === "page") {
           const diff = Math.abs(differenceInDays(new Date(info.exp * 1000), new Date()));
           if (diff < 6) {
-            const token = utils.signToken(user);
+            const token = utils.signToken(user, info);
             utils.deleteCurrentToken(res);
             utils.setToken(res, token);
           }
@@ -141,7 +144,7 @@ async function createAdminUser(req, res) {
 }
 
 function login(req, res) {
-  const token = utils.signToken(req.user);
+  const token = utils.signToken(req.user, req.authInfo);
 
   if (req.isHTML) {
     utils.setToken(res, token);

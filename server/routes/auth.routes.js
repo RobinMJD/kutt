@@ -10,6 +10,12 @@ const env = require("../env");
 
 const router = Router();
 
+const security = require("../handlers/security.handler");
+const { sessionOnly } = require("../handlers/tokens.handler");
+router.get("/security", sessionOnly, asyncHandler(auth.jwt), asyncHandler(security.status));
+router.post("/revoke-sessions", sessionOnly, asyncHandler(auth.jwt), asyncHandler(security.revoke));
+router.post("/oidc/backchannel", helpers.rateLimit({ window: 60, limit: 60 }), asyncHandler(security.backchannel));
+
 router.post(
   "/login",
   locals.viewTemplate("partials/auth/form"),

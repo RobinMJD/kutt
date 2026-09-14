@@ -99,7 +99,9 @@ async function main() {
     const account = { email: "smoke@example.com", password: randomBytes(32).toString("hex") };
     let response = await request("POST", "/api/v2/auth/create-admin", account);
     assert.equal(response.status, 201, "Admin bootstrap failed");
-    assert((await response.json()).token);
+    const bootstrapToken = (await response.json()).token;
+    assert(bootstrapToken);
+    assert.equal((await request("GET", "/api/v2/links", undefined, bootstrapToken)).status, 200, "Bootstrap must issue a usable session");
     response = await request("POST", "/api/v2/auth/create-admin", account);
     assert.equal(response.status, 400, "A second administrator bootstrap must fail");
     response = await request("POST", "/api/v2/auth/login", account);
@@ -147,7 +149,7 @@ async function main() {
     await require("./link-history.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart });
     const refusedDown = spawnSync(process.execPath, [
       path.join(root, "node_modules/knex/bin/cli.js"),
-      "--knexfile", path.join(root, "knexfile.js"), "migrate:down"
+      "--knexfile", path.join(root, "knexfile.js"), "migrate:down", "20260914001000_link_history_trash.js"
     ], { cwd: directory, env, encoding: "utf8", timeout: 60000 });
     assert.notEqual(refusedDown.status, 0, "Schema rollback must refuse to discard trash/history");
     // Empty schema rollback is a separate disposable database; never erase
@@ -161,6 +163,7 @@ async function main() {
     }
     assert.equal((await request("GET", "/api/v2/links", undefined, token)).status, 200);
     assert.equal((await request("GET", "/api/v2/tokens", undefined, token)).status, 200);
+    await require("./oidc-security.cjs")({ root, directory, env });
     console.log("PASS: additive migration rollback and reapply preserve existing accounts and links");
     console.log("PASS: migrations, SQLite cleanup, bootstrap, login, access control, link CRUD and public redirect");
   } finally {

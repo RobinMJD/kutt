@@ -35,13 +35,17 @@ function isAdmin(user) {
   return user.role === ROLES.ADMIN;
 }
 
-function signToken(user) {
+function signToken(user, context = {}) {
+  const now = Math.floor(Date.now() / 1000);
+  const oidc = context.oi ? { oi: context.oi, os: context.os || null, oa: context.oa } : {};
   return JWT.sign(
       {
         iss: "ApiAuth",
         sub: user.id,
-        iat: parseInt((new Date().getTime() / 1000).toFixed(0)),
-        exp: parseInt((addDays(new Date(), 7).getTime() / 1000).toFixed(0))
+        av: Number(user.auth_version || 0),
+        ...oidc,
+        iat: now,
+        exp: context.oi ? Math.min(now + 7 * 86400, Math.floor(context.oa / 1000) + env.OIDC_SESSION_MAX_SECONDS) : now + 7 * 86400
       },
       env.JWT_SECRET
     )

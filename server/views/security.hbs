@@ -1,0 +1,25 @@
+{{> header}}
+<main class="link-archive account-security">
+  <header class="link-archive-heading"><h1>Account security</h1><a href="/settings">Settings</a></header>
+  <h2>Connected identity</h2>
+  {{#each identities}}
+    <p>{{issuer}}</p><p>Linked {{created_at}}</p>
+  {{else}}<p>No OIDC identity linked.</p>{{/each}}
+  <hr />
+  <h2>Browser sessions</h2>
+  <form hx-post="/api/auth/revoke-sessions" hx-swap="none" hx-confirm="Sign out all your browser sessions, including this one? API tokens remain valid.">
+    <button class="primary" type="submit">Sign out all sessions</button>
+  </form>
+  {{#if provider}}
+    <hr /><h2>Authentication diagnostics</h2>
+    <dl>
+      <dt>Provider</dt><dd>{{provider.code}}</dd>
+      <dt>Last ready</dt><dd>{{#if provider.last_ready_at}}{{provider.last_ready_at}}{{else}}Not recorded{{/if}}</dd>
+      <dt>Last provider error</dt><dd>{{#if provider.last_error_at}}{{provider.last_error_at}}{{else}}None recorded{{/if}}</dd>
+      <dt>Last sign-in error</dt><dd>{{#if provider.last_auth_error}}{{provider.last_auth_error}}{{else}}None recorded{{/if}}</dd>
+      <dt>Error time</dt><dd>{{#if provider.last_auth_error_at}}{{provider.last_auth_error_at}}{{else}}Not recorded{{/if}}</dd>
+      <dt>OIDC session limit (seconds)</dt><dd>{{oidc_session_max_seconds}}</dd>
+    </dl>
+  {{/if}}
+</main>
+{{> footer}}
