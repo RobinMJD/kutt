@@ -1,0 +1,22 @@
+{{> header}}
+<main class="integrations-page">
+  <header><h1>Integrations</h1><a href="/settings">Settings</a><a href="/">Links</a></header>
+  <p id="integration-status" role="status" aria-live="polite">Loading...</p>
+  <nav aria-label="Integration actions"><button id="hooks-reload" type="button" title="Reload integrations">{{> icons/reload}} Reload</button><button id="hook-new" type="button">New webhook</button></nav>
+  <section aria-labelledby="hooks-title"><h2 id="hooks-title">Webhooks</h2><div id="hooks-list"></div></section>
+  <section id="hook-editor" hidden>
+    <h2 id="hook-editor-title">New webhook</h2>
+    <form id="hook-form">
+      <label>Name<input name="name" maxlength="80" required /></label>
+      <label>Receiver URL<input name="url" type="url" maxlength="2048" placeholder="https://receiver.example.com/webhook" required /></label>
+      <label class="integration-choice"><input name="enabled" type="checkbox" /> Enabled</label>
+      <fieldset><legend>Events</legend>{{#each event_types}}<label class="integration-choice"><input type="checkbox" name="events" value="{{this}}" checked /> {{this}}</label>{{/each}}</fieldset>
+      <div class="integration-actions"><button type="submit">Save webhook</button><button id="hook-cancel" type="button">Cancel</button></div>
+    </form>
+  </section>
+  <section id="hook-secret" hidden><h2>Signing secret</h2><p>This secret is shown once. Store it securely on the receiver before using the webhook.</p><output id="hook-secret-value"></output><button id="hook-secret-copy" type="button" title="Copy signing secret">{{> icons/copy}} Copy</button><button id="hook-secret-hide" type="button">Dismiss</button></section>
+  <section id="hook-deliveries" hidden><header><h2 id="deliveries-title">Deliveries</h2><button id="deliveries-reload" type="button" title="Reload deliveries">{{> icons/reload}}</button></header><p id="deliveries-status" role="status"></p><div id="deliveries-list"></div><button id="deliveries-older" type="button" hidden>Older deliveries</button></section>
+  <section aria-labelledby="events-title"><header><h2 id="events-title">Live activity</h2><label class="integration-choice"><input id="events-live" type="checkbox" checked /> Live</label><span id="events-status" role="status">Connecting...</span></header><ol id="events-list"></ol></section>
+</main>
+<script src="/scripts/webhooks.js" defer></script>
+{{> footer}}

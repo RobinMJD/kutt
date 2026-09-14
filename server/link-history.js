@@ -32,6 +32,7 @@ async function record(db, link, action, fields = [], actor = {}) {
     link_id: link.id, actor_id: actor.id || null, source: actor.id ? (actor.apiToken ? "api_token" : "session") : "system",
     action, fields: JSON.stringify(fields), created_at: Date.now()
   });
+  await require("./webhooks").record(db, link, action, fields);
 }
 
 async function beforeUpdate(db, link, update, actor) {

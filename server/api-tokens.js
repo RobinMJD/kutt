@@ -9,7 +9,10 @@ const SCOPES = Object.freeze({
   "links:delete": "Delete links",
   "stats:read": "Read statistics",
   "workspaces:read": "Read joined workspaces",
-  "workspaces:write": "Manage shared workspace links"
+  "workspaces:write": "Manage shared workspace links",
+  "webhooks:read": "Read owner-wide webhook configuration and deliveries",
+  "webhooks:write": "Manage owner-wide signed webhooks",
+  "events:read": "Read owner-wide management events"
 });
 
 const hash = value => createHash("sha256").update(value).digest("hex");

@@ -9,6 +9,10 @@ const env = require("../env");
 
 const router = Router();
 const privacy = require("../handlers/privacy.handler");
+router.get("/settings/integrations", require("../handlers/tokens.handler").sessionOnly,
+  asyncHandler(auth.jwtPage), asyncHandler(locals.user), privacy.boundary,
+  asyncHandler(require("../handlers/webhooks.handler").page));
+router.use("/settings/integrations", (error, req, res, next) => { res.status(error.statusCode || 500); next(error); });
 router.get("/link/tracking/:id", require("../handlers/tokens.handler").sessionOnly,
   asyncHandler(auth.jwtPage), asyncHandler(locals.user), privacy.boundary, asyncHandler(privacy.trackingPage));
 router.use("/link/tracking/:id", (error, req, res, next) => { res.status(error.statusCode || 500); next(error); });

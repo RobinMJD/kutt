@@ -5,6 +5,11 @@ const { CustomError } = require("../utils");
 
 // New API routes are unavailable to scoped tokens unless explicitly allowlisted.
 const routes = [
+  ["GET", /^\/webhooks(?:\/[a-f0-9-]{36}\/deliveries)?\/?$/i, "webhooks:read"],
+  ["POST", /^\/webhooks(?:\/[a-f0-9-]{36}\/(?:rotate|retry|test))?\/?$/i, "webhooks:write"],
+  ["PUT", /^\/webhooks\/[a-f0-9-]{36}\/?$/i, "webhooks:write"],
+  ["DELETE", /^\/webhooks\/[a-f0-9-]{36}\/?$/i, "webhooks:write"],
+  ["GET", /^\/events\/?$/i, "events:read"],
   ["GET", /^\/links\/([a-f0-9-]{36})\/tracking\/?$/i, "links:read"],
   ["PUT", /^\/links\/([a-f0-9-]{36})\/tracking\/?$/i, "links:update"],
   ["GET", /^\/analytics\/?$/i, "stats:read"],

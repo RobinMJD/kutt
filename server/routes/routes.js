@@ -19,6 +19,8 @@ const apiRouter = Router();
 apiRouter.use(locals.noLayout);
 apiRouter.use(asyncHandler(tokenHandlers.authenticate));
 apiRouter.use("/tokens", tokens);
+apiRouter.use("/webhooks", require("./webhooks.routes"));
+apiRouter.use("/events", require("./events.routes"));
 apiRouter.use("/analytics", require("./analytics.routes"));
 apiRouter.use("/domains", domains);
 apiRouter.use("/health", health);
