@@ -51,6 +51,7 @@ async function main() {
       "--knexfile", path.join(root, "knexfile.js"), "migrate:latest"
     ], { cwd: directory, env, encoding: "utf8", timeout: 60000 });
     assert.equal(migrate.status, 0, `Migrations failed: ${migrate.stderr}`);
+    require("./history-migration.cjs")({ root, directory, env });
 
     // Exercise native binding cleanup in a separate process too. A module can
     // load and answer queries yet abort while its Node environment tears down.
@@ -118,8 +119,7 @@ async function main() {
     response = await request("DELETE", `/api/v2/links/${link.id}`, undefined, token);
     assert([200, 204].includes(response.status), "Link deletion failed");
     response = await request("GET", "/smoke-check");
-    assert.equal(response.status, 302);
-    assert.equal(response.headers.get("location"), "/404");
+    assert.equal(response.status, 410);
     await require("./api-tokens.cjs")({ request, session: token, database: env.DB_FILENAME, account });
     const restart = async () => {
       server.kill("SIGTERM");
@@ -144,20 +144,19 @@ async function main() {
     };
     await require("./token-domains-idempotency.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart });
     await require("./link-lifecycle.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, idempotencySecret: env.JWT_SECRET });
+    await require("./link-history.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart });
     const refusedDown = spawnSync(process.execPath, [
       path.join(root, "node_modules/knex/bin/cli.js"),
       "--knexfile", path.join(root, "knexfile.js"), "migrate:down"
     ], { cwd: directory, env, encoding: "utf8", timeout: 60000 });
-    assert.notEqual(refusedDown.status, 0, "Schema rollback must refuse to discard live policies");
-    const Database = require("better-sqlite3");
-    const policyDb = new Database(env.DB_FILENAME);
-    policyDb.prepare("UPDATE links SET paused = 0, starts_at = NULL, ends_at = NULL, max_visits = NULL").run();
-    policyDb.close();
-    for (const action of ["migrate:down", "migrate:latest"]) {
+    assert.notEqual(refusedDown.status, 0, "Schema rollback must refuse to discard trash/history");
+    // Empty schema rollback is a separate disposable database; never erase
+    // policies or audit records from the populated regression database to pass.
+    for (const action of ["migrate:latest", "migrate:down", "migrate:latest"]) {
       const migration = spawnSync(process.execPath, [
         path.join(root, "node_modules/knex/bin/cli.js"),
         "--knexfile", path.join(root, "knexfile.js"), action
-      ], { cwd: directory, env, encoding: "utf8", timeout: 60000 });
+      ], { cwd: directory, env: { ...env, DB_FILENAME: path.join(directory, "empty-rollback.sqlite") }, encoding: "utf8", timeout: 60000 });
       assert.equal(migration.status, 0, `Token schema rollback/reapply failed: ${migration.stderr}`);
     }
     assert.equal((await request("GET", "/api/v2/links", undefined, token)).status, 200);

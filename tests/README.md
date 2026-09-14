@@ -22,8 +22,7 @@ Coverage:
 - Password authentication.
 - Rejection of anonymous link creation and listing.
 - Authenticated creation, listing and deletion of a short link.
-- Public redirection without credentials, including the missing-link redirect
-  after deletion.
+- Public redirection without credentials, and immediate 410 after moving to trash.
 - Token scopes, expiry, revocation, owner bans, legacy key compatibility,
   cross-user access denial, CSRF and explicit credential precedence over cookies.
 - Domain-restricted list totals, CRUD and statistics; domain deletion, recreation,
@@ -31,10 +30,13 @@ Coverage:
 - Eight concurrent idempotent creates produce one link, replay survives server
   restart, conflicts return 409, expired records are reusable, and failed
   creations roll back their reservations. Stored records contain no raw secrets.
-- Latest additive migration down/up preserves existing accounts and links.
+- Populated schema downgrade refusal and separate empty-database down/up.
 - Lifecycle validation, owner/domain/CSRF checks, concurrent visit caps, password
   flows, HEAD and info semantics, restart persistence, retained expired records
   and guarded policy schema rollback.
+- History/trash/restore, retained policies, secret-free audit payloads, pagination,
+  ownership/domain/scoped-token boundaries, CSRF, concurrent alias claims,
+  retired alias protection and domain/account deletion recovery behavior.
 
 For rendered lifecycle UI, install Playwright in your test runtime and run
 `tests/browser-lifecycle.cjs` with `KUTT_BROWSER_DISPOSABLE=1` and a loopback
@@ -42,6 +44,10 @@ For rendered lifecycle UI, install Playwright in your test runtime and run
 an external installation. The test refuses an initialized app, checks desktop
 and mobile controls, persists/reloads policies, verifies public redirects and
 captures screenshots to `KUTT_EVIDENCE_DIR` (or a fresh temporary directory).
+
+`tests/browser-history.cjs` uses the same isolation settings and a separately
+fresh instance. It exercises delete confirmation, trash, history, restore and
+reload at desktop/mobile sizes, checks public redirects and captures screenshots.
 
 This is not an OIDC provider, SMTP, PostgreSQL, MySQL or browser test. It does
 not demonstrate compatibility with every persisted database or CPU platform.

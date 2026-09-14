@@ -238,7 +238,8 @@ const removeDomainAdmin = [
   queryValidator("links")
     .optional({ nullable: true })
     .customSanitizer(sanitizeCheckbox)
-    .isBoolean(),
+    .isBoolean()
+    .toBoolean(),
 ];
 
 const deleteLink = [

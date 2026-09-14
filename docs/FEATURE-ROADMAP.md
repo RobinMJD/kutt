@@ -88,4 +88,5 @@ upstream PR has been submitted yet.
   WAF, SSO and backend isolation were unchanged.
 
 PostgreSQL/MySQL and human MFA acceptance remain separate validation work;
-deployment evidence is for SQLite. History/trash/restore is the next milestone.
+deployment evidence is for SQLite. History/trash/restore is implemented in candidate
+`.4`; its checkbox remains open until publication and live deployment gates pass.

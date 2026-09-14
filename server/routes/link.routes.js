@@ -8,8 +8,14 @@ const locals = require("../handlers/locals.handler");
 const link = require("../handlers/links.handler");
 const auth = require("../handlers/auth.handler");
 const env = require("../env");
+const history = require("../handlers/link-history.handler");
 
 const router = Router();
+
+router.get("/trash", asyncHandler(auth.apikey), asyncHandler(auth.jwt), asyncHandler(history.trash));
+router.get("/:id/history", asyncHandler(auth.apikey), asyncHandler(auth.jwt), asyncHandler(history.list));
+router.post("/:id/restore", locals.viewTemplate("partials/links/trash_item"),
+  asyncHandler(auth.apikey), asyncHandler(auth.jwt), asyncHandler(history.restore));
 
 router.get(
   "/",

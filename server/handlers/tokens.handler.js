@@ -6,6 +6,9 @@ const { CustomError } = require("../utils");
 // New API routes are unavailable to scoped tokens unless explicitly allowlisted.
 const routes = [
   ["GET", /^\/links\/?$/i, "links:read"],
+  ["GET", /^\/links\/trash\/?$/i, "links:read"],
+  ["GET", /^\/links\/([a-f0-9-]{36})\/history\/?$/i, "links:read"],
+  ["POST", /^\/links\/([a-f0-9-]{36})\/restore\/?$/i, "links:update"],
   ["POST", /^\/links\/?$/i, "links:create"],
   ["PATCH", /^\/links\/([a-f0-9-]{36})\/?$/i, "links:update"],
   ["PATCH", /^\/links\/([a-f0-9-]{36})\/lifecycle\/?$/i, "links:update"],
@@ -42,7 +45,7 @@ async function authenticate(req, res, next) {
   const id = req.path.match(route[1])[1];
   if (id) {
     const owned = await knex("links").where({ uuid: id, user_id: resolved.user.id }).first();
-    if (!owned || (resolved.domainId !== undefined && owned.domain_id !== resolved.domainId)) {
+    if (!owned || (resolved.domainId !== undefined && (owned.domain_id !== resolved.domainId || owned.archived_domain))) {
       return res.status(404).json({ error: "Link was not found." });
     }
   }

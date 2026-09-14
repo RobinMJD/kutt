@@ -115,10 +115,10 @@ async function create(req, res) {
   ]);
   const result = await require("../link-creation").run(req, async db => {
     if (reuse === true || reuse === "true") {
-      const existing = await db("links").where({ target, user_id: req.user.id, domain_id }).first();
+      const existing = await db("links").where({ target, user_id: req.user.id, domain_id }).whereNull("deleted_at").first();
       if (existing) return { status: 200, data: utils.sanitize.link({ ...existing, domain: fetched_domain?.address }) };
     }
-    if (customurl && await db("links").where({ address: customurl, domain_id }).first()) {
+    if (customurl && await db("links").where({ address: customurl, domain_id }).whereNull("deleted_at").first()) {
       const error = "Custom URL is already in use.";
       res.locals.errors = { customurl: error };
       throw new CustomError(error, 400);
@@ -126,7 +126,7 @@ async function create(req, res) {
     const link = await query.link.create({
       password, address: customurl || generatedAddress, domain_id, description,
       target, expire_in, ...req.linkLifecycle, user_id: req.user && req.user.id
-    }, db);
+    }, db, { id: req.user?.id, apiToken: req.apiToken });
     return { status: 201, data: utils.sanitize.link({ ...link, domain: fetched_domain?.address }) };
   });
   if (req.get("Idempotency-Key") !== undefined) {
@@ -160,7 +160,7 @@ async function lifecycle(req, res) {
   Object.assign(res.locals, utils.sanitize.link_html(link));
   const update = linkLifecycle.parse(req.body, link, req.isHTML);
   if (!Object.keys(update).length) throw new CustomError("Provide at least one lifecycle setting.", 400);
-  const [updated] = await query.link.update({ id: link.id, user_id: req.user.id }, update);
+  const [updated] = await query.link.update({ id: link.id, user_id: req.user.id }, update, { id: req.user.id, apiToken: req.apiToken });
   res.set("Cache-Control", "no-store");
   if (req.isHTML) return res.render("partials/links/lifecycle", {
     ...utils.sanitize.link_html(updated), success: "Lifecycle updated."
@@ -246,7 +246,7 @@ async function edit(req, res) {
       ...(target && { target }),
       ...(expire_in && { expire_in }),
       ...((password || password === null) && { password })
-    }
+    }, { id: req.user.id, apiToken: req.apiToken }
   );
 
   if (req.isHTML) {
@@ -339,7 +339,7 @@ async function editAdmin(req, res) {
       ...(target && { target }),
       ...(expire_in && { expire_in }),
       ...((password || password === null) && { password })
-    }
+    }, { id: req.user.id, apiToken: req.apiToken }
   );
 
   if (req.isHTML) {
@@ -355,10 +355,11 @@ async function editAdmin(req, res) {
 };
 
 async function remove(req, res) {
+  require("./link-history.handler").sameOrigin(req);
   const { error, isRemoved, link } = await query.link.remove({
     uuid: req.params.id,
     ...(!req.user.admin && { user_id: req.user.id })
-  });
+  }, { id: req.user.id, apiToken: req.apiToken });
 
   if (!isRemoved) {
     const messsage = error || "Could not delete the link.";
@@ -418,7 +419,7 @@ async function ban(req, res) {
   const tasks = [];
 
   // 2. ban link
-  tasks.push(query.link.update({ uuid: id }, update));
+  tasks.push(query.link.update({ uuid: id }, update, { id: req.user.id }));
 
   const domain = utils.removeWww(URL.parse(link.target).hostname);
 
@@ -443,7 +444,7 @@ async function ban(req, res) {
 
   // 6. ban all of owner's links
   if (req.body.userLinks && link.user_id) {
-    tasks.push(query.link.update({ user_id: link.user_id }, update));
+    tasks.push(query.link.update({ user_id: link.user_id }, update, { id: req.user.id }));
   }
 
   // 7. wait for all tasks to finish
@@ -478,12 +479,15 @@ async function redirect(req, res, next) {
       ? await query.domain.find({ address: host })
       : null;
 
+  if (host !== env.DEFAULT_DOMAIN && !domain) return res.status(404).send("Not found.");
+  if (domain?.banned) return res.redirect("/banned");
+
   // 2. Get link
   const address = req.params.id.replace("+", "");
   const link = await query.link.find({
     address,
     domain_id: domain ? domain.id : null
-  }, { fresh: true });
+  }, { fresh: true, includeTrash: true });
 
   // 3. When no link, if has domain redirect to domain's homepage
   // otherwise redirect to 404
@@ -570,7 +574,7 @@ async function finishRedirect(req, res, link) {
 async function redirectProtected(req, res) {
   // 1. Get link
   const uuid = req.params.id;
-  const link = await query.link.find({ uuid }, { fresh: true });
+  const link = await query.link.find({ uuid }, { fresh: true, includeTrash: true });
 
   // 2. Throw error if no link
   if (!link || !link.password) {

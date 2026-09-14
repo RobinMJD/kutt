@@ -210,8 +210,19 @@ async function totalAdmin(match, params) {
   return typeof count === "number" ? count : parseInt(count);
 }
 
-async function remove(domain) {
-  const deletedDomain = await knex("domains").where("id", domain.id).delete();
+async function remove(domain, { trashLinks = false, actor = {} } = {}) {
+  const deletedDomain = await knex.transaction(async db => {
+    const links = await db("links").where({ domain_id: domain.id });
+    if (links.some(link => link.deleted_at == null) && !trashLinks) {
+      throw new utils.CustomError("This domain has active links. Select link deletion to move them to trash.", 409);
+    }
+    for (const link of links) {
+      await require("../link-history").trash(db, link, actor);
+      await require("../link-history").record(db, link, "domain_removed", [], actor);
+      await db("links").where({ id: link.id }).update({ archived_domain: domain.address, domain_id: null });
+    }
+    return db("domains").where("id", domain.id).delete();
+  });
   
   if (env.REDIS_ENABLED) {
     redis.remove.domain(domain);

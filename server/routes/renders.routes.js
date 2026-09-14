@@ -9,6 +9,11 @@ const env = require("../env");
 
 const router = Router();
 
+router.get("/settings/trash", asyncHandler(auth.jwtPage), asyncHandler(locals.user),
+  asyncHandler(require("../handlers/link-history.handler").trash));
+router.get("/link/history/:id", asyncHandler(auth.jwtPage), asyncHandler(locals.user),
+  asyncHandler(require("../handlers/link-history.handler").list));
+
 // pages
 router.get(
   "/",

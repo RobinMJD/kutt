@@ -52,8 +52,8 @@ do not reset them.
   metadata cannot bypass current controls. Already issued redirects cannot be
   withdrawn from clients.
 - Expired links remain in the database, retain their aliases and can be edited.
-  The old 30-second permanent-deletion cron is removed. Manual deletion remains
-  unchanged until the separate trash/history milestone.
+  The old 30-second permanent-deletion cron is removed. From `.4`, manual deletion
+  moves links to [trash](LINK-HISTORY.md), retaining their policies and history.
 
 ## Deployment and recovery
 

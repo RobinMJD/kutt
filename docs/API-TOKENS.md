@@ -7,10 +7,10 @@ token in a public client application.
 
 | Scope | Allowed operation |
 | --- | --- |
-| `links:read` | List the owner's links |
+| `links:read` | List the owner's links, trash and history |
 | `links:create` | Create links as the owner |
-| `links:update` | Edit the owner's links and [lifecycle policies](LINK-LIFECYCLE.md) |
-| `links:delete` | Delete the owner's links |
+| `links:update` | Edit the owner's links and [lifecycle policies](LINK-LIFECYCLE.md), restore owned trash |
+| `links:delete` | Move the owner's links to [trash](LINK-HISTORY.md) |
 | `stats:read` | Read statistics for the owner's links |
 
 Both `/api` and `/api/v2` are supported. Tokens never confer administrator
@@ -77,6 +77,10 @@ Rotating `JWT_SECRET` makes old request digests fail with 409 until retention
 expires; start a fresh operation only after checking the existing link.
 
 ## Compatibility and rollback
+
+The image-only rollback notes below describe the token releases in isolation.
+They do not override newer [lifecycle](LINK-LIFECYCLE.md) or [trash/history](LINK-HISTORY.md)
+constraints. Current databases must run code that enforces all installed policies.
 
 The additive `20260913190000_api_tokens` migration does not modify users, links
 or existing `users.apikey` values. Legacy keys retain their prior permissions

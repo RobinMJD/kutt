@@ -128,7 +128,7 @@ async function ban(req, res) {
   
   // 3. ban user links
   if (req.body.links) {
-    tasks.push(query.link.update({ user_id: id }, update));
+    tasks.push(query.link.update({ user_id: id }, update, { id: req.user.id }));
   }
   
   // 4. ban user domains

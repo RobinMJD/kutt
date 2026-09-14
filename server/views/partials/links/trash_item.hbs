@@ -1,0 +1,20 @@
+<article class="archive-item" id="trash-{{id}}">
+  {{#if link}}<h2>{{link.link}}</h2><p>{{target}}</p>{{/if}}
+  {{#if restored}}
+    <p class="success" role="status">Restored. {{lifecycle_status}}</p>
+    <a href="/">Back to links</a>
+  {{else}}
+    {{#if deleted_at}}<p>Trashed {{deleted_at}}</p>{{/if}}
+    <div class="archive-actions">
+      <a href="/link/history/{{id}}">History</a>
+      {{#unless banned}}
+        <button type="button" class="primary" hx-post="/api/links/{{id}}/restore"
+          hx-target="closest article" hx-swap="outerHTML" hx-sync="this:drop"
+          hx-confirm="Restore this link with its existing target, password and availability settings?">
+          <span>{{> icons/reload}}</span> Restore
+        </button>
+      {{else}}<p>Banned links cannot be restored.</p>{{/unless}}
+    </div>
+  {{/if}}
+  {{#if error}}<p class="error" role="alert">{{error}}</p>{{/if}}
+</article>

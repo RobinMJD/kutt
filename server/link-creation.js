@@ -7,7 +7,7 @@ const RETENTION_MS = 24 * 60 * 60 * 1000;
 
 async function run(req, operation) {
   const key = req.get("Idempotency-Key");
-  if (key === undefined) return operation(knex);
+  if (key === undefined) return knex.transaction(operation);
   if (!req.user || req.isHTML || !/^[A-Za-z0-9._:-]{8,128}$/.test(key)) {
     throw new CustomError("Idempotency-Key requires an authenticated JSON request and 8-128 safe characters.", 400);
   }
@@ -36,7 +36,7 @@ async function run(req, operation) {
     }
     if (row.response) {
       const link = await db("links").where({ uuid: row.link_uuid, user_id: req.user.id }).first();
-      if (!link || link.banned || (req.apiTokenDomain !== undefined && link.domain_id !== req.apiTokenDomain)) {
+      if (!link || link.deleted_at != null || link.banned || (req.apiTokenDomain !== undefined && link.domain_id !== req.apiTokenDomain)) {
         throw new CustomError("The original link is no longer available. This key cannot recreate it.", 409);
       }
       return { data: JSON.parse(row.response), status: row.status, replayed: true };

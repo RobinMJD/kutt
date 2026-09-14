@@ -2358,6 +2358,18 @@ svg.map path.active { stroke: hsl(261, 46%, 50%); stroke-width: 1.5; }
   #protected form button { margin: 0.75rem 0 0.2rem 0; }
 }
 
+.link-archive { display: block; text-align: left; width: 100%; max-width: 960px; margin: 2rem auto; padding: 0 1rem; box-sizing: border-box; }
+.archive-heading, .archive-actions, .archive-nav { display: flex; align-items: center; flex-wrap: wrap; gap: 1rem; }
+.archive-heading h1 { font-size: 26px; margin-right: auto; }
+.link-archive h2 { font-size: 17px; margin: 0 0 0.5rem; }
+.archive-list { list-style: none; padding: 0; }
+.archive-item { padding: 1.25rem 0; border-bottom: 1px solid #b8c2cc; overflow-wrap: anywhere; }
+.archive-item p { margin: 0.5rem 0; }
+.archive-item time { font-size: 13px; }
+.archive-actions { margin-top: 1rem; }
+.archive-actions button span { display: inline-flex; width: 18px; margin-right: 0.4rem; }
+.archive-nav { margin-top: 1rem; }
+
 @media only screen and (max-width: 640px) {
   table tr.loading-placeholder { justify-content: flex-start; }
   

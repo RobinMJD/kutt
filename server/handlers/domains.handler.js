@@ -86,7 +86,7 @@ async function remove(req, res) {
 
 async function removeAdmin(req, res) {
   const id = req.params.id;
-  const links = req.query.links
+  const links = req.query.links;
 
   const domain = await query.domain.find({ id });
 
@@ -94,11 +94,7 @@ async function removeAdmin(req, res) {
     throw new CustomError("Could not find the domain.", 400);
   }
 
-  if (links) {
-    await query.link.batchRemove({ domain_id: id });
-  }
-  
-  await query.domain.remove(domain);
+  await query.domain.remove(domain, { trashLinks: links === true, actor: { id: req.user.id } });
 
   if (req.isHTML) {
     res.setHeader("HX-Reswap", "outerHTML");
@@ -182,7 +178,7 @@ async function ban(req, res) {
   
   // 4. ban links
   if (req.body.links) {
-    tasks.push(query.link.update({ domain_id: id }, update));
+    tasks.push(query.link.update({ domain_id: id }, update, { id: req.user.id }));
   }
   
   // 5. wait for all tasks to finish

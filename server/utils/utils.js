@@ -68,7 +68,7 @@ function generateRandomPassword() {
 
 async function generateId(query, domain_id) {
   const address = nanoid();
-  const link = await query.link.find({ address, domain_id });
+  const link = await require("../link-history").reserved(address, domain_id);
   if (link) {
     return generateId(query, domain_id)
   };

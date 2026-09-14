@@ -1,7 +1,7 @@
 <div class="content">
-  <h2>Delete link?</h2>
+  <h2>Move link to trash?</h2>
   <p>
-    Are you sure do you want to delete the link &quot;<b>{{link}}</b>&quot;?
+    Stop redirects for &quot;<b>{{link}}</b>&quot;? Its data and alias will be retained.
   </p>
   <div class="buttons">
     <button type="button" hx-on:click="closeDialog()">Cancel</button>
@@ -17,7 +17,7 @@
       hx-select-oob="#dialog-error"
     >
       <span>{{> icons/trash}}</span>
-      Delete
+      Move to trash
     </button>
     {{> icons/spinner}}
   </div>
