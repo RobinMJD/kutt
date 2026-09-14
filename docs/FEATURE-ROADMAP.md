@@ -35,12 +35,39 @@ secrets, local configuration or application data.
 - [x] Per-link tracking opt-outs and configurable analytics retention (`v3.2.6-sr94.12`, deployed and verified 2026-09-14).
 - [x] Signed asynchronous webhooks and authenticated live updates (`v3.2.6-sr94.13`, deployed and verified 2026-09-14).
 - [x] Multi-segment aliases and allowlisted query/path forwarding (`v3.2.6-sr94.14.1`, deployed and verified 2026-09-14).
-- [ ] SSRF-safe destination health checks and actionable monitoring.
+- [x] SSRF-safe destination health checks and actionable monitoring (`v3.2.6-sr94.15`, deployed and verified 2026-09-14).
 - [ ] Scoped-token iOS Shortcut example.
 
 Unicode aliases and extra database engines are optional follow-ups. Each item
 needs tests and migration/rollback notes before completion. No feature-bundle
 upstream PR has been submitted yet.
+
+## Fifteenth deployment evidence
+
+- [Published release](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.15)
+  and [passing release CI](https://github.com/RobinMJD/kutt/actions/runs/34853923934).
+  Source commit `4df2b46`; main CI also passed. Source image digest:
+  `sha256:c62473aa23efe41d9c65f4f304653b883cecdea546993622b45254ed37c9a143`.
+- Full source and exact-wrapper regressions passed: opt-in configuration,
+  owner/domain/token/CSRF boundaries, revisions, leases, crash/restart recovery,
+  stale-result rejection, DNS pinning/private-address denial, bounded HEAD-only
+  checks, classification and unchanged redirect/analytics behavior. Exact-image
+  desktop/mobile workflows passed with reviewed screenshots and no overflow.
+- Fresh NAS backup was byte-restored, migrated and write-tested on the exact
+  wrapper. Original records, integrity and foreign keys remain unchanged.
+  Full public WAF regression, real asynchronous public HTTPS HEAD, and real
+  Authentik signed logout/replay passed. Disposable fixtures were removed; a
+  clean post-release backup was copied to NAS (not separately restored).
+- A restricted periodic collector exports only aggregate metrics. Tested and
+  loaded alerts cover missing/failed collection, stalled worker, attention and
+  overdue checks. All four rules are healthy and inactive after deployment.
+  Repeated health samples passed: healthy/zero restarts, three fresh probes,
+  no Kutt alerts, failed units or unhealthy containers. Whole-lab validation
+  passed with existing unrelated warnings. Scan: zero critical/high, six medium,
+  one low, retained for the final security pass.
+- Recovery must preserve monitor configuration, authorization versions and
+  worker state. Restore isolated before reviewing outbound destinations; see
+  [destination health recovery](DESTINATION-HEALTH.md#migration-and-recovery).
 
 ## Fourteenth deployment evidence
 

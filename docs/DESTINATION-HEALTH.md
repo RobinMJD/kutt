@@ -1,7 +1,7 @@
 # Opt-in destination monitoring
 
-Roadmap item 15. Implementation is a candidate until its publication, restore,
-production and post-restart gates are recorded in FEATURE-ROADMAP.md.
+Roadmap item 15 shipped in `v3.2.6-sr94.15`. Publication, restore, production,
+rendered-UI and post-restart evidence is recorded in [the roadmap](FEATURE-ROADMAP.md).
 
 ## Owner workflow
 
@@ -86,7 +86,7 @@ with its normal `DB_FILENAME`. This read-only SQLite probe emits aggregate JSON:
 `worker_age_seconds` (-1 if never started), `enabled`, `attention`, and `overdue`.
 No IDs or targets are exported. Alert on command failure, age over 180 seconds,
 or nonzero attention/overdue; a negative age is not a healthy zero. The homelab
-adapter and alert evidence are documented separately after deployment.
+adapter and tested alert evidence are documented in the deployment repository.
 
 ## API
 
