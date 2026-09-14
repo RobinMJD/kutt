@@ -1,9 +1,9 @@
 # Kutt fork roadmap
 
 Public redirects stay separate from authenticated management. WAF, native OIDC,
-data and existing integrations must survive each deployment. The feature-series
-upstream PR waits until this series is ready; the dependency-security PR is
-separate.
+data and existing integrations must survive each deployment. The completed
+feature series is submitted in upstream PR #1046; the dependency-security PR is
+separate. Subsequent enhancements are tracked in [the community review](UPSTREAM-PR-REVIEW.md).
 
 ## Release gates
 

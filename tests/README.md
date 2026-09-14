@@ -96,8 +96,18 @@ Use the same fresh loopback/disposable instance procedure as the other browser
 tests, then run `node tests/browser-qr.cjs`. `PLAYWRIGHT_MODULE` and
 `QR_DECODER_MODULE` may point to separately installed test runtimes.
 The script refuses an already initialized instance, checks desktop/mobile actual
-PNG/SVG downloads with jsQR, renders print mode/PDF, and checks image failure
-recovery. These dependencies are not application runtime dependencies.
+PNG/SVG downloads and ClipboardItem PNGs with jsQR, renders print mode/PDF, and
+checks image failure recovery, clipboard denial/retry, conversion errors,
+duplicate clicks and unsupported browsers. Clipboard writes are intercepted;
+the test does not modify the operator's OS clipboard. It also creates its own
+digit-leading email and domain to exercise link/domain admin filters at both
+viewport sizes, waiting for HTMX and the real table fade before screenshots.
+These dependencies are not application runtime dependencies.
+
+`admin-user-filter.cjs` runs in the full offline container suite. It checks
+numeric IDs (including leading zeros), digit-leading email/substring searches,
+unsafe IDs and non-string filters, count/list/pagination parity, rendered HTML,
+and ordinary/scoped credential denial for links and domains.
 
 ## Workspace validation
 

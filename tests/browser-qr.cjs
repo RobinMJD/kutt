@@ -42,6 +42,10 @@ const decode = require(process.env.QR_DECODER_MODULE || "./browser-deps/node_mod
     await context.addCookies([{ name: "token", value: (await bootstrap.json()).token, url: origin }]);
     const creation = await context.request.post(origin + "/api/links", { data: { customurl: "qr-browser-validation", target: "https://192.0.2.1/qr-private-target" }, headers: { Accept: "application/json" } });
     assert.equal(creation.status(), 201); const link = await creation.json();
+    const domain = "qr-browser.example.invalid";
+    assert.equal((await context.request.post(origin + "/api/domains", {
+      data: { address: domain }, headers: { Accept: "application/json" }
+    })).status(), 200);
     page = await context.newPage(); const errors = [];
     page.on("pageerror", error => errors.push(error.message));
     const decodedImage = async (data, type) => {
@@ -120,22 +124,32 @@ const decode = require(process.env.QR_DECODER_MODULE || "./browser-deps/node_mod
       await page.getByRole("link", { name: "Library", exact: true }).click();
       await page.getByRole("link", { name: "QR code", exact: true }).click();
       await page.waitForFunction(() => !document.getElementById("qr-print").disabled);
-      await page.goto(origin + "/admin");
-      const filtered = page.waitForResponse(r => r.url().includes("/api/links/admin?") && r.url().includes("user=12345"));
-      await page.locator("#search_user").fill(account.email);
-      await page.locator("#search_user").press("End");
-      const filteredResponse = await filtered;
-      assert.equal(filteredResponse.status(), 200);
-      assert((await filteredResponse.text()).includes("qr-browser-validation"));
-      await page.waitForFunction(() => !document.querySelector(".htmx-request, .htmx-swapping, .htmx-settling") &&
-        document.querySelector("#main-table-wrapper tbody")?.textContent.includes("qr-browser-validation"));
-      await page.locator("#main-table-wrapper tbody").evaluate(async body => {
-        for (const animation of body.getAnimations({ subtree: true })) await animation.finished;
-      });
-      assert.equal(await page.locator("#main-table-wrapper tbody").evaluate(body => getComputedStyle(body).opacity), "1", "Filtered rows finish fading in");
-      await page.locator("#main-table-wrapper table").evaluate(table => { table.scrollLeft = 0; });
-      assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), mode + " admin page overflow");
-      await page.screenshot({ path: path.join(evidence, `admin-filter-${mode}.png`), fullPage: true });
+      for (const [kind, expected] of [["links", "qr-browser-validation"], ["domains", domain]]) {
+        await page.goto(origin + "/admin");
+        if (kind === "domains") {
+          await page.getByRole("tab", { name: "Domains", exact: true }).click();
+          await page.locator("th.domains-address").waitFor();
+          await page.waitForFunction(() => !document.querySelector(".htmx-request, .htmx-swapping, .htmx-settling"));
+          await page.locator("#main-table-wrapper tbody").evaluate(async body => {
+            for (const animation of body.getAnimations({ subtree: true })) await animation.finished;
+          });
+        }
+        const filtered = page.waitForResponse(r => r.url().includes(`/api/${kind}/admin?`) && r.url().includes("user=12345"));
+        await page.locator("#search_user").fill(account.email);
+        await page.locator("#search_user").press("End");
+        const filteredResponse = await filtered;
+        assert.equal(filteredResponse.status(), 200);
+        assert((await filteredResponse.text()).includes(expected));
+        await page.waitForFunction(expected => !document.querySelector(".htmx-request, .htmx-swapping, .htmx-settling") &&
+          document.querySelector("#main-table-wrapper tbody")?.textContent.includes(expected), expected);
+        await page.locator("#main-table-wrapper tbody").evaluate(async body => {
+          for (const animation of body.getAnimations({ subtree: true })) await animation.finished;
+        });
+        assert.equal(await page.locator("#main-table-wrapper tbody").evaluate(body => getComputedStyle(body).opacity), "1", "Filtered rows finish fading in");
+        await page.locator("#main-table-wrapper table").evaluate(table => { table.scrollLeft = 0; });
+        assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), mode + " admin page overflow");
+        await page.screenshot({ path: path.join(evidence, `admin-${kind}-filter-${mode}.png`), fullPage: true });
+      }
       await page.goto(origin + "/link/qr/" + link.id);
       await page.waitForFunction(() => !document.getElementById("qr-print").disabled);
     }
