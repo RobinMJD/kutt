@@ -5,6 +5,15 @@ const QRCode = require("qrcode");
 const { PNG } = require("pngjs");
 
 module.exports = async ({ request, session, database, account, restart, env }) => {
+  const { renderPNG } = require("../server/qr-image");
+  const fixture = QRCode.create("https://example.invalid/" + "x".repeat(21), { errorCorrectionLevel: "H" });
+  assert.equal(fixture.modules.size, 41, "Deterministic upstream rounding case");
+  for (const size of [128, 255, 256, 300, 512, 1024]) {
+    const image = PNG.sync.read(renderPNG(fixture.modules, size));
+    assert.equal(image.width, size); assert.equal(image.height, size);
+    assert.deepEqual(Array.from(image.data.subarray(-4)), [255, 255, 255, 255]);
+  }
+  for (const size of [0, 127, 128.5, 1025, Infinity]) assert.throws(() => renderPNG(fixture.modules, size));
   const db = new Database(database);
   try {
     const owner = db.prepare("SELECT id FROM users WHERE email=?").get(account.email).id;

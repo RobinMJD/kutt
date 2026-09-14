@@ -40,14 +40,14 @@ async function load(req, res) {
   if (modules.size + 8 > settings.size) {
     throw new CustomError("Choose a larger QR image size.", 400);
   }
-  return { link, url, ...settings };
+  return { link, url, modules, ...settings };
 }
 
 async function download(req, res) {
-  const { link, url, size, level, format } = await load(req, res);
+  const { link, url, modules, size, level, format } = await load(req, res);
   // Never fetch the destination or encode target/password/session data.
   const settings = { width: size, margin: 4, errorCorrectionLevel: level, color: { dark: "#000000ff", light: "#ffffffff" } };
-  const bytes = format === "svg" ? await QRCode.toString(url, { ...settings, type: "svg" }) : await QRCode.toBuffer(url, { ...settings, type: "png" });
+  const bytes = format === "svg" ? await QRCode.toString(url, { ...settings, type: "svg" }) : require("../qr-image").renderPNG(modules, size);
   res.set("Content-Disposition", `attachment; filename="kutt-qr-${link.uuid}.${format}"`);
   if (format === "svg") res.set("Content-Security-Policy", "default-src 'none'; sandbox");
   res.type(format === "svg" ? "image/svg+xml" : "image/png").send(bytes);

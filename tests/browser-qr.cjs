@@ -14,6 +14,12 @@ const decode = require(process.env.QR_DECODER_MODULE || "./browser-deps/node_mod
   const browser = await chromium.launch({ headless: true }); let page;
   try {
     const context = await browser.newContext({ acceptDownloads: true });
+    let ready = false;
+    for (let attempt = 0; attempt < 100; attempt++) {
+      try { if ((await context.request.get(origin + "/api/health")).status() === 200) { ready = true; break; } } catch {}
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    assert(ready, "Disposable instance did not become ready");
     const account = { email: "browser-qr@example.invalid", password: randomBytes(32).toString("hex") };
     const bootstrap = await context.request.post(origin + "/api/auth/create-admin", { data: account, headers: { Accept: "application/json" } });
     assert.equal(bootstrap.status(), 201, "Refuse initialized instances");
@@ -57,6 +63,9 @@ const decode = require(process.env.QR_DECODER_MODULE || "./browser-deps/node_mod
         const pixels = await decodedImage(bytes, format === "PNG" ? "image/png" : "image/svg+xml");
         assert.equal(pixels.width, 256); assert.equal(pixels.height, 256);
       }
+      const large = await context.request.get(origin + `/api/links/${link.id}/qr?size=1024&level=H`);
+      assert.equal(large.status(), 200);
+      assert.equal((await decodedImage(await large.body(), "image/png")).width, 1024, "Exact-size PNG independently decodes at the upper bound");
       await page.evaluate(() => { window.printCalls = 0; window.print = () => { window.printCalls++; }; });
       await page.getByRole("button", { name: "Print", exact: true }).click();
       assert.equal(await page.evaluate(() => window.printCalls), 1);

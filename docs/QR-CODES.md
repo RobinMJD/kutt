@@ -30,8 +30,12 @@ download access to other users' links.
 - Generation is limited to 30 requests/minute per path/client when application
   rate limiting is enabled. The existing WAF is not bypassed.
 
-The server uses [node-qrcode](https://github.com/soldair/node-qrcode) 1.5.4 with
-opaque black/white pixels and a fixed four-module quiet zone. There is no remote
+The server uses [node-qrcode](https://github.com/soldair/node-qrcode) 1.5.4 for
+QR encoding/SVG, and pngjs 7.0.0 to render its matrix on an exact integer canvas.
+The library PNG renderer sometimes rounds 1024 down to 1023 for a 41-module
+symbol. `.8.1` fixes this with a deterministic fixture; the failed `.8` release
+CI prevented that version from being deployed. No tag was moved or reused.
+Images have opaque black/white pixels and a fixed four-module quiet zone. There is no remote
 QR provider or outbound URL fetch. Custom domain protocol follows the same
 `CUSTOM_DOMAIN_USE_HTTPS` behavior as existing links.
 
