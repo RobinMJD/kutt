@@ -26,7 +26,7 @@ secrets, local configuration or application data.
 - [x] Tags, collections, saved filters and ownership-safe bulk actions (`v3.2.6-sr94.6.1`, deployed and verified 2026-09-14).
 - [x] CSV/JSON import/export with dry run and explicit alias-conflict handling (`v3.2.6-sr94.7`, deployed and verified 2026-09-14).
 - [x] QR code PNG/SVG export and print (`v3.2.6-sr94.8.1`, deployed and verified 2026-09-14).
-- [ ] Shared workspaces with owner/editor/viewer permissions.
+- [x] Shared workspaces with owner/editor/viewer permissions (`v3.2.6-sr94.9`, deployed and verified 2026-09-14).
 
 ## Advanced routing and operations
 
@@ -197,6 +197,30 @@ upstream PR has been submitted yet.
   passed with existing unrelated environment-template warnings. Wrapper scan:
   zero critical/high, six medium and one low. WAF/SSO/isolation unchanged.
 
+## Ninth deployment evidence
+
+- [Published release](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.9)
+  and [passing CI](https://github.com/RobinMJD/kutt/actions/runs/34824263532).
+- Source digest: `sha256:4331621a776b505f7b280cc43faefbb49158252ae6a5f31bbf2c110c6a4bc1be`.
+- Exact-wrapper regressions passed owner/editor/viewer roles, accepted invitations,
+  immediate revocation, personal/domain isolation, scoped-token/cookie boundaries,
+  CSRF, concurrent edits, forced transactional rollback, persistence, retained
+  public links after workspace closure and guarded migration downgrade.
+- Desktop/mobile create/invite/accept/share/edit/role/revoke/close workflows passed,
+  including long destinations, clipboard, trash/restore and readable layouts.
+- Fresh NAS backup restore was byte-verified, migrated and write-tested on the
+  exact wrapper. A cleaned post-deployment snapshot was copied to NAS.
+- Public HTTPS tests passed through unchanged WAF/SSO, including workspace roles,
+  scoped writes, revocation and preserved redirects. Authentik signed logout and
+  replay passed. Negative tests initially triggered the existing WAF error-rate
+  ban; only the test-origin/service ban was removed, and tests now share pacing
+  below that threshold. No protection or authorization assertion was disabled.
+- Original user/link/identity retained, clean integrity/foreign keys, no remaining
+  disposable workspaces/accounts, healthy with zero restarts, three green probes,
+  no Kutt alerts or failed units/unhealthy containers. Whole-lab validation passed
+  with existing unrelated environment-template warnings. Grype: zero critical/
+  high, six medium and one low (valid database dated 2026-09-13).
+
 PostgreSQL/MySQL application support and human MFA acceptance remain separate
-validation work; application deployment evidence is for SQLite. Shared workspaces
-are next.
+validation work; application deployment evidence is for SQLite. Ordered routing
+is next.
