@@ -1,0 +1,32 @@
+{{> header}}
+<main class="link-archive privacy-page" data-link="{{link_id}}" data-retention="{{retention}}">
+  <header class="archive-heading"><h1>{{title}}</h1><a href="/settings/analytics">Analytics</a><a href="/">Links</a></header>
+  <p id="privacy-status" role="status" aria-live="polite">Loading...</p>
+  <button id="privacy-reload" type="button" title="Reload settings">{{> icons/reload}} Reload</button>
+  {{#if retention}}
+  <form id="retention-form" hidden>
+    <fieldset><legend>Analytics retention</legend>
+      <label class="privacy-choice"><input type="radio" name="mode" value="keep" checked /> Keep all analytics</label>
+      <label class="privacy-choice"><input type="radio" name="mode" value="expire" /> Delete expired analytics</label>
+      <label id="retention-days-label" hidden>Retention days<input name="days" type="number" min="1" max="36500" step="1" value="365" /></label>
+    </fieldset>
+    <button type="submit">Preview changes</button>
+  </form>
+  <section id="retention-preview" hidden aria-label="Retention preview">
+    <h2>Retention preview</h2><p id="retention-cutoff"></p><p id="retention-count"></p>
+    <p>Deleted analytics cannot be recovered without a backup. Links and lifetime counters are retained.</p>
+    <label class="privacy-choice" id="retention-ack-label"><input type="checkbox" id="retention-ack" /> Permanently delete expired analytics</label>
+    <button type="button" id="retention-save">Apply retention</button>
+  </section>
+  <section id="retention-state" hidden><h2>Last retention run</h2><dl><dt>Completed</dt><dd id="retention-last"></dd><dt>Deleted hourly buckets</dt><dd id="retention-deleted"></dd><dt>Status</dt><dd id="retention-error"></dd></dl></section>
+  {{else}}
+  <h2>{{address}}</h2>
+  <form id="tracking-form" hidden>
+    <label class="privacy-choice"><input type="checkbox" id="tracking-enabled" checked /> Record analytics</label>
+    <p>Turning this off stops new analytics, including displayed visit counts. Existing analytics are retained. Redirect limits and infrastructure logs remain separate.</p>
+    <button type="submit">Save tracking</button>
+  </form>
+  {{/if}}
+</main>
+<script src="/scripts/privacy.js" defer></script>
+{{> footer}}

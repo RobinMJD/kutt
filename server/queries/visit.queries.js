@@ -19,8 +19,11 @@ async function add(params) {
     // Keep the displayed counter and its aggregate in the same transaction.
     // The write also serializes inline workers before reading the hourly bucket.
     const changed = await trx("links").where({ id: data.link_id, user_id: data.user_id, banned: false })
-      .whereNull("deleted_at").increment("visit_count", 1);
+      .whereNull("deleted_at").update({ visit_count: trx.ref("visit_count") });
     if (!changed) return;
+    const tracking = await require("../analytics-privacy").tracking(data.link_id, trx);
+    if (!tracking.enabled || tracking.revision !== (data.tracking_revision ?? 0)) return;
+    await trx("links").where({ id: data.link_id }).increment("visit_count", 1);
     // Create a subquery first that truncates the
     const subquery = trx("visits")
       .select("visits.*")
@@ -72,7 +75,10 @@ async function add(params) {
 }
 
 async function find(match, total) {
-  if (match.link_id && env.REDIS_ENABLED) {
+  // Once retention has been configured, never read/write legacy cache entries:
+  // a concurrent purge must not leave deleted aggregates visible via Redis.
+  const cacheable = match.link_id && env.REDIS_ENABLED && (await require("../analytics-privacy").retention()).revision === 0;
+  if (cacheable) {
     const key = redis.key.stats(match.link_id);
     const cached = await redis.client.get(key);
     if (cached) return JSON.parse(cached);
@@ -185,7 +191,7 @@ async function find(match, total) {
     updatedAt: new Date()
   };
 
-  if (match.link_id && env.REDIS_ENABLED) {
+  if (cacheable) {
     const key = redis.key.stats(match.link_id);
     redis.client.set(key, JSON.stringify(response), "EX", 60);
   }

@@ -11,6 +11,10 @@ const env = require("../env");
 const history = require("../handlers/link-history.handler");
 
 const router = Router();
+const privacy = require("../handlers/privacy.handler");
+router.get("/:id/tracking", asyncHandler(auth.apikey), asyncHandler(auth.jwt), privacy.boundary, asyncHandler(privacy.getTracking));
+router.put("/:id/tracking", asyncHandler(auth.apikey), asyncHandler(auth.jwt), privacy.boundary,
+  helpers.rateLimit({ window: 60, limit: 30 }), asyncHandler(privacy.saveTracking));
 const routing = require("../handlers/routing.handler");
 router.get("/:id/routing", asyncHandler(auth.apikey), asyncHandler(auth.jwt), routing.boundary, asyncHandler(routing.get));
 router.put("/:id/routing", asyncHandler(auth.apikey), asyncHandler(auth.jwt), routing.boundary,

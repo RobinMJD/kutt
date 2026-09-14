@@ -8,6 +8,13 @@ const auth = require("../handlers/auth.handler");
 const env = require("../env");
 
 const router = Router();
+const privacy = require("../handlers/privacy.handler");
+router.get("/link/tracking/:id", require("../handlers/tokens.handler").sessionOnly,
+  asyncHandler(auth.jwtPage), asyncHandler(locals.user), privacy.boundary, asyncHandler(privacy.trackingPage));
+router.use("/link/tracking/:id", (error, req, res, next) => { res.status(error.statusCode || 500); next(error); });
+router.get("/settings/retention", require("../handlers/tokens.handler").sessionOnly,
+  asyncHandler(auth.jwtPage), asyncHandler(locals.user), privacy.boundary, asyncHandler(privacy.retentionPage));
+router.use("/settings/retention", (error, req, res, next) => { res.status(error.statusCode || 500); next(error); });
 router.get("/settings/analytics", require("../handlers/tokens.handler").sessionOnly,
   asyncHandler(auth.jwtPage), asyncHandler(locals.user), require("../handlers/analytics.handler").boundary,
   asyncHandler(require("../handlers/analytics.handler").page));

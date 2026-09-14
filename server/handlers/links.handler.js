@@ -552,14 +552,16 @@ function unavailable(res) {
   return res.status(410).send("This short link is not currently available.");
 }
 
-function recordVisit(req, link) {
+async function recordVisit(req, link) {
   if (req.method !== "HEAD" && link.user_id && visitClassification.human(req.headers["user-agent"])) {
-    queue.visit.add({
-      userAgent: visitClassification.userAgent(req.headers["user-agent"]),
-      ip: req.ip,
-      referrer: req.get("Referrer"),
-      link
-    });
+    try {
+      const policy = await require("../analytics-privacy").tracking(link.id);
+      if (!policy.enabled) return;
+      Promise.resolve(queue.visit.add({
+        userAgent: visitClassification.userAgent(req.headers["user-agent"]),
+        ip: req.ip, referrer: req.get("Referrer"), link, tracking_revision: policy.revision
+      })).catch(() => console.error("Analytics queue unavailable."));
+    } catch { console.error("Analytics tracking policy unavailable; visit not recorded."); }
   }
 
 }
@@ -568,7 +570,7 @@ async function finishRedirect(req, res, link) {
   res.set("Cache-Control", "no-store");
   const target = await require("../link-routing").resolve(req, link);
   if (!await linkLifecycle.allow(link, req.method !== "HEAD")) return unavailable(res);
-  recordVisit(req, link);
+  await recordVisit(req, link);
   return res.redirect(target);
 }
 
@@ -592,7 +594,7 @@ async function redirectProtected(req, res) {
   res.set("Cache-Control", "no-store");
   const target = await require("../link-routing").resolve(req, link, req.body.routing_query);
   if (!await linkLifecycle.allow(link, true)) return unavailable(res);
-  recordVisit(req, link);
+  await recordVisit(req, link);
 
   // 5. Send target
   if (req.isHTML) {

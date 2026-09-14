@@ -12,7 +12,7 @@ const validators = require("./handlers/validators.handler");
 
 const TTL = 20 * 60 * 1000, RETENTION = 24 * 60 * 60 * 1000;
 const MAX_ROWS = 100, MAX_BYTES = 900000;
-const fields = ["address", "target", "domain", "description", "paused", "starts_at", "ends_at", "max_visits", "redirect_count", "expires_at", "deleted_at", "password_required", "tags", "collections", "routing_rules"];
+const fields = ["address", "target", "domain", "description", "paused", "starts_at", "ends_at", "max_visits", "redirect_count", "expires_at", "deleted_at", "password_required", "tags", "collections", "routing_rules", "tracking_enabled"];
 const fail = (message, status = 400) => { throw new utils.CustomError(message, status); };
 const digest = value => createHmac("sha256", env.JWT_SECRET).update("kutt-transfer-v1\0" + JSON.stringify(value)).digest("hex");
 const scope = req => req.apiTokenDomain === undefined ? "all" : req.apiTokenDomain === null ? "default" : req.apiTokenDomain;
@@ -40,7 +40,7 @@ function read(input) {
         if (row.cell_encoding && row.cell_encoding !== "apostrophe-v1") fail("Unsupported CSV cell encoding.");
         if (row.cell_encoding) for (const key of Object.keys(row)) row[key] = decodeCell(row[key]);
         delete row.cell_encoding;
-        for (const key of ["paused", "password_required", "banned"]) {
+        for (const key of ["paused", "password_required", "banned", "tracking_enabled"]) {
           if (row[key] === undefined || row[key] === "") delete row[key];
           else if (["true", "false"].includes(row[key])) row[key] = row[key] === "true";
           else fail("CSV booleans must be true or false.");
@@ -86,6 +86,7 @@ function normalized(input) {
   const domain = input.domain == null || input.domain === "" ? env.DEFAULT_DOMAIN : input.domain;
   if (typeof domain !== "string" || domain.length > 253 || domain !== domain.trim()) fail("Invalid domain.");
   if (input.password_required !== undefined && typeof input.password_required !== "boolean") fail("password_required must be boolean.");
+  if (input.tracking_enabled !== undefined && typeof input.tracking_enabled !== "boolean") fail("tracking_enabled must be boolean.");
   if (input.password_required && !input.password) fail("Protected link requires an explicit replacement password.");
   if (input.password != null && input.password !== "" && (typeof input.password !== "string" || input.password.length < 3 || input.password.length > 64)) fail("Password must be 3 to 64 characters.");
   const policy = lifecycle.parse(input);
@@ -93,7 +94,7 @@ function normalized(input) {
   if (!Number.isSafeInteger(count) || count < 0 || count > 2147483647) fail("Invalid redirect count.");
   const row = { address: input.address, target: input.target, domain: domain.toLowerCase(), description: input.description || null,
     paused: policy.paused || false, starts_at: policy.starts_at ?? null, ends_at: policy.ends_at ?? null,
-    max_visits: policy.max_visits ?? null, redirect_count: count,
+    max_visits: policy.max_visits ?? null, redirect_count: count, tracking_enabled: input.tracking_enabled ?? true,
     expires_at: timestamp(input.expires_at, "expires_at"), deleted_at: timestamp(input.deleted_at, "deleted_at"), password: input.password || null };
   for (const field of ["tags", "collections"]) {
     const names = input[field] == null ? [] : input[field];
@@ -125,6 +126,7 @@ async function plan(db, req, input, id, fixedAliases) {
       }
       if (req.apiTokenDomain !== undefined && domainId !== req.apiTokenDomain) fail("Token does not permit this domain.", 403);
       if (row.routing_rules.length && token && !JSON.parse(token.scopes).includes("links:update")) fail("Routing rules require links:update permission.", 403);
+      if (!row.tracking_enabled && token && !JSON.parse(token.scopes).includes("links:update")) fail("Tracking opt-outs require links:update permission.", 403);
       for (const label of labelsFor(row)) {
         if (token && !JSON.parse(token.scopes).includes("links:update")) fail("Organization requires links:update permission.", 403);
         if (req.apiTokenDomain !== undefined && !labels.some(item => item.kind === label.kind && item.name_key === label.name.toLowerCase())) fail("A domain-limited token cannot create account labels.", 403);
@@ -244,6 +246,7 @@ async function commit(req) {
       await db("links").where({ id: link.id }).update({ password: row.password ? passwords.get(row.password) : null,
         redirect_count: row.redirect_count, deleted_at: row.deleted_at });
       if (row.routing_rules.length) await db("link_routing").insert({ link_id: link.id, rules: JSON.stringify(row.routing_rules), revision: 1 });
+      if (!row.tracking_enabled) await db("link_tracking").insert({ link_id: link.id, enabled: false, revision: 1 });
       for (const label of labelsFor(row)) {
         const match = { user_id: req.user.id, kind: label.kind, name_key: label.name.toLowerCase() };
         let existing = await db("library_labels").where(match).first();
@@ -275,12 +278,16 @@ async function exportLinks(req) {
   const routing = require("./link-routing"), policies = new Map();
   const stored = links.length ? await knex("link_routing").whereIn("link_id", links.map(row => row.id)) : [];
   for (const row of stored) policies.set(row.link_id, routing.storedPolicy(row).rules);
+  const tracking = new Map();
+  for (const row of links.length ? await knex("link_tracking").whereIn("link_id", links.map(row => row.id)) : []) {
+    tracking.set(row.link_id, require("./analytics-privacy").trackingValue(row).enabled);
+  }
   const rows = links.map(row => {
     const policy = lifecycle.describe(row);
     return { id: row.uuid, address: row.address, target: row.target, domain: row.domain || env.DEFAULT_DOMAIN,
       description: row.description || "", paused: !!row.paused, starts_at: policy.starts_at, ends_at: policy.ends_at,
       max_visits: policy.max_visits, redirect_count: policy.redirect_count, expires_at: row.expire_in ? utils.parseDatetime(row.expire_in).toISOString() : null,
-      deleted_at: policy.deleted_at, password_required: !!row.password, banned: !!row.banned, routing_rules: policies.get(row.id) || [],
+      deleted_at: policy.deleted_at, password_required: !!row.password, banned: !!row.banned, routing_rules: policies.get(row.id) || [], tracking_enabled: tracking.get(row.id) ?? true,
       tags: assigned.filter(label => label.link_id === row.id && label.kind === "tag").map(label => label.name),
       collections: assigned.filter(label => label.link_id === row.id && label.kind === "collection").map(label => label.name) };
   });

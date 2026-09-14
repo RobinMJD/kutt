@@ -94,7 +94,7 @@ async function owned(req, db = knex, write = false) {
   if (write) await db("links").where({ uuid: req.params.id, user_id: req.user.id }).update({ target: db.ref("target") });
   const link = await db("links").where({ uuid: req.params.id, user_id: req.user.id }).first();
   if (!link || link.banned || (req.apiTokenDomain !== undefined && (link.domain_id !== req.apiTokenDomain || link.archived_domain))) fail("Link was not found.", 404);
-  if (link.deleted_at || link.archived_domain) fail("Restore this link and domain before managing routing.", 410);
+  if (link.deleted_at || link.archived_domain) fail("Restore this link and domain before managing its settings.", 410);
   const user = await db("users").where({ id: req.user.id, verified: true, banned: false }).first();
   if (!user || Number(user.auth_version || 0) !== Number(req.user.auth_version || 0)) fail("Sign in again.", 401);
   if (link.domain_id && !await db("domains").where({ id: link.domain_id, user_id: user.id, banned: false }).first()) fail("Short domain is unavailable.", 410);

@@ -92,6 +92,9 @@ not a later attempt to create its skipped rows.
 ## Migration and recovery
 
 The optional `routing_rules` field follows [the routing policy format](ROUTING.md).
+The optional boolean `tracking_enabled` preserves [analytics opt-outs](PRIVACY.md).
+It defaults to true for older files; importing false with a token additionally
+requires `links:update`. New exports include it in both CSV and JSON.
 Older files without it remain default-destination-only. Imported policies retain
 their order/conditions and receive a fresh revision of one; all destinations are
 revalidated. An invalid stored policy fails export instead of silently losing it.

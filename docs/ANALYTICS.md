@@ -77,6 +77,10 @@ preserved. Historical aggregates have no raw user agent, so older bot/country
 classification cannot be reconstructed or honestly corrected. New reports include
 those existing aggregates without reclassifying them.
 
+The [privacy controls](PRIVACY.md) add per-link ingestion opt-outs and optional
+administrator-confirmed retention. Defaults preserve existing tracking/data.
+Opt-outs do not alter redirect quotas, and retention keeps lifetime counters.
+
 ## Migration and recovery
 
 `20260914040000_analytics_range_index` adds a composite owner/time/link index to

@@ -14,6 +14,10 @@ module.exports = async function({ data }) {
   if (!classification.human(userAgent)) return;
   const link = await knex("links").where({ id: data.link.id, user_id: data.link.user_id }).first();
   if (!link || link.deleted_at || link.banned || !link.user_id) return;
+  const trackingRevision = data.tracking_revision === undefined ? 0 : data.tracking_revision;
+  if (!Number.isSafeInteger(trackingRevision) || trackingRevision < 0) return;
+  const policy = await require("../analytics-privacy").tracking(link.id);
+  if (!policy.enabled || policy.revision !== trackingRevision) return;
   const owner = await knex("users").where({ id: link.user_id, banned: false, verified: true }).first();
   if (!owner) return;
   const agent = useragent.parse(userAgent);
@@ -29,6 +33,7 @@ module.exports = async function({ data }) {
       os,
       link_id: link.id,
       user_id: link.user_id,
+      tracking_revision: trackingRevision,
       referrer: (referrer && referrer.replace(/\./gi, "[dot]")) || "Direct"
     });
 }

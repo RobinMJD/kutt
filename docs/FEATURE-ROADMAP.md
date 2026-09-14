@@ -271,5 +271,5 @@ upstream PR has been submitted yet.
   high, six medium and one low (valid database dated 2026-09-13).
 
 PostgreSQL/MySQL application support and human MFA acceptance remain separate
-validation work; application deployment evidence is for SQLite. Ordered routing
-is next.
+validation work; application deployment evidence is for SQLite. Unchecked items
+above remain subject to all release gates.

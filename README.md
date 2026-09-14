@@ -22,6 +22,8 @@ The [routing guide](docs/ROUTING.md) covers ordered redirect conditions, preview
 authorization and recovery constraints.
 The [analytics guide](docs/ANALYTICS.md) covers UTC date ranges, tag summaries,
 private exports, bot classification and aggregate compatibility.
+The [privacy guide](docs/PRIVACY.md) covers per-link tracking opt-outs,
+administrator-confirmed retention, queue behavior and safe recovery.
 The [QR guide](docs/QR-CODES.md) covers owner-only PNG/SVG downloads, printing,
 scoped API use and independent decoder/browser validation.
 The [Workspaces guide](docs/WORKSPACES.md) covers accepted invitations,
