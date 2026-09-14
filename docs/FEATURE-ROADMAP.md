@@ -24,7 +24,7 @@ secrets, local configuration or application data.
 ## Everyday management
 
 - [x] Tags, collections, saved filters and ownership-safe bulk actions (`v3.2.6-sr94.6.1`, deployed and verified 2026-09-14).
-- [ ] CSV/JSON import/export with dry run and explicit alias-conflict handling.
+- [x] CSV/JSON import/export with dry run and explicit alias-conflict handling (`v3.2.6-sr94.7`, deployed and verified 2026-09-14).
 - [ ] QR code PNG/SVG export and print.
 - [ ] Shared workspaces with owner/editor/viewer permissions.
 
@@ -148,6 +148,29 @@ upstream PR has been submitted yet.
   failed units/unhealthy containers. Wrapper scan: zero critical/high, six medium
   and one low findings. WAF, SSO, secrets and backend isolation are unchanged.
 
+## Seventh deployment evidence
+
+- [Published release](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.7)
+  and [passing CI](https://github.com/RobinMJD/kutt/actions/runs/34812610404).
+- Source digest: `sha256:d78d0363df77e1e019259ee4d7e2173d322c0ab1e04bd89b6a70f119e069e4e5`.
+- Exact hardened-image tests passed for CSV/JSON round trips, reversible formula
+  escaping, dry-run no-write, signed confirmation, atomic rollback, concurrent
+  retry/restart replay, password/lifecycle preservation and owner/domain/token
+  boundaries. Limits, receipt expiry and guarded downgrade also passed.
+- Desktop/mobile file selection, previews, confirmation, downloads, errors and
+  existing library workflows passed. Screenshots verified readable previews,
+  no overflow or overlapping navigation; no browser runtime errors remained.
+- NAS restore was byte-verified, migrated and write-tested on the exact wrapper,
+  retaining the original user and link. A post-release snapshot was copied to NAS.
+- Live HTTPS/WAF tests passed for import UI, scoped dry run/import/replay,
+  private CSV/JSON exports, imported public redirects and prior feature behavior.
+  Real Authentik-signed logout/replay and revoked-cookie rejection passed.
+- Production healthy, zero restarts, original user/link/identity retained,
+  clean integrity/foreign keys, three green probes and no Kutt alerts or failed
+  units/unhealthy containers after the health interval. Whole-lab validation
+  passed with pre-existing unrelated environment-template warnings. Wrapper scan:
+  zero critical/high, six medium and one low; WAF/SSO/isolation unchanged.
+
 PostgreSQL/MySQL application support and human MFA acceptance remain separate
-validation work; application deployment evidence is for SQLite. CSV/JSON
-import/export is next.
+validation work; application deployment evidence is for SQLite. QR export and
+print is next.
