@@ -23,7 +23,7 @@ secrets, local configuration or application data.
 
 ## Everyday management
 
-- [ ] Tags, collections, saved filters and ownership-safe bulk actions.
+- [x] Tags, collections, saved filters and ownership-safe bulk actions (`v3.2.6-sr94.6.1`, deployed and verified 2026-09-14).
 - [ ] CSV/JSON import/export with dry run and explicit alias-conflict handling.
 - [ ] QR code PNG/SVG export and print.
 - [ ] Shared workspaces with owner/editor/viewer permissions.
@@ -126,6 +126,28 @@ upstream PR has been submitted yet.
   unhealthy containers. Consistent post-release backup copied to the NAS.
   Wrapper scan: zero critical/high, six medium and one low findings.
 
+## Sixth deployment evidence
+
+- [Published release](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.6.1)
+  and [passing CI](https://github.com/RobinMJD/kutt/actions/runs/34810123564).
+- Source digest: `sha256:47b97811699c57097ffa60eb7a1c429067948b4a5393319a407303cd8bfad766`.
+  The immutable `.6` artifact was superseded before deployment to fix archived
+  custom-domain display; `.6.1` includes regression coverage for that case.
+- Exact hardened-image tests passed for labels/collections, saved AND filters,
+  literal search, owner/domain/token/CSRF boundaries, transaction rollback after
+  a forced second-row failure, restart persistence and guarded downgrade.
+- Desktop/mobile creation, assignment, filters, selection, rename, deletion,
+  pause/resume and trash passed. Screenshots showed no overflow or runtime errors.
+- NAS restore was byte-verified, migrated and write-tested on the exact wrapper,
+  retaining the original user and link. A post-release backup was copied to NAS.
+- Live WAF tests passed for native forms, saved filters, scoped bulk operations,
+  domain denial and existing public redirect/token/history/lifecycle behavior.
+  Real Authentik-signed logout and replay passed; revoked cookies were rejected.
+- Production healthy, zero restarts, original user/link/identity retained,
+  integrity and foreign keys clean, three green probes and no Kutt alerts or
+  failed units/unhealthy containers. Wrapper scan: zero critical/high, six medium
+  and one low findings. WAF, SSO, secrets and backend isolation are unchanged.
+
 PostgreSQL/MySQL application support and human MFA acceptance remain separate
-validation work; application deployment evidence is for SQLite. Tags,
-collections, saved filters and bulk actions are next.
+validation work; application deployment evidence is for SQLite. CSV/JSON
+import/export is next.

@@ -1,7 +1,7 @@
 # Library organization and bulk changes
 
-Candidate release `3.2.6-sr94.6.1`. The roadmap remains unchecked until release,
-backup/restore, deployed-image and public-route verification gates pass.
+Release `3.2.6-sr94.6.1`, deployed and verified on 2026-09-14. See the
+[roadmap evidence](FEATURE-ROADMAP.md#sixth-deployment-evidence).
 
 ## Management
 
