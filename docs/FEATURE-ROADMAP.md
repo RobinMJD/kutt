@@ -19,7 +19,7 @@ secrets, local configuration or application data.
 - [x] Token domain restrictions and idempotent link creation (`v3.2.6-sr94.2`, deployed and verified 2026-09-13).
 - [x] Link pause, scheduled start/end, maximum visits and request-time expiry (`v3.2.6-sr94.3`, deployed and verified 2026-09-13).
 - [x] History, trash and restore without silently reusing retired aliases (`v3.2.6-sr94.4`, deployed and verified 2026-09-14).
-- [ ] Stable OIDC identities, access revocation and authentication diagnostics.
+- [x] Stable OIDC identities, access revocation and authentication diagnostics (`v3.2.6-sr94.5`, deployed and verified 2026-09-14).
 
 ## Everyday management
 
@@ -106,5 +106,26 @@ upstream PR has been submitted yet.
   failed units/unhealthy containers or Kutt alerts. Post-deployment backup copied
   to the NAS. Wrapper scan: zero critical/high, six medium and one low.
 
-PostgreSQL/MySQL and human MFA acceptance remain separate validation work;
-deployment evidence is for SQLite. Stable OIDC identity/revocation is next.
+## Fifth deployment evidence
+
+- [Published release](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.5)
+  and [passing CI](https://github.com/RobinMJD/kutt/actions/runs/34807339095).
+- Source digest: `sha256:b77f825babceffcea01035a9a92fd9a54098db8a985f2b5a981fce58e7b9739f`.
+- Exact hardened-image regressions passed for real mock-provider signatures,
+  code/PKCE, stable identities, verified-email collision refusal, revocation,
+  replay, absolute session expiry, ownership/CSRF, outage recovery and guarded
+  downgrade. Desktop/mobile security-page and copied-cookie invalidation passed.
+- NAS backup restore was byte-verified, migrated, identity-bound and write-tested
+  on the exact wrapper. The accompanying provider database dump also restored
+  successfully in an isolated container. Original user and link were preserved.
+- Authentik's real HTTP client delivered signed logout and replay through the
+  public WAF; both returned 200 and the revoked cookie returned 401. Ordinary
+  users could not see administrator diagnostics. Existing public HTTPS smoke
+  tests also passed. No WAF/SSO controls were relaxed.
+- Production healthy, zero restarts, three green probes, no failed units or
+  unhealthy containers. Consistent post-release backup copied to the NAS.
+  Wrapper scan: zero critical/high, six medium and one low findings.
+
+PostgreSQL/MySQL application support and human MFA acceptance remain separate
+validation work; application deployment evidence is for SQLite. Tags,
+collections, saved filters and bulk actions are next.

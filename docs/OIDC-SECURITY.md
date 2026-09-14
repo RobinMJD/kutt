@@ -1,7 +1,7 @@
 # OIDC identity and session security
 
-Candidate release: `3.2.6-sr94.5`. Deployment is not complete until recorded in
-the feature roadmap. This feature does not make short-link redirects private.
+Released and deployed: `3.2.6-sr94.5`; evidence is recorded in the feature
+roadmap. This feature does not make short-link redirects private.
 
 ## Identity and configuration
 
