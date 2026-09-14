@@ -1,7 +1,9 @@
 # Analytics privacy
 
-Implementation candidate `v3.2.6-sr94.12`. The roadmap stays unchecked until the
-publication, backup restore and deployment acceptance gates have passed.
+Released and deployment-verified as `v3.2.6-sr94.12` on 2026-09-14. Source and
+hardened-image tests, desktop/mobile workflows, a fresh NAS backup restore,
+public WAF checks, real Authentik logout and post-restart health checks passed.
+Production retention remains disabled; destructive tests use disposable data.
 
 ## Per-link tracking
 

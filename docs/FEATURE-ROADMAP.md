@@ -32,7 +32,7 @@ secrets, local configuration or application data.
 
 - [x] Ordered device/language/country/query rules with redirect test preview (`v3.2.6-sr94.10.1`, deployed and verified 2026-09-14).
 - [x] Analytics date ranges, exports, tag summaries and consistent bot filtering (`v3.2.6-sr94.11`, deployed and verified 2026-09-14).
-- [ ] Per-link tracking opt-outs and configurable analytics retention.
+- [x] Per-link tracking opt-outs and configurable analytics retention (`v3.2.6-sr94.12`, deployed and verified 2026-09-14).
 - [ ] Signed asynchronous webhooks and authenticated live updates.
 - [ ] Multi-segment aliases and allowlisted query/path forwarding.
 - [ ] SSRF-safe destination health checks and actionable monitoring.
@@ -41,6 +41,33 @@ secrets, local configuration or application data.
 Unicode aliases and extra database engines are optional follow-ups. Each item
 needs tests and migration/rollback notes before completion. No feature-bundle
 upstream PR has been submitted yet.
+
+## Twelfth deployment evidence
+
+- [Published release](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.12)
+  and [passing release CI](https://github.com/RobinMJD/kutt/actions/runs/34838219177).
+  Source commit `1b62772`; main CI also passed. Source image digest:
+  `sha256:619856a003e332d038241530daee5a25b53c7fc0976a408566d8bd63c93881be`.
+- Full source and hardened-image regressions passed: tracking generations,
+  stale/legacy queue handling, transactional policy rechecks, public quotas,
+  owner/domain/token/CSRF boundaries, transfer preservation, signed retention
+  previews, acknowledgement, UTC cutoff, bounded purge rollback/recovery,
+  cache exclusion and guarded downgrade. Desktop/mobile native controls,
+  conflicts, loading, preview, save, error/retry and reload passed with reviewed
+  screenshots and no browser errors or overlapping controls.
+- Fresh NAS pre-release restore was byte-verified, migrated and write-tested on
+  the exact wrapper. Original user/link/identity fingerprints, integrity and
+  foreign keys remain unchanged. All disposable production fixtures were removed.
+- Public WAF tests passed for privacy and all prior features. Real Authentik
+  signed logout/replay and revoked-cookie rejection passed. Retention was only
+  read/previewed in production: days/revision/deleted buckets remain zero.
+- Two post-restart health samples passed: exact image, healthy/zero restarts,
+  three fresh probes, no Kutt alerts, failed units or unhealthy containers.
+  Whole-lab validation passed with existing unrelated template warnings.
+  Clean post-release backup copied to NAS (not separately restored). Wrapper
+  scan: zero critical/high, six medium, one low, retained for final review.
+- Older images ignore privacy policies. Do not image-only roll back after using
+  these controls; see [privacy recovery restrictions](PRIVACY.md#migration-backup-and-rollback).
 
 ## Eleventh deployment evidence
 
