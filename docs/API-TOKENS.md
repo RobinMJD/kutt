@@ -14,6 +14,9 @@ token in a public client application.
 | `stats:read` | Read statistics for the owner's links |
 | `workspaces:read` | List accepted/owned workspaces and their shared links |
 | `workspaces:write` | Create/edit/trash/restore shared links as a current workspace owner/editor |
+| `webhooks:read` | Read the owner's webhook configuration and delivery history, never signing secrets |
+| `webhooks:write` | Create/edit/rotate/delete the owner's webhooks and queue tests/retries |
+| `events:read` | Read the owner's private management-event journal |
 
 Both `/api` and `/api/v2` are supported. Tokens never confer administrator
 privileges. Other routes, account changes, domain administration and token
@@ -22,6 +25,9 @@ short-link redirects need no token.
 Workspace scopes do not grant membership or personal-link access. Invitations,
 roles and sharing require a session; domain-restricted tokens cannot use workspace
 routes. See [Workspaces](WORKSPACES.md) for the separate authorization model.
+Webhook/event scopes are owner-wide and also reject domain-restricted tokens.
+They do not authorize other owners' data, native pages or live SSE streams.
+See [Integrations](WEBHOOKS.md) for delivery and browser-session boundaries.
 
 ## Management API (session authentication only)
 

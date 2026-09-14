@@ -1,7 +1,8 @@
 # Webhooks and live updates
 
-Release candidate `v3.2.6-sr94.13` for roadmap item 13. Publication, recovery and production
-acceptance are not yet complete; the roadmap remains unchecked.
+Released and deployed as `v3.2.6-sr94.13` for roadmap item 13 on 2026-09-14.
+Implementation, CI, exact-image restore and public deployment acceptance passed;
+see [deployment evidence](FEATURE-ROADMAP.md#thirteenth-deployment-evidence).
 
 ## Manage integrations
 

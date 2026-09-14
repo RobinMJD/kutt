@@ -23,10 +23,9 @@ authorization and recovery constraints.
 The [analytics guide](docs/ANALYTICS.md) covers UTC date ranges, tag summaries,
 private exports, bot classification and aggregate compatibility.
 The [privacy guide](docs/PRIVACY.md) covers per-link tracking opt-outs,
-signed retention confirmation and recovery restrictions. The candidate
+signed retention confirmation and recovery restrictions. The
 [integrations guide](docs/WEBHOOKS.md) documents signed webhooks, private live
-updates, delivery retries and receiver verification. Deployment acceptance for
-this next feature is still pending.
+updates, delivery retries, receiver verification and recovery restrictions.
 The [QR guide](docs/QR-CODES.md) covers owner-only PNG/SVG downloads, printing,
 scoped API use and independent decoder/browser validation.
 The [Workspaces guide](docs/WORKSPACES.md) covers accepted invitations,

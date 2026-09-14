@@ -33,7 +33,7 @@ secrets, local configuration or application data.
 - [x] Ordered device/language/country/query rules with redirect test preview (`v3.2.6-sr94.10.1`, deployed and verified 2026-09-14).
 - [x] Analytics date ranges, exports, tag summaries and consistent bot filtering (`v3.2.6-sr94.11`, deployed and verified 2026-09-14).
 - [x] Per-link tracking opt-outs and configurable analytics retention (`v3.2.6-sr94.12`, deployed and verified 2026-09-14).
-- [ ] Signed asynchronous webhooks and authenticated live updates.
+- [x] Signed asynchronous webhooks and authenticated live updates (`v3.2.6-sr94.13`, deployed and verified 2026-09-14).
 - [ ] Multi-segment aliases and allowlisted query/path forwarding.
 - [ ] SSRF-safe destination health checks and actionable monitoring.
 - [ ] Scoped-token iOS Shortcut example.
@@ -41,6 +41,36 @@ secrets, local configuration or application data.
 Unicode aliases and extra database engines are optional follow-ups. Each item
 needs tests and migration/rollback notes before completion. No feature-bundle
 upstream PR has been submitted yet.
+
+## Thirteenth deployment evidence
+
+- [Published release](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.13)
+  and [passing release CI](https://github.com/RobinMJD/kutt/actions/runs/34842758878).
+  Source commit `bf3395f`; main CI also passed. Source image digest:
+  `sha256:5f1aea343bd4e059538ed8a934abf936f6c5c802bc0e430eac6fd649a982d62b`.
+- Source and exact hardened-image suites passed: owner/scoped/domain/CSRF
+  boundaries, transactional outbox, encrypted one-time signing material,
+  HMAC/tamper/replay-age verification, public-only pinned DNS/TLS, retry limits,
+  crash leases, cancellation, restart, private SSE revocation and guarded
+  downgrade. Desktop/mobile editing, delivery history, live events, rotation,
+  conflicts and error/retry passed with reviewed screenshots and no overflow.
+- Fresh NAS backup restore was byte-verified, migrated and write-tested on the
+  exact wrapper. Original user/link/SSO identity fingerprints, integrity and
+  foreign keys are unchanged. All disposable test users/hooks/events were removed.
+- Full public WAF regression passed, including authenticated SSE and real
+  asynchronous synthetic HTTPS 204 delivery. The deliberate loopback receiver
+  was denied by CRS 931100 before application validation; the acceptance test
+  now recognizes that specific WAF denial and verifies no configuration change.
+  No WAF or application protection was weakened. Real Authentik signed logout,
+  replay and revoked-cookie denial passed.
+- Two post-restart health samples passed: exact image, healthy/zero restarts,
+  three fresh probes, no Kutt alerts, failed units or unhealthy containers.
+  Whole-lab validation passed with existing unrelated template warnings.
+  Clean post-release backup copied to NAS (not separately restored). Wrapper
+  scan: zero critical/high, six medium and one low, retained for final review.
+- Restore requires the database and original JWT encryption secret, isolated
+  outbound delivery and receiver-event reconciliation. Image-only downgrade can
+  lose events and ignores new controls; see [recovery restrictions](WEBHOOKS.md#migration-and-recovery).
 
 ## Twelfth deployment evidence
 
