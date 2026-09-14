@@ -112,3 +112,35 @@ same Playwright environment as the other browser tests. It creates three local
 test accounts and exercises desktop/mobile creation, invitations/acceptance,
 sharing, editing, role changes, trash/restore, clipboard, revocation and closure.
 Public redirects must survive closure. It refuses an initialized instance.
+
+## Final roadmap and security validation
+
+The full suite also runs `analytics.cjs`, `privacy.cjs`, `webhooks.cjs`,
+`forwarding.cjs`, `link-health.cjs`, `shortcuts.cjs` and
+`security-regressions.cjs`. Their corresponding `browser-*.cjs` scripts use the
+same fresh loopback fixtures and desktop/mobile evidence directory. Focused
+`KUTT_TEST_ONLY` runs are useful during development but never replace the full
+release regression.
+
+`configuration.cjs` runs early in the full suite: secret-file precedence,
+fail-closed startup, the read-only aggregate monitoring CLI and manifest assets.
+Run `python3 tests/compose-config.py` with Docker Compose installed to render all
+four examples using dummy configuration without starting database services.
+This does not establish PostgreSQL/MariaDB feature parity.
+
+Run `sh tests/redis-smoke.sh kutt-smoke` separately for a new isolated Redis
+container, Bull visit processing and rate-limit persistence across app restarts.
+The harness requires an empty test Redis database and never flushes an existing
+one. It cleans up its own network namespace, processes and containers.
+
+`browser-shortcuts.cjs` validates the exact downloaded artifact, fixed token
+permissions, clipboard wiring (mocked), masking/hiding, error/retry, late-response
+suppression and revocation. `browser-login-origin.cjs` needs an HTTPS loopback
+fixture to test real browser cross-site login rejection and normal secure-cookie
+login. Test-only certificate handling must not be copied into production.
+
+On macOS, `python3 scripts/verify-shortcut.py` checks the signed placeholder
+container against its deterministic action graph without importing or executing
+it. Native Shortcuts execution with dummy fixtures and physical iPhone acceptance
+are separate checks; neither is claimed by headless browser emulation. See
+`examples/IOS-SHORTCUT.md` for private first-import checks.

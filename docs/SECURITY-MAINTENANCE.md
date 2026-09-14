@@ -1,6 +1,6 @@
 # Security maintenance for the final roadmap release
 
-These changes accompany the iOS Shortcut candidate. Publication and deployment
+These changes accompany release `v3.2.6-sr94.16`. Publication and deployment
 are separate gates recorded in [the roadmap](FEATURE-ROADMAP.md).
 
 ## Source-review corrections

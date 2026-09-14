@@ -36,11 +36,45 @@ secrets, local configuration or application data.
 - [x] Signed asynchronous webhooks and authenticated live updates (`v3.2.6-sr94.13`, deployed and verified 2026-09-14).
 - [x] Multi-segment aliases and allowlisted query/path forwarding (`v3.2.6-sr94.14.1`, deployed and verified 2026-09-14).
 - [x] SSRF-safe destination health checks and actionable monitoring (`v3.2.6-sr94.15`, deployed and verified 2026-09-14).
-- [ ] Scoped-token iOS Shortcut example.
+- [x] Scoped-token iOS Shortcut example (`v3.2.6-sr94.16`, deployed and verified 2026-09-15 Europe/Paris).
 
 Unicode aliases and extra database engines are optional follow-ups. Each item
-needs tests and migration/rollback notes before completion. No feature-bundle
-upstream PR has been submitted yet.
+needs tests and migration/rollback notes before completion. The completed feature
+series is submitted as [upstream PR #1046](https://github.com/thedevs-network/kutt/pull/1046)
+on `feature/managed-links-roadmap`; subsequent enhancements stay outside that
+review branch. Maintainer review/merge is not claimed.
+
+## Final Roadmap Deployment Evidence
+
+- [Release .16](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.16)
+  and [passing release CI](https://github.com/RobinMJD/kutt/actions/runs/34905728970).
+  Runtime source is `e5df9b1`; later closure commits change documentation only.
+  Source digest: `sha256:c4288e8344b0a9e8b6d2139e1ce085713601c69d657f573c3f056b7e10834c3c`.
+- Exact hardened wrapper regressions, configuration checks, fresh Redis worker
+  tests and desktop/mobile workflows passed. The optional signed Shortcut is
+  credential-free; native macOS dummy-fixture execution passed. Physical iPhone
+  acceptance remains untested and is not needed to run the server.
+- The final source review produced nine findings, all patched with targeted
+  regression tests. Its recorded coverage is partial, not a claim of exhaustive
+  security certification. Fresh exact-image scanning found zero critical/high
+  and three medium BusyBox package matches for CVE-2025-60876, with no vendor fix
+  listed. Findings were not suppressed; see [security maintenance](SECURITY-MAINTENANCE.md).
+- Consistent pre-release and clean post-release snapshots were copied off-host
+  to NAS, fully restored with byte verification, and migration/integrity/foreign
+  key/write-tested in the exact wrapper. Original secrets were separately
+  preserved; the isolated write checker uses a dummy secret, not live webhook
+  delivery. Original user/link/configuration fingerprints remain unchanged.
+- Full public HTTPS/WAF regression and real Authentik signed logout/replay
+  passed. Disposable fixtures were removed. Public redirects remain public;
+  native OIDC management and WAF protections were not weakened.
+- Two post-restart samples 65 seconds apart passed: exact image, healthy,
+  zero restarts, three fresh probes, no Kutt alerts, failed units or unhealthy
+  containers. Whole-lab validation passed with existing unrelated template
+  warnings. SQLite is fully regression-tested; PostgreSQL/MariaDB configuration
+  validation is not a full feature-parity claim.
+- `.16` adds no migration. Do not roll back across earlier feature migrations
+  without their documented recovery checks. An image-only `.16` to `.15`
+  rollback reintroduces security defects; fix forward where possible.
 
 ## Fifteenth deployment evidence
 

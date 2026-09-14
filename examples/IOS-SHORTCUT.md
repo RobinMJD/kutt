@@ -100,7 +100,7 @@ signed placeholder artifact without importing or executing it, and compare its
 action graph and import questions against the reviewed source. This checks the
 container's embedded-key signature, not an independent Apple CA trust chain.
 
-The candidate has been exercised in native macOS Shortcuts with dummy credentials
+The release template has been exercised in native macOS Shortcuts with dummy credentials
 against a local fixture (successful JSON, API error and cancellation). Browser
 setup has separate desktop/mobile regression tests. Physical iPhone acceptance
 has not been performed; the first private import should follow the checks above.
