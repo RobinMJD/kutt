@@ -22,6 +22,7 @@ apiRouter.use("/tokens", tokens);
 apiRouter.use("/domains", domains);
 apiRouter.use("/health", health);
 apiRouter.use("/links", link);
+apiRouter.use("/library", require("./library.routes"));
 apiRouter.use("/users", user);
 apiRouter.use("/auth", auth);
 

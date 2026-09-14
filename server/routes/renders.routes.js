@@ -9,6 +9,15 @@ const env = require("../env");
 
 const router = Router();
 
+router.get("/settings/library", require("../handlers/tokens.handler").sessionOnly, asyncHandler(auth.jwtPage), asyncHandler(locals.user),
+  asyncHandler((req, res) => require("../handlers/library.handler").page(req, res)));
+router.post("/settings/library", require("../handlers/tokens.handler").sessionOnly, asyncHandler(auth.jwtPage), asyncHandler(locals.user),
+  asyncHandler(require("../handlers/library.handler").submit));
+router.use("/settings/library", (error, req, res, next) => {
+  res.status(error.statusCode || 500);
+  next(error);
+});
+
 router.get("/settings/security", asyncHandler(auth.jwtPage), asyncHandler(locals.user),
   asyncHandler(require("../handlers/security.handler").status));
 

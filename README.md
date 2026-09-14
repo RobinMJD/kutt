@@ -14,6 +14,9 @@ Identity migration and logout requirements for the OIDC security release are in
 do not upgrade an email-based deployment without the documented backup and
 migration procedure.
 
+The [Library guide](docs/LIBRARY.md) covers tags, collections, saved filters,
+ownership-safe bulk actions and their API/migration boundaries.
+
 Fork CI tests an isolated SQLite database on each main-branch push. Version tags
 matching `v*-sr94.*` publish the tested amd64 image to `ghcr.io/robinmjd/kutt`.
 Production deployment is a separate backup/test/approval-controlled operation,

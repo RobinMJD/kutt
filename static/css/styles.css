@@ -2359,6 +2359,56 @@ svg.map path.active { stroke: hsl(261, 46%, 50%); stroke-width: 1.5; }
 }
 
 .link-archive { display: block; text-align: left; width: 100%; max-width: 960px; margin: 2rem auto; padding: 0 1rem; box-sizing: border-box; }
+.library { max-width: 1180px; color: #243f49; }
+.library *, .library *::before, .library *::after { box-sizing: border-box; letter-spacing: 0; }
+.library form { display: block; text-align: left; margin: 0; }
+.library .library-filters, .library .library-inline, .library-toolbar { display: flex; flex-direction: row; align-items: flex-end; flex-wrap: wrap; gap: 0.75rem; }
+.library label { display: flex; flex-direction: column; align-items: stretch; gap: 0.35rem; font-size: 13px; min-width: 0; }
+.library input:not([type="checkbox"]), .library select { width: 100%; min-width: 0; height: 40px; margin: 0; padding: 0.5rem; font-size: 14px; border: 1px solid #9cafb6; border-radius: 4px; background: #fff; color: #243f49; }
+.library select { appearance: auto; }
+.library .library-filters > label { flex: 1 1 140px; }
+.library .library-filters > label:first-child { flex: 2 1 210px; }
+.library button { width: auto; height: 40px; min-height: 40px; margin: 0; padding: 0.4rem 0.8rem; font-size: 14px; white-space: normal; max-width: 100%; }
+.library button:disabled { opacity: 0.45; cursor: default; }
+.library button:not(.primary) { border: 1px solid #9cafb6; border-radius: 4px; background: #fff; color: #243f49; box-shadow: none; }
+.library input[type="checkbox"] { appearance: auto; position: static; width: 20px; height: 20px; margin: 0; accent-color: #087f8c; flex: 0 0 20px; }
+.library .library-checkbox { flex-direction: row; align-items: center; gap: 0.5rem; min-height: 40px; }
+.library [hidden] { display: none !important; }
+.library-saved { display: flex; flex-wrap: wrap; gap: 1rem; margin: 1rem 0; overflow-wrap: anywhere; }
+.library-manage { padding: 1rem 0; border-top: 1px solid #c4d0d4; border-bottom: 1px solid #c4d0d4; margin-bottom: 1.2rem; }
+.library summary { cursor: pointer; font-size: 15px; padding: 0.25rem 0; overflow-wrap: anywhere; }
+.library-manage-grid { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 2rem; margin-top: 1rem; }
+.library-manage-grid section { min-width: 0; }
+.library .library-inline { margin: 0.75rem 0; }
+.library-inline label { flex: 1 1 120px; }
+.library-label-edit { border-top: 1px solid #d8e0e3; padding-top: 0.75rem; }
+.library button.library-icon { flex: 0 0 40px; width: 40px; padding: 10px; border-radius: 4px; }
+.library-icon svg { width: 20px; height: 20px; }
+.library-filter-edit { margin: 0.75rem 0; }
+.library-filter-edit form:last-child { margin-top: 0.5rem; }
+.library-toolbar output { min-width: 85px; font-size: 13px; line-height: 40px; }
+.library-toolbar label:not(.library-checkbox) { flex: 1 1 140px; max-width: 240px; }
+.library-count { font-size: 13px; margin: 1rem 0 0; }
+.library-links { list-style: none; padding: 0; margin: 0; }
+.library-links > li { display: grid; grid-template-columns: 28px minmax(0,1fr) 90px; gap: 0.75rem; padding: 1rem 0; border-bottom: 1px solid #c4d0d4; }
+.library-row-select { align-self: start; padding-top: 2px; }
+.library-link-main { min-width: 0; overflow-wrap: anywhere; }
+.library-link-main p { margin: 0.35rem 0; font-size: 13px; }
+.library-target { color: #506873; }
+.library-link-meta { display: flex; flex-direction: column; gap: 0.4rem; font-size: 12px; overflow-wrap: anywhere; }
+.library-labels { list-style: none; padding: 0; margin: 0.5rem 0 0; display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.library-labels li { padding: 0.15rem 0.4rem; border-radius: 3px; font-size: 12px; max-width: 100%; overflow-wrap: anywhere; }
+.library-label-tag { background: #deeff0; color: #175d62; }
+.library-label-collection { background: #f4e4e8; color: #842748; }
+.library-error { color: #9b2135; border-left: 3px solid #9b2135; padding: 0.75rem; background: #fff; }
+.library-links > li.library-empty { display: block; color: #506873; }
+@media (max-width: 640px) {
+  .library-manage-grid { grid-template-columns: minmax(0,1fr); gap: 1rem; }
+  .library-links > li { grid-template-columns: 24px minmax(0,1fr); }
+  .library-link-meta { grid-column: 2; flex-direction: row; }
+  .library-toolbar label:not(.library-checkbox) { max-width: none; }
+  .library button { min-height: 44px; height: auto; }
+}
 .account-security { overflow-wrap: anywhere; }
 .account-security hr { margin: 1.5rem 0; }
 .account-security form { align-items: flex-start; }

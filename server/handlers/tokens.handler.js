@@ -5,6 +5,11 @@ const { CustomError } = require("../utils");
 
 // New API routes are unavailable to scoped tokens unless explicitly allowlisted.
 const routes = [
+  ["GET", /^\/library\/?$/i, "links:read"],
+  ["POST", /^\/library\/bulk\/?$/i, "links:update"],
+  ["POST", /^\/library\/(?:labels|filters)\/?$/i, "links:update"],
+  ["PATCH", /^\/library\/(?:labels|filters)\/[a-f0-9-]{36}\/?$/i, "links:update"],
+  ["DELETE", /^\/library\/(?:labels|filters)\/[a-f0-9-]{36}\/?$/i, "links:update"],
   ["GET", /^\/links\/?$/i, "links:read"],
   ["GET", /^\/links\/trash\/?$/i, "links:read"],
   ["GET", /^\/links\/([a-f0-9-]{36})\/history\/?$/i, "links:read"],
@@ -39,7 +44,9 @@ async function authenticate(req, res, next) {
   if (!resolved) return res.status(401).json({ error: "Invalid or expired API token." });
   const route = routes.find(([method, pattern]) => method === req.method && pattern.test(req.path));
   const scopes = JSON.parse(resolved.row.scopes);
-  if (!route || !scopes.includes(route[2])) {
+  const requiredScope = route && req.method === "POST" && /^\/library\/bulk\/?$/i.test(req.path) && req.body.action === "trash"
+    ? "links:delete" : route?.[2];
+  if (!route || !scopes.includes(requiredScope)) {
     return res.status(403).json({ error: "API token does not permit this operation." });
   }
   const id = req.path.match(route[1])[1];

@@ -59,3 +59,10 @@ denial and re-login. The protocol fixture does not require a human IdP login.
 This is not a production OIDC provider, SMTP, PostgreSQL or MySQL acceptance test. It does
 not demonstrate compatibility with every persisted database or CPU platform.
 Take a database backup before upgrading an existing deployment.
+# Library regression
+
+`library.cjs` runs with the container smoke suite against disposable data.
+`browser-library.cjs` requires a fresh loopback-only instance and
+`KUTT_BROWSER_DISPOSABLE=1`, `KUTT_TEST_URL` and an installed Playwright module.
+It exercises desktop/mobile organization, selection and bulk actions. Screenshots
+go to a temporary evidence directory, not production data or the repository.
