@@ -149,6 +149,7 @@ async function main() {
     await require("./link-history.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart });
     await require("./library.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, root, directory, env });
     await require("./transfer.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, root, directory, env });
+    await require("./qr.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, env });
     const refusedDown = spawnSync(process.execPath, [
       path.join(root, "node_modules/knex/bin/cli.js"),
       "--knexfile", path.join(root, "knexfile.js"), "migrate:down", "20260914001000_link_history_trash.js"

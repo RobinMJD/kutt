@@ -17,13 +17,9 @@
   >
     {{> icons/chart}}
   </a>
-  <button
-    class="action qrcode"
-    hx-on:click="handleQRCode(this, 'link-dialog')"
-    data-url="{{link.url}}"
-  >
+  <a class="button action qrcode" href="/link/qr/{{id}}" title="QR code" aria-label="QR code">
     {{> icons/qrcode}}
-  </button>
+  </a>
   <button 
     class="action edit"
     hx-trigger="click queue:none"

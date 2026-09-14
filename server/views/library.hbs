@@ -74,7 +74,7 @@
             {{#if description}}<p>{{description}}</p>{{/if}}
             <ul class="library-labels">{{#each labels}}<li class="library-label-{{kind}}">{{name}}</li>{{/each}}</ul>
           </div>
-          <div class="library-link-meta"><span>{{lifecycle_status}}</span><a href="/link/history/{{id}}">History</a></div>
+          <div class="library-link-meta"><span>{{lifecycle_status}}</span><a href="/link/history/{{id}}">History</a>{{#if selectable}}<a href="/link/qr/{{id}}" title="QR code" aria-label="QR code">{{> icons/qrcode}}</a>{{/if}}</div>
         </li>
       {{else}}<li class="library-empty">No matching links.</li>{{/each}}
     </ul>

@@ -75,3 +75,15 @@ owner/domain/token/CSRF limits, atomic rollback and concurrent/restart replay.
 `browser-transfer.cjs` uses the same disposable loopback settings on a fresh
 instance for desktop/mobile file selection, preview, confirmation, downloads,
 conflict correction and validation errors. It never runs against live data.
+
+## QR validation
+
+`qr.cjs` runs in the standard offline hardened-image suite. For independent
+browser decoding install the isolated test-only dependency with
+`npm ci --prefix tests/browser-deps` (never inside the production image).
+Use the same fresh loopback/disposable instance procedure as the other browser
+tests, then run `node tests/browser-qr.cjs`. `PLAYWRIGHT_MODULE` and
+`QR_DECODER_MODULE` may point to separately installed test runtimes.
+The script refuses an already initialized instance, checks desktop/mobile actual
+PNG/SVG downloads with jsQR, renders print mode/PDF, and checks image failure
+recovery. These dependencies are not application runtime dependencies.

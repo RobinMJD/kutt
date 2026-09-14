@@ -9,6 +9,9 @@ const env = require("../env");
 
 const router = Router();
 
+router.get("/link/qr/:id", require("../handlers/tokens.handler").sessionOnly,
+  asyncHandler(auth.jwtPage), asyncHandler(locals.user), asyncHandler(require("../handlers/qr.handler").page));
+
 router.get("/settings/transfer", require("../handlers/tokens.handler").sessionOnly, asyncHandler(auth.jwtPage), asyncHandler(locals.user),
   asyncHandler(require("../handlers/transfer.handler").page));
 

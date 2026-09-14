@@ -1,0 +1,20 @@
+{{> header}}
+<main class="link-archive qr-page">
+  <header class="archive-heading"><h1>QR code</h1><a href="/settings/library">Library</a><a href="/">Links</a></header>
+  <div class="qr-controls">
+    <form method="get" action="/link/qr/{{id}}" aria-label="QR settings">
+      <label>Size (px)<input type="number" name="size" min="128" max="1024" step="1" value="{{size}}" required /></label>
+      <label>Error correction<select name="level">{{#each levels}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{value}}</option>{{/each}}</select></label>
+      <button type="submit">Apply</button>
+    </form>
+    <div class="qr-actions"><a class="button primary" href="{{image_url}}" download>Download PNG</a><a class="button" href="{{svg_url}}" download>Download SVG</a><button id="qr-print" type="button" disabled>Print</button></div>
+    <p class="qr-state">{{lifecycle_status}}{{#if protected}} &middot; Password protected{{/if}}</p>
+    <p id="qr-error" role="alert" hidden>QR image could not load. Sign in again or retry.</p>
+  </div>
+  <figure class="qr-sheet">
+    <img id="qr-preview" src="{{image_url}}" alt="QR code for {{short_url}}" width="512" height="512" />
+    <figcaption>{{short_url}}</figcaption>
+  </figure>
+</main>
+<script src="/scripts/qr.js" defer></script>
+{{> footer}}

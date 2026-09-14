@@ -12,6 +12,9 @@ const history = require("../handlers/link-history.handler");
 
 const router = Router();
 
+router.get("/:id/qr", asyncHandler(auth.apikey), asyncHandler(auth.jwt),
+  helpers.rateLimit({ window: 60, limit: 30 }), asyncHandler(require("../handlers/qr.handler").download));
+
 router.get("/trash", asyncHandler(auth.apikey), asyncHandler(auth.jwt), asyncHandler(history.trash));
 router.get("/:id/history", asyncHandler(auth.apikey), asyncHandler(auth.jwt), asyncHandler(history.list));
 router.post("/:id/restore", locals.viewTemplate("partials/links/trash_item"),
