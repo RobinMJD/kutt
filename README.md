@@ -28,6 +28,8 @@ signed retention confirmation and recovery restrictions. The
 updates, delivery retries, receiver verification and recovery restrictions.
 The [forwarding guide](docs/FORWARDING.md) covers nested aliases,
 explicit query/path allowlists and reserved-child precedence.
+The [destination monitoring guide](docs/DESTINATION-HEALTH.md) covers opt-in
+checks, SSRF controls, owner-scoped results, operational alerts and recovery.
 The [QR guide](docs/QR-CODES.md) covers owner-only PNG/SVG downloads, printing,
 scoped API use and independent decoder/browser validation.
 The [Workspaces guide](docs/WORKSPACES.md) covers accepted invitations,

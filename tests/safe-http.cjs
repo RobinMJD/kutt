@@ -7,11 +7,11 @@ module.exports = async root => {
   for (const value of ["http://hooks.example.com", "https://127.1/", "https://2130706433/", "https://0x7f000001/", "https://[::1]/", "https://user:secret@hooks.example.com", "https://hooks.example.com:444", "https://hooks.example.com/#token", "https://localhost", "https://foo.local", "https://foo.internal", "https://foo.invalid", "https://hooks.example.com./", "https://hooks.example.com\\@private/", "https://hooks.example.com/\n", "ftp://hooks.example.com"]) assert.throws(() => safe.parse(value), /URL_DENIED/, value);
   const { Resolver } = require("node:dns").promises, https = require("node:https");
   const originals = { r4: Resolver.prototype.resolve4, r6: Resolver.prototype.resolve6, request: https.request };
-  let answers = ["8.8.8.8"], calls = 0;
+  let answers = ["8.8.8.8"], calls = 0, lastMethod;
   Resolver.prototype.resolve4 = async () => answers;
   Resolver.prototype.resolve6 = async () => { throw Object.assign(new Error(), { code: "ENODATA" }); };
   https.request = (url, options) => {
-    calls++; assert.equal(url.hostname, "hooks.example.com"); assert.equal(options.servername, url.hostname);
+    calls++; lastMethod = options.method; assert.equal(url.hostname, "hooks.example.com"); assert.equal(options.servername, url.hostname);
     assert.equal(options.agent, false); assert.equal(options.autoSelectFamily, false); assert.equal(options.maxHeaderSize, 8192);
     assert.equal(options.rejectUnauthorized, true, "TLS certificate validation is mandatory");
     assert.equal(options.checkServerIdentity, undefined);
@@ -25,6 +25,9 @@ module.exports = async root => {
     assert.equal(await safe.validate("https://hooks.example.com/a?secret=not-logged"), "https://hooks.example.com/a?secret=not-logged");
     assert.equal((await safe.send("https://hooks.example.com/hook", { body: "{}" })).status, 302); assert.equal(calls, 1, "Never follow receiver redirects");
     await assert.rejects(safe.send("https://hooks.example.com/hook", { body: "{}" }), /ADDRESS_DENIED/); assert.equal(calls, 1, "Rebinding rejected before a new socket");
+    answers = ["8.8.8.8"];
+    assert.equal((await safe.send("https://hooks.example.com/health", { method: "HEAD" })).status, 302);
+    assert.equal(lastMethod, "HEAD"); assert.equal(calls, 2, "HEAD must not follow redirects or retry with GET");
     answers = ["8.8.8.8", "10.0.0.1"]; await assert.rejects(safe.validate("https://hooks.example.com"), /ADDRESS_DENIED/);
     answers = ["2606:4700:4700::1111", "::ffff:127.0.0.1"]; await assert.rejects(safe.validate("https://hooks.example.com"), /ADDRESS_DENIED/);
     answers = []; await assert.rejects(safe.validate("https://hooks.example.com"), /DNS_FAILED/);

@@ -8,6 +8,12 @@ const auth = require("../handlers/auth.handler");
 const env = require("../env");
 
 const router = Router();
+const destinationHealth = require("../handlers/link-health.handler");
+router.get("/link/health/:id", require("../handlers/tokens.handler").sessionOnly,
+  asyncHandler(auth.jwtPage), asyncHandler(locals.user), destinationHealth.boundary, asyncHandler(destinationHealth.page));
+router.get("/settings/health", require("../handlers/tokens.handler").sessionOnly,
+  asyncHandler(auth.jwtPage), asyncHandler(locals.user), destinationHealth.boundary, asyncHandler(destinationHealth.dashboard));
+router.use(["/link/health", "/settings/health"], (error, req, res, next) => { res.status(error.statusCode || 500); next(error); });
 const privacy = require("../handlers/privacy.handler");
 router.get("/settings/integrations", require("../handlers/tokens.handler").sessionOnly,
   asyncHandler(auth.jwtPage), asyncHandler(locals.user), privacy.boundary,

@@ -11,6 +11,13 @@ const env = require("../env");
 const history = require("../handlers/link-history.handler");
 
 const router = Router();
+const destinationHealth = require("../handlers/link-health.handler");
+router.get("/health", asyncHandler(auth.apikey), asyncHandler(auth.jwt), destinationHealth.boundary, asyncHandler(destinationHealth.list));
+router.get("/:id/health", asyncHandler(auth.apikey), asyncHandler(auth.jwt), destinationHealth.boundary, asyncHandler(destinationHealth.get));
+router.put("/:id/health", asyncHandler(auth.apikey), asyncHandler(auth.jwt), destinationHealth.boundary,
+  helpers.rateLimit({ window: 60, limit: 10 }), asyncHandler(destinationHealth.save));
+router.post("/:id/health/check", asyncHandler(auth.apikey), asyncHandler(auth.jwt), destinationHealth.boundary,
+  helpers.rateLimit({ window: 60, limit: 6 }), asyncHandler(destinationHealth.queue));
 const privacy = require("../handlers/privacy.handler");
 router.get("/:id/tracking", asyncHandler(auth.apikey), asyncHandler(auth.jwt), privacy.boundary, asyncHandler(privacy.getTracking));
 router.put("/:id/tracking", asyncHandler(auth.apikey), asyncHandler(auth.jwt), privacy.boundary,

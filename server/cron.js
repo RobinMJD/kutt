@@ -3,3 +3,4 @@
 // Only explicitly enabled analytics retention removes expired hourly aggregates.
 require("./analytics-privacy").start();
 require("./webhooks").start();
+require("./link-health").start();

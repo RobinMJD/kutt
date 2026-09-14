@@ -2405,7 +2405,7 @@ svg.map path.active { stroke: hsl(261, 46%, 50%); stroke-width: 1.5; }
 @media (max-width: 640px) {
   .library-manage-grid { grid-template-columns: minmax(0,1fr); gap: 1rem; }
   .library-links > li { grid-template-columns: 24px minmax(0,1fr); }
-  .library-link-meta { grid-column: 2; flex-direction: row; }
+  .library-link-meta { grid-column: 2; flex-direction: row; flex-wrap: wrap; align-items: center; }
   .library-toolbar label:not(.library-checkbox) { max-width: none; }
   .library button { min-height: 44px; height: auto; }
 }
@@ -2491,8 +2491,8 @@ svg.map path.active { stroke: hsl(261, 46%, 50%); stroke-width: 1.5; }
 .qr-sheet { margin: 2rem auto; width: min(100%, 512px); text-align: center; overflow-wrap: anywhere; }
 .qr-sheet img { display: block; width: 100%; height: auto; aspect-ratio: 1; background: #fff; }
 .qr-sheet figcaption { margin-top: 1rem; font-size: 16px; }
-.library-link-meta a[aria-label="QR code"], .library-link-meta a[aria-label="Redirect rules"], .library-link-meta a[aria-label="Path and query forwarding"] { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; flex: 0 0 40px; }
-.library-link-meta a[aria-label="QR code"] svg, .library-link-meta a[aria-label="Redirect rules"] svg, .library-link-meta a[aria-label="Path and query forwarding"] svg { width: 24px; height: 24px; }
+.library-link-meta a[aria-label] { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; flex: 0 0 40px; }
+.library-link-meta a[aria-label] svg { width: 24px; height: 24px; }
 @media print {
   body:has(.qr-page), body:has(.qr-page) .main-wrapper { background: #fff; color: #000; margin: 0; padding: 0; min-height: 0; }
   body:has(.qr-page) .main-wrapper > :not(.qr-page), .qr-page .archive-heading, .qr-page .qr-controls { display: none !important; }
