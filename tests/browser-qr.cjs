@@ -124,8 +124,13 @@ const decode = require(process.env.QR_DECODER_MODULE || "./browser-deps/node_mod
       const filtered = page.waitForResponse(r => r.url().includes("/api/links/admin?") && r.url().includes("user=12345"));
       await page.locator("#search_user").fill(account.email);
       await page.locator("#search_user").press("End");
-      assert.equal((await filtered).status(), 200);
-      await page.getByText("qr-browser-validation", { exact: false }).first().waitFor();
+      const filteredResponse = await filtered;
+      assert.equal(filteredResponse.status(), 200);
+      assert((await filteredResponse.text()).includes("qr-browser-validation"));
+      await page.waitForFunction(() => !document.querySelector(".htmx-request, .htmx-swapping, .htmx-settling") &&
+        document.querySelector("#main-table-wrapper tbody")?.textContent.includes("qr-browser-validation"));
+      await page.locator("#main-table-wrapper table").evaluate(table => { table.scrollLeft = 0; });
+      assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), mode + " admin page overflow");
       await page.screenshot({ path: path.join(evidence, `admin-filter-${mode}.png`), fullPage: true });
       await page.goto(origin + "/link/qr/" + link.id);
       await page.waitForFunction(() => !document.getElementById("qr-print").disabled);
