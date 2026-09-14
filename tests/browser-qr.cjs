@@ -14,13 +14,29 @@ const decode = require(process.env.QR_DECODER_MODULE || "./browser-deps/node_mod
   const browser = await chromium.launch({ headless: true }); let page;
   try {
     const context = await browser.newContext({ acceptDownloads: true });
+    // Exercise real ClipboardItem PNG promises without touching the OS clipboard.
+    await context.addInitScript(() => {
+      if (sessionStorage.getItem("noImageClipboard")) {
+        Object.defineProperty(navigator, "clipboard", { configurable: true, value: undefined });
+        return;
+      }
+      window.copyWrites = 0;
+      Object.defineProperty(navigator, "clipboard", { configurable: true, value: {
+        async write(items) {
+          window.copyWrites++;
+          if (window.denyCopy) throw new DOMException("Denied", "NotAllowedError");
+          const blob = await items[0].getType("image/png");
+          window.copiedPNG = Array.from(new Uint8Array(await blob.arrayBuffer()));
+        }
+      } });
+    });
     let ready = false;
     for (let attempt = 0; attempt < 100; attempt++) {
       try { if ((await context.request.get(origin + "/api/health")).status() === 200) { ready = true; break; } } catch {}
       await new Promise(resolve => setTimeout(resolve, 100));
     }
     assert(ready, "Disposable instance did not become ready");
-    const account = { email: "browser-qr@example.invalid", password: randomBytes(32).toString("hex") };
+    const account = { email: "12345.browser-qr@example.invalid", password: randomBytes(32).toString("hex") };
     const bootstrap = await context.request.post(origin + "/api/auth/create-admin", { data: account, headers: { Accept: "application/json" } });
     assert.equal(bootstrap.status(), 201, "Refuse initialized instances");
     await context.addCookies([{ name: "token", value: (await bootstrap.json()).token, url: origin }]);
@@ -55,6 +71,31 @@ const decode = require(process.env.QR_DECODER_MODULE || "./browser-deps/node_mod
       const heading = await page.locator(".qr-page .archive-heading").boundingBox();
       assert((await page.locator(".qr-controls").boundingBox()).y >= heading.y + heading.height, "Navigation cannot overlap settings");
       assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), mode + " overflow");
+      await page.getByRole("button", { name: "Copy QR image", exact: true }).click();
+      await page.getByRole("status").getByText("QR image copied.", { exact: true }).waitFor();
+      assert.equal((await decodedImage(Buffer.from(await page.evaluate(() => window.copiedPNG)), "image/png")).width, 256);
+      await page.evaluate(() => { window.denyCopy = true; });
+      await page.getByRole("button", { name: "Copy QR image", exact: true }).click();
+      await page.getByRole("status").getByText(/Could not copy image/).waitFor();
+      await page.evaluate(() => { window.denyCopy = false; });
+      await page.getByRole("button", { name: "Copy QR image", exact: true }).click();
+      await page.getByRole("status").getByText("QR image copied.", { exact: true }).waitFor();
+      assert(!(await page.getByRole("button", { name: "Copy QR image", exact: true }).isDisabled()));
+      await page.evaluate(() => {
+        window.originalToBlob = HTMLCanvasElement.prototype.toBlob;
+        HTMLCanvasElement.prototype.toBlob = callback => callback(null);
+      });
+      await page.getByRole("button", { name: "Copy QR image", exact: true }).click();
+      await page.getByRole("status").getByText(/Could not copy image/).waitFor();
+      await page.evaluate(() => { HTMLCanvasElement.prototype.toBlob = window.originalToBlob; });
+      const count = await page.evaluate(() => window.copyWrites);
+      await page.evaluate(() => {
+        const button = document.getElementById("qr-copy");
+        button.dispatchEvent(new MouseEvent("click"));
+        button.dispatchEvent(new MouseEvent("click"));
+      });
+      await page.getByRole("status").getByText("QR image copied.", { exact: true }).waitFor();
+      assert.equal(await page.evaluate(() => window.copyWrites), count + 1, "One write for overlapping clicks");
       await page.screenshot({ path: path.join(evidence, `qr-${mode}.png`), fullPage: true });
       for (const format of ["PNG", "SVG"]) {
         const pending = page.waitForEvent("download"); await page.getByRole("link", { name: "Download " + format, exact: true }).click();
@@ -79,18 +120,33 @@ const decode = require(process.env.QR_DECODER_MODULE || "./browser-deps/node_mod
       await page.getByRole("link", { name: "Library", exact: true }).click();
       await page.getByRole("link", { name: "QR code", exact: true }).click();
       await page.waitForFunction(() => !document.getElementById("qr-print").disabled);
+      await page.goto(origin + "/admin");
+      const filtered = page.waitForResponse(r => r.url().includes("/api/links/admin?") && r.url().includes("user=12345"));
+      await page.locator("#search_user").fill(account.email);
+      await page.locator("#search_user").press("End");
+      assert.equal((await filtered).status(), 200);
+      await page.getByText("qr-browser-validation", { exact: false }).first().waitFor();
+      await page.screenshot({ path: path.join(evidence, `admin-filter-${mode}.png`), fullPage: true });
+      await page.goto(origin + "/link/qr/" + link.id);
+      await page.waitForFunction(() => !document.getElementById("qr-print").disabled);
     }
     await page.route("**/api/links/*/qr?*", route => route.abort());
     await page.reload(); await page.getByRole("alert").getByText(/QR image could not load/).waitFor();
     assert(await page.getByRole("button", { name: "Print", exact: true }).isDisabled());
+    assert(await page.getByRole("button", { name: "Copy QR image", exact: true }).isDisabled());
     await page.screenshot({ path: path.join(evidence, "qr-image-failure.png"), fullPage: true });
     await page.unroute("**/api/links/*/qr?*"); await page.reload();
     await page.waitForFunction(() => !document.getElementById("qr-print").disabled);
+    await page.evaluate(() => { sessionStorage.setItem("noImageClipboard", "1"); });
+    await page.reload();
+    await page.waitForFunction(() => !document.getElementById("qr-print").disabled);
+    assert(await page.getByRole("button", { name: "Copy QR image", exact: true }).isDisabled());
+    assert(await page.getByRole("link", { name: "Download PNG", exact: true }).isVisible());
     const library = await context.request.get(origin + "/api/links", { headers: { Accept: "application/json" } });
     const data = await library.json();
     assert.equal(data.data.find(row => row.id === link.id).visit_count, 0);
     assert.deepEqual(errors, []);
-    console.log(`PASS: desktop/mobile Links and Library QR navigation, settings, independently decoded PNG/SVG, print/PDF, failure recovery, no visits; ${evidence}`);
+    console.log(`PASS: desktop/mobile QR navigation, decoded PNG clipboard/downloads, denial/retry/unsupported controls, print/PDF, image recovery, admin numeric-email search and no visits; ${evidence}`);
   } catch (error) { if (page) await page.screenshot({ path: path.join(evidence, "qr-failure.png"), fullPage: true }); throw error;
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

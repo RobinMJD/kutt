@@ -7,7 +7,8 @@
       <label>Error correction<select name="level">{{#each levels}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{value}}</option>{{/each}}</select></label>
       <button type="submit">Apply</button>
     </form>
-    <div class="qr-actions"><a class="button primary" href="{{image_url}}" download>Download PNG</a><a class="button" href="{{svg_url}}" download>Download SVG</a><button id="qr-print" type="button" disabled>Print</button></div>
+    <div class="qr-actions"><a class="button primary" href="{{image_url}}" download>Download PNG</a><a class="button" href="{{svg_url}}" download>Download SVG</a><button id="qr-copy" type="button" aria-label="Copy QR image" title="Copy QR image" disabled>{{> icons/copy}}</button><button id="qr-print" type="button" disabled>Print</button></div>
+    <p id="qr-copy-status" role="status" aria-live="polite"></p>
     <p class="qr-state">{{lifecycle_status}}{{#if protected}} &middot; Password protected{{/if}}</p>
     <p id="qr-error" role="alert" hidden>QR image could not load. Sign in again or retry.</p>
   </div>

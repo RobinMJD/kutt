@@ -30,7 +30,7 @@ The [forwarding guide](docs/FORWARDING.md) covers nested aliases,
 explicit query/path allowlists and reserved-child precedence.
 The [destination monitoring guide](docs/DESTINATION-HEALTH.md) covers opt-in
 checks, SSRF controls, owner-scoped results, operational alerts and recovery.
-The [QR guide](docs/QR-CODES.md) covers owner-only PNG/SVG downloads, printing,
+The [QR guide](docs/QR-CODES.md) covers owner-only PNG copying/downloads, SVG export, printing,
 scoped API use and independent decoder/browser validation.
 The [Workspaces guide](docs/WORKSPACES.md) covers accepted invitations,
 owner/editor/viewer permissions, shared-link APIs and non-destructive closure.
@@ -38,6 +38,8 @@ The [iOS Shortcut guide](examples/IOS-SHORTCUT.md) covers optional share-sheet
 shortening with a limited token. It is a client integration, not a server dependency.
 See [deployment and recovery](docs/DEPLOYMENT.md) and the
 [security maintenance notes](docs/SECURITY-MAINTENANCE.md) before upgrading.
+The [community PR review](docs/UPSTREAM-PR-REVIEW.md) records selected improvements,
+contributor credits and deferred proposals with their compatibility/security tradeoffs.
 
 Fork CI tests an isolated SQLite database on each main-branch push. Version tags
 matching `v*-sr94.*` publish the tested amd64 image to `ghcr.io/robinmjd/kutt`.

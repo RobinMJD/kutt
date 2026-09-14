@@ -2,6 +2,7 @@ const redis = require("../redis");
 const utils = require("../utils");
 const knex = require("../knex");
 const env = require("../env");
+const filterAdminUser = require("./admin-user-filter");
 
 async function find(match) {
   if (match.address && env.REDIS_ENABLED) {
@@ -139,14 +140,7 @@ async function getAdmin(match, params) {
     .groupBy("l.links_count")
     .groupBy("users.email");
 
-  if (params?.user) {
-    const id = parseInt(params?.user);
-    if (Number.isNaN(id)) {
-      query[knex.compatibleILIKE]("users.email", "%" + params.user + "%");
-    } else {
-      query.andWhere("domains.user_id", id);
-    }
-  }
+  filterAdminUser(query, "domains.user_id", params?.user);
 
   if (params?.search) {
     query[knex.compatibleILIKE](
@@ -177,14 +171,7 @@ async function totalAdmin(match, params) {
     query.andWhere(key, ...(Array.isArray(value) ? value : [value]));
   });
   
-  if (params?.user) {
-    const id = parseInt(params?.user);
-    if (Number.isNaN(id)) {
-      query[knex.compatibleILIKE]("users.email", "%" + params.user + "%");
-      } else {
-      query.andWhere("domains.user_id", id);
-    }
-  }
+  filterAdminUser(query, "domains.user_id", params?.user);
 
   if (params?.search) {
     query[knex.compatibleILIKE](

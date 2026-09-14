@@ -2488,6 +2488,9 @@ svg.map path.active { stroke: hsl(261, 46%, 50%); stroke-width: 1.5; }
 .qr-controls button, .qr-controls .button:not(.primary) { background: #fff; color: #243f49; border: 1px solid #a8b8bf; box-shadow: none; }
 .qr-actions, .qr-state { margin-top: 1rem; }
 #qr-error { color: #a4262c; }
+#qr-copy { width: 42px; height: 42px; flex: 0 0 42px; padding: 10px; }
+#qr-copy svg { width: 20px; height: 20px; }
+#qr-copy-status { min-height: 24px; margin: 0.5rem 0 0; font-size: 14px; }
 .qr-sheet { margin: 2rem auto; width: min(100%, 512px); text-align: center; overflow-wrap: anywhere; }
 .qr-sheet img { display: block; width: 100%; height: auto; aspect-ratio: 1; background: #fff; }
 .qr-sheet figcaption { margin-top: 1rem; font-size: 16px; }

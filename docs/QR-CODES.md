@@ -1,4 +1,4 @@
-# QR downloads and printing
+# QR copying, downloads and printing
 
 Open a link's QR action from Links or Library. Choose the pixel size and error
 correction, apply, then download PNG/SVG or print the preview. Printing excludes
@@ -7,6 +7,19 @@ Downloads encode the canonical short URL, not its destination, password or login
 credentials. Keep that URL public. Scans still pass through normal redirect,
 password, schedule and visit-limit checks. Generating/downloading/printing never
 fetches the destination or consumes a visit.
+
+Release `.17` adds an image-copy button beside the downloads. It writes only a
+PNG of the displayed short URL, at the selected pixel size, after a user click.
+It never reads the clipboard or fetches the destination. Image clipboard support
+requires a secure context and a supporting browser. Permission/conversion errors
+are recoverable; PNG/SVG downloads and printing remain available independently.
+The `ClipboardItem` receives a PNG promise and `write()` is called before any
+await, preserving Safari's user-activation requirement. Browser/OS permission
+policy can still deny a write.
+
+Inspired by [kkpanfilov's upstream PR #1016](https://github.com/thedevs-network/kutt/pull/1016),
+implemented against this fork's authenticated QR page rather than importing its
+older preview code or unrelated dependency changes.
 
 ## API
 
@@ -53,3 +66,8 @@ privacy, lifecycle preservation, no counted visits, restart and revoked tokens.
 independent QR decoding, print rendering and image failure recovery on a fresh
 loopback-only instance. Physical paper/printer/phone acceptance is separate from
 browser PDF and automated decoder validation.
+It also independently decodes the PNG passed through a real `ClipboardItem`,
+checks permission denial, conversion failure, duplicate clicks, recovery and
+unsupported-browser download fallback. Clipboard writes are intercepted in
+the test; it does not modify the operator's OS clipboard or claim physical
+iPhone/Safari acceptance.
