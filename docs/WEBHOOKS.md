@@ -17,7 +17,8 @@ already in flight may still arrive; receivers must enforce their current secret
 and idempotency policy. No credentials are put in short links or visitor requests.
 
 Supported events: `link.created`, `link.updated`, `link.trashed`, `link.restored`,
-`link.organized`, `link.imported`, `link.routing_updated`, `link.tracking_updated`.
+`link.organized`, `link.imported`, `link.routing_updated`, `link.tracking_updated`,
+and `link.forwarding_updated` (added in `.14`).
 An explicit Send test produces `webhook.test` for that subscription only.
 Events contain a UUID, event type, UTC occurrence time and `data` with a link UUID
 and changed field names. Test `data` is empty. There are no destination URLs,

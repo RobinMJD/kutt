@@ -7,9 +7,9 @@ token in a public client application.
 
 | Scope | Allowed operation |
 | --- | --- |
-| `links:read` | List the owner's links, trash and history |
+| `links:read` | List the owner's links, trash, history, routing/forwarding policies and previews |
 | `links:create` | Create links as the owner |
-| `links:update` | Edit the owner's links and [lifecycle policies](LINK-LIFECYCLE.md), restore owned trash |
+| `links:update` | Edit owned links, lifecycle/routing/forwarding/tracking policies, restore owned trash |
 | `links:delete` | Move the owner's links to [trash](LINK-HISTORY.md) |
 | `stats:read` | Read statistics for the owner's links |
 | `workspaces:read` | List accepted/owned workspaces and their shared links |

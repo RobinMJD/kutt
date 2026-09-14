@@ -26,6 +26,9 @@ The [privacy guide](docs/PRIVACY.md) covers per-link tracking opt-outs,
 signed retention confirmation and recovery restrictions. The
 [integrations guide](docs/WEBHOOKS.md) documents signed webhooks, private live
 updates, delivery retries, receiver verification and recovery restrictions.
+The candidate [forwarding guide](docs/FORWARDING.md) covers nested aliases,
+explicit query/path allowlists and reserved-child precedence. Item 14 is still
+subject to publication, restore and production acceptance gates.
 The [QR guide](docs/QR-CODES.md) covers owner-only PNG/SVG downloads, printing,
 scoped API use and independent decoder/browser validation.
 The [Workspaces guide](docs/WORKSPACES.md) covers accepted invitations,

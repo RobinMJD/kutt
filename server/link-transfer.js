@@ -12,7 +12,7 @@ const validators = require("./handlers/validators.handler");
 
 const TTL = 20 * 60 * 1000, RETENTION = 24 * 60 * 60 * 1000;
 const MAX_ROWS = 100, MAX_BYTES = 900000;
-const fields = ["address", "target", "domain", "description", "paused", "starts_at", "ends_at", "max_visits", "redirect_count", "expires_at", "deleted_at", "password_required", "tags", "collections", "routing_rules", "tracking_enabled"];
+const fields = ["address", "target", "domain", "description", "paused", "starts_at", "ends_at", "max_visits", "redirect_count", "expires_at", "deleted_at", "password_required", "tags", "collections", "routing_rules", "tracking_enabled", "forwarding"];
 const fail = (message, status = 400) => { throw new utils.CustomError(message, status); };
 const digest = value => createHmac("sha256", env.JWT_SECRET).update("kutt-transfer-v1\0" + JSON.stringify(value)).digest("hex");
 const scope = req => req.apiTokenDomain === undefined ? "all" : req.apiTokenDomain === null ? "default" : req.apiTokenDomain;
@@ -51,6 +51,7 @@ function read(input) {
           else fail("CSV counters must be nonnegative integers.");
         }
         for (const key of ["tags", "collections", "routing_rules"]) if (row[key]) row[key] = JSON.parse(row[key]); else row[key] = [];
+        if (row.forwarding) row.forwarding = JSON.parse(row.forwarding); else row.forwarding = {};
         for (const key of ["starts_at", "ends_at", "expires_at", "deleted_at"]) if (row[key] === "") row[key] = null;
       }
     }
@@ -75,9 +76,7 @@ function normalized(input) {
   if (Object.keys(input).some(key => !allowed.includes(key))) fail("Unknown link field; refusing to silently discard it.");
   if (input.banned !== undefined && typeof input.banned !== "boolean") fail("banned must be boolean.");
   if (input.banned) fail("Banned links cannot be imported.");
-  if (typeof input.address !== "string" || !input.address || input.address.length > 64 ||
-      !(utils.customAddressRegex.test(input.address) || utils.customAlphabetRegex.test(input.address)) ||
-      utils.preservedURLs.some(value => value.toLowerCase() === input.address.toLowerCase())) fail("Invalid or reserved alias.");
+  if (!require("./link-alias").valid(input.address)) fail("Invalid or reserved alias.");
   if (typeof input.target !== "string" || !/^https?:\/\//i.test(input.target) || input.target.length > 2040 || /[\u0000-\u0020]/.test(input.target)) fail("Invalid target.");
   let url;
   try { url = new URL(input.target); } catch { fail("Target must be an absolute HTTP(S) URL."); }
@@ -108,6 +107,7 @@ function normalized(input) {
     if (new Set(row[field].map(value => value.toLowerCase())).size !== row[field].length) fail("Duplicate label on a link.");
   }
   row.routing_rules = require("./link-routing").normalize(input.routing_rules === undefined ? [] : input.routing_rules);
+  row.forwarding = require("./link-forwarding").normalize(input.forwarding);
   return row;
 }
 
@@ -126,6 +126,7 @@ async function plan(db, req, input, id, fixedAliases) {
       }
       if (req.apiTokenDomain !== undefined && domainId !== req.apiTokenDomain) fail("Token does not permit this domain.", 403);
       if (row.routing_rules.length && token && !JSON.parse(token.scopes).includes("links:update")) fail("Routing rules require links:update permission.", 403);
+      if ((row.forwarding.query_keys.length || row.forwarding.path_prefixes.length) && token && !JSON.parse(token.scopes).includes("links:update")) fail("Forwarding requires links:update permission.", 403);
       if (!row.tracking_enabled && token && !JSON.parse(token.scopes).includes("links:update")) fail("Tracking opt-outs require links:update permission.", 403);
       for (const label of labelsFor(row)) {
         if (token && !JSON.parse(token.scopes).includes("links:update")) fail("Organization requires links:update permission.", 403);
@@ -246,6 +247,7 @@ async function commit(req) {
       await db("links").where({ id: link.id }).update({ password: row.password ? passwords.get(row.password) : null,
         redirect_count: row.redirect_count, deleted_at: row.deleted_at });
       if (row.routing_rules.length) await db("link_routing").insert({ link_id: link.id, rules: JSON.stringify(row.routing_rules), revision: 1 });
+      if (row.forwarding.query_keys.length || row.forwarding.path_prefixes.length) await db("link_forwarding").insert({ link_id: link.id, policy: JSON.stringify(row.forwarding), revision: 1 });
       if (!row.tracking_enabled) await db("link_tracking").insert({ link_id: link.id, enabled: false, revision: 1 });
       for (const label of labelsFor(row)) {
         const match = { user_id: req.user.id, kind: label.kind, name_key: label.name.toLowerCase() };
@@ -278,6 +280,11 @@ async function exportLinks(req) {
   const routing = require("./link-routing"), policies = new Map();
   const stored = links.length ? await knex("link_routing").whereIn("link_id", links.map(row => row.id)) : [];
   for (const row of stored) policies.set(row.link_id, routing.storedPolicy(row).rules);
+  const forwarding = new Map();
+  for (const row of links.length ? await knex("link_forwarding").whereIn("link_id", links.map(link => link.id)) : []) {
+    const { revision, ...config } = require("./link-forwarding").stored(row);
+    forwarding.set(row.link_id, config);
+  }
   const tracking = new Map();
   for (const row of links.length ? await knex("link_tracking").whereIn("link_id", links.map(row => row.id)) : []) {
     tracking.set(row.link_id, require("./analytics-privacy").trackingValue(row).enabled);
@@ -288,12 +295,13 @@ async function exportLinks(req) {
       description: row.description || "", paused: !!row.paused, starts_at: policy.starts_at, ends_at: policy.ends_at,
       max_visits: policy.max_visits, redirect_count: policy.redirect_count, expires_at: row.expire_in ? utils.parseDatetime(row.expire_in).toISOString() : null,
       deleted_at: policy.deleted_at, password_required: !!row.password, banned: !!row.banned, routing_rules: policies.get(row.id) || [], tracking_enabled: tracking.get(row.id) ?? true,
+      forwarding: forwarding.get(row.id) || { query_keys: [], path_prefixes: [] },
       tags: assigned.filter(label => label.link_id === row.id && label.kind === "tag").map(label => label.name),
       collections: assigned.filter(label => label.link_id === row.id && label.kind === "collection").map(label => label.name) };
   });
   if (format === "json") return { format, body: JSON.stringify({ schema_version: 1, exported_at: new Date().toISOString(), links: rows }, null, 2) };
   const columns = ["cell_encoding", "id", ...fields, "banned"];
-  return { format, body: stringify(rows.map(row => Object.fromEntries(columns.map(key => [key, key === "cell_encoding" ? "apostrophe-v1" : encodeCell(Array.isArray(row[key]) ? JSON.stringify(row[key]) : row[key] == null ? "" : String(row[key]))]))), { header: true, columns }) };
+  return { format, body: stringify(rows.map(row => Object.fromEntries(columns.map(key => [key, key === "cell_encoding" ? "apostrophe-v1" : encodeCell(row[key] !== null && typeof row[key] === "object" ? JSON.stringify(row[key]) : row[key] == null ? "" : String(row[key]))]))), { header: true, columns }) };
 }
 
 module.exports = { preview, commit, exportLinks, read, normalized, MAX_BYTES };

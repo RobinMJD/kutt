@@ -3,7 +3,7 @@ const knex = require("./knex");
 const env = require("./env");
 const safe = require("./safe-http");
 const { CustomError } = require("./utils");
-const TYPES = Object.freeze(["link.created", "link.updated", "link.trashed", "link.restored", "link.organized", "link.imported", "link.routing_updated", "link.tracking_updated"]);
+const TYPES = Object.freeze(["link.created", "link.updated", "link.trashed", "link.restored", "link.organized", "link.imported", "link.routing_updated", "link.tracking_updated", "link.forwarding_updated"]);
 const fail = (message, status = 400) => { throw new CustomError(message, status); };
 const key = () => Buffer.from(hkdfSync("sha256", env.JWT_SECRET, "kutt-webhooks", "signing-secret-v1", 32));
 const iso = value => value == null ? null : new Date(Number(value)).toISOString();

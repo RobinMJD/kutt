@@ -3,7 +3,7 @@
 Open **Library > Import and export**. Download your own links as JSON or CSV,
 optionally searching an alias/target and selecting active, trashed or all links.
 Exports include lifecycle restrictions, spent redirect counts and private tags
-and collections, plus ordered routing rules from release `.10`. They never contain password hashes, credentials or ownership
+and collections, ordered routing rules and explicit forwarding allowlists. They never contain password hashes, credentials or ownership
 identifiers. Downloads are private, uncached attachments.
 
 Import a file or paste its contents, choose an alias-conflict policy and run a
@@ -51,13 +51,13 @@ of links is also accepted. Minimum row:
 
 Optional fields: `id`, `domain`, `description`, `paused`, `starts_at`, `ends_at`,
 `max_visits`, `redirect_count`, `expires_at`, `deleted_at`, `password_required`,
-`password`, `tags`, `collections`, `routing_rules`, `banned`. Unknown fields are rejected. Booleans
+`password`, `tags`, `collections`, `routing_rules`, `tracking_enabled`, `forwarding`, `banned`. Unknown fields are rejected. Booleans
 must be actual booleans; timestamps are ISO 8601 with a timezone; tag/collection
 values are arrays of unique names. Lifecycle counters are retained so imports
 cannot accidentally reset a link's spent quota. Trashed rows remain trashed.
 
 CSV uses the same field names, true/false booleans, decimal counters and JSON
-arrays within quoted label/routing cells. The maintained `csv-parse`/`csv-stringify`
+arrays within quoted label/routing cells and JSON objects in forwarding cells. The maintained `csv-parse`/`csv-stringify`
 libraries handle quoting, commas, Unicode and embedded newlines. Exports prefix
 formula-like or whitespace-leading cells with an apostrophe and identify this
 reversible encoding with `cell_encoding=apostrophe-v1`. Preserve that column on
@@ -74,7 +74,7 @@ Both `/api/transfer` and `/api/v2/transfer` are supported:
   Returns 201 with `{created, skipped, replayed}`. Identical completed retries
   return 200 and the same link IDs, including after a restart, for 24 hours.
 
-Organization and nonempty routing rules additionally require `links:update`. Domain-restricted tokens
+Organization, nonempty routing/forwarding rules and tracking opt-outs additionally require `links:update`. Domain-restricted tokens
 can export/import only their domain; they may reuse existing owned labels but
 cannot create account-wide labels. Management HTML requires a signed-in session.
 Explicit API keys never inherit a browser cookie's authority. Cookie writes
@@ -86,16 +86,19 @@ confirmation**, not a new dry run. A committed receipt prevents duplication.
 Changed input/credential, changed aliases/permissions, an expired receipt or a
 subsequently deleted/banned/moved-away link causes refusal. A dry-run error writes
 nothing; a write failure rolls back all link, label, alias, history and receipt
-and routing changes in that batch. A previously committed all-skipped batch remains a replay,
+and routing/forwarding changes in that batch. A previously committed all-skipped batch remains a replay,
 not a later attempt to create its skipped rows.
 
 ## Migration and recovery
 
 The optional `routing_rules` field follows [the routing policy format](ROUTING.md).
+The optional `forwarding` object preserves [query/path allowlists](FORWARDING.md);
+missing values default to empty lists. Nested aliases use the same validated
+segments as ordinary create/edit. Nonempty imported policies start at revision 1.
 The optional boolean `tracking_enabled` preserves [analytics opt-outs](PRIVACY.md).
 It defaults to true for older files; importing false with a token additionally
 requires `links:update`. New exports include it in both CSV and JSON.
-Older files without it remain default-destination-only. Imported policies retain
+Older files without `routing_rules` remain default-destination-only. Imported policies retain
 their order/conditions and receive a fresh revision of one; all destinations are
 revalidated. An invalid stored policy fails export instead of silently losing it.
 An older fork that does not recognize this field refuses the import: do not

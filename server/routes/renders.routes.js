@@ -26,6 +26,10 @@ router.use("/settings/analytics", (error, req, res, next) => { res.status(error.
 router.get("/link/routing/:id", require("../handlers/tokens.handler").sessionOnly,
   asyncHandler(auth.jwtPage), asyncHandler(locals.user), require("../handlers/routing.handler").boundary,
   asyncHandler(require("../handlers/routing.handler").page));
+router.get("/link/forwarding/:id", require("../handlers/tokens.handler").sessionOnly,
+  asyncHandler(auth.jwtPage), asyncHandler(locals.user), require("../handlers/forwarding.handler").boundary,
+  asyncHandler(require("../handlers/forwarding.handler").page));
+router.use("/link/forwarding", (error, req, res, next) => { res.status(error.statusCode || 500); next(error); });
 router.use("/link/routing", (error, req, res, next) => { res.status(error.statusCode || 500); next(error); });
 
 router.get(["/settings/workspaces", "/settings/workspaces/:id"], require("../handlers/tokens.handler").sessionOnly,

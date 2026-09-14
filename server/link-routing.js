@@ -143,4 +143,4 @@ async function protectedQuery(req, link) {
   // routing-input limit on links that do not use routing at all.
   return rules.length ? queryString(new URL(req.originalUrl, "http://local.invalid").search) : "";
 }
-module.exports = { normalize, queryString, previewContext, context, choose, storedPolicy, policy, owned, checkTargets, save, resolve, protectedQuery };
+module.exports = { target, normalize, queryString, previewContext, context, choose, storedPolicy, policy, owned, checkTargets, save, resolve, protectedQuery };

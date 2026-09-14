@@ -16,6 +16,12 @@ router.get("/:id/tracking", asyncHandler(auth.apikey), asyncHandler(auth.jwt), p
 router.put("/:id/tracking", asyncHandler(auth.apikey), asyncHandler(auth.jwt), privacy.boundary,
   helpers.rateLimit({ window: 60, limit: 30 }), asyncHandler(privacy.saveTracking));
 const routing = require("../handlers/routing.handler");
+const forwarding = require("../handlers/forwarding.handler");
+router.get("/:id/forwarding", asyncHandler(auth.apikey), asyncHandler(auth.jwt), forwarding.boundary, asyncHandler(forwarding.get));
+router.put("/:id/forwarding", asyncHandler(auth.apikey), asyncHandler(auth.jwt), forwarding.boundary,
+  helpers.rateLimit({ window: 60, limit: 30 }), asyncHandler(forwarding.save));
+router.post("/:id/forwarding/preview", asyncHandler(auth.apikey), asyncHandler(auth.jwt), forwarding.boundary,
+  helpers.rateLimit({ window: 60, limit: 60 }), asyncHandler(forwarding.preview));
 router.get("/:id/routing", asyncHandler(auth.apikey), asyncHandler(auth.jwt), routing.boundary, asyncHandler(routing.get));
 router.put("/:id/routing", asyncHandler(auth.apikey), asyncHandler(auth.jwt), routing.boundary,
   helpers.rateLimit({ window: 60, limit: 30 }), asyncHandler(routing.save));

@@ -466,9 +466,7 @@ async function ban(req, res) {
 };
 
 async function redirect(req, res, next) {
-  const isPreservedUrl = utils.preservedURLs.some(
-    item => item === req.path.replace("/", "")
-  );
+  const isPreservedUrl = require("../link-alias").reserved(req.params.id);
 
   if (isPreservedUrl) return next();
 
@@ -483,11 +481,13 @@ async function redirect(req, res, next) {
   if (domain?.banned) return res.redirect("/banned");
 
   // 2. Get link
-  const address = req.params.id.replace("+", "");
-  const link = await query.link.find({
-    address,
-    domain_id: domain ? domain.id : null
-  }, { fresh: true, includeTrash: true });
+  if (/%(?:2f|5c|25)/i.test(req.path) || /[\\\u0000-\u001f\u007f]/.test(req.params.id)) {
+    throw new CustomError("Ambiguous short path encoding.", 400);
+  }
+  const address = req.params.id.replace(/\+$/, "");
+  const found = await require("../link-forwarding").lookup(address, domain ? domain.id : null);
+  const link = found?.link;
+  req.forwardPath = found?.suffix || "";
 
   // 3. When no link, if has domain redirect to domain's homepage
   // otherwise redirect to 404
@@ -539,7 +539,8 @@ async function redirect(req, res, next) {
     res.render("protected", {
       title: "Protected short link",
       id: link.uuid,
-      routing_query: await require("../link-routing").protectedQuery(req, link)
+      routing_query: await require("../link-forwarding").protectedQuery(req, link),
+      forwarding_path: req.forwardPath
     });
     return;
   }
@@ -568,7 +569,7 @@ async function recordVisit(req, link) {
 
 async function finishRedirect(req, res, link) {
   res.set("Cache-Control", "no-store");
-  const target = await require("../link-routing").resolve(req, link);
+  const target = await require("../link-forwarding").resolve(req, link);
   if (!await linkLifecycle.allow(link, req.method !== "HEAD")) return unavailable(res);
   await recordVisit(req, link);
   return res.redirect(target);
@@ -592,7 +593,7 @@ async function redirectProtected(req, res) {
   }
 
   res.set("Cache-Control", "no-store");
-  const target = await require("../link-routing").resolve(req, link, req.body.routing_query);
+  const target = await require("../link-forwarding").resolve(req, link, req.body.routing_query, req.body.forwarding_path);
   if (!await linkLifecycle.allow(link, true)) return unavailable(res);
   await recordVisit(req, link);
 
