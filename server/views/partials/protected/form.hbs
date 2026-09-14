@@ -6,6 +6,7 @@
   hx-vals='{"id":"{{id}}"}'
   hx-swap="outerHTML"
 > 
+  <input type="hidden" name="routing_query" value="{{routing_query}}" />
   {{#if message}}
     <p class="success">{{message}}</p>
   {{else}}

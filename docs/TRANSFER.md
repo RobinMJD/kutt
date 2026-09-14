@@ -3,7 +3,7 @@
 Open **Library > Import and export**. Download your own links as JSON or CSV,
 optionally searching an alias/target and selecting active, trashed or all links.
 Exports include lifecycle restrictions, spent redirect counts and private tags
-and collections. They never contain password hashes, credentials or ownership
+and collections, plus ordered routing rules from release `.10`. They never contain password hashes, credentials or ownership
 identifiers. Downloads are private, uncached attachments.
 
 Import a file or paste its contents, choose an alias-conflict policy and run a
@@ -35,7 +35,8 @@ issue reports.
 
 An export contains at most 1,000 links; narrow the search if it exceeds that.
 Import batches contain 1-100 links, UTF-8 content at most 900,000 bytes, and CSV
-records at most 20,000 characters. Split larger exports into separate batches.
+records at most 100,000 characters and at most 100 distinct destination hosts
+per import batch (including routing targets). Split larger exports into separate batches.
 These are management transfers, **not full application backups**: users,
 credentials, statistics, identities, history and saved filters are not imported.
 Account limits are 100 successful batches per rolling 24 hours, 100 labels per
@@ -50,13 +51,13 @@ of links is also accepted. Minimum row:
 
 Optional fields: `id`, `domain`, `description`, `paused`, `starts_at`, `ends_at`,
 `max_visits`, `redirect_count`, `expires_at`, `deleted_at`, `password_required`,
-`password`, `tags`, `collections`, `banned`. Unknown fields are rejected. Booleans
+`password`, `tags`, `collections`, `routing_rules`, `banned`. Unknown fields are rejected. Booleans
 must be actual booleans; timestamps are ISO 8601 with a timezone; tag/collection
 values are arrays of unique names. Lifecycle counters are retained so imports
 cannot accidentally reset a link's spent quota. Trashed rows remain trashed.
 
 CSV uses the same field names, true/false booleans, decimal counters and JSON
-arrays within quoted label cells. The maintained `csv-parse`/`csv-stringify`
+arrays within quoted label/routing cells. The maintained `csv-parse`/`csv-stringify`
 libraries handle quoting, commas, Unicode and embedded newlines. Exports prefix
 formula-like or whitespace-leading cells with an apostrophe and identify this
 reversible encoding with `cell_encoding=apostrophe-v1`. Preserve that column on
@@ -73,7 +74,7 @@ Both `/api/transfer` and `/api/v2/transfer` are supported:
   Returns 201 with `{created, skipped, replayed}`. Identical completed retries
   return 200 and the same link IDs, including after a restart, for 24 hours.
 
-Organization additionally requires `links:update`. Domain-restricted tokens
+Organization and nonempty routing rules additionally require `links:update`. Domain-restricted tokens
 can export/import only their domain; they may reuse existing owned labels but
 cannot create account-wide labels. Management HTML requires a signed-in session.
 Explicit API keys never inherit a browser cookie's authority. Cookie writes
@@ -85,10 +86,17 @@ confirmation**, not a new dry run. A committed receipt prevents duplication.
 Changed input/credential, changed aliases/permissions, an expired receipt or a
 subsequently deleted/banned/moved-away link causes refusal. A dry-run error writes
 nothing; a write failure rolls back all link, label, alias, history and receipt
-changes in that batch. A previously committed all-skipped batch remains a replay,
+and routing changes in that batch. A previously committed all-skipped batch remains a replay,
 not a later attempt to create its skipped rows.
 
 ## Migration and recovery
+
+The optional `routing_rules` field follows [the routing policy format](ROUTING.md).
+Older files without it remain default-destination-only. Imported policies retain
+their order/conditions and receive a fresh revision of one; all destinations are
+revalidated. An invalid stored policy fails export instead of silently losing it.
+An older fork that does not recognize this field refuses the import: do not
+remove nonempty rules just to force compatibility.
 
 `20260914010000_link_imports.js` adds an owner-scoped receipt table. It stores
 keyed input fingerprints and result IDs, not file contents or passwords. Old

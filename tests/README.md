@@ -76,6 +76,17 @@ owner/domain/token/CSRF limits, atomic rollback and concurrent/restart replay.
 instance for desktop/mobile file selection, preview, confirmation, downloads,
 conflict correction and validation errors. It never runs against live data.
 
+## Routing validation
+
+`routing.cjs` runs in the full isolated container suite. `KUTT_TEST_ONLY=routing`
+selects its focused fixture for development, never release CI. It verifies
+ordered conditions, preview isolation, password/lifecycle paths, authorization,
+optimistic concurrency, atomic rollback and guarded schema downgrade.
+`browser-routing.cjs` uses a fresh loopback-only instance with
+`KUTT_BROWSER_DISPOSABLE=1`, `KUTT_TEST_URL`, and optional `PLAYWRIGHT_MODULE` /
+`KUTT_EVIDENCE_DIR`. It checks desktop/mobile editing, preview, ordering, stale
+revision recovery, clear/fallback, layout and browser errors.
+
 ## QR validation
 
 `qr.cjs` runs in the standard offline hardened-image suite. For independent

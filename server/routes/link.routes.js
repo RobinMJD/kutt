@@ -11,6 +11,12 @@ const env = require("../env");
 const history = require("../handlers/link-history.handler");
 
 const router = Router();
+const routing = require("../handlers/routing.handler");
+router.get("/:id/routing", asyncHandler(auth.apikey), asyncHandler(auth.jwt), routing.boundary, asyncHandler(routing.get));
+router.put("/:id/routing", asyncHandler(auth.apikey), asyncHandler(auth.jwt), routing.boundary,
+  helpers.rateLimit({ window: 60, limit: 30 }), asyncHandler(routing.save));
+router.post("/:id/routing/preview", asyncHandler(auth.apikey), asyncHandler(auth.jwt), routing.boundary,
+  helpers.rateLimit({ window: 60, limit: 60 }), asyncHandler(routing.preview));
 
 router.get("/:id/qr", asyncHandler(auth.apikey), asyncHandler(auth.jwt),
   helpers.rateLimit({ window: 60, limit: 30 }), asyncHandler(require("../handlers/qr.handler").download));

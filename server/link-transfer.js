@@ -12,7 +12,7 @@ const validators = require("./handlers/validators.handler");
 
 const TTL = 20 * 60 * 1000, RETENTION = 24 * 60 * 60 * 1000;
 const MAX_ROWS = 100, MAX_BYTES = 900000;
-const fields = ["address", "target", "domain", "description", "paused", "starts_at", "ends_at", "max_visits", "redirect_count", "expires_at", "deleted_at", "password_required", "tags", "collections"];
+const fields = ["address", "target", "domain", "description", "paused", "starts_at", "ends_at", "max_visits", "redirect_count", "expires_at", "deleted_at", "password_required", "tags", "collections", "routing_rules"];
 const fail = (message, status = 400) => { throw new utils.CustomError(message, status); };
 const digest = value => createHmac("sha256", env.JWT_SECRET).update("kutt-transfer-v1\0" + JSON.stringify(value)).digest("hex");
 const scope = req => req.apiTokenDomain === undefined ? "all" : req.apiTokenDomain === null ? "default" : req.apiTokenDomain;
@@ -31,7 +31,7 @@ function read(input) {
       if (!Array.isArray(parsed) && parsed.schema_version !== 1) fail("Unsupported export schema.");
       rows = Array.isArray(parsed) ? parsed : parsed.links;
     } else {
-      rows = parse(input.content, { bom: true, skip_empty_lines: true, max_record_size: 20000,
+      rows = parse(input.content, { bom: true, skip_empty_lines: true, max_record_size: 100000,
         columns: header => {
           if (new Set(header).size !== header.length) fail("Duplicate CSV headers.");
           return header;
@@ -50,7 +50,7 @@ function read(input) {
           else if (/^\d+$/.test(row[key])) row[key] = Number(row[key]);
           else fail("CSV counters must be nonnegative integers.");
         }
-        for (const key of ["tags", "collections"]) if (row[key]) row[key] = JSON.parse(row[key]); else row[key] = [];
+        for (const key of ["tags", "collections", "routing_rules"]) if (row[key]) row[key] = JSON.parse(row[key]); else row[key] = [];
         for (const key of ["starts_at", "ends_at", "expires_at", "deleted_at"]) if (row[key] === "") row[key] = null;
       }
     }
@@ -106,6 +106,7 @@ function normalized(input) {
     });
     if (new Set(row[field].map(value => value.toLowerCase())).size !== row[field].length) fail("Duplicate label on a link.");
   }
+  row.routing_rules = require("./link-routing").normalize(input.routing_rules === undefined ? [] : input.routing_rules);
   return row;
 }
 
@@ -123,6 +124,7 @@ async function plan(db, req, input, id, fixedAliases) {
         domainId = domain.id;
       }
       if (req.apiTokenDomain !== undefined && domainId !== req.apiTokenDomain) fail("Token does not permit this domain.", 403);
+      if (row.routing_rules.length && token && !JSON.parse(token.scopes).includes("links:update")) fail("Routing rules require links:update permission.", 403);
       for (const label of labelsFor(row)) {
         if (token && !JSON.parse(token.scopes).includes("links:update")) fail("Organization requires links:update permission.", 403);
         if (req.apiTokenDomain !== undefined && !labels.some(item => item.kind === label.kind && item.name_key === label.name.toLowerCase())) fail("A domain-limited token cannot create account labels.", 403);
@@ -172,12 +174,15 @@ async function preview(req) {
   const hosts = new Map();
   for (let index = 0; index < rows.length; index++) {
     if (rows[index].action !== "create") continue;
-    const hostname = utils.removeWww(new URL(rows[index].value.target).hostname);
-    if (!hosts.has(hostname)) {
-      try { await validators.bannedDomain(hostname); await validators.bannedHost(hostname); hosts.set(hostname, null); }
-      catch (error) { if (!(error instanceof utils.CustomError)) throw error; hosts.set(hostname, error.message); }
+    for (const target of [rows[index].value.target, ...rows[index].value.routing_rules.map(rule => rule.target)]) {
+      const hostname = utils.removeWww(new URL(target).hostname);
+      if (!hosts.has(hostname)) {
+        if (hosts.size >= 100) fail("Use at most 100 distinct destination hosts per import batch.");
+        try { await validators.bannedDomain(hostname); await validators.bannedHost(hostname); hosts.set(hostname, null); }
+        catch (error) { if (!(error instanceof utils.CustomError)) throw error; hosts.set(hostname, error.message); }
+      }
+      if (hosts.get(hostname)) { rows[index] = { row: index + 1, action: "error", message: hosts.get(hostname) }; break; }
     }
-    if (hosts.get(hostname)) rows[index] = { row: index + 1, action: "error", message: hosts.get(hostname) };
   }
   const result = summary(rows), valid = !rows.some(row => row.action === "error");
   return { valid, rows: result, expires_in: TTL / 1000, preview_token: valid ? sign({ id, uid: req.user.id, scope: scope(req), token: req.apiToken || null,
@@ -194,8 +199,13 @@ async function commit(req) {
   const passwords = new Map(), hosts = new Set();
   if (!replay) for (const row of rows) {
     if (row.password && !passwords.has(row.password)) passwords.set(row.password, await bcrypt.hash(row.password, 12));
-    const hostname = utils.removeWww(new URL(row.target).hostname);
-    if (!hosts.has(hostname)) { await validators.bannedDomain(hostname); await validators.bannedHost(hostname); hosts.add(hostname); }
+    for (const target of [row.target, ...row.routing_rules.map(rule => rule.target)]) {
+      const hostname = utils.removeWww(new URL(target).hostname);
+      if (!hosts.has(hostname)) {
+        if (hosts.size >= 100) fail("Use at most 100 distinct destination hosts per import batch.");
+        await validators.bannedDomain(hostname); await validators.bannedHost(hostname); hosts.add(hostname);
+      }
+    }
   }
   return knex.transaction(async db => {
     const user = await db("users").where({ id: req.user.id }).first();
@@ -233,6 +243,7 @@ async function commit(req) {
         expire_in: row.expires_at == null ? null : utils.dateToUTC(new Date(row.expires_at)) }, db, { id: req.user.id, apiToken: req.apiToken });
       await db("links").where({ id: link.id }).update({ password: row.password ? passwords.get(row.password) : null,
         redirect_count: row.redirect_count, deleted_at: row.deleted_at });
+      if (row.routing_rules.length) await db("link_routing").insert({ link_id: link.id, rules: JSON.stringify(row.routing_rules), revision: 1 });
       for (const label of labelsFor(row)) {
         const match = { user_id: req.user.id, kind: label.kind, name_key: label.name.toLowerCase() };
         let existing = await db("library_labels").where(match).first();
@@ -261,12 +272,15 @@ async function exportLinks(req) {
   if (links.length > 1000) fail("Export exceeds 1000 links. Narrow the search before exporting.", 413);
   const assigned = links.length ? await knex("library_link_labels as rel").join("library_labels as label", "rel.label_id", "label.id")
     .where("label.user_id", req.user.id).whereIn("rel.link_id", links.map(row => row.id)).select("rel.link_id", "label.kind", "label.name").orderBy("label.name_key") : [];
+  const routing = require("./link-routing"), policies = new Map();
+  const stored = links.length ? await knex("link_routing").whereIn("link_id", links.map(row => row.id)) : [];
+  for (const row of stored) policies.set(row.link_id, routing.storedPolicy(row).rules);
   const rows = links.map(row => {
     const policy = lifecycle.describe(row);
     return { id: row.uuid, address: row.address, target: row.target, domain: row.domain || env.DEFAULT_DOMAIN,
       description: row.description || "", paused: !!row.paused, starts_at: policy.starts_at, ends_at: policy.ends_at,
       max_visits: policy.max_visits, redirect_count: policy.redirect_count, expires_at: row.expire_in ? utils.parseDatetime(row.expire_in).toISOString() : null,
-      deleted_at: policy.deleted_at, password_required: !!row.password, banned: !!row.banned,
+      deleted_at: policy.deleted_at, password_required: !!row.password, banned: !!row.banned, routing_rules: policies.get(row.id) || [],
       tags: assigned.filter(label => label.link_id === row.id && label.kind === "tag").map(label => label.name),
       collections: assigned.filter(label => label.link_id === row.id && label.kind === "collection").map(label => label.name) };
   });

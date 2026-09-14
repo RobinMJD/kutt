@@ -538,7 +538,8 @@ async function redirect(req, res, next) {
     }
     res.render("protected", {
       title: "Protected short link",
-      id: link.uuid
+      id: link.uuid,
+      routing_query: require("../link-routing").queryString(new URL.URL(req.originalUrl, "http://local.invalid").search)
     });
     return;
   }
@@ -566,9 +567,10 @@ function recordVisit(req, link) {
 
 async function finishRedirect(req, res, link) {
   res.set("Cache-Control", "no-store");
+  const target = await require("../link-routing").resolve(req, link);
   if (!await linkLifecycle.allow(link, req.method !== "HEAD")) return unavailable(res);
   recordVisit(req, link);
-  return res.redirect(link.target);
+  return res.redirect(target);
 }
 
 async function redirectProtected(req, res) {
@@ -589,19 +591,20 @@ async function redirectProtected(req, res) {
   }
 
   res.set("Cache-Control", "no-store");
+  const target = await require("../link-routing").resolve(req, link, req.body.routing_query);
   if (!await linkLifecycle.allow(link, true)) return unavailable(res);
   recordVisit(req, link);
 
   // 5. Send target
   if (req.isHTML) {
-    res.setHeader("HX-Redirect", link.target);
+    res.setHeader("HX-Redirect", target);
     res.render("partials/protected/form", {
       id: link.uuid,
       message: "Redirecting...",
     });
     return;
   }
-  return res.status(200).send({ target: link.target });
+  return res.status(200).send({ target });
 };
 
 async function redirectCustomDomainHomepage(req, res, next) {

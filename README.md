@@ -18,6 +18,8 @@ The [Library guide](docs/LIBRARY.md) covers tags, collections, saved filters,
 ownership-safe bulk actions and their API/migration boundaries.
 The [transfer guide](docs/TRANSFER.md) covers CSV/JSON downloads, dry-run imports,
 alias conflicts, protected links, scoped authorization and retry recovery.
+The [routing guide](docs/ROUTING.md) covers ordered redirect conditions, preview,
+authorization and recovery constraints.
 The [QR guide](docs/QR-CODES.md) covers owner-only PNG/SVG downloads, printing,
 scoped API use and independent decoder/browser validation.
 The [Workspaces guide](docs/WORKSPACES.md) covers accepted invitations,
