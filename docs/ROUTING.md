@@ -1,7 +1,7 @@
 # Ordered redirect rules
 
-Release `.10` passed publication and deployment checks. Compatibility follow-up
-`.10.1` is being validated before closing the roadmap item.
+Release `v3.2.6-sr94.10.1` is published, deployed and verified (2026-09-14).
+It supersedes `.10` with the default-only protected-link compatibility fix.
 
 ## Model
 

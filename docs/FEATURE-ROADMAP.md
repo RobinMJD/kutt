@@ -30,7 +30,7 @@ secrets, local configuration or application data.
 
 ## Advanced routing and operations
 
-- [ ] Ordered device/language/country/query rules with redirect test preview.
+- [x] Ordered device/language/country/query rules with redirect test preview (`v3.2.6-sr94.10.1`, deployed and verified 2026-09-14).
 - [ ] Analytics date ranges, exports, tag summaries and consistent bot filtering.
 - [ ] Per-link tracking opt-outs and configurable analytics retention.
 - [ ] Signed asynchronous webhooks and authenticated live updates.
@@ -41,6 +41,32 @@ secrets, local configuration or application data.
 Unicode aliases and extra database engines are optional follow-ups. Each item
 needs tests and migration/rollback notes before completion. No feature-bundle
 upstream PR has been submitted yet.
+
+## Tenth deployment evidence
+
+- [Published release](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.10.1)
+  and [passing release CI](https://github.com/RobinMJD/kutt/actions/runs/34830876322).
+  Source commit `a31713f`; main CI also passed. The immutable `.10` was superseded
+  by `.10.1` after final review found a long-query compatibility edge case for
+  default-only password-protected links. Both paths now have regression coverage.
+- Source digest: `sha256:593c3cacb0a11839ab424b0163ecf49af33e79874a653b3cf6c5d86d33cd5d2e`.
+  Full hardened-image regressions cover ordered/typed conditions, preview without
+  visits/quota, protected and Basic paths, transfer, owner/domain/token/CSRF
+  boundaries, concurrent revision conflicts, forced transactional rollback,
+  restart persistence and guarded downgrade. Existing feature/OIDC suites pass.
+- Exact-image desktop/mobile editing, priority, draft preview, save/reload,
+  native password redirect, conflict recovery and fallback passed, with reviewed
+  screenshots, no overflow and no browser runtime errors.
+- Fresh NAS pre-release backup was byte-verified, migrated and write-tested on
+  the exact wrapper. Original user/link/identity fingerprints remain unchanged;
+  integrity and foreign keys are clean. All disposable fixtures were removed.
+- Public HTTPS/WAF tests passed for the new feature, legacy compatibility and
+  all previous workflows. Real Authentik-signed logout/replay passed and the
+  revoked cookie was rejected. No WAF/SSO protections were relaxed.
+- Two post-restart health samples passed: exact image, healthy/zero restarts,
+  three fresh internal/public/Synology probes, no Kutt alerts, failed units or
+  unhealthy/restarting containers. Post-release backup copied to the NAS (not
+  separately restored). Wrapper scan: zero critical/high, six medium, one low.
 
 ## First deployment evidence
 
