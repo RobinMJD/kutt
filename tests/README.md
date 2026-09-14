@@ -66,3 +66,12 @@ Take a database backup before upgrading an existing deployment.
 `KUTT_BROWSER_DISPOSABLE=1`, `KUTT_TEST_URL` and an installed Playwright module.
 It exercises desktop/mobile organization, selection and bulk actions. Screenshots
 go to a temporary evidence directory, not production data or the repository.
+
+# Transfer regression
+
+`transfer.cjs` is part of the isolated container suite. It covers CSV/JSON
+round trips, formula escaping, dry-run no-write checks, protected links,
+owner/domain/token/CSRF limits, atomic rollback and concurrent/restart replay.
+`browser-transfer.cjs` uses the same disposable loopback settings on a fresh
+instance for desktop/mobile file selection, preview, confirmation, downloads,
+conflict correction and validation errors. It never runs against live data.

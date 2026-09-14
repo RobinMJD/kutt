@@ -16,6 +16,8 @@ migration procedure.
 
 The [Library guide](docs/LIBRARY.md) covers tags, collections, saved filters,
 ownership-safe bulk actions and their API/migration boundaries.
+The [transfer guide](docs/TRANSFER.md) covers CSV/JSON downloads, dry-run imports,
+alias conflicts, protected links, scoped authorization and retry recovery.
 
 Fork CI tests an isolated SQLite database on each main-branch push. Version tags
 matching `v*-sr94.*` publish the tested amd64 image to `ghcr.io/robinmjd/kutt`.

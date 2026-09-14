@@ -23,6 +23,7 @@ apiRouter.use("/domains", domains);
 apiRouter.use("/health", health);
 apiRouter.use("/links", link);
 apiRouter.use("/library", require("./library.routes"));
+apiRouter.use("/transfer", require("./transfer.routes"));
 apiRouter.use("/users", user);
 apiRouter.use("/auth", auth);
 

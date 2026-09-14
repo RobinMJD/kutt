@@ -1,6 +1,6 @@
 {
   "name": "kutt",
-  "version": "3.2.6-sr94.6.1",
+  "version": "3.2.6-sr94.7",
   "description": "Modern URL shortener.",
   "main": "./server/server.js",
   "scripts": {
@@ -31,6 +31,8 @@
     "cookie-parser": "1.4.7",
     "cookie-session": "2.1.1",
     "cors": "2.8.5",
+    "csv-parse": "7.0.2",
+    "csv-stringify": "6.8.3",
     "date-fns": "2.30.0",
     "dotenv": "16.4.7",
     "envalid": "8.0.0",

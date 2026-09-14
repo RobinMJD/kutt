@@ -38,6 +38,8 @@ if (env.TRUST_PROXY) {
 
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cookieParser());
+// Bounded transfer payloads only; retain default limits on every other route.
+app.use(/^\/api\/(?:v2\/)?transfer\/(?:preview|commit)\/?$/i, express.json({ limit: "1mb" }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
