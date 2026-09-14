@@ -16,6 +16,11 @@ async function add(params) {
   const truncatedNow = nowUTC.substring(0, 10) + " " + nowUTC.substring(11, 14) + "00:00";
 
   return knex.transaction(async (trx) => {
+    // Keep the displayed counter and its aggregate in the same transaction.
+    // The write also serializes inline workers before reading the hourly bucket.
+    const changed = await trx("links").where({ id: data.link_id, user_id: data.user_id, banned: false })
+      .whereNull("deleted_at").increment("visit_count", 1);
+    if (!changed) return;
     // Create a subquery first that truncates the
     const subquery = trx("visits")
       .select("visits.*")
@@ -42,11 +47,11 @@ async function add(params) {
           updated_at: utils.dateToUTC(new Date()),
           countries: JSON.stringify({
             ...countries,
-            [data.country]: (countries[data.country] ?? 0) + 1
+            [data.country]: (Object.hasOwn(countries, data.country) ? countries[data.country] : 0) + 1
           }),
           referrers: JSON.stringify({
             ...referrers,
-             [data.referrer]: (referrers[data.referrer] ?? 0) + 1
+             [data.referrer]: (Object.hasOwn(referrers, data.referrer) ? referrers[data.referrer] : 0) + 1
           })
         });
     } else {
@@ -135,7 +140,7 @@ async function find(match, total) {
           ...Object.entries(countries).reduce(
             (obj, [country, count]) => ({
               ...obj,
-              [country]: (period.country[country] || 0) + count
+              [country]: (Object.hasOwn(period.country, country) ? period.country[country] : 0) + count
             }),
             {}
           )
@@ -145,7 +150,7 @@ async function find(match, total) {
           ...Object.entries(referrers).reduce(
             (obj, [referrer, count]) => ({
               ...obj,
-              [referrer]: (period.referrer[referrer] || 0) + count
+              [referrer]: (Object.hasOwn(period.referrer, referrer) ? period.referrer[referrer] : 0) + count
             }),
             {}
           )

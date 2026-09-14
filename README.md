@@ -20,6 +20,8 @@ The [transfer guide](docs/TRANSFER.md) covers CSV/JSON downloads, dry-run import
 alias conflicts, protected links, scoped authorization and retry recovery.
 The [routing guide](docs/ROUTING.md) covers ordered redirect conditions, preview,
 authorization and recovery constraints.
+The [analytics guide](docs/ANALYTICS.md) covers UTC date ranges, tag summaries,
+private exports, bot classification and aggregate compatibility.
 The [QR guide](docs/QR-CODES.md) covers owner-only PNG/SVG downloads, printing,
 scoped API use and independent decoder/browser validation.
 The [Workspaces guide](docs/WORKSPACES.md) covers accepted invitations,

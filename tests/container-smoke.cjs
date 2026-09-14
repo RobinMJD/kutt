@@ -9,7 +9,7 @@ const net = require("node:net");
 const { setTimeout: delay } = require("node:timers/promises");
 
 async function main() {
-  assert([undefined, "workspaces", "routing"].includes(process.env.KUTT_TEST_ONLY), "Unknown focused test selection");
+  assert([undefined, "workspaces", "routing", "analytics"].includes(process.env.KUTT_TEST_ONLY), "Unknown focused test selection");
   const root = path.resolve(__dirname, "..");
   assert(!existsSync(path.join(root, ".env")), "Run in a clean checkout without a .env file");
   const directory = mkdtempSync(path.join(tmpdir(), "kutt-smoke-"));
@@ -157,6 +157,7 @@ async function main() {
     await require("./qr.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, env });
     await require("./workspaces.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, root, directory, env });
     await require("./routing.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, root, directory, env });
+    await require("./analytics.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, root, directory, env });
     const refusedDown = spawnSync(process.execPath, [
       path.join(root, "node_modules/knex/bin/cli.js"),
       "--knexfile", path.join(root, "knexfile.js"), "migrate:down", "20260914001000_link_history_trash.js"

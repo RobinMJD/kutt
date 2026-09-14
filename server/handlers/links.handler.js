@@ -1,7 +1,7 @@
 const { differenceInSeconds } = require("date-fns");
 const promisify = require("node:util").promisify;
 const bcrypt = require("bcryptjs");
-const { isbot } = require("isbot");
+const visitClassification = require("../visit-classification");
 const URL = require("node:url");
 const dns = require("node:dns");
 
@@ -553,11 +553,10 @@ function unavailable(res) {
 }
 
 function recordVisit(req, link) {
-  if (req.method !== "HEAD" && link.user_id && !isbot(req.headers["user-agent"])) {
+  if (req.method !== "HEAD" && link.user_id && visitClassification.human(req.headers["user-agent"])) {
     queue.visit.add({
-      userAgent: req.headers["user-agent"],
+      userAgent: visitClassification.userAgent(req.headers["user-agent"]),
       ip: req.ip,
-      country: req.get("cf-ipcountry"),
       referrer: req.get("Referrer"),
       link
     });

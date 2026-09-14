@@ -1,6 +1,6 @@
 {{> header}}
 <main class="link-archive library">
-  <header class="archive-heading"><h1>Library</h1><a href="/">Links</a><a href="/settings/transfer">Import and export</a><a href="/settings/trash">Trash</a></header>
+  <header class="archive-heading"><h1>Library</h1><a href="/">Links</a><a href="/settings/analytics">Analytics</a><a href="/settings/transfer">Import and export</a><a href="/settings/trash">Trash</a></header>
   {{#if error}}<p class="library-error" role="alert">{{error}}</p>{{/if}}
   <form class="library-filters" action="/settings/library" method="get" aria-label="Filter links">
     <label>Search<input type="search" name="q" value="{{filters.q}}" maxlength="200" /></label>

@@ -8,6 +8,10 @@ const auth = require("../handlers/auth.handler");
 const env = require("../env");
 
 const router = Router();
+router.get("/settings/analytics", require("../handlers/tokens.handler").sessionOnly,
+  asyncHandler(auth.jwtPage), asyncHandler(locals.user), require("../handlers/analytics.handler").boundary,
+  asyncHandler(require("../handlers/analytics.handler").page));
+router.use("/settings/analytics", (error, req, res, next) => { res.status(error.statusCode || 500); next(error); });
 router.get("/link/routing/:id", require("../handlers/tokens.handler").sessionOnly,
   asyncHandler(auth.jwtPage), asyncHandler(locals.user), require("../handlers/routing.handler").boundary,
   asyncHandler(require("../handlers/routing.handler").page));
