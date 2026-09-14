@@ -540,7 +540,7 @@ async function redirect(req, res, next) {
       title: "Protected short link",
       id: link.uuid,
       routing_query: await require("../link-forwarding").protectedQuery(req, link),
-      forwarding_path: req.forwardPath
+      suffix_path: req.forwardPath
     });
     return;
   }
@@ -593,7 +593,8 @@ async function redirectProtected(req, res) {
   }
 
   res.set("Cache-Control", "no-store");
-  const target = await require("../link-forwarding").resolve(req, link, req.body.routing_query, req.body.forwarding_path);
+  const forwarding = require("../link-forwarding");
+  const target = await forwarding.resolve(req, link, req.body.routing_query, forwarding.submittedPath(req.body));
   if (!await linkLifecycle.allow(link, true)) return unavailable(res);
   await recordVisit(req, link);
 

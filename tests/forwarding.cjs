@@ -59,9 +59,12 @@ module.exports = async ({ request, session, database, account, restart, root, di
     db.prepare("UPDATE links SET password=? WHERE uuid=?").run(require("bcryptjs").hashSync("forward-secret", 4), link.id);
     response = await request("GET", "/" + address + "/docs/start?utm_source=book", undefined, undefined, { Accept: "text/html" });
     assert.equal(response.status, 200); const html = await response.text();
-    assert.match(html, /name="forwarding_path" value="docs\/start"/); assert(!html.includes(link.target));
+    assert.match(html, /name="suffix_path" value="docs\/start"/); assert(!html.includes(link.target));
     response = await request("POST", "/api/links/" + link.id + "/protected", { password: "forward-secret", forwarding_path: "docs/start", routing_query: "campaign=1&utm_source=book" });
     assert.equal(response.status, 200); assert.equal((await response.json()).target, "https://192.0.2.1/campaign/docs/start?utm_source=book");
+    response = await request("POST", "/api/links/" + link.id + "/protected", { password: "forward-secret", suffix_path: "docs/start", routing_query: "campaign=1&utm_source=book" });
+    assert.equal(response.status, 200); assert.equal((await response.json()).target, "https://192.0.2.1/campaign/docs/start?utm_source=book");
+    assert.equal((await request("POST", "/api/links/" + link.id + "/protected", { password: "forward-secret", suffix_path: "docs/start", forwarding_path: "other" })).status, 400);
     assert.equal((await request("POST", "/api/links/" + link.id + "/protected", { password: "forward-secret", forwarding_path: "../../evil" })).status, 400);
     assert.equal((await request("POST", "/api/links/" + link.id + "/protected", { password: "forward-secret", forwarding_path: "products/manuals/chapter" })).status, 410, "Protected UUID entry cannot bypass a retired child alias");
     assert.equal((await request("POST", "/api/links/" + link.id + "/protected", { password: "wrong", forwarding_path: "docs/start" })).status, 401);

@@ -66,7 +66,8 @@ function editLink(req, res, next) {
 function protected(req, res, next) {
   res.locals.id = req.params.id;
   res.locals.routing_query = typeof req.body.routing_query === "string" ? req.body.routing_query.slice(0, 2048) : "";
-  res.locals.forwarding_path = typeof req.body.forwarding_path === "string" ? req.body.forwarding_path.slice(0, 256) : "";
+  const suffix = require("../link-forwarding").submittedPath(req.body);
+  res.locals.suffix_path = typeof suffix === "string" ? suffix.slice(0, 256) : "";
   next();
 }
 

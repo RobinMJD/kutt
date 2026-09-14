@@ -1,6 +1,6 @@
 # Nested aliases and explicit forwarding
 
-Implemented for `v3.2.6-sr94.14`, roadmap item 14. Production acceptance is tracked
+Implemented for `v3.2.6-sr94.14.1`, roadmap item 14. Production acceptance is tracked
 separately in the roadmap and remains unchecked until all release gates pass.
 
 ## Aliases and matching
@@ -64,6 +64,11 @@ Ordered routing selects the destination first; forwarding is then applied.
 Public redirects remain unauthenticated except for a link's own password. Native
 password forms preserve query/path across a wrong-password retry. API password
 submissions revalidate the path, current policy and child/retired-alias precedence.
+The protected POST uses `suffix_path` and `routing_query`. The server still accepts
+the original `.14` name `forwarding_path` for compatibility, but new clients must
+use `suffix_path`: CRS 930120 matched the old JSON field name as `.forward` during
+public acceptance. Conflicting old/new values are rejected. No WAF rule or target
+exclusion was added; password and path validation are unchanged.
 HEAD requests and previews do not consume quota; successful GET/unlock requests
 still enforce lifecycle limits. Corrupt stored policies fail closed with 503.
 

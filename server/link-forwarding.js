@@ -59,6 +59,11 @@ function apply(config, destination, query = "", suffix = "") {
   if (target.href.length > 2040) fail("The forwarded destination is too long.");
   return target.href;
 }
+function submittedPath(body) {
+  // Keep .14 clients compatible; new clients use a name without CRS's .forward match.
+  if (body.suffix_path !== undefined && body.forwarding_path !== undefined && body.suffix_path !== body.forwarding_path) fail("Conflicting short paths.");
+  return body.suffix_path === undefined ? body.forwarding_path : body.suffix_path;
+}
 async function resolve(req, link, suppliedQuery, suppliedPath) {
   const config = await policy(link.id);
   if (suppliedPath) {
@@ -112,4 +117,4 @@ async function lookup(address, domainId) {
   }
   return null;
 }
-module.exports = { normalize, stored, path, policy, allows, apply, resolve, protectedQuery, save, lookup };
+module.exports = { normalize, stored, path, policy, allows, apply, resolve, protectedQuery, save, lookup, submittedPath };
