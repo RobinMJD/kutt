@@ -69,10 +69,15 @@ async function update(match, update, methods) {
       query.andWhere(key, ...(Array.isArray(value) ? value : [value]));
     });
 
-    const user = await query.select("id").first();
+    const user = await query.first();
     if (!user) return {};
     
     const updateQuery = trx("users").where("id", user.id);
+    // Recheck token/expiry predicates at the write, not just before a concurrent
+    // transaction consumes them. Only the winning update may mint a session.
+    Object.entries(match).forEach(([key, value]) => {
+      updateQuery.andWhere(key, ...(Array.isArray(value) ? value : [value]));
+    });
     if (update.password !== undefined || update.banned !== undefined) updateQuery.increment("auth_version", 1);
     if (methods?.increments) {
       methods.increments.forEach(columnName => {
@@ -80,7 +85,8 @@ async function update(match, update, methods) {
       });
     }
     
-    await updateQuery.update({ ...update, updated_at: utils.dateToUTC(new Date()) });
+    const changed = await updateQuery.update({ ...update, updated_at: utils.dateToUTC(new Date()) });
+    if (!changed) return {};
     const updated_user = await trx("users").where("id", user.id).first();
 
     return { user, updated_user };

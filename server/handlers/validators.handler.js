@@ -257,9 +257,16 @@ const reportLink = [
       checkFalsy: true,
       checkNull: true
     })
+    .isString().bail()
+    .isLength({ max: 4096 }).bail()
+    .custom(value => !/[\u0000-\u0020\u007f<>]/.test(value)).bail()
     .customSanitizer(utils.addProtocol)
     .custom(
-      value => utils.removeWww(URL.parse(value).host) === env.DEFAULT_DOMAIN
+      value => {
+        const parsed = new URL.URL(value);
+        return ["https:", "http:"].includes(parsed.protocol) && !parsed.username && !parsed.password &&
+          utils.removeWww(parsed.host) === env.DEFAULT_DOMAIN;
+      }
     )
     .withMessage(`You can only report a ${env.DEFAULT_DOMAIN} link.`)
 ];

@@ -7,7 +7,13 @@ on:
       - "package*.json"
       - "server/**"
       - "knexfile.js"
-      - "tests/container-smoke.cjs"
+      - "docker-compose*.yml"
+      - ".example.env"
+      - "tests/**"
+      - "static/**"
+      - "examples/**"
+      - "scripts/**"
+      - ".dockerignore"
       - ".github/workflows/docker-smoke.yaml"
   workflow_dispatch:
 
@@ -22,5 +28,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Build production image
         run: docker build -t kutt-smoke .
+      - name: Validate example deployment configuration
+        run: python3 tests/compose-config.py
       - name: Test isolated SQLite runtime without external network access
         run: docker run --rm --network none --entrypoint node kutt-smoke tests/container-smoke.cjs
+      - name: Test isolated Redis worker and rate limits
+        run: sh tests/redis-smoke.sh kutt-smoke

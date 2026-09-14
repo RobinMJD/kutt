@@ -15,6 +15,10 @@ router.get("/settings/health", require("../handlers/tokens.handler").sessionOnly
   asyncHandler(auth.jwtPage), asyncHandler(locals.user), destinationHealth.boundary, asyncHandler(destinationHealth.dashboard));
 router.use(["/link/health", "/settings/health"], (error, req, res, next) => { res.status(error.statusCode || 500); next(error); });
 const privacy = require("../handlers/privacy.handler");
+router.get("/settings/shortcuts", require("../handlers/tokens.handler").sessionOnly,
+  asyncHandler(auth.jwtPage), asyncHandler(locals.user), privacy.boundary,
+  require("../handlers/shortcuts.handler").page);
+router.use("/settings/shortcuts", (error, req, res, next) => { res.status(error.statusCode || 500); next(error); });
 router.get("/settings/integrations", require("../handlers/tokens.handler").sessionOnly,
   asyncHandler(auth.jwtPage), asyncHandler(locals.user), privacy.boundary,
   asyncHandler(require("../handlers/webhooks.handler").page));

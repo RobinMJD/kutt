@@ -24,7 +24,12 @@ module.exports = async function({ data }) {
   const browser = getUseragentBrowser(agent);
   const os = getUseragentOS(agent);
   let referrer;
-  try { referrer = typeof data.referrer === "string" && removeWww(new URL.URL(data.referrer).hostname); } catch {}
+  try {
+    if (typeof data.referrer === "string" && data.referrer.length <= 8192) {
+      const parsed = new URL.URL(data.referrer);
+      if (["http:", "https:"].includes(parsed.protocol) && parsed.hostname.length <= 253) referrer = removeWww(parsed.hostname);
+    }
+  } catch {}
   const country = geoip.lookup(data.ip || "")?.country || "Unknown";
 
   return query.visit.add({

@@ -43,8 +43,10 @@ bound accounts have all old cookies invalidated and must sign in again. Links,
 password hashes, API tokens and account IDs are unchanged.
 
 An issuer or subject-mode change after binding needs a separately audited
-migration. Do not delete bindings to make login pass. Existing unbound local
-sessions retain their original expiry until revoked, changed password, or ban.
+migration. Do not delete bindings to make login pass. Unbound local-password
+sessions use the existing seven-day lifetime and may renew after a day of use;
+they do not inherit the OIDC absolute limit. Revoke them explicitly, change the
+password, or ban the account to invalidate outstanding cookies.
 
 ## Revocation and API
 

@@ -20,6 +20,7 @@ router.post(
   "/login",
   locals.viewTemplate("partials/auth/form"),
   auth.featureAccess([!env.DISALLOW_LOGIN_FORM]),
+  require("../handlers/login-origin.handler"),
   validators.login,
   asyncHandler(helpers.verify),
   helpers.rateLimit({ window: 60, limit: 5 }),

@@ -150,6 +150,7 @@ router.post(
   "/report",
   locals.viewTemplate("partials/report/form"),
   auth.featureAccess([env.MAIL_ENABLED]),
+  helpers.rateLimit({ window: 60, limit: 3, always: true, key: "report-link" }),
   validators.reportLink,
   asyncHandler(helpers.verify),
   asyncHandler(link.report)

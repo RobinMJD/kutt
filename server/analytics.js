@@ -1,6 +1,7 @@
 const knex = require("./knex");
 const { CustomError, dateToUTC, parseDatetime } = require("./utils");
 const { stringify } = require("csv-stringify/sync");
+const referrers = require("./analytics-referrers");
 
 const fail = (message, status = 400) => { throw new CustomError(message, status); };
 const DAY = 86400000;
@@ -115,9 +116,8 @@ async function report(req) {
       if (!byDay.has(day)) fail("Stored analytics timestamp is inconsistent.", 503);
       increment(byDay, day, visit.total); increment(perLink, visit.link_id, visit.total);
       for (const [kind, names] of Object.entries(dimensions)) for (const name of names) increment(stats[kind], name, visit[(kind === "browser" ? "br_" : "os_") + name]);
-      for (const [kind, column] of [["country", "countries"], ["referrer", "referrers"]]) {
-        for (const [name, count] of objectCounts(visit[column])) increment(stats[kind], kind === "referrer" ? name.replace(/\[dot\]/g, ".") : name.toUpperCase(), count);
-      }
+      for (const [name, count] of objectCounts(visit.countries)) increment(stats.country, name.toUpperCase(), count);
+      for (const [name, count] of referrers.entries(visit.referrers, visit.total)) referrers.add(stats.referrer, name.replace(/\[dot\]/g, "."), count);
     }
   }
   const tags = new Map();
@@ -147,6 +147,7 @@ async function report(req) {
     tags: [...tags.values()].sort((a, b) => b.visits - a.visits || a.name.localeCompare(b.name)),
     available_filters: { tags: labels, domains }, generated_at: new Date().toISOString(),
     bot_filter: "Known bots excluded at ingestion; historical aggregates cannot be reclassified.",
+    referrer_basis: "Up to 128 referrer names per bucket/report; overflow and oversized historical detail appear as (other). Stored historical detail is preserved.",
     tag_basis: "Current assignments; totals overlap when a link has multiple tags." };
 }
 

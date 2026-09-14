@@ -4,5 +4,15 @@ node_modules
 .env
 .env.*
 !.env.example
-*.sqlite*
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite3
 secrets
+db
+**/.DS_Store
+**/*.pem
+**/*.key
+**/*.log
+test-results
+playwright-report

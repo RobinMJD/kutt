@@ -34,6 +34,10 @@ The [QR guide](docs/QR-CODES.md) covers owner-only PNG/SVG downloads, printing,
 scoped API use and independent decoder/browser validation.
 The [Workspaces guide](docs/WORKSPACES.md) covers accepted invitations,
 owner/editor/viewer permissions, shared-link APIs and non-destructive closure.
+The [iOS Shortcut guide](examples/IOS-SHORTCUT.md) covers optional share-sheet
+shortening with a limited token. It is a client integration, not a server dependency.
+See [deployment and recovery](docs/DEPLOYMENT.md) and the
+[security maintenance notes](docs/SECURITY-MAINTENANCE.md) before upgrading.
 
 Fork CI tests an isolated SQLite database on each main-branch push. Version tags
 matching `v*-sr94.*` publish the tested amd64 image to `ghcr.io/robinmjd/kutt`.
@@ -79,7 +83,7 @@ feature release. Do not substitute a production database into the test harness.
 ## Key features
 
 - Created with self-host in mind:
-  - Zero configuration needed
+  - SQLite by default, with explicit production secrets
   - Easy setup with no build step
   - Supporting various databases (SQLite, Postgres, MySQL)
   - Ability to disable registration and anonymous links
@@ -100,32 +104,42 @@ Support the development of Kutt by making a donation or becoming an sponsor.
 
 ## Setup
 
-The only prerequisite is [Node.js](https://nodejs.org/) (version 20 or above). The default database is SQLite. You can optionally install Postgres or MySQL/MariaDB for the database or Redis for the cache. 
+Use [Node.js](https://nodejs.org/) 24, matching the tested Docker runtime. The default database is SQLite. Optional Postgres and MySQL/MariaDB examples are not evidence that every fork feature has passed those engines. Redis can provide shared cache, visit queues and rate-limit storage.
 
 When you first start the app, you're prompted to create an admin account.
 
-1. Clone this repository or [download the latest zip](https://github.com/thedevs-network/kutt/releases)
-2. Install dependencies: `npm install`
-3. Initialize database: `npm run migrate`
-5. Start the app for development `npm run dev` or production `npm start`
+1. Clone this fork or download a [versioned release](https://github.com/RobinMJD/kutt/releases).
+2. Copy `.example.env` to `.env`, restrict it to mode `0600`, and set a long random `JWT_SECRET`. Set `DEFAULT_DOMAIN` to the canonical hostname (no scheme/path). Preserve existing production secrets when upgrading.
+3. Install locked dependencies: `npm ci`.
+4. Initialize the configured database: `npm run migrate`.
+5. Start development with `npm run dev`, or production with `npm start` behind your secured HTTPS reverse proxy.
 
 ## Docker
 
-Make sure Docker is installed, then you can start the app from the root directory:
+Configure the private `.env` above first. With Docker Compose installed:
 
 ```sh
-docker compose up
+docker compose config --quiet
+docker compose up --build -d
 ```
 
 Various docker-compose configurations are available. Use `docker compose -f <file_name> up` to start the one you want:
 
 - [`docker-compose.yml`](./docker-compose.yml): Default Kutt setup. Uses SQLite for the database.
-- [`docker-compose.sqlite-redis.yml`](./docker-compose.sqlite-redis.yml): Starts Kutt with SQLite and Redis.
-  - Required environment variable: `REDIS_ENABLED`
+- [`docker-compose.sqlite-redis.yml`](./docker-compose.sqlite-redis.yml): Starts Kutt with SQLite and Redis; enables Redis automatically.
 - [`docker-compose.postgres.yml`](./docker-compose.postgres.yml): Starts Kutt with Postgres and Redis.
-  - Required environment variables: `REDIS_ENABLED`, `DB_PASSWORD`, `DB_NAME`, `DB_USER`
+  - Required environment variables: `POSTGRES_IMAGE`, `DB_PASSWORD`, `DB_NAME`, `DB_USER`.
 - [`docker-compose.mariadb.yml`](./docker-compose.mariadb.yml): Starts Kutt with MariaDB and Redis.
-  - Required environment variables: `REDIS_ENABLED`, `DB_PASSWORD`, `DB_NAME`, `DB_USER`, `DB_PORT`
+  - Required environment variables: `MARIADB_IMAGE`, `DB_PASSWORD`, `DB_NAME`, a non-root `DB_USER`, and `MARIADB_ROOT_PASSWORD_FILE` pointing to a separate root-password file.
+
+All examples require `JWT_SECRET`, pass application configuration from `.env`,
+and publish only `127.0.0.1:3000`. SQL credentials must match any existing volume;
+changing environment variables does not change existing database accounts.
+Do not publish the backend directly. Configure HTTPS, WAF and management SSO
+before external access, keeping only short-link redirects intentionally public.
+See [deployment and recovery](docs/DEPLOYMENT.md) for proxy, database-version,
+backup and rollback requirements. Never use `docker compose down --volumes` on
+an instance whose data you intend to retain.
 
 Official Kutt Docker image is available on [Docker Hub](https://hub.docker.com/r/kutt/kutt).
 
@@ -139,7 +153,12 @@ The app is configured via environment variables. You can pass environment variab
 
 All variables are optional except `JWT_SECRET` which is required on production. 
 
-You can use files for each of the variables by appending `_FILE` to the name of the variable. Example: `JWT_SECRET_FILE=/path/to/secret_file`.
+You can use files for each variable by appending `_FILE`. Example:
+`JWT_SECRET_FILE=/run/secrets/jwt_secret`. The file must exist inside the app
+container/process, is trimmed, and takes precedence over the inline value.
+Unreadable configured files stop startup rather than silently using a fallback.
+The Compose examples use inline `JWT_SECRET` validation; adapt their mounts and
+environment explicitly when using Docker secrets instead.
 
 | Variable | Description | Default | Example |
 | -------- | ----------- | ------- | ------- |
@@ -181,7 +200,7 @@ You can use files for each of the variables by appending `_FILE` to the name of 
 | `MAIL_SECURE` | Whether use SSL for the email server connection | `false` | `true` | 
 | `OIDC_ENABLED` | Enable OpenID Connect | `false` | `true` | 
 | `OIDC_ISSUER` | OIDC issuer URL | - | `https://example.com/some/path` | 
-| `OIDC_POMPT` | OIDC prompt | - | `login` | 
+| `OIDC_PROMPT` | OIDC prompt | - | `login` |
 | `OIDC_CLIENT_ID` | OIDC client id | - | `example-app` | 
 | `OIDC_CLIENT_SECRET` | OIDC client secret | - | `some-secret` | 
 | `OIDC_SCOPE` | OIDC Scope | `openid profile email` | `openid email` | 

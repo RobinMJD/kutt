@@ -8,8 +8,11 @@ identifiers. Downloads are private, uncached attachments.
 
 Import a file or paste its contents, choose an alias-conflict policy and run a
 dry run. Review every row before confirming. Editing input invalidates the
-preview. Confirmation is bound to the input, account, API credential and domain
+preview. Confirmation is bound to the input, account, scoped-token ID and domain
 restriction, expires after 20 minutes, and rechecks availability and permissions.
+Browser sessions and legacy API keys use the same account-level credential
+bucket; rotating a legacy key alone does not invalidate an otherwise valid
+preview for that account. Prefer individually revocable scoped tokens.
 
 - **Abort batch**: any conflicting alias prevents the whole import.
 - **Skip conflicting rows**: existing or retired aliases are skipped unchanged.
@@ -83,7 +86,7 @@ override exists. Public short-link redirects are unchanged.
 
 If confirmation fails due to a connection error, retry **the identical
 confirmation**, not a new dry run. A committed receipt prevents duplication.
-Changed input/credential, changed aliases/permissions, an expired receipt or a
+Changed input/scoped-token identity, changed aliases/permissions, an expired receipt or a
 subsequently deleted/banned/moved-away link causes refusal. A dry-run error writes
 nothing; a write failure rolls back all link, label, alias, history and receipt
 and routing/forwarding changes in that batch. A previously committed all-skipped batch remains a replay,

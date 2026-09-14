@@ -15,6 +15,9 @@ function read(filename, now = Date.now()) {
 }
 if (require.main === module) {
   try {
+    require("dotenv").config();
+    require("../server/env-files")(["DB_CLIENT", "DB_FILENAME"]);
+    if (process.env.DB_CLIENT && !["sqlite3", "better-sqlite3"].includes(process.env.DB_CLIENT)) throw new Error("SQLite required");
     if (!process.env.DB_FILENAME) throw new Error("DB_FILENAME required");
     console.log(JSON.stringify(read(process.env.DB_FILENAME)));
   } catch { console.error("Destination monitoring status unavailable"); process.exitCode = 1; }

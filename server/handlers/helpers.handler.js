@@ -86,7 +86,7 @@ function parseQuery(req, res, next) {
 };
 
 function rateLimit(params) {
-  if (!env.ENABLE_RATE_LIMIT) {
+  if (!env.ENABLE_RATE_LIMIT && !params.always) {
     return function(req, res, next) {
       return next();
     }
@@ -112,12 +112,17 @@ function rateLimit(params) {
       return params.limit;
     },
     keyGenerator: function(req, res) {
-      return "rl:" + req.method + req.baseUrl + req.path + ":" + req.ip;
+      // Express routes are case-insensitive and mounted at both API aliases.
+      // Use the matched operation, never attacker-controlled URL spelling.
+      const operation = (typeof params.key === "function" ? params.key(req) : params.key) ||
+        (req.method + req.baseUrl.replace(/^\/api(?:\/v2)?(?=\/|$)/i, "/api") + String(req.route?.path || "")).toLowerCase();
+      return "rl:" + operation + ":" + req.ip;
     },
     requestWasSuccessful: function(req, res) {
       return !res.locals.error && res.statusCode < 400;
     },
     handler: function (req, res, next, options) {
+      res.status(options.statusCode).set("Cache-Control", "no-store");
       throw new CustomError(options.message, options.statusCode);
     },
   });

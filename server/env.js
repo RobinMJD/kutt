@@ -1,6 +1,5 @@
 require("dotenv").config();
 const { cleanEnv, num, str, bool } = require("envalid");
-const { readFileSync } = require("node:fs");
 
 const supportedDBClients = [
   "pg",
@@ -78,15 +77,8 @@ const spec = {
   NODE_APP_INSTANCE: num({ default: 0 }),
 };
 
-for (const key in spec) {
-  const file_key = key + "_FILE";
-  if (!(file_key in process.env)) continue;
-  try {
-    process.env[key] = readFileSync(process.env[file_key], "utf8").trim();
-  } catch {
-    // on error, env_FILE just doesn't get applied.
-  }
-}
+require("./env-files")(Object.keys(spec));
+if (process.env.JWT_SECRET === "") delete process.env.JWT_SECRET;
 
 const env = cleanEnv(process.env, spec);
 

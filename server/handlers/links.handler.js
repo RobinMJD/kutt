@@ -186,6 +186,7 @@ async function edit(req, res) {
     [req.body.expire_in, "expire_in"], 
     [req.body.password, "password"]
   ].forEach(([value, name]) => {
+    if (!Object.hasOwn(req.body, name)) return;
     if (!value) {
       if (name === "password" && link.password) 
         req.body.password = null;
@@ -279,6 +280,7 @@ async function editAdmin(req, res) {
     [req.body.expire_in, "expire_in"], 
     [req.body.password, "password"]
   ].forEach(([value, name]) => {
+    if (!Object.hasOwn(req.body, name)) return;
     if (!value) {
       if (name === "password" && link.password) 
         req.body.password = null;
@@ -530,6 +532,7 @@ async function redirect(req, res, next) {
           const colon = decoded.indexOf(":");
           if (colon !== -1) {
             const password = decoded.slice(colon + 1);
+            await require("../protected-links").attempt(req, res, link);
             const matches = await bcrypt.compare(password, link.password);
             if (matches) return finishRedirect(req, res, link);
           }
@@ -569,6 +572,7 @@ async function recordVisit(req, link) {
 
 async function finishRedirect(req, res, link) {
   res.set("Cache-Control", "no-store");
+  if (!await require("../protected-links").available(link)) return unavailable(res);
   const target = await require("../link-forwarding").resolve(req, link);
   if (!await linkLifecycle.allow(link, req.method !== "HEAD")) return unavailable(res);
   await recordVisit(req, link);
@@ -585,6 +589,10 @@ async function redirectProtected(req, res) {
     throw new CustomError("Couldn't find the link.", 400);
   }
 
+  res.set("Cache-Control", "no-store");
+  await require("../protected-links").requireAvailable(link);
+  if (!await linkLifecycle.allow(link)) return unavailable(res);
+  await require("../protected-links").attempt(req, res, link);
   // 3. Check if password matches
   const matches = await bcrypt.compare(req.body.password, link.password);
 

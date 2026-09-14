@@ -82,7 +82,9 @@ never URLs, query values or response bodies. Retrieve details with owner-scoped
 GET. Webhook receiver security and retries are unchanged.
 
 Operators can run `node scripts/destination-health.cjs` inside the container
-with its normal `DB_FILENAME`. This read-only SQLite probe emits aggregate JSON:
+with its normal `DB_FILENAME` or `DB_FILENAME_FILE`. It also loads the local
+`.env`, honors `DB_CLIENT_FILE`, refuses non-SQLite databases and never creates
+a missing file. This read-only SQLite probe emits aggregate JSON:
 `worker_age_seconds` (-1 if never started), `enabled`, `attention`, and `overdue`.
 No IDs or targets are exported. Alert on command failure, age over 180 seconds,
 or nonzero attention/overdue; a negative age is not a healthy zero. The homelab

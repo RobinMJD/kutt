@@ -19,6 +19,7 @@ const apiRouter = Router();
 apiRouter.use(locals.noLayout);
 apiRouter.use(asyncHandler(tokenHandlers.authenticate));
 apiRouter.use("/tokens", tokens);
+apiRouter.use("/shortcuts", require("./shortcuts.routes"));
 apiRouter.use("/webhooks", require("./webhooks.routes"));
 apiRouter.use("/events", require("./events.routes"));
 apiRouter.use("/analytics", require("./analytics.routes"));

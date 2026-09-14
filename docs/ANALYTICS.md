@@ -65,7 +65,11 @@ agents may not be detected: this is heuristic filtering, not proof of humanity.
 
 Country is derived locally from the trusted client IP using GeoIP. Client-supplied
 country hints are ignored. Invalid referrer URLs become direct visits; paths,
-queries and fragments are not retained in referrer dimensions. Worker processing
+queries and fragments are not retained in referrer dimensions. New hourly
+referrer buckets retain at most 128 names plus an `(other)` overflow counter.
+Report breakdowns use the same cap; totals still include overflow visits. Old
+high-cardinality data is not erased: oversized historical detail is omitted from
+reports in favor of its aggregate count. Worker processing
 rechecks link/user ownership, deletion and bans. The displayed counter and hourly
 aggregate now commit atomically; a failed aggregate write cannot increment only
 the displayed counter. Concurrent inline workers retain every increment, and

@@ -4,12 +4,13 @@ const utils = require("../utils");
 const redis = require("../redis");
 const knex = require("../knex");
 const env = require("../env");
+const referrerCounts = require("../analytics-referrers");
 
 async function add(params) {
   const data = {
     ...params,
     country: params.country.toLowerCase(),
-    referrer: params.referrer.toLowerCase()
+    referrer: typeof params.referrer === "string" && params.referrer.length <= 1265 ? params.referrer.toLowerCase() : referrerCounts.OTHER
   };
 
   const nowUTC = new Date().toISOString();
@@ -40,7 +41,6 @@ async function add(params) {
       
     if (visit) {
       const countries = typeof visit.countries === "string" ? JSON.parse(visit.countries) : visit.countries;
-      const referrers = typeof visit.referrers === "string" ? JSON.parse(visit.referrers) : visit.referrers;
       await trx("visits")
         .where({ id: visit.id })
         .increment(`br_${data.browser}`, 1)
@@ -52,10 +52,7 @@ async function add(params) {
             ...countries,
             [data.country]: (Object.hasOwn(countries, data.country) ? countries[data.country] : 0) + 1
           }),
-          referrers: JSON.stringify({
-            ...referrers,
-             [data.referrer]: (Object.hasOwn(referrers, data.referrer) ? referrers[data.referrer] : 0) + 1
-          })
+          referrers: referrerCounts.append(visit.referrers, data.referrer)
         });
     } else {
       // This must also happen in the transaction to avoid concurrency
@@ -122,7 +119,8 @@ async function find(match, total) {
       const view = stats[type].views[index];
       const period = stats[type].stats;
       const countries = typeof visit.countries === "string" ? JSON.parse(visit.countries) : visit.countries;
-      const referrers = typeof visit.referrers === "string" ? JSON.parse(visit.referrers) : visit.referrers;
+      const referrers = new Map(Object.entries(period.referrer));
+      for (const [name, count] of referrerCounts.entries(visit.referrers, visit.total)) referrerCounts.add(referrers, name, count);
       stats[type].stats = {
         browser: {
           chrome: period.browser.chrome + visit.br_chrome,
@@ -151,16 +149,7 @@ async function find(match, total) {
             {}
           )
         },
-        referrer: {
-          ...period.referrer,
-          ...Object.entries(referrers).reduce(
-            (obj, [referrer, count]) => ({
-              ...obj,
-              [referrer]: (Object.hasOwn(period.referrer, referrer) ? period.referrer[referrer] : 0) + count
-            }),
-            {}
-          )
-        }
+        referrer: Object.fromEntries(referrers)
       };
       stats[type].views[index] += visit.total;
       stats[type].total += visit.total;

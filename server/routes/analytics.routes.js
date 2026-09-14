@@ -4,6 +4,8 @@ const analytics = require("../handlers/analytics.handler");
 const helpers = require("../handlers/helpers.handler");
 const asyncHandler = require("../utils/asyncHandler");
 const router = Router();
+const { sessionOnly } = require("../handlers/tokens.handler");
+router.use("/retention", sessionOnly);
 router.use(asyncHandler(auth.apikey), asyncHandler(auth.jwt), analytics.boundary);
 const privacy = require("../handlers/privacy.handler");
 router.get("/retention", privacy.boundary, asyncHandler(privacy.getRetention));

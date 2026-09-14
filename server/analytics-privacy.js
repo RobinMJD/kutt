@@ -39,7 +39,9 @@ async function saveTracking(req) {
   });
 }
 async function administrator(req, db = knex) {
-  if (req.get("X-API-Key") || req.apiToken || !req.user) fail("An administrator browser session is required.", 403);
+  if (req.get("X-API-Key") || req.apiToken || req.query?.apikey !== undefined || req.body?.apikey !== undefined ||
+      !req.user || req.authInfo?.sub !== req.user.id || !Number.isFinite(req.authInfo?.exp) ||
+      req.authInfo.exp * 1000 <= Date.now()) fail("An administrator browser session is required.", 403);
   const user = await db("users").where({ id: req.user.id, role: "ADMIN", verified: true, banned: false }).first();
   if (!user || Number(user.auth_version || 0) !== Number(req.user.auth_version || 0)) fail("Administrator access is no longer available.", 403);
 }

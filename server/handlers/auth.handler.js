@@ -263,9 +263,12 @@ async function resetPassword(req, res) {
 
 async function newPassword(req, res) {
   const { new_password, reset_password_token } = req.body;
-
+  const match = { reset_password_token, reset_password_expires: [">", utils.dateToUTC(new Date())] };
+  if (!await query.user.find(match)) {
+    throw new CustomError("Could not set the password. Please try again later.", 400);
+  }
   const salt = await bcrypt.genSalt(12);
-  const password = await bcrypt.hash(req.body.new_password, salt);
+  const password = await bcrypt.hash(new_password, salt);
   
   const user = await query.user.update(
     {
@@ -280,7 +283,7 @@ async function newPassword(req, res) {
   );
 
   if (!user) {
-    throw new CustomError("Could not set the password. Please try again later.");
+    throw new CustomError("Could not set the password. Please try again later.", 400);
   }
 
   res.render("partials/reset_password/new_password_success");
@@ -343,7 +346,8 @@ async function changeEmail(req, res, next) {
     if (!foundUser) return next();
   
     const user = await query.user.update(
-      { id: foundUser.id },
+      { id: foundUser.id, change_email_token: changeEmailToken,
+        change_email_expires: [">", utils.dateToUTC(new Date())] },
       {
         change_email_token: null,
         change_email_expires: null,

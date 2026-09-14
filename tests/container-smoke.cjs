@@ -9,7 +9,7 @@ const net = require("node:net");
 const { setTimeout: delay } = require("node:timers/promises");
 
 async function main() {
-  assert([undefined, "workspaces", "routing", "analytics", "privacy", "webhooks", "forwarding", "link-health"].includes(process.env.KUTT_TEST_ONLY), "Unknown focused test selection");
+  assert([undefined, "workspaces", "routing", "analytics", "privacy", "webhooks", "forwarding", "link-health", "shortcuts", "security-regressions"].includes(process.env.KUTT_TEST_ONLY), "Unknown focused test selection");
   const root = path.resolve(__dirname, "..");
   assert(!existsSync(path.join(root, ".env")), "Run in a clean checkout without a .env file");
   const directory = mkdtempSync(path.join(tmpdir(), "kutt-smoke-"));
@@ -63,6 +63,7 @@ async function main() {
       db.close();
     `], { cwd: directory, env, encoding: "utf8", timeout: 10000 });
     assert.equal(native.status, 0, `SQLite cleanup failed: ${native.stderr}`);
+    require("./configuration.cjs")({ root, directory, env });
 
     server = spawn(process.execPath, [path.join(root, "server/server.js")], {
       cwd: directory, env, stdio: ["ignore", "pipe", "pipe"]
@@ -162,6 +163,8 @@ async function main() {
     await require("./webhooks.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, root, directory, env });
     await require("./forwarding.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, root, directory, env });
     await require("./link-health.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, root, directory, env });
+    await require("./shortcuts.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, root, directory, env });
+    await require("./security-regressions.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, root, directory, env });
     const refusedDown = spawnSync(process.execPath, [
       path.join(root, "node_modules/knex/bin/cli.js"),
       "--knexfile", path.join(root, "knexfile.js"), "migrate:down", "20260914001000_link_history_trash.js"
