@@ -1,6 +1,10 @@
 # Analytics ranges and exports
 
-In development; not deployed or checked off in the roadmap yet.
+Released and deployed as `v3.2.6-sr94.11`, verified 2026-09-14. Release CI,
+exact hardened-image regressions, desktop/mobile workflows, fresh NAS restore
+and write test, public WAF checks and real Authentik-signed logout/replay passed.
+Original records and three monitored routes remained healthy after deployment.
+See the roadmap's eleventh deployment evidence and homelab recovery runbook.
 
 ## Reports
 
@@ -88,5 +92,5 @@ metadata, exports, invalid stored dimensions/counts, old API compatibility, bot
 filtering, queued hints, concurrent increments, object-property referrers, rollback,
 restart and index migration. `tests/browser-analytics.cjs` uses only a fresh
 loopback fixture and checks desktop/mobile filters, charts, tables, downloads,
-empty/error/retry states and browser runtime/layout errors. Publication, backup
-restore and live WAF/SSO acceptance remain required before completion.
+empty/error/retry states and browser runtime/layout errors. Each future change
+still requires publication, backup restore and live WAF/SSO acceptance.

@@ -31,7 +31,7 @@ secrets, local configuration or application data.
 ## Advanced routing and operations
 
 - [x] Ordered device/language/country/query rules with redirect test preview (`v3.2.6-sr94.10.1`, deployed and verified 2026-09-14).
-- [ ] Analytics date ranges, exports, tag summaries and consistent bot filtering.
+- [x] Analytics date ranges, exports, tag summaries and consistent bot filtering (`v3.2.6-sr94.11`, deployed and verified 2026-09-14).
 - [ ] Per-link tracking opt-outs and configurable analytics retention.
 - [ ] Signed asynchronous webhooks and authenticated live updates.
 - [ ] Multi-segment aliases and allowlisted query/path forwarding.
@@ -41,6 +41,29 @@ secrets, local configuration or application data.
 Unicode aliases and extra database engines are optional follow-ups. Each item
 needs tests and migration/rollback notes before completion. No feature-bundle
 upstream PR has been submitted yet.
+
+## Eleventh deployment evidence
+
+- [Published release](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.11)
+  and [passing release CI](https://github.com/RobinMJD/kutt/actions/runs/34834648451).
+  Source commit `65bf004`; main CI passed too. Source image digest:
+  `sha256:1cea0e722bd4aecf80564354526925f93517b618f6455946ded3750cfff3baf1`.
+- Full source and hardened-image suites passed: UTC dates, private filters and
+  exports, tag overlap, owner/admin/domain/token boundaries, malformed aggregates,
+  consistent bot filtering, concurrent atomic counters, object-property referrers,
+  legacy stats, restart and lossless index downgrade/reapply. Prior feature and
+  OIDC regressions passed. Desktop/mobile charts, filters, tables, exports and
+  empty/error/retry states passed with reviewed readable screenshots.
+- Fresh pre-release NAS restore was byte-verified, migrated and write-tested on
+  the exact wrapper. Original user/link/identity fingerprints, integrity and
+  foreign keys remained unchanged; all disposable live fixtures were removed.
+- Public WAF tests passed for analytics and every previous feature. Real
+  Authentik-signed logout and replay passed, including revoked-cookie rejection.
+  WAF/SSO and public redirect behavior were not weakened.
+- Two post-restart health samples passed: exact image, zero restarts, three fresh
+  probes, no Kutt alerts, failed units or unhealthy/restarting containers. Clean
+  post-release backup was copied to the NAS (not separately restored). Wrapper
+  scan: zero critical/high, six medium, one low, retained for final review.
 
 ## Tenth deployment evidence
 
