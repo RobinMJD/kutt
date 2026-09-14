@@ -129,6 +129,10 @@ const decode = require(process.env.QR_DECODER_MODULE || "./browser-deps/node_mod
       assert((await filteredResponse.text()).includes("qr-browser-validation"));
       await page.waitForFunction(() => !document.querySelector(".htmx-request, .htmx-swapping, .htmx-settling") &&
         document.querySelector("#main-table-wrapper tbody")?.textContent.includes("qr-browser-validation"));
+      await page.locator("#main-table-wrapper tbody").evaluate(async body => {
+        for (const animation of body.getAnimations({ subtree: true })) await animation.finished;
+      });
+      assert.equal(await page.locator("#main-table-wrapper tbody").evaluate(body => getComputedStyle(body).opacity), "1", "Filtered rows finish fading in");
       await page.locator("#main-table-wrapper table").evaluate(table => { table.scrollLeft = 0; });
       assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), mode + " admin page overflow");
       await page.screenshot({ path: path.join(evidence, `admin-filter-${mode}.png`), fullPage: true });
