@@ -5,9 +5,9 @@
 ## RobinMJD fork
 
 This fork develops tested, incremental improvements to upstream Kutt.
-The first feature release is `v3.2.6-sr94.1`: [scoped API tokens](docs/API-TOKENS.md).
-See the [feature roadmap and release gates](docs/FEATURE-ROADMAP.md) for remaining
-work; it is not a claim that the entire roadmap is implemented.
+The original series runs from `v3.2.6-sr94.1` through `.16` and is complete.
+See the [feature roadmap and release gates](docs/FEATURE-ROADMAP.md) for verified
+deployment evidence and upstream PR #1046.
 
 Identity migration and logout requirements for the OIDC security release are in
 [OIDC security](docs/OIDC-SECURITY.md). Existing accounts need verified bindings;
