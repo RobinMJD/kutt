@@ -112,6 +112,11 @@ module.exports = async function ({ request, session, database, account, restart,
     await checked(bulk("add_label", [ids[0]], tag.id));
     await checked(bulk("trash", undefined, undefined, { "X-API-Key": deleteToken }));
     assert.equal((await checked(call("GET", "?tag=" + tag.id + "&state=trash"))).total, 2);
+    db.prepare("UPDATE links SET archived_domain='retired.library.example' WHERE uuid=?").run(ids[1]);
+    const archived = (await checked(call("GET", "?state=trash"))).data.find(row => row.id === ids[1]);
+    assert.equal(archived.domain, "retired.library.example");
+    assert(archived.link.includes("retired.library.example/"), "Archived links retain their original host, never the default domain");
+    assert.equal((await checked(call("GET", "?state=trash", undefined, { "X-API-Key": limitedToken }))).data.some(row => row.id === ids[1]), false);
     assert.equal((await request("GET", "/" + before.address)).status, 410);
     await checked(request("POST", "/api/links/" + ids[0] + "/restore", {}, session));
     assert.equal((await checked(call("GET", "?saved=" + saved.id))).total, 1, "Restore retains organization");

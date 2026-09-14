@@ -1,6 +1,6 @@
 # Library organization and bulk changes
 
-Candidate release `3.2.6-sr94.6`. The roadmap remains unchecked until release,
+Candidate release `3.2.6-sr94.6.1`. The roadmap remains unchecked until release,
 backup/restore, deployed-image and public-route verification gates pass.
 
 ## Management
@@ -11,7 +11,10 @@ They do not grant access or transfer ownership. Shared workspaces are separate
 roadmap work. Search matches literal substrings in alias, target and description.
 Tag and collection filters combine with AND. State distinguishes active (not
 trashed), paused, unpaused and trash; unpaused does not imply an unexpired link.
-The current lifecycle status remains visible on each result.
+The current lifecycle status remains visible on each result. Trashed links from
+removed custom domains keep their original hostname; they are never presented
+as links on the default domain. The initial `.6` artifact was superseded before
+production deployment to correct this archived-host display case.
 
 Expand **Tags, collections and saved filters** to create, rename or remove labels
 and save the current search. Saved filters can be renamed, replaced with the

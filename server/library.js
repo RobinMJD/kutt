@@ -75,7 +75,8 @@ async function list(userId, input, domainId) {
   }
   const { n } = await query.clone().count("* as n").first();
   const links = await query.clone().leftJoin("domains", "domains.id", "links.domain_id")
-    .select("links.*", "domains.address as domain").orderBy("links.id", "desc").offset((page - 1) * limit).limit(limit);
+    .select("links.*", knex.raw("coalesce(domains.address, links.archived_domain) as domain"))
+    .orderBy("links.id", "desc").offset((page - 1) * limit).limit(limit);
   const assigned = links.length ? await knex("library_link_labels as rel")
     .join("library_labels as label", "label.id", "rel.label_id")
     .where("label.user_id", userId).whereIn("rel.link_id", links.map(row => row.id))
