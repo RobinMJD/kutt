@@ -18,7 +18,7 @@ secrets, local configuration or application data.
 - [x] Named, hashed, scoped, expiring, individually revocable API tokens (`v3.2.6-sr94.1`, deployed and verified 2026-09-13).
 - [x] Token domain restrictions and idempotent link creation (`v3.2.6-sr94.2`, deployed and verified 2026-09-13).
 - [x] Link pause, scheduled start/end, maximum visits and request-time expiry (`v3.2.6-sr94.3`, deployed and verified 2026-09-13).
-- [ ] History, trash and restore without silently reusing retired aliases.
+- [x] History, trash and restore without silently reusing retired aliases (`v3.2.6-sr94.4`, deployed and verified 2026-09-14).
 - [ ] Stable OIDC identities, access revocation and authentication diagnostics.
 
 ## Everyday management
@@ -87,6 +87,24 @@ upstream PR has been submitted yet.
 - Wrapper scan: zero critical/high, six medium and one low findings. Existing
   WAF, SSO and backend isolation were unchanged.
 
+## Fourth deployment evidence
+
+- [Published release](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.4)
+  and [passing CI](https://github.com/RobinMJD/kutt/actions/runs/34805030917).
+- Source digest: `sha256:cfeacf1b9a48f1157f88e740c1fdd0e4819b5e62ad49a3d6a79a32ae326b3f4c`.
+- Hardened-image tests passed for populated migration, duplicate-conflict
+  transactional rollback, guarded downgrade, audit privacy, owner/domain/token
+  boundaries, concurrent alias claims, trash/restore and retained policies.
+- Desktop/mobile delete, history and restore passed with no runtime errors or
+  overflow. Long targets wrap correctly. Explicit false on domain deletion is
+  regression-tested to preserve active links.
+- Off-host backup restore was byte-verified, migrated and write-tested on the
+  exact published wrapper, retaining existing users and links.
+- Live HTTPS tests passed through the unchanged WAF: history/trash/restore,
+  reserved aliases, retained quota, plus existing token/retry/public routing and
+  OIDC initiation checks. Healthy, zero restarts, three green probes, no new
+  failed units/unhealthy containers or Kutt alerts. Post-deployment backup copied
+  to the NAS. Wrapper scan: zero critical/high, six medium and one low.
+
 PostgreSQL/MySQL and human MFA acceptance remain separate validation work;
-deployment evidence is for SQLite. History/trash/restore is implemented in candidate
-`.4`; its checkbox remains open until publication and live deployment gates pass.
+deployment evidence is for SQLite. Stable OIDC identity/revocation is next.
