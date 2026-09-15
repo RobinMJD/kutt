@@ -70,6 +70,7 @@ router.post(
   asyncHandler(auth.apikey),
   asyncHandler(env.DISALLOW_ANONYMOUS_LINKS ? auth.jwt : auth.jwtLoose),
   locals.createLink,
+  require("../link-campaign").middleware,
   validators.createLink,
   asyncHandler(helpers.verify),
   asyncHandler(link.create)
@@ -89,6 +90,7 @@ router.patch(
   asyncHandler(auth.apikey),
   asyncHandler(auth.jwt),
   locals.editLink,
+  require("../link-campaign").middleware,
   validators.editLink,
   asyncHandler(helpers.verify),
   asyncHandler(link.edit)
@@ -101,6 +103,7 @@ router.patch(
   asyncHandler(auth.jwt),
   asyncHandler(auth.admin),
   locals.editLink,
+  require("../link-campaign").middleware,
   validators.editLink,
   asyncHandler(helpers.verify),
   asyncHandler(link.editAdmin)

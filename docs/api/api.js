@@ -1,5 +1,9 @@
 
 const p = require("../../package.json");
+const campaignProperties = Object.fromEntries(require("../../static/scripts/campaign-url").fields.map(field => [field, {
+  type: "string", nullable: true, maxLength: 255,
+  description: "Optional campaign parameter, merged into target before saving. Requires an explicit HTTP(S) target even on PATCH. Empty string or null removes it; omission preserves it. Final URL is limited to 2040 characters."
+}]));
 
 module.exports = {
   openapi: "3.0.0",
@@ -519,6 +523,7 @@ module.exports = {
       body: {
         required: ["target"],
         properties: {
+          ...campaignProperties,
           target: {
             type: "string"
           },
@@ -554,6 +559,7 @@ module.exports = {
       body_1: {
         required: ["target", "address"],
         properties: {
+          ...campaignProperties,
           target: {
             type: "string"
           },

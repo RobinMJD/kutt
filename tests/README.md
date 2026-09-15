@@ -16,6 +16,11 @@ file settings from its caller. Run only in a disposable build/container.
 
 Coverage:
 
+- Campaign URL parameters: encoded bounds, explicit clears, API aliases,
+  idempotency, public/protected/Basic and routing/forwarding precedence,
+  import/export, history, restart, owner/admin/scoped/CSRF and workspace roles.
+  `tests/browser-campaign.cjs` exercises creation and all editing surfaces on
+  desktop/mobile, including delayed disclosure events and unsaved-draft recovery.
 - Production migrations on a fresh SQLite database.
 - Native SQLite query, close and Node process teardown.
 - Initial administrator creation and rejection of a second bootstrap.

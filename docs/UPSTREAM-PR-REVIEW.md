@@ -62,12 +62,19 @@ email search. Deployment completion is recorded below only after its gates pass.
   claimed. Rollback to `.16` is image-only: keep current data and secrets, and
   lose only these two improvements. No schema downgrade is needed.
 
-## Useful, but larger follow-ups
+## Selected for release .18
 
 - [#997 UTM campaign fields](https://github.com/thedevs-network/kutt/pull/997):
-  worthwhile after defining precedence with stored query values, routing rules,
-  forwarding, import/export, history and workspace APIs. Five new columns alone
-  would leave inconsistent redirect behavior.
+  proposal by seler. Implemented independently as a shared URL builder rather
+  than five parallel database columns. Personal/admin/workspace forms and the
+  existing create/edit APIs compose the canonical destination before normal
+  validation and idempotency. Explicit clearing, encoded-length checks and
+  existing redirect/transfer/authorization boundaries are tested. See
+  [campaign design and recovery](CAMPAIGNS.md). No migration or dependency.
+  Publication/deployment gates are pending; this is not yet marked accepted.
+
+## Useful, but larger follow-ups
+
 - [#846 localization](https://github.com/thedevs-network/kutt/pull/846): French
   and English would be useful. The older proposal omits validation messages and
   predates current screens; use a complete escaped catalog/fallback design.

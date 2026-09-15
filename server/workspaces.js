@@ -203,8 +203,9 @@ async function changeLink(userId, id, action, linkId, input, actor) {
   await access(knex, userId, id, "editor");
   if (!["create", "edit", "trash", "restore"].includes(action)) fail("Invalid link action.");
   if (action !== "create" && !uuid(linkId)) fail("Link was not found.", 404);
-  const allowed = ["target", "address", "description", "password", "domain", "paused", "starts_at", "ends_at", "max_visits"];
+  const allowed = ["target", "address", "description", "password", "domain", "paused", "starts_at", "ends_at", "max_visits", ...require("./link-campaign").fields];
   if (!input || typeof input !== "object" || Array.isArray(input) || Object.keys(input).some(k => !allowed.includes(k))) fail("Unknown link field.");
+  input = require("./link-campaign").normalize(input);
   // Reuse import validation and the existing ban checks; no destination fetch.
   if (input.target !== undefined) {
     const checked = require("./link-transfer").normalized({ target: input.target, address: "validation-only" });
