@@ -1,0 +1,142 @@
+{
+  "version": "3.2.6-sr94.18",
+  "environment": "isolated synthetic loopback fixture",
+  "consoleTimestamp": "2026-09-15T06:26:19.660Z",
+  "events": [
+    {
+      "name": "htmx:beforeRequest",
+      "time": 40316.80000000447,
+      "target": "FORM",
+      "id": "login-signup",
+      "connected": true,
+      "path": "/api/auth/login",
+      "status": 0
+    },
+    {
+      "name": "htmx:beforeSwap",
+      "time": 42395.60000000149,
+      "target": "FORM",
+      "id": "login-signup",
+      "connected": true,
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "name": "htmx:afterSwap",
+      "time": 42397.30000000447,
+      "target": "FORM",
+      "id": "login-signup",
+      "connected": false,
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "name": "htmx:afterRequest",
+      "time": 42397.39999999851,
+      "target": "FORM",
+      "id": "login-signup",
+      "connected": false,
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "name": "htmx:beforeRequest",
+      "time": 43419.89999999851,
+      "target": "BODY",
+      "id": "",
+      "connected": true,
+      "path": "/",
+      "status": 0
+    },
+    {
+      "name": "htmx:beforeSwap",
+      "time": 45569.10000000149,
+      "target": "BODY",
+      "id": "",
+      "connected": true,
+      "path": "/",
+      "status": 200
+    },
+    {
+      "name": "htmx:afterSwap",
+      "time": 45571.89999999851,
+      "target": "BODY",
+      "id": "",
+      "connected": true,
+      "path": "/",
+      "status": 200
+    },
+    {
+      "name": "htmx:afterRequest",
+      "time": 45571.89999999851,
+      "target": "BODY",
+      "id": "",
+      "connected": true,
+      "path": "/",
+      "status": 200
+    },
+    {
+      "name": "htmx:beforeRequest",
+      "time": 46592.80000000447,
+      "target": "TBODY",
+      "id": "",
+      "connected": true,
+      "path": "/api/links",
+      "status": 0
+    },
+    {
+      "name": "htmx:beforeRequest",
+      "time": 46598.60000000149,
+      "target": "TBODY",
+      "id": "",
+      "connected": true,
+      "path": "/api/links",
+      "status": 0
+    },
+    {
+      "name": "htmx:beforeSwap",
+      "time": 48645.70000000298,
+      "target": "TBODY",
+      "id": "",
+      "connected": true,
+      "path": "/api/links",
+      "status": 200
+    },
+    {
+      "name": "htmx:afterSwap",
+      "time": 48646.10000000149,
+      "target": "TBODY",
+      "id": "",
+      "connected": false,
+      "path": "/api/links",
+      "status": 200
+    },
+    {
+      "name": "htmx:afterSwap",
+      "time": 48646.10000000149,
+      "target": "TBODY",
+      "id": "",
+      "connected": false,
+      "path": "/api/links",
+      "status": 200
+    },
+    {
+      "name": "htmx:afterRequest",
+      "time": 48646.20000000298,
+      "target": "TBODY",
+      "id": "",
+      "connected": false,
+      "path": "/api/links",
+      "status": 200
+    },
+    {
+      "name": "htmx:swapError",
+      "time": 48647.30000000447,
+      "target": "TBODY",
+      "id": "",
+      "connected": false,
+      "path": "/api/links",
+      "status": 200
+    }
+  ]
+}
