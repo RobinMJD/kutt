@@ -83,6 +83,20 @@ module.exports = async ({ request, session, database, account, env, restart }) =
     assert.equal(getTarget(link.id), expected);
     await checked(request("PATCH", "/api/links/admin/" + link.id, edit, otherSession), 401);
     await checked(request("PATCH", "/api/links/" + link.id, edit, session, { Origin: "https://attacker.invalid" }), 403);
+    for (const headers of [{ Origin: "null" }, { "Sec-Fetch-Site": "cross-site" }]) {
+      for (const api of ["/api/links", "/api/v2/links"]) {
+        await checked(request("POST", api, { target }, session, headers), 403);
+        await checked(request("PATCH", api + "/" + link.id, edit, session, headers), 403);
+        await checked(request("PATCH", api + "/admin/" + link.id, edit, session, headers), 403);
+        await checked(request("DELETE", api + "/" + link.id, undefined, session, headers), 403);
+        await checked(request("POST", api + "/admin/ban/" + link.id, {}, session, headers), 403);
+      }
+    }
+    assert.equal(getTarget(link.id), expected);
+    await checked(request("PATCH", "/api/links/" + link.id, { description: "Same-origin edit" }, session, { Origin: "https://" + env.DEFAULT_DOMAIN }));
+    const write = await checked(request("POST", "/api/tokens", { name: "Campaign explicit API", scopes: ["links:update"] }, session), 201);
+    await checked(request("PATCH", "/api/links/" + link.id, { description: "Explicit API client" }, session, { Origin: "https://api-client.invalid", "X-API-Key": write.token }));
+    await checked(request("PATCH", "/api/links/" + link.id, edit, session, { Origin: "https://api-client.invalid", "X-API-Key": "invalid" }), 401);
     const read = await checked(request("POST", "/api/tokens", { name: "Campaign read denial", scopes: ["links:read"] }, session), 201);
     await checked(request("PATCH", "/api/links/" + link.id, edit, session, { "X-API-Key": read.token }), 403);
     const space = await checked(request("POST", "/api/workspaces", { name: "Campaign " + randomUUID() }, session), 201);

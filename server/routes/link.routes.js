@@ -69,6 +69,7 @@ router.post(
   locals.viewTemplate("partials/shortener"),
   asyncHandler(auth.apikey),
   asyncHandler(env.DISALLOW_ANONYMOUS_LINKS ? auth.jwt : auth.jwtLoose),
+  auth.sessionOrigin,
   locals.createLink,
   require("../link-campaign").middleware,
   validators.createLink,
@@ -90,6 +91,7 @@ router.patch(
   asyncHandler(auth.apikey),
   asyncHandler(auth.jwt),
   locals.editLink,
+  auth.sessionOrigin,
   require("../link-campaign").middleware,
   validators.editLink,
   asyncHandler(helpers.verify),
@@ -103,6 +105,7 @@ router.patch(
   asyncHandler(auth.jwt),
   asyncHandler(auth.admin),
   locals.editLink,
+  auth.sessionOrigin,
   require("../link-campaign").middleware,
   validators.editLink,
   asyncHandler(helpers.verify),
@@ -115,6 +118,7 @@ router.delete(
   asyncHandler(auth.apikey),
   asyncHandler(auth.jwt),
   validators.deleteLink,
+  auth.sessionOrigin,
   asyncHandler(helpers.verify),
   asyncHandler(link.remove)
 );
@@ -126,6 +130,7 @@ router.post(
   asyncHandler(auth.jwt),
   asyncHandler(auth.admin),
   validators.banLink,
+  auth.sessionOrigin,
   asyncHandler(helpers.verify),
   asyncHandler(link.ban)
 );

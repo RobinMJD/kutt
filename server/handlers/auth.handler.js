@@ -97,6 +97,15 @@ function admin(req, res, next) {
   throw new CustomError("Unauthorized", 401);
 }
 
+function sessionOrigin(req, res, next) {
+  // API middleware already rejects invalid explicit keys before authentication;
+  // a valid key is deliberate authorization, not an ambient browser cookie.
+  if (req.user && !req.apiToken && req.get("X-API-Key") === undefined && req.body?.apikey === undefined && req.query.apikey === undefined) {
+    require("./link-history.handler").sameOrigin(req);
+  }
+  next();
+}
+
 async function signup(req, res) {
   const salt = await bcrypt.genSalt(12);
   const password = await bcrypt.hash(req.body.password, salt);
@@ -388,6 +397,7 @@ function featureAccessPage(features) {
 
 module.exports = {
   admin,
+  sessionOrigin,
   apikey,
   changeEmail,
   changeEmailRequest,

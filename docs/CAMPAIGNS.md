@@ -42,6 +42,11 @@ including PATCH. Existing updates that omit campaign fields are unchanged.
   builder on signed URLs whose signature depends on the exact query bytes.
 - Normal ownership, admin, workspace role, scoped-key, CSRF, domain and ban checks
   still apply. Campaigns add no new endpoint, scope, remote fetch or access grant.
+- Cookie-authenticated legacy link mutations now enforce the same origin guard
+  as newer management features. Foreign/null origins and cross-site fetches are
+  rejected; valid explicit API keys keep their existing client behavior. Invalid
+  keys cannot fall back to a cookie. Non-browser requests without Origin retain
+  compatibility. This is defense in depth alongside cookies, CORS and the WAF.
 - Normalization precedes idempotency/reuse; changing a campaign changes the
   effective target and cannot incorrectly replay a prior request's result.
 
