@@ -23,7 +23,9 @@ coverage are tracked below. Do not describe this as a completed accessibility au
   synthetic `example.org` / `example.invalid` data. No real user data was copied.
 - The fixture was loopback-only through SSH, non-root, read-only, with all
   capabilities dropped. Local fixture login replaced OIDC only in the disposable
-  instance. Production WAF, SSO, routes and secrets were not changed.
+  instance. A later separate exact-image fixture used a synthetic loopback OIDC
+  provider for outage/cancellation tests, as detailed below. Production WAF, SSO,
+  routes and secrets were not changed.
 
 ## Method And Evidence Limits
 
@@ -417,13 +419,56 @@ Neither restriction was bypassed. Native `super+plus` left width 1440, height
 The pending standalone-fixture browser approval was requested again with these
 specific remaining limitations. Production authentication was untouched.
 
+A further 390px native keyboard pass opened the advanced options and campaign
+disclosure, entered Source/Medium/Campaign, applied them, and cleared them again.
+The encoded campaign preserved the unrelated `keep=yes` parameter. Apply and
+Clear both updated the existing polite live status and explicitly said changes
+were not saved. No new-link submission or persisted link was created. Native
+Shift+Tab worked in this path; this supersedes the earlier input-tool limitation
+for this workflow, not every remaining keyboard scenario.
+
+The same native keyboard journey opened Library, searched for the synthetic
+paused link, selected the page, chose Pause and applied it. The already-paused
+link remained paused and public 410. Selection cleared and Apply disabled, but
+settled feedback only said `0 selected` and focus returned to the document.
+This extends UX-004's bulk-action feedback and UX-001's post-swap focus acceptance.
+The first select-key sequence reached the wrong option; the current value was
+inspected and corrected before Apply. No other batch action was submitted.
+
+For SSO error coverage, a separate exact-image instance used a minimal synthetic
+provider that only returns discovery failure or a valid-state authorization
+cancellation. It cannot issue login tokens. Its HTTP issuer used the existing
+development-only loopback test mode; production HTTPS validation was not altered.
+With local sign-in and registration disabled, native activation of the SSO action
+encountered discovery HTTP 503 and rendered the provider-unavailable message with
+a retry action. Switching only the synthetic provider to cancellation and allowing
+the normal discovery backoff to expire recovered without restarting Kutt. Native
+retry reached a valid-state cancellation, rendering `OIDC authentication failed.`
+at 390px and 1440px. Provider counters recorded three discovery requests, two
+cancellations and no rejected callback destination. The database retained four
+synthetic users, ten links and zero OIDC identity/logout rows, with integrity `ok`.
+An anonymous short link still returned 302 to its expected public destination;
+an unauthenticated Settings request returned 401. An invalid local fixture cookie
+was cleared by the rendered logout recovery and returned to the SSO-only screen.
+This is not a real Authentik expired/revoked-session ceremony.
+
+Both SSO errors have small red text and no explicit alert/live semantics; the
+error page has no main landmark and focus is on the document. Contrast extends
+UX-010; intentional auth-error semantics/focus stay in UX-005 acceptance rather
+than creating another issue. A full-page navigation is not automatically required
+to use a live alert, so absence alone is not counted as a separate standards
+failure. On the local-login fixture, native wrong-password submission retained the
+email and returned focus there; correcting the existing synthetic password then
+signed in. The known duplicate-HTMX error reappeared (UX-016), without preventing
+login. No password or other authentication credential was changed.
+
 | Step | Workflow | Current result | Remaining acceptance |
 | --- | --- | --- | --- |
-| 1 | Production SSO entry | Desktop and fresh 390px mobile observed; clear Authentik action, misleading sign-up label | Auth error/cancel/expired-session states |
+| 1 | Production SSO entry | Desktop and fresh 390px mobile observed; clear Authentik action, misleading sign-up label. Separate synthetic exact-image SSO-only provider outage, recovery/retry and valid-state cancellation passed at mobile/desktop; anonymous redirects remain public | Real Authentik expired/revoked-session ceremony; error semantics/contrast remain UX-005/010 acceptance |
 | 2 | Empty home and first link | Mobile/desktop observed; native keyboard entry and Enter created a synthetic link at 390px. Fresh 320px homepage inspected; target/submit fit, but table actions remain clipped | 200/400% zoom and remaining keyboard/error variants; native zoom attempt had no measurable effect |
-| 3 | Invalid URL and campaign creation | Invalid input rejected; campaign applied and link created. Separate no-apply draft leaves target unchanged; long encoded Apply/Clear preserves unrelated URL components and explicitly states changes are not saved | Accessible announcements and complete keyboard flow |
+| 3 | Invalid URL and campaign creation | Invalid input rejected; campaign applied and link created. Separate no-apply draft leaves target unchanged; long encoded Apply/Clear preserves unrelated URL components and explicitly states changes are not saved. Full native keyboard disclosure, field entry, Apply/Clear and reverse-Tab passed at 390px with polite live status; no new link submitted in that pass | Preserve passing campaign announcements/keyboard behavior; legacy invalid-field semantics remain UX-005 acceptance |
 | 4 | Recent links and inline editing | Desktop actions, mobile edit and native keyboard edit/save/cancel passed. Independent drafts survive. Clearing expiry then saving description silently restores it in both personal and stale admin forms (UX-015). Combined workspace save preserved availability. Admin invalid-target recovery returns the wrong form (UX-017) | Mobile action access, remaining keyboard/error variants and UX-015/017 remediation |
-| 5 | Library filtering and bulk pause | Pause succeeded; state label contradicts result; mobile heading overlap. Label creation/assignment/filter/rename and saved-filter save/reopen/rename/replace passed. Collection unassignment updates the filtered result without deleting the link. With 51 synthetic links, pages show 50/1, page selection does not carry, and Enter search resets a later page to page 1 | Saved-filter/label deletion paths, fuller keyboard flow and clear success feedback |
+| 5 | Library filtering and bulk pause | Pause succeeded; state label contradicts result; mobile heading overlap. Label creation/assignment/filter/rename and saved-filter save/reopen/rename/replace passed. Collection unassignment updates the filtered result without deleting the link. With 51 synthetic links, pages show 50/1, page selection does not carry, and Enter search resets a later page to page 1. Native keyboard search/select-page/Pause/Apply passed at 390px; selection clears but no explicit action-result message remains | Saved-filter/label deletion paths, remaining keyboard variants, post-swap focus and clear success feedback |
 | 6 | Import/export | Invalid schema, valid dry run/commit, preview invalidation and conflict abort/skip passed. Actual JSON export verified. Native chooser loads the synthetic file. Mobile malformed-JSON error followed by valid CSV dry run recovers with 1 new/0 errors; no import committed | Missing templates/help are UX-006; remaining keyboard and error announcements stay in fix acceptance |
 | 7 | Trash and history | Native bulk cancel/confirm and browser Restore cancel/confirm passed; full native Tab/Enter Restore now also passed, with pause/public 410 retained. Trashed alias reuse is rejected with the new-link draft retained; original link restored during cleanup. Custom dialog focus/Escape defective. History reflows at 320px; at 390px Older/Newer keyboard activation with limit 5 returns the correct entries and navigation state | Post-action focus and remaining dialog variants |
 | 8 | QR | Desktop/mobile preview, keyboard options, decoded rendered pixels, print-media visibility and truthful copy failure/pending handling passed. Native PNG/SVG download events now produce actual files; both independently decode to the public short URL at 512px | Print-dialog/PDF and physical scan remain |
@@ -431,7 +476,7 @@ specific remaining limitations. Production authentication was untouched.
 | 10 | Routing and forwarding | Rule reorder changed first-match preview and persisted. Actual routing revision conflict retained the draft; Reload cancel/confirm and normal Save recovered. Synthetic routing 401 preserved the draft. Forwarding preview retained allowed keys; tablet layout fits. Forwarding 403/409/503/network errors preserved draft; pending duplicate activation sent one request. Actual forwarding conflict/reload/save passed. Forwarding HTML 200 and routing JSON 200 `{}` falsely report save success | Broader editor fault coverage and UX-014 remediation |
 | 11 | Analytics and privacy | Empty/populated reports, date correction, tables/pagination, 403/retry, tracking save/reload and non-destructive retention preview passed. Malformed JSON 200 exposes stale report/raw error (UX-014). Native CSV download now produces a verified artifact matching the selected 30-day range, zero visits and four owned links | Broader fault/keyboard coverage and UX-014 remediation; fresh offline privacy/API coverage passed separately |
 | 12 | Monitoring and integrations | Mobile empty state, live transport recovery, real worker URL denial, queue/lock, actual conflict/reload and disable passed. Dashboard 50/51-row pagination, refresh reset and synthetic overdue guidance at 390px passed. HTML 200 corrupts monitoring state (UX-014). Private webhook target error off-screen (UX-009). Real 400 failure/retry and 204 success passed; receivers removed | Broader fault/keyboard coverage and UX-014 remediation |
-| 13 | Settings, tokens and security | Admin and ordinary-user mobile settings inspected; feature links reachable and Admin absent for ordinary user. Security diagnostics and clipboard behavior observed. Shortcut entry fits at 320px with explicit Settings/Library returns and clearly bounded token scope; no token created | Token lifecycle UI requires credential handoff; OIDC modes and session revocation; fresh offline protocol tests passed separately |
+| 13 | Settings, tokens and security | Admin and ordinary-user mobile settings inspected; feature links reachable and Admin absent for ordinary user. Security diagnostics and clipboard behavior observed. Shortcut entry fits at 320px with explicit Settings/Library returns and clearly bounded token scope; no token created. Local wrong-password/correction and synthetic SSO-only outage/cancel/retry/invalid-cookie recovery passed | Token lifecycle UI requires credential handoff; real OIDC session revocation and remaining configured modes; fresh offline protocol tests passed separately |
 | 14 | Administration and recipient pages | Protected page reflows and password correction succeeds. Paused/expired/scheduled/capped return bare 410; cap permits one redirect. Styled 404 has return link. Admin filters/counts and invalid-domain draft retention passed. Create user repeats modal defect without credential entry; stale admin save/validation confirms UX-015/017. Report route redirects home when the report address is absent, matching deployed configuration | Remaining dialog variants, optional mail-enabled report form and broader keyboard/zoom checks |
 
 ### Continuation Evidence
@@ -480,6 +525,10 @@ The viewport is 390 x 844 unless the row identifies a desktop, tablet or 320px c
 | 10 | [Routing false success](ui-ux-review/2026-09-15/55-routing-false-success-desktop.jpg) | 1440 x 1000; JSON 200 `{}` claims Rules saved for an intercepted draft; native fetch restored and reload proved no persistence |
 | 12 | [Overdue monitoring](ui-ux-review/2026-09-15/56-monitoring-overdue-mobile.jpg) | 390 x 844; synthetic backdated due state, with 50/51 unique-row pagination and refresh verified separately; no worker claim |
 | 4/6/7/9/10/12 | [Continuation result summary](ui-ux-review/2026-09-15/57-workspace-keyboard-monitoring-results.json) | Structured transcription of observations, role/fixture boundaries, restoration and tool limitations; not a raw network trace |
+| 3 | [Keyboard campaign at 390px](ui-ux-review/2026-09-15/58-campaign-keyboard-mobile.jpg) | Native disclosure/field/Apply/Clear flow; visible focus and polite unsaved-change status. No new-link submission |
+| 1/13 | [SSO outage at 390px](ui-ux-review/2026-09-15/59-oidc-outage-mobile.jpg), [SSO cancellation at 390px](ui-ux-review/2026-09-15/60-oidc-cancel-mobile.jpg), [desktop cancellation](ui-ux-review/2026-09-15/61-oidc-cancel-desktop.jpg) | Synthetic provider only, exact-image fixture. Retry remains keyboard-reachable after discovery 503 and cancellation; no real Authentik session or credential ceremony |
+| 13 | [Local login error at 390px](ui-ux-review/2026-09-15/62-local-login-error-mobile.jpg) | Deliberately wrong synthetic password is masked; correction with the existing fixture password signs in, with the known UX-016 console error |
+| 1/3/5/13 | [Keyboard and auth result summary](ui-ux-review/2026-09-15/63-keyboard-auth-results.json) | Structured transcription of keyboard results, synthetic provider boundary, independent checks and cleanup; no credentials, cookies or callback state retained |
 
 ### Fresh Offline Regression
 
@@ -568,6 +617,11 @@ coherent keyboard/selected-state pattern; do not fix names alone. The admin link
 filter also repeats `links-select-anonymous` for two distinct selects; keep labels
 and IDs unambiguous. Source: [admin tabs](../server/views/partials/admin/table_tab.hbs).
 
+Native Restore and Library bulk Pause both returned focus to the document after
+their response swap. Include intentional post-action focus without stealing focus
+from unrelated work in these actions' acceptance. Successful keyboard submission
+alone does not establish useful focus recovery.
+
 ### UX-002: Make Recent Links Usable On Phones
 
 At 390px, the original URL consumes the visible row; the short link, views and
@@ -639,6 +693,11 @@ effective availability (scheduled, expired, visit-capped). Test paused/unpaused,
 future-start, expired, capped and trashed fixtures; changing terminology must not
 silently narrow users' saved searches.
 
+Fresh native keyboard Pause/Apply on an already-paused row cleared selection and
+disabled Apply, but the only settled status was `0 selected`. Add a truthful
+operation/count result while preserving duplicate prevention; clearing selection
+alone does not explain whether the requested action succeeded.
+
 ![Paused result remains under the active filter](ui-ux-review/2026-09-15/10-library-paused-mobile.png)
 
 ### UX-005: Associate Validation Errors With Fields
@@ -663,6 +722,14 @@ input's computed accessible name, so these variants are not wholly unassociated;
 the missing invalid-state/error semantics still need correction. Invalid domain
 submission retained its draft and created no domain. The wrong admin form
 returned after target validation is separately tracked as UX-017.
+
+Synthetic SSO outage/cancellation render a generic error paragraph without a main
+landmark or explicit error-status semantics; focus remains on the document. The
+retry action is keyboard-reachable and must remain so. Local wrong-password
+submission returns focus to the retained email and correction signs in. Review
+both full navigation and HTMX form responses deliberately: a missing live region
+on a full navigation is not, by itself, a separate failure. Source:
+[auth form](../server/views/partials/auth/form.hbs).
 
 Acceptance: stable error IDs, programmatic association, intentional focus and
 announcements after HTMX responses, and a clear stale-error lifecycle. Preserve
@@ -770,10 +837,15 @@ transparent status background. Its measured contrast is **3.5696:1**, also below
 4.5:1. It is essential error text, not a disabled control. Keep this in the same
 color/contrast finding rather than duplicating the remediation.
 
+The synthetic SSO provider-unavailable error repeats the same red foreground and
+background at 14px, again **3.5696:1**. Include auth error states in this finding;
+the working retry control does not make low-contrast failure text acceptable.
+
 Source: [styles](../static/css/styles.css).
 Evidence: [monitoring navigation](ui-ux-review/2026-09-15/19-health-mobile.png),
 [settings navigation](ui-ux-review/2026-09-15/16c-settings-mobile.png),
-[routing error](ui-ux-review/2026-09-15/39-routing-real-conflict-desktop.png).
+[routing error](ui-ux-review/2026-09-15/39-routing-real-conflict-desktop.png),
+[SSO error](ui-ux-review/2026-09-15/59-oidc-outage-mobile.jpg).
 
 Acceptance: preserve the existing palette while choosing readable link colors,
 including hover/visited/focus states on their actual backgrounds. Check button,
@@ -1165,3 +1237,5 @@ classifying a standards failure.
 | 2026-09-15 | AUDIT-00, UX-018/019, C-04 | Confirmed concurrent shared editing silently removes another client's pause/cap; shared invalid-alias rejection collapses the editor and discards its draft. Personal invalid-target validation retains the correct lifecycle state | Nineteen open findings, none fixed. UX-018 moves immediately after UX-015 because both silently mutate availability; UX-019 joins the P2 form/error group. Original shared state restored. Prior documentation commit `363a659e53a4233a1cce8daba43a4a10e64010a9` passed [Fork CI 34946719719](https://github.com/RobinMJD/kutt/actions/runs/34946719719) and [Shortcut CI 34946719675](https://github.com/RobinMJD/kutt/actions/runs/34946719675). |
 | 2026-09-15 | AUDIT-00, UX-014, C-06 | Routing JSON 200 `{}` falsely claims Rules saved; interception removed and reload proves draft was not persisted. Full native keyboard Restore, reserved-alias protection, monitoring pagination/overdue layout and mobile import correction passed | No production mutation, authentication change, runtime fix, release or deployment. Print/PDF and true browser zoom remain tool-limited; standalone-fixture approval still pending. Optional mail-enabled report mode is separate from the currently disabled production route. Full audit and remediation goal remain incomplete. |
 | 2026-09-15 | AUDIT-00 cleanup | Removed the exact disposable container, its private seed directory and SSH tunnel, including all 51 pagination-only links. Restored native fetch, verified no audit overrides, reset viewport and closed the tab. Retained the earlier ten-link checkpoint unchanged | Checkpoint SHA-256 freshly matches `210eec1b08fb0bc69b74b18dd802f876d0c2d0ce3edcf88e8c315d0d7210729b`. Production remains `local/kutt:3.2.6-sr94.18`, running/healthy, zero restarts. No local port 31076 listener remains. No production backup/deployment is claimed. |
+| 2026-09-15 | AUDIT-00, UX-001/004/005/010/016 | Completed native keyboard campaign Apply/Clear, Library search/selection/Pause and local wrong-password recovery. Separate synthetic SSO-only provider exercised discovery 503, retry without app restart and valid-state cancellation at mobile/desktop | Nineteen open findings, none fixed. Passing recovery is preserved; auth contrast/error semantics and bulk-action feedback extend existing findings. Local login again reproduces UX-016. No real Authentik ceremony or new credential. Prior docs commit `72d223e772d83aee8f9b2ab0121bb0d520d9337b` passed [Fork CI 34950293152](https://github.com/RobinMJD/kutt/actions/runs/34950293152) and [Shortcut CI 34950293147](https://github.com/RobinMJD/kutt/actions/runs/34950293147). |
+| 2026-09-15 | AUDIT-00 cleanup | Removed both exact disposable containers, their private seed directory and both SSH tunnels; verified native fetch/no audit overrides, reset viewport and closed both tabs. Retained the prior ten-link checkpoint unchanged | Synthetic OIDC database integrity `ok`, four users/ten links/zero OIDC identities or logout events; paused link independently remains non-trashed/public 410. No local or remote listeners on 31076/31078/31079. Production remains `local/kutt:3.2.6-sr94.18`, running/healthy with zero restarts. Print/true zoom, credential handoff, permanent-deletion approval and remaining coverage stay open. No runtime fix, production backup, release or deployment. |
