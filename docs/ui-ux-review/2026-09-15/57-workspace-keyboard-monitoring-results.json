@@ -1,0 +1,95 @@
+{
+  "date": "2026-09-15",
+  "kind": "transcribed-observations-not-raw-network-trace",
+  "environment": "isolated loopback exact-image fixture, synthetic data only",
+  "runtime_version": "3.2.6-sr94.18",
+  "production_changed": false,
+  "personal_invalid_target": {
+    "draft_retained": true,
+    "paused_before_and_after": true,
+    "max_visits_before_and_after": 23,
+    "blank_lifecycle_suspicion": "rejected for the tested personal error path"
+  },
+  "workspace_concurrent_edit": {
+    "independent_client_saved": {"paused": true, "max_visits": 19},
+    "browser_changed_field": "description",
+    "actual_after_browser_save": {"paused": false, "max_visits": null},
+    "response_mocked": false,
+    "finding": "UX-018",
+    "original_shared_state_restored": true
+  },
+  "workspace_invalid_alias": {
+    "submitted_non_secret_draft": {"address": "invalid alias!", "paused": true, "max_visits": 7},
+    "visible_error": "Invalid or reserved alias.",
+    "editor_collapsed": true,
+    "reopened_draft_retained": false,
+    "password_entered": false,
+    "finding": "UX-019"
+  },
+  "routing_malformed_success": {
+    "response": {"status": 200, "content_type": "application/json", "body": {}},
+    "intercepted_put_count": 1,
+    "visible_feedback": "Rules saved",
+    "draft_persisted": false,
+    "original_rule_count_after_reload": 1,
+    "fetch_restored_and_override_absent": true,
+    "finding": "UX-014"
+  },
+  "keyboard_restore": {
+    "flow": ["homepage target focus", "6 Tab to Trash", "Enter", "7 Tab to Restore", "Enter opens confirm", "Enter accepts confirm"],
+    "cdp_role": "observation only; native key accepted dialog",
+    "opening_key_reported_dialog_interruption": true,
+    "opening_key_not_retried": true,
+    "visible_result": "Restored. Paused",
+    "independent_api_trashed": false,
+    "public_status": 410,
+    "post_swap_focus": "document"
+  },
+  "monitoring_dashboard": {
+    "temporary_links_created": 51,
+    "first_page_rows": 50,
+    "after_load_more_rows": 51,
+    "unique_links": 51,
+    "load_more_hidden_after_last_page": true,
+    "rows_after_refresh": 50,
+    "overdue_fixture": "one synthetic next_at backdated one hour",
+    "worker_run": false,
+    "destination_requests_sent": false,
+    "mobile_width": 390,
+    "mobile_document_width": 390
+  },
+  "import_recovery": {
+    "invalid_json_message": "Malformed JSON file.",
+    "corrected_csv_preview": {"new": 1, "skipped": 0, "errors": 0},
+    "confirm_import_activated": false
+  },
+  "reserved_alias": {
+    "setup": "original synthetic paused link soft-trashed through fixture API",
+    "browser_submission": "native Enter on new-link form with existing audit-paused alias",
+    "visible_error": "This alias is in use or permanently reserved by a previous link.",
+    "target_and_alias_draft_retained": true,
+    "conflicting_link_created": false,
+    "cleanup": "original link restored through API, separate from prior native keyboard acceptance",
+    "after_cleanup_trashed": false,
+    "after_cleanup_public_status": 410
+  },
+  "cleanup": {
+    "temporary_container_and_seed_removed": true,
+    "pagination_only_links_retained": false,
+    "ssh_tunnel_removed": true,
+    "port_31076_listener_remaining": false,
+    "browser_tab_closed_and_viewport_reset": true,
+    "audit_window_overrides_before_close": [],
+    "retained_checkpoint_sha256": "210eec1b08fb0bc69b74b18dd802f876d0c2d0ce3edcf88e8c315d0d7210729b",
+    "production_status": "running healthy",
+    "production_restarts": 0
+  },
+  "tool_limits": {
+    "standalone_browser_used": false,
+    "standalone_fixture_approval": "pending; renewed request for print and zoom",
+    "native_print_sheet_verified": false,
+    "page_pdf_result": "Printing is not available",
+    "native_zoom_before_and_after": {"width": 1440, "height": 1000, "device_pixel_ratio": 1, "visual_scale": 1},
+    "credentials_changed_in_ui": false
+  }
+}

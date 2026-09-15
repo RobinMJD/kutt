@@ -3,7 +3,7 @@
 Last updated: 2026-09-15 (Europe/Paris).
 
 **Status: initial findings recorded; the full rendered audit is not yet complete.**
-Seventeen findings are confirmed, none is fixed. Remaining concerns and workflow
+Nineteen findings are confirmed, none is fixed. Remaining concerns and workflow
 coverage are tracked below. Do not describe this as a completed accessibility audit.
 
 ## Feature And Deployment Gate
@@ -365,6 +365,58 @@ domain. The admin stale-expiry comparison independently reproduced UX-015;
 invalid-target recovery then exposed a wrong-form response, promoted to UX-017.
 The original description, null expiry, pause and cap were restored and checked.
 
+A further fresh continuation ruled out the personal editor's suspected blank
+availability sibling: invalid URL recovery retains Paused and cap 23, and uses
+the correct personal endpoint. Workspace concurrency did not pass: after an
+independent client set Paused/cap 19, an already-open description-only form save
+silently changed them to false/null (UX-018). A subsequent invalid-alias response
+discarded the unsaved availability draft and collapsed the editor (UX-019).
+The original shared description and availability were restored with the API.
+
+Routing now also reproduces UX-014: a document-local PUT interception returning
+JSON 200 `{}` reports `Rules saved`. Exactly one request was intercepted;
+removing the override and reloading showed only the original saved rule, not the
+new draft. Native fetch and absence of the override were verified afterward.
+
+The complete native keyboard Restore path passed in this continuation. From the
+homepage's focused target, six Tabs reached Trash; Enter navigated there. Seven
+Tabs reached Restore; Enter opened the exact confirmation and a second native
+Enter accepted it. CDP only observed dialog opening/closing; it did not accept
+the dialog. The opening key command reported interruption by the dialog, which
+was inspected rather than repeated. The page displayed `Restored. Paused`, and
+an independent API check found no trashed link and public status 410. Focus
+returned to the document after the swap; post-action focus remains UX-001 work.
+
+Monitoring pagination used 51 temporary, synthetic viewer-owned links, with
+automatic workers disabled. First load displayed 50, Load more produced 51
+unique link rows and hid itself, and Refresh replaced them with the first 50.
+One synthetic due timestamp was backdated by an hour to exercise the overdue
+presentation; no destination worker ran or outbound destination request was
+made for these rows. At 390px the overdue guidance wrapped without horizontal
+overflow. Mobile import correction also passed: malformed JSON produced an
+explicit error, then valid CSV produced a 1-new/0-error dry run. Confirm import
+was not activated. Missing templates/help remain UX-006, not an existing control
+whose test is pending.
+
+Reserved-alias protection passed at 390px: after the synthetic paused link was
+soft-trashed, a native Enter submission attempting its alias was rejected with
+`This alias is in use or permanently reserved by a previous link.` The target
+and alias draft remained populated. This follow-up used the API only to restore
+the original link for cleanup; it was absent from Trash and remained public 410.
+The separate full native keyboard Restore pass above is the browser acceptance
+evidence. No conflicting replacement link was created.
+
+Fresh live configuration inspection confirms mail is disabled and no report
+address is configured. In the equivalently configured fixture, `/report`
+redirected to the homepage, matching the server guard. The optional mail-enabled
+report form is not deployed and remains a separate configuration-mode test.
+QR Print produced no accessible print sheet; native Codex-app inspection was
+denied and the supported page PDF command reported `Printing is not available`.
+Neither restriction was bypassed. Native `super+plus` left width 1440, height
+1000, DPR 1 and scale 1 unchanged, so true browser zoom is still unverified.
+The pending standalone-fixture browser approval was requested again with these
+specific remaining limitations. Production authentication was untouched.
+
 | Step | Workflow | Current result | Remaining acceptance |
 | --- | --- | --- | --- |
 | 1 | Production SSO entry | Desktop and fresh 390px mobile observed; clear Authentik action, misleading sign-up label | Auth error/cancel/expired-session states |
@@ -372,15 +424,15 @@ The original description, null expiry, pause and cap were restored and checked.
 | 3 | Invalid URL and campaign creation | Invalid input rejected; campaign applied and link created. Separate no-apply draft leaves target unchanged; long encoded Apply/Clear preserves unrelated URL components and explicitly states changes are not saved | Accessible announcements and complete keyboard flow |
 | 4 | Recent links and inline editing | Desktop actions, mobile edit and native keyboard edit/save/cancel passed. Independent drafts survive. Clearing expiry then saving description silently restores it in both personal and stale admin forms (UX-015). Combined workspace save preserved availability. Admin invalid-target recovery returns the wrong form (UX-017) | Mobile action access, remaining keyboard/error variants and UX-015/017 remediation |
 | 5 | Library filtering and bulk pause | Pause succeeded; state label contradicts result; mobile heading overlap. Label creation/assignment/filter/rename and saved-filter save/reopen/rename/replace passed. Collection unassignment updates the filtered result without deleting the link. With 51 synthetic links, pages show 50/1, page selection does not carry, and Enter search resets a later page to page 1 | Saved-filter/label deletion paths, fuller keyboard flow and clear success feedback |
-| 6 | Import/export | Invalid schema, valid dry run/commit, preview invalidation and conflict abort/skip passed. Actual JSON export verified. Native chooser now loads the synthetic file; Dry run previews one new link without importing it. Fresh 390px file/preview capture accepted | Templates and fuller mobile/error/retry coverage remain |
-| 7 | Trash and history | Native bulk cancel/confirm and later browser Restore cancel/confirm passed; restored link retained pause/public 410. Custom dialog focus/Escape defective. History reflows at 320px; at 390px Older/Newer keyboard activation with limit 5 returns the correct entries and navigation state | Complete keyboard Restore path, remaining dialog variants and reserved-alias recovery |
+| 6 | Import/export | Invalid schema, valid dry run/commit, preview invalidation and conflict abort/skip passed. Actual JSON export verified. Native chooser loads the synthetic file. Mobile malformed-JSON error followed by valid CSV dry run recovers with 1 new/0 errors; no import committed | Missing templates/help are UX-006; remaining keyboard and error announcements stay in fix acceptance |
+| 7 | Trash and history | Native bulk cancel/confirm and browser Restore cancel/confirm passed; full native Tab/Enter Restore now also passed, with pause/public 410 retained. Trashed alias reuse is rejected with the new-link draft retained; original link restored during cleanup. Custom dialog focus/Escape defective. History reflows at 320px; at 390px Older/Newer keyboard activation with limit 5 returns the correct entries and navigation state | Post-action focus and remaining dialog variants |
 | 8 | QR | Desktop/mobile preview, keyboard options, decoded rendered pixels, print-media visibility and truthful copy failure/pending handling passed. Native PNG/SVG download events now produce actual files; both independently decode to the public short URL at 512px | Print-dialog/PDF and physical scan remain |
-| 9 | Workspaces | Owner create/share/invite and role saves passed; native pending-revoke cancel/confirm passed. Invitation accept/decline and viewer UI passed. Outsider/pending/revoked page and API access denied. Stale editor Save after downgrade was rejected with an explicit role error and unchanged data. Mobile error fits. Combined availability persisted through a description-only save. Rendered Leave Cancel retained membership; Confirm removed it and independent page/API checks denied access. Initial link settings and memberships restored | Complete keyboard paths; concurrent shared availability/error variants |
-| 10 | Routing and forwarding | Rule reorder changed first-match preview and persisted. Actual routing revision conflict retained the draft; Reload cancel/confirm and normal Save recovered. Synthetic routing 401 preserved the draft. Forwarding preview retained allowed keys; tablet layout fits. Forwarding 403/409/503/network errors preserved draft; pending duplicate activation sent one request. Actual forwarding conflict/reload/save passed. HTML 200 falsely reports save success | Broader editor fault coverage and UX-014 remediation |
+| 9 | Workspaces | Owner create/share/invite and role saves passed; native pending-revoke cancel/confirm passed. Invitation accept/decline and viewer UI passed. Outsider/pending/revoked page and API access denied. Stale editor Save after downgrade was rejected with an explicit role error and unchanged data. Sequential availability preservation passed, but concurrent save overwrites another client's pause/cap (UX-018); invalid alias discards draft (UX-019). Leave Cancel/Confirm and denied subsequent access passed. Initial settings/memberships restored | Complete keyboard paths and UX-018/019 remediation |
+| 10 | Routing and forwarding | Rule reorder changed first-match preview and persisted. Actual routing revision conflict retained the draft; Reload cancel/confirm and normal Save recovered. Synthetic routing 401 preserved the draft. Forwarding preview retained allowed keys; tablet layout fits. Forwarding 403/409/503/network errors preserved draft; pending duplicate activation sent one request. Actual forwarding conflict/reload/save passed. Forwarding HTML 200 and routing JSON 200 `{}` falsely report save success | Broader editor fault coverage and UX-014 remediation |
 | 11 | Analytics and privacy | Empty/populated reports, date correction, tables/pagination, 403/retry, tracking save/reload and non-destructive retention preview passed. Malformed JSON 200 exposes stale report/raw error (UX-014). Native CSV download now produces a verified artifact matching the selected 30-day range, zero visits and four owned links | Broader fault/keyboard coverage and UX-014 remediation; fresh offline privacy/API coverage passed separately |
-| 12 | Monitoring and integrations | Mobile empty state, live transport recovery, real worker URL denial, queue/lock, actual conflict/reload and disable passed. HTML 200 corrupts monitoring state (UX-014). Private webhook target rejected but error off-screen (UX-009). Real 400 failure, rendered Retry/attempt count and real 204 success passed; both synthetic receivers then disabled/removed | Broader monitoring fault/overdue/pagination and keyboard coverage; UX-014 remediation |
+| 12 | Monitoring and integrations | Mobile empty state, live transport recovery, real worker URL denial, queue/lock, actual conflict/reload and disable passed. Dashboard 50/51-row pagination, refresh reset and synthetic overdue guidance at 390px passed. HTML 200 corrupts monitoring state (UX-014). Private webhook target error off-screen (UX-009). Real 400 failure/retry and 204 success passed; receivers removed | Broader fault/keyboard coverage and UX-014 remediation |
 | 13 | Settings, tokens and security | Admin and ordinary-user mobile settings inspected; feature links reachable and Admin absent for ordinary user. Security diagnostics and clipboard behavior observed. Shortcut entry fits at 320px with explicit Settings/Library returns and clearly bounded token scope; no token created | Token lifecycle UI requires credential handoff; OIDC modes and session revocation; fresh offline protocol tests passed separately |
-| 14 | Administration and recipient pages | Protected page reflows and password correction succeeds. Paused/expired/scheduled/capped return bare 410; cap permits one redirect. Styled 404 has return link. Admin filters/counts and invalid-domain draft retention passed. Create user repeats modal defect without credential entry; stale admin save/validation confirms UX-015/017 | Remaining dialog variants/report form and broader keyboard/zoom checks |
+| 14 | Administration and recipient pages | Protected page reflows and password correction succeeds. Paused/expired/scheduled/capped return bare 410; cap permits one redirect. Styled 404 has return link. Admin filters/counts and invalid-domain draft retention passed. Create user repeats modal defect without credential entry; stale admin save/validation confirms UX-015/017. Report route redirects home when the report address is absent, matching deployed configuration | Remaining dialog variants, optional mail-enabled report form and broader keyboard/zoom checks |
 
 ### Continuation Evidence
 
@@ -424,6 +476,10 @@ The viewport is 390 x 844 unless the row identifies a desktop, tablet or 320px c
 | 14 | [Wrong admin error form](ui-ux-review/2026-09-15/51-admin-validation-wrong-form-desktop.png) | Invalid target returns personal endpoint/form and blank availability despite persisted pause/cap; availability not submitted |
 | 6 | [Native-file import preview](ui-ux-review/2026-09-15/52-native-file-import-mobile.jpg) | Correctly scaled native JPEG capture at 390 x 844; file loaded through native chooser, valid dry run and no import committed |
 | 6/8/11/12/14 | [Result and artifact summary](ui-ux-review/2026-09-15/53-browser-artifact-results.json) | Transcribed observations plus actual downloaded QR/CSV sizes, decoded content and SHA-256; synthetic only, not a raw request trace |
+| 9 | [Stale workspace save](ui-ux-review/2026-09-15/54-workspace-stale-save-mobile.jpg) | 390 x 844; description-only stale save removed an independently saved pause/cap, corroborated by API before/after |
+| 10 | [Routing false success](ui-ux-review/2026-09-15/55-routing-false-success-desktop.jpg) | 1440 x 1000; JSON 200 `{}` claims Rules saved for an intercepted draft; native fetch restored and reload proved no persistence |
+| 12 | [Overdue monitoring](ui-ux-review/2026-09-15/56-monitoring-overdue-mobile.jpg) | 390 x 844; synthetic backdated due state, with 50/51 unique-row pagination and refresh verified separately; no worker claim |
+| 4/6/7/9/10/12 | [Continuation result summary](ui-ux-review/2026-09-15/57-workspace-keyboard-monitoring-results.json) | Structured transcription of observations, role/fixture boundaries, restoration and tool limitations; not a raw network trace |
 
 ### Fresh Offline Regression
 
@@ -474,6 +530,8 @@ P3: polish with no blocked task. These are product priorities, not CVSS scores.
 | UX-015 | P1 | Saving an unrelated field silently restores an expiry cleared in the sibling form | Rendered sequential saves, screenshot and read-only fixture database checks | Open |
 | UX-016 | P2 | Local sign-in can initialize the link table twice and throw during replacement | Fresh redacted HTMX event timeline, console stack and source review | Open |
 | UX-017 | P1 | Admin edit responses lose owner context; validation returns a personal form with blank availability | Actual admin save/error response, rendered DOM, screenshot and unchanged API state | Open |
+| UX-018 | P1 | Stale workspace edits silently overwrite another client's availability | Two real clients, description-only rendered save and API before/after | Open |
+| UX-019 | P2 | Workspace validation errors discard the unsaved edit draft | Invalid-alias response, collapsed editor and fresh field inspection | Open |
 
 ### UX-001: Name Core Actions
 
@@ -828,6 +886,14 @@ Validate report/filter/table data before exposing or replacing state; explicitly
 label retained data as stale or keep it hidden on failure. Preserve existing
 request cancellation and serial guards. Do not weaken server authorization.
 
+Routing has now been independently reproduced too. A JSON-200 `{}` response to
+the draft PUT says `Rules saved`, although the request was intercepted and never
+reached the server. Reload after removing interception restores only the original
+saved rule. Source: [routing request/save handling](../static/scripts/routing.js).
+Evidence: [routing false success](ui-ux-review/2026-09-15/55-routing-false-success-desktop.jpg).
+Include routing load/save/preview shape validation and revision preservation in
+this finding; this is not merely the already-tested rejected/HTTP-error path.
+
 ### UX-015: Do Not Resubmit Stale Expiry After Availability Changes
 
 The legacy link editor and the Availability form share persisted expiry state but
@@ -943,6 +1009,56 @@ responses, repeated open/close, row actions and custom domains. Verify that owne
 labels and filtering links survive a successful update. Check the personal
 error path for the same blank-lifecycle hazard before choosing a shared fix.
 
+The personal invalid-URL sibling was tested and **does not** reproduce this
+blank-state defect: Paused remained checked, cap remained 23 and both endpoints
+remained personal. Preserve that passing behavior during the admin fix.
+
+### UX-018: Prevent Lost Availability Updates In Shared Editing
+
+Open the shared link editor while it is active with no cap. An independent
+authenticated owner client sets `paused: true` and `max_visits: 19`. Without
+reloading the editor, change only Description and select Save link. The response
+succeeds, but an independent read now reports `paused: false` and
+`max_visits: null`, with the changed description. The two clients are real; no
+response mock was used. The original fixture state was restored afterward.
+
+Sources: [workspace form](../server/views/workspaces.hbs),
+[form input parser](../server/handlers/workspaces.handler.js),
+[shared mutation](../server/workspaces.js). The form submits all saved fields,
+including availability, without detecting an intervening update. Sequential
+same-client preservation passed earlier and is not evidence against this race.
+Evidence: [stale-save result](ui-ux-review/2026-09-15/54-workspace-stale-save-mobile.jpg).
+
+Acceptance: detect stale edits atomically or preserve fields the user did not
+change without overwriting another client's update. Clearly report conflicts,
+retain the draft and offer explicit reload/reconciliation. Cover owner/editor
+and personal/shared concurrent changes, pause/start/end/cap, target/description,
+role revocation while editing, and compatible existing API clients. Do not allow
+stale writes to unpause a link, remove limits or bypass authorization. A mere
+warning after the overwrite is insufficient.
+
+### UX-019: Retain Shared Edit Drafts On Validation Failure
+
+In the shared edit form, set an invalid alias, check Paused and enter cap 7.
+Save link returns `Invalid or reserved alias.` above the workspace and collapses
+the editor. Reopening shows the original alias with Paused unchecked and no cap;
+the unsaved draft is gone. Native invalid-URL validation retains the fields, but
+the server-side error path does not. No password value was entered and no
+invalid settings were persisted.
+
+Source: [workspace submit/page error handling](../server/handlers/workspaces.handler.js).
+`submit` calls `page` with only the error text; `page` renders the saved model,
+not the draft or an open-editor identity. The existing role-downgrade response
+correctly removes access, so retaining editable drafts must not defeat that.
+
+Acceptance: keep the relevant editor open with non-secret submitted values and
+a linked, focused or announced field error after ordinary validation failure.
+Support correction/retry without recreating the draft. Never echo or retain
+submitted passwords in HTML; explain re-entry when necessary. If authorization
+was revoked, keep the current denial and do not expose inaccessible content.
+Test alias/target/lifecycle validation, safe escaping, browser-back behavior and
+mobile error visibility alongside the stale-write handling in UX-018.
+
 ## Source Concerns Requiring Rendered Validation
 
 These are not counted as confirmed UX defects. Validate, merge into an existing
@@ -953,9 +1069,9 @@ finding, promote to a new UX ID, or reject with evidence. Do not blindly redesig
 | C-01 | Confirmed and promoted to UX-008; Admin Create user repeats the focus/Escape defect | Remaining domain variants and Shift+Tab stay in the fix acceptance scope |
 | C-02 | Confirmed and promoted to UX-011 through controlled document-level rejection. QR pending/duplicate/rejection behavior separately passed with truthful visible fallback | Browser permission settings untouched; credential/token variants remain in acceptance coverage; retain passing QR behavior |
 | C-03 | Not promoted to a separate defect: varied Settings/feature navigation does not by itself justify a redesign | Reviewed feature templates expose named headings and explicit return links; rendered settings/security, monitoring, analytics, workspaces, library, import, history, QR, routing, forwarding and Shortcut entry corroborate context and recovery paths. Ordinary users have no Admin link. The actual mobile navigation failures remain UX-002/003. Full keyboard navigation remains a separate acceptance gap; not every return link was keyboard-activated |
-| C-04 | Original target/availability draft-clobber suspicion rejected; personal and stale admin expiry restoration confirmed as UX-015. Combined workspace availability survives a description-only save | Preserve passing independent-draft/shared-form behavior; concurrent workspace variants remain acceptance work. Wrong admin validation context is UX-017 |
+| C-04 | Original independent-form clobber suspicion rejected; stale personal/admin expiry confirmed as UX-015. Sequential shared availability survives, but concurrent shared save loses it (UX-018). Personal validation retains lifecycle, while shared validation loses draft (UX-019) | Preserve passing independent-draft behavior. Admin context is UX-017; shared races and validation now have concrete remediation acceptance |
 | C-05 | Navigation and routing-error contrast confirmed as UX-010; native focused submit has only slight movement, included in UX-001 acceptance | Reduced-motion sampled settled states passed. 320px home exposes clipped actions despite zero document overflow. Native zoom attempt did not change dimensions/scale; actual zoom, broader focus and animated/loading-state coverage remain incomplete |
-| C-06 | Webhook error visibility confirmed as UX-009; forwarding false success and monitoring malformed-response state loss confirmed as UX-014. Actual two-client conflicts retain drafts and recover in routing, forwarding and monitoring. Real worker denial, monitoring disable, rule ordering/preview, forwarding duplicate prevention and live transport recovery pass | Other editor faults remain; document-local simulation and real transport interruption are not an expired-SSO ceremony |
+| C-06 | Webhook error visibility confirmed as UX-009; forwarding/routing false success, monitoring malformed-response state loss and analytics stale report confirmed as UX-014. Actual two-client conflicts retain drafts and recover in routing, forwarding and monitoring. Real worker denial, monitoring disable, rule ordering/preview, forwarding duplicate prevention and live transport recovery pass | Other editor faults remain; document-local simulation and real transport interruption are not an expired-SSO ceremony |
 | C-07 | Promoted to UX-016: fresh event trace confirms two table requests and a disconnected-target swap exception after a successful native sign-in | Complete internal reinitialization mechanism still needs instrumentation; do not call this failed authentication or data loss |
 
 ## Remediation Order And Status Contract
@@ -966,10 +1082,11 @@ finding, promote to a new UX ID, or reject with evidence. Do not blindly redesig
    intermittently failing in-app browser**. Standalone Playwright permission is still pending
    for unsupported/failing browser checks; no alternate browser was used.
 2. Fix UX-015 first because it silently changes persisted availability, then
+   UX-018 because it demonstrably removes another client's pause/limit, then
    UX-017 because its incorrect form/state risks the same data-integrity class
    of mistake, then UX-001, UX-003 and UX-002; shared components may overlap, but
    document and validate each finding independently.
-3. Fix UX-008 before UX-004 through UX-007, then UX-009 through UX-011 and UX-013/014/016 before UX-012, plus all additional confirmed findings in severity
+3. Fix UX-008 before UX-004 through UX-007, then UX-009 through UX-011 and UX-013/014/016/019 before UX-012, plus all additional confirmed findings in severity
    order. Reorder only with a written reason in the change log.
 4. Run a final full regression/security and desktop/mobile review, reconcile
    source/release/deployment versions and close the ledger only after all gates.
@@ -1045,3 +1162,6 @@ classifying a standards failure.
 | 2026-09-15 | AUDIT-00, UX-005/008/015/017 | Added real webhook failure/retry/success, history pagination, admin filters/dialog validation and stale admin expiry reproduction. Confirmed wrong admin validation form and missing owner context as UX-017; placed it after UX-015 because of misleading availability controls | Seventeen open findings, none fixed. Both test receivers removed and original link state restored. Prior docs commit `8019706732603d4ef40f9bfcfb36d6d4b7f6dbf2` passed [CI 34938551864](https://github.com/RobinMJD/kutt/actions/runs/34938551864). No runtime or production mutation. |
 | 2026-09-15 | AUDIT-00 browser acceptance | Native file chooser populated the synthetic import file and produced a valid dry run. Actual PNG/SVG downloads arrived and independently decoded correctly. Actual analytics CSV matched the rendered date range/counts | Earlier chooser and these download blockers superseded by fresh passes through the in-app browser; no alternate browser or permission bypass. Two malformed import captures rejected; native capture accepted. Print, zoom, credential and remaining matrix checks stay open. |
 | 2026-09-15 | AUDIT-00 checkpoint | Preserved a ten-link/four-user SQLite backup outside Git with matching local/remote SHA-256 `210eec1b08fb0bc69b74b18dd802f876d0c2d0ce3edcf88e8c315d0d7210729b`, integrity `ok`, no foreign-key errors, trash, webhooks or delivery rows. Retained synthetic downloaded artifacts outside Git. Removed fixture/seed/tunnel, reset viewport and closed the tab | Fresh production remains `local/kutt:3.2.6-sr94.18`, running/healthy, zero restarts; no local audit listener or required command session remains. This is not a production backup/deployment. Full audit and remediation remain incomplete. |
+| 2026-09-15 | AUDIT-00, UX-018/019, C-04 | Confirmed concurrent shared editing silently removes another client's pause/cap; shared invalid-alias rejection collapses the editor and discards its draft. Personal invalid-target validation retains the correct lifecycle state | Nineteen open findings, none fixed. UX-018 moves immediately after UX-015 because both silently mutate availability; UX-019 joins the P2 form/error group. Original shared state restored. Prior documentation commit `363a659e53a4233a1cce8daba43a4a10e64010a9` passed [Fork CI 34946719719](https://github.com/RobinMJD/kutt/actions/runs/34946719719) and [Shortcut CI 34946719675](https://github.com/RobinMJD/kutt/actions/runs/34946719675). |
+| 2026-09-15 | AUDIT-00, UX-014, C-06 | Routing JSON 200 `{}` falsely claims Rules saved; interception removed and reload proves draft was not persisted. Full native keyboard Restore, reserved-alias protection, monitoring pagination/overdue layout and mobile import correction passed | No production mutation, authentication change, runtime fix, release or deployment. Print/PDF and true browser zoom remain tool-limited; standalone-fixture approval still pending. Optional mail-enabled report mode is separate from the currently disabled production route. Full audit and remediation goal remain incomplete. |
+| 2026-09-15 | AUDIT-00 cleanup | Removed the exact disposable container, its private seed directory and SSH tunnel, including all 51 pagination-only links. Restored native fetch, verified no audit overrides, reset viewport and closed the tab. Retained the earlier ten-link checkpoint unchanged | Checkpoint SHA-256 freshly matches `210eec1b08fb0bc69b74b18dd802f876d0c2d0ce3edcf88e8c315d0d7210729b`. Production remains `local/kutt:3.2.6-sr94.18`, running/healthy, zero restarts. No local port 31076 listener remains. No production backup/deployment is claimed. |
