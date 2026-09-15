@@ -132,6 +132,57 @@ not used. A genuine Tab focused the homepage link and Return later opened the
 focused Settings link, but intervening input batches still timed out; this is
 partial keyboard evidence, not a complete keyboard-only workflow.
 
+A fresh outsider session saw no workspace or pending invitation, and direct
+workspace navigation returned 404 without shared content. A fixture-only API
+client invited that synthetic account as a viewer; pending access remained 404.
+The rendered Decline action removed the invitation without granting access.
+After a second invitation, rendered Accept opened the read-only workspace;
+independent API checks rejected viewer writes. Promotion through the fixture API
+made editor controls appear after refresh. With a description draft open, a
+subsequent API downgrade to viewer caused the rendered Save to reject the write,
+show `Your workspace role does not permit this action.` and remove editing
+controls. The persisted description stayed unchanged. At 390px the role error
+was visible above the workspace with no horizontal document overflow. Revocation
+then removed both page and API access; the original synthetic membership set was
+restored. These role changes touched only disposable accounts and test links.
+The helper initially expected 200 from a successful role update; the actual 204
+was checked against the handler, the assertion corrected, and current role
+verified before continuing. No duplicate promotion was sent. Native Decline
+activation timed out before dispatch; supported same-tab page control activation
+completed the rendered form tests, not genuine pointer/keyboard acceptance.
+Later ordinary owner-side controls also worked: Invite created a pending viewer
+invitation; native revoke Cancel preserved it and Confirm removed it, returning
+to All workspaces. Saving the existing synthetic viewer's role as Editor persisted
+after reopening management; saving Viewer restored the original role. Read-only
+database inspection confirmed exactly the original editor/viewer memberships,
+both accepted, with no outsider membership. One semantic value-read timed out;
+a same-tab DOM read verified the value before the restoration action continued.
+
+Ordinary in-app controls subsequently worked for the Library: assigning the audit
+collection to one selected link added its badge; filtering by that collection
+returned exactly that link. Replacing a saved filter, clearing the current filter
+and reopening the saved filter retained the new collection criterion. Removing
+the assignment yielded zero matching links without deleting the link. The
+original tag-based saved filter was restored. A verified six-link checkpoint was
+taken before adding 51 paused pagination-only links. Their API pages contained
+50 and 1 distinct results. The rendered first page selected exactly its 50 rows;
+Next showed one unselected row, Previous and no Next. Enter in a narrowed Search
+reset page 2 to page 1 with one matching unselected result. These successful
+semantic pointer/keyboard actions do not erase the earlier tool failures or
+complete keyboard-only audit coverage.
+
+QR download activation in the fresh tab again produced no verified PNG/SVG file;
+the SVG attempt also produced no captured network response or failure event.
+Delivery therefore remains unverified, not reported as an application failure.
+The rendered 512px preview was independently decoded from its canvas pixels with
+the repository's QR decoder, yielding exactly the displayed public short URL and
+not the destination. The first ES-module import of the CommonJS decoder failed;
+loading it with `createRequire` succeeded. Print-media emulation hid the controls
+and heading while retaining the loaded QR sheet. Screen media was restored; no
+printer dialog, print job or physical scan was performed. Console history also
+contained the existing C-07 HTMX swap error around both local sign-ins; neither
+prevented the audited navigation or saved actions, and its cause remains open.
+
 No screen-reader, physical iPhone/Safari, browser zoom, actual
 clipboard permission-denial or fresh human MFA acceptance is claimed. The
 clipboard test injected a rejected promise into the disposable document only.
@@ -155,11 +206,11 @@ do not replace the missing fresh audit steps.
 | 2 | Empty home and first link | Mobile/desktop observed; Enter submitted a synthetic link successfully | Complete keyboard-only path, 320px reflow and 200/400% zoom |
 | 3 | Invalid URL and campaign creation | Invalid input rejected; campaign applied and link created | Announcements, no-apply draft behavior, long/encoded values |
 | 4 | Recent links and inline editing | Desktop actions and mobile edit observed; independent target/availability drafts survive. Clearing legacy expiry then saving description silently restores the old expiry (UX-015), verified in the fixture database | Mobile action access, complete keyboard edit/save/cancel, workspace comparison and UX-015 remediation |
-| 5 | Library filtering and bulk pause | Pause succeeded; state label contradicts result; mobile heading overlap. Tag/collection creation, assigning a tag to one link, filtering, tag rename, saving/reopening/renaming a filter passed through rendered forms | Collection assignment, filter replacement/removal, remaining label deletion paths, pagination and clear success feedback |
+| 5 | Library filtering and bulk pause | Pause succeeded; state label contradicts result; mobile heading overlap. Label creation/assignment/filter/rename and saved-filter save/reopen/rename/replace passed. Collection unassignment updates the filtered result without deleting the link. With 51 synthetic links, pages show 50/1, page selection does not carry, and Enter search resets a later page to page 1 | Saved-filter/label deletion paths, fuller keyboard flow and clear success feedback |
 | 6 | Import/export | Invalid schema reported; valid dry run and explicit commit created one link. Editing content invalidates preview/confirmation. Conflicting alias aborts; Skip preview and commit report 0 created / 1 skipped. Actual JSON export file verified with two expected synthetic links | Native file chooser blocked by tool timeout; templates and fuller mobile/error/retry coverage remain |
 | 7 | Trash and history | Native bulk cancel preserved selection/focus, confirm trashed one synthetic link; custom dialog focus/Escape defective. Later browser Restore cancel/confirm succeeded through supported dialog handling, showed Restored/Paused and retained public 410; refresh confirmed empty Trash. Populated history reflows at 320px | Complete keyboard Restore path, history pagination, remaining dialog variants and reserved-alias recovery |
-| 8 | QR | Fresh desktop/mobile preview accepted; keyboard Apply changed 512/M to 256/H and updated download URLs | Actual PNG/SVG download not verified after controls activated; clipboard failure, print and scanability remain |
-| 9 | Workspaces | Owner create/share and viewer invitation acceptance/read-only UI observed. API rejected pending/outsider access and viewer edits; editor API and rendered shared-description saves passed, rename denied and owner controls absent | Outsider rendered views, role changes/revocation and remaining invitation lifecycle |
+| 8 | QR | Fresh desktop/mobile preview accepted; keyboard Apply changed 512/M to 256/H and updated download URLs. Fresh rendered 512px preview independently decodes to the public short URL. Print media hides controls and retains the QR sheet | Actual PNG/SVG download not verified after controls activated; clipboard failure, print-dialog/PDF and physical scan remain |
+| 9 | Workspaces | Owner create/share/invite and role saves passed; native pending-revoke cancel/confirm passed. Invitation accept/decline and viewer UI passed. Outsider/pending/revoked page and API access denied. Stale editor Save after downgrade was rejected with an explicit role error and unchanged data. Mobile error fits. Original memberships restored | Leave/cancel and complete keyboard paths; broader shared-link edit/availability variants |
 | 10 | Routing and forwarding | Rule reorder changed first-match preview and persisted. Actual routing revision conflict retained the draft; Reload cancel/confirm and normal Save recovered. Synthetic routing 401 preserved the draft. Forwarding preview retained allowed keys; tablet layout fits. Forwarding 403/409/503/network errors preserved draft; pending duplicate activation sent one request. Actual forwarding conflict/reload/save passed. HTML 200 falsely reports save success | Broader editor fault coverage and UX-014 remediation |
 | 11 | Analytics and privacy | Empty mobile and populated desktop report observed; synthetic redirect counted once. Date-range changes passed; invalid range hid old report and correction recovered it. Tables match chart. Tracking save/reload passed and original state restored. Mobile retention preview clearly names cutoff, count and irreversible effect; no purge applied | Browser export/download, pagination and failure/retry states; fresh offline privacy/API coverage passed separately |
 | 12 | Monitoring and integrations | Mobile monitoring empty state accepted; live events connected, paused and resumed. Private webhook target rejected and draft retained, but error off-screen | Pending/failed checks, webhook delivery/retry, forced live disconnection/recovery and remaining faults |
@@ -194,6 +245,7 @@ The viewport is 390 x 844 unless the row identifies a desktop, tablet or 320px c
 | 7 | [Browser Restore result](ui-ux-review/2026-09-15/37-restore-desktop.png) | 1280 x 720; successful native confirmation shows Restored/Paused. Subsequent refresh confirms empty Trash; public URL remains 410 |
 | 13 | [Shortcut entry at 320px](ui-ux-review/2026-09-15/38-shortcut-mobile.png) | 320 x 720; setup, scope and return navigation fit with reduced-motion emulation active; no credential generated or Shortcuts app opened |
 | 10 | [Real routing conflict](ui-ux-review/2026-09-15/39-routing-real-conflict-desktop.png) | 1440 x 1000; stale-write rejection retains the edited rule name. Error text measures only 3.5696:1 contrast |
+| 9 | [Workspace downgrade at 390px](ui-ux-review/2026-09-15/40-workspace-downgrade-mobile.png) | 390 x 844; stale editor submission is rejected, role becomes viewer, editing controls disappear and the persisted description remains unchanged |
 
 ### Fresh Offline Regression
 
@@ -602,7 +654,7 @@ finding, promote to a new UX ID, or reject with evidence. Do not blindly redesig
 | C-04 | Original target/availability draft-clobber suspicion rejected for the tested fields; legacy expiry synchronization is now confirmed as UX-015 | Preserve the passing independent-draft behavior while fixing UX-015; workspace/admin comparisons remain acceptance work |
 | C-05 | Navigation and routing-error contrast confirmed as UX-010 | Reduced-motion emulation verified with no active animations in sampled settled states; hover/focus, keyboard, zoom and animated/loading-state coverage remain incomplete |
 | C-06 | Webhook error visibility confirmed as UX-009; forwarding false success confirmed as UX-014. Routing 401 and forwarding 403/409/503/network failures retain drafts. Actual two-client conflicts, retained drafts and reload/save recovery pass for routing and forwarding. Rule ordering/first-match preview and forwarding duplicate prevention pass. Analytics range recovery and live pause/resume passed | Other editor faults and forced live reconnection remain; document-level simulation is not a real expired-SSO ceremony |
-| C-07 | One HTMX swap error occurred during local fixture login (`insertBefore` on null), although login and subsequent navigation succeeded. A later fresh viewer login succeeded with no captured console errors | Not reproduced in that second run; retain as an unconfirmed race candidate, not a production outage or a confirmed defect |
+| C-07 | HTMX swap error during local fixture login (`insertBefore` on null). One intervening viewer login had no captured errors; the latest outsider and owner sign-ins again produced the error in console history, but both authenticated and subsequent workflows passed | Repeated log signal, not yet an isolated cause or confirmed user-visible defect. Check normal settled sign-in versus navigation during the delayed HTMX redirect; do not claim a production outage or silently resolve the candidate |
 
 ## Remediation Order And Status Contract
 
@@ -678,3 +730,5 @@ classifying a standards failure.
 | 2026-09-15 | AUDIT-00 checkpoint | Retained the expanded synthetic database outside Git after SQLite backup, matching local/remote SHA-256 and integrity checks; removed fixture, seed copy and tunnel; reset viewport and closed tab | Four synthetic users and six links retained. Production `kutt` is still healthy on `local/kutt:3.2.6-sr94.18` with zero restarts. No runtime fix/deployment occurred. The ordinary typing, native chooser/dialog/download and remaining accessibility gates still need the pending browser approval; no substitute mechanism was used. |
 | 2026-09-15 | AUDIT-00, C-03/05/06, UX-010 | Browser Restore cancel/confirm succeeded; rule ordering, real routing concurrency, retained draft and reload/save recovery passed. Inspected 320px Shortcut entry under reduced-motion emulation; extended contrast finding to the measured routing error | Fifteen open findings, none fixed. C-03 does not warrant a separate redesign; actual mobile navigation defects remain tracked. Partial keyboard success does not close the keyboard gate. Previous documentation commit `4168c867a99e32e2e525e7bdc3a354044f9a0d2e` passed [CI 34926961192](https://github.com/RobinMJD/kutt/actions/runs/34926961192). No runtime or production change. |
 | 2026-09-15 | AUDIT-00 checkpoint | Removed temporary rules and verified paused/public-410 state. Retained a new synthetic SQLite checkpoint outside Git with matching local/remote SHA-256 and integrity `ok`; removed fixture, seed and SSH tunnel, reset emulation/viewport and closed the audit tab | Four synthetic users, six links, no trashed links. Production remains healthy on `local/kutt:3.2.6-sr94.18`, zero restarts. Full audit, runtime fixes and their release/deployment gates remain incomplete. |
+| 2026-09-15 | AUDIT-00, C-06/07 | Added rendered outsider/invitation/role-downgrade/revocation coverage, owner invite/role/revoke forms, collection assignment/unassignment, saved-filter replacement and 51-link pagination. Independently decoded rendered QR pixels and checked print-media visibility | Fifteen open findings, none fixed. Original roles and saved filter restored. Read-only/API checks corroborate denial and unchanged shared data. Native Library controls and Enter search passed in this segment; earlier tool failures remain. QR delivery still unverified; repeated login console error remains an unresolved candidate. Previous documentation commit `bac7f8510db5e24d5523a6d73aad3fa4b2593476` passed [CI 34929124611](https://github.com/RobinMJD/kutt/actions/runs/34929124611). No runtime release or production mutation. |
+| 2026-09-15 | AUDIT-00 checkpoint | Retained an integrity-checked six-link checkpoint before pagination seeding, with matching local/remote SHA-256. Removed the temporary container including its 51 pagination-only links, seed mount and SSH tunnel; reset network/media/viewport overrides and closed the tab | Four synthetic accounts, six links and no trash retained outside Git. Live `kutt` freshly reports `local/kutt:3.2.6-sr94.18`, running/healthy, zero restarts. No production backup or deployment is claimed. Audit and remediation goal remain incomplete. |
