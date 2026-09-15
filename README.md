@@ -42,6 +42,8 @@ See [deployment and recovery](docs/DEPLOYMENT.md) and the
 [security maintenance notes](docs/SECURITY-MAINTENANCE.md) before upgrading.
 The [community PR review](docs/UPSTREAM-PR-REVIEW.md) records selected improvements,
 contributor credits and deferred proposals with their compatibility/security tradeoffs.
+The [UI/UX review ledger](docs/UI-UX-REVIEW.md) tracks confirmed findings, remaining
+audit coverage and per-fix testing, release and deployment gates.
 
 Fork CI tests an isolated SQLite database on each main-branch push. Version tags
 matching `v*-sr94.*` publish the tested amd64 image to `ghcr.io/robinmjd/kutt`.
