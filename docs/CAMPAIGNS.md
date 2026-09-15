@@ -1,7 +1,7 @@
 # Campaign parameters
 
-Release candidate for .18, inspired by [upstream PR #997](https://github.com/thedevs-network/kutt/pull/997).
-Not deployed until the acceptance record in UPSTREAM-PR-REVIEW.md is completed.
+Released and deployed in .18, inspired by [upstream PR #997](https://github.com/thedevs-network/kutt/pull/997).
+See the [acceptance record](UPSTREAM-PR-REVIEW.md#release-18-acceptance).
 
 ## UI
 
@@ -65,7 +65,8 @@ destination parameters win over visitor query strings, even for allowed keys.
 This is campaign URL construction, not a new campaign-level analytics dashboard.
 
 Rollback to .17 preserves campaign URLs as ordinary destinations. No data
-downgrade or stripping is needed. Older API clients remain compatible.
+downgrade or stripping is needed. Older API clients remain compatible. Such a
+rollback loses the legacy cookie-origin hardening too; prefer fixing forward.
 
 Tests: `tests/campaign.cjs` (both API aliases, malformed inputs, authorization,
 idempotency, workspace roles, redirect paths, forwarding/routing precedence,

@@ -71,7 +71,44 @@ email search. Deployment completion is recorded below only after its gates pass.
   validation and idempotency. Explicit clearing, encoded-length checks and
   existing redirect/transfer/authorization boundaries are tested. See
   [campaign design and recovery](CAMPAIGNS.md). No migration or dependency.
-  Publication/deployment gates are pending; this is not yet marked accepted.
+  Publication/deployment gates passed as recorded below.
+
+## Release .18 acceptance
+
+- Published [v3.2.6-sr94.18](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.18),
+  runtime source `10fef12`, with [passing release CI](https://github.com/RobinMJD/kutt/actions/runs/34913284052).
+  Source digest `sha256:67dd45d0d80eb6aa17d5d405ddded09de41a413228bd6ded32381db103c216ee`;
+  exact hardened wrapper `sha256:17639101731d1f741b6e596c0f975ad46ee46a87455394a4759965a847116114`.
+  Deployed 2026-09-15 00:42:30 UTC. Later closure edits change documentation only;
+  the immutable release tag/image are not replaced.
+- Full source/SQLite and exact-wrapper regression, Redis worker/restart tests,
+  desktop/mobile creation, personal/admin/workspace edits and error recovery
+  passed. Browser tests found and fixed queued disclosure initialization losing
+  a fast draft and mobile inherited whitespace clipping status text. A focused
+  authorization test prompted same-origin defense in depth on legacy cookie
+  link mutations. Explicit valid API credentials retain existing behavior;
+  invalid credentials cannot fall back to cookies. No role/scope was broadened.
+- Full deployed HTTPS/WAF regression passed, including campaign parameters,
+  foreign-origin cookie denial, unchanged targets, public redirects and prior
+  features. Real Authentik-signed logout/replay passed. Human login/MFA and
+  physical Safari/iPhone acceptance remain separate, not claimed by these tests.
+  The disposable browser container, tunnel and production test identities were
+  removed. Original user/link/configuration fingerprints and database integrity
+  remain unchanged; WAF, SSO and the no-published-backend-port posture remain.
+- Both pre-release and clean post-release snapshots were copied to NAS and fully
+  byte-restored. Their databases passed migration/integrity/foreign-key/write
+  tests in the exact wrapper; original JWT/OIDC secrets and Compose were compared
+  without disclosure. Scratch tests use a dummy key, not live encrypted-webhook
+  delivery. Post-release snapshot time: 2026-09-15 00:51:01 UTC. Local/NAS backups
+  do not imply external USB SSD backup validation.
+- Two health samples 65 seconds apart passed: exact image, zero restarts, three
+  fresh probes, no Kutt alerts, failed units or unhealthy containers. Whole-lab
+  configuration validation passed with pre-existing unrelated template warnings.
+  Grype's 2026-09-14 database reports zero critical/high and three medium BusyBox
+  package matches with no listed fix; no findings were suppressed.
+- No migration, dependency or secret change. Image-only rollback to `.17`
+  preserves campaign URLs but loses the builder and origin hardening; prefer
+  fixing forward and never overwrite later data simply to revert code.
 
 ## Useful, but larger follow-ups
 
