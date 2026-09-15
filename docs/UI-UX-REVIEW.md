@@ -3,8 +3,8 @@
 Last updated: 2026-09-15 (Europe/Paris).
 
 **Status: initial findings recorded; the full rendered audit is not yet complete.**
-Seven findings are confirmed, none is fixed. Six additional concerns need browser
-validation. Do not describe this document as a completed accessibility audit.
+Twelve findings are confirmed, none is fixed. Remaining concerns and workflow
+coverage are tracked below. Do not describe this as a completed accessibility audit.
 
 ## Feature And Deployment Gate
 
@@ -39,13 +39,43 @@ This is an **audit-tool blocker**, not evidence of a Kutt production outage or a
 confirmed application defect. Approval to finish using the installed standalone
 Playwright browser was requested and is still pending. Do not bypass that gate.
 
-Two captures were rejected: an unsettled mobile viewport capture and a malformed
-full-page stitched capture. Neither is included or counted as evidence. QR
-navigation was attempted after the tooling stall but did not produce an accepted
-capture; it is not counted as reviewed.
+On the next continuation, the temporary tabs had been cleaned up and a fresh
+in-app tab worked. The audit resumed there, without standalone Playwright, using
+a new disposable database on the same exact image. Intermittent pre-dispatch
+input timeouts remain. Some high-level screenshots incorrectly scale the page
+into one quarter of the canvas; those captures are rejected. The same tab's
+supported CDP `Page.captureScreenshot` produced correctly sized accepted captures.
+No browser permissions or production controls were changed. The supported raw
+CDP surface rejected browser clipboard-permission simulation. Subsequently,
+temporary failure injection into the disposable document, through the same tab's
+supported `Runtime.evaluate`, allowed testing application rejection handling
+without changing saved browser permissions. Reload removed the clipboard override
+and its absence was verified. A similarly scoped fetch override tested one
+synthetic 401 response for rule saving; remaining input commands timed out, so the
+unexecuted fault matrix is not counted. The override was removed and a normal
+save succeeded before the tab was closed. No standalone browser was used.
 
-No screen-reader, physical iPhone/Safari, zoom/reduced-motion, clipboard-denial or
-fresh human MFA acceptance is claimed. DOM names are evidence of semantics, not
+Initially, an unsettled mobile viewport capture and a malformed full-page stitched
+capture were rejected. Later incorrectly scaled/duplicated captures were also
+rejected; only accepted, visually inspected images are linked here. The later
+desktop/mobile QR captures supersede the initial unsuccessful QR navigation.
+
+Native Library confirmation was subsequently exercised using the same tab's
+supported CDP dialog events and handler, with the keyboard action initiated before
+waiting for the dialog. Cancel preserved selection/focus; confirm moved exactly
+one synthetic link to trash. This was not a browser-permission change. The separate
+Restore action then stalled on its HTMX native confirmation: input, snapshots,
+the supported dialog handler and closing the tab timed out while setting focus
+emulation; the high-level dialog API returned no dialog. No duplicate restore
+action was sent. API inspection confirmed that it had not restored the link.
+An explicit API restore succeeded, preserved its pause, and left trash empty.
+Browser Restore acceptance is still open. Do not substitute the successful API
+test for the blocked UI test or infer an application outage from the tooling stall.
+
+No screen-reader, physical iPhone/Safari, browser zoom/reduced-motion, actual
+clipboard permission-denial or fresh human MFA acceptance is claimed. The
+clipboard test injected a rejected promise into the disposable document only.
+DOM names are evidence of semantics, not
 proof of complete assistive-technology compatibility. Historical regression tests
 do not replace the missing fresh audit steps.
 
@@ -53,20 +83,63 @@ do not replace the missing fresh audit steps.
 
 | Step | Workflow | Current result | Remaining acceptance |
 | --- | --- | --- | --- |
-| 1 | Production SSO entry | Desktop observed; clear Authentik action, misleading sign-up label | Mobile recapture; auth error/cancel/expired-session states |
-| 2 | Empty home and first link | Mobile/desktop observed; created a synthetic link | Keyboard-only path, 320px reflow and 200/400% zoom |
+| 1 | Production SSO entry | Desktop and fresh 390px mobile observed; clear Authentik action, misleading sign-up label | Auth error/cancel/expired-session states |
+| 2 | Empty home and first link | Mobile/desktop observed; Enter submitted a synthetic link successfully | Complete keyboard-only path, 320px reflow and 200/400% zoom |
 | 3 | Invalid URL and campaign creation | Invalid input rejected; campaign applied and link created | Announcements, no-apply draft behavior, long/encoded values |
-| 4 | Recent links and inline editing | Desktop actions and mobile edit observed | Mobile action access, complete keyboard edit/save/cancel |
+| 4 | Recent links and inline editing | Desktop actions and mobile edit observed; saving either personal edit form preserves the other form's draft | Mobile action access, complete keyboard edit/save/cancel and legacy expiry/lifecycle-end interaction |
 | 5 | Library filtering and bulk pause | Pause succeeded; state label contradicts result; mobile heading overlap | Tags/collections/saved-filter CRUD, pagination, clear success feedback |
 | 6 | Import/export | Invalid schema reported; valid dry run and explicit commit created one link | File chooser, templates, export/download, conflict and stale-preview recovery on mobile |
-| 7 | Trash and history | Native bulk confirmation blocked the audit tool; no deletion claimed | Cancel/confirm, restore, history, focus and reserved-alias recovery |
-| 8 | QR | Not visually accepted | Preview, options, PNG/SVG, clipboard failure, print and scanability |
-| 9 | Workspaces | Templates/scripts inspected only | Owner/editor/viewer/outsider UI, invitation lifecycle and shared edits |
-| 10 | Routing and forwarding | Templates/scripts inspected only | Create/reorder rules, preview, allowlists, unsaved/stale changes |
-| 11 | Analytics and privacy | Templates inspected only | Empty/populated charts and tables, ranges, exports, tracking/retention boundaries |
-| 12 | Monitoring and integrations | Templates inspected only | Pending/failed checks, retries, webhooks, live-state disconnection/recovery |
-| 13 | Settings, tokens and security | Templates inspected only | Navigation, token lifecycle, clipboard, OIDC/legacy modes and admin/ordinary roles |
-| 14 | Administration and recipient pages | Not visually reviewed | Users/domains/links/reports, protected/expired/paused/missing short-link pages |
+| 7 | Trash and history | Native bulk cancel preserved selection/focus, confirm trashed one synthetic link; custom dialog focus/Escape defective. Trash view rendered. API restore retained pause and public 410 | Browser Restore stalled on its separate native confirmation; history, remaining dialog variants and reserved-alias recovery |
+| 8 | QR | Fresh desktop/mobile preview accepted; keyboard Apply changed 512/M to 256/H and updated download URLs | Download bytes, clipboard failure, print and scanability |
+| 9 | Workspaces | Owner create/share and viewer invitation acceptance/read-only UI observed. API rejected pending/outsider access and viewer edits; editor API edit passed, rename denied | Editor and outsider rendered views, role changes/revocation, remaining invitation lifecycle and shared UI edits |
+| 10 | Routing and forwarding | Created and saved mobile routing rule; preview selected the expected destination. Synthetic 401 preserved the draft and normal retry saved it | Reorder rules, forwarding, remaining HTTP/offline/slow/stale states and duplicate-submit handling |
+| 11 | Analytics and privacy | Empty mobile and populated desktop report observed; synthetic redirect counted once. Date-range changes passed; invalid range hid old report and correction recovered it. Tables match chart | Browser export/download, tracking/retention UI, pagination and failure/retry states; fresh offline privacy/API coverage passed separately |
+| 12 | Monitoring and integrations | Mobile monitoring empty state accepted; live events connected, paused and resumed. Private webhook target rejected and draft retained, but error off-screen | Pending/failed checks, webhook delivery/retry, forced live disconnection/recovery and remaining faults |
+| 13 | Settings, tokens and security | Admin and ordinary-user mobile settings inspected; feature links reachable and Admin absent for ordinary user. Security diagnostics and clipboard behavior observed | Token lifecycle UI, OIDC modes and session revocation; fresh offline protocol tests passed separately |
+| 14 | Administration and recipient pages | Protected page reflows at 320px. Wrong password rejected, correction reached intended destination. Paused/expired return a bare 410 message; styled 404 has a return link | Admin users/domains/links/reports; scheduled/capped recipient states and broader keyboard/zoom checks |
+
+### Continuation Evidence
+
+These captures are from the resumed in-app audit, not an earlier release test.
+The viewport is 390 x 844 except the desktop dialog/QR captures at 1440 x 1000.
+
+| Step | Capture | Observed result and limit |
+| --- | --- | --- |
+| 1 | [SSO entry](ui-ux-review/2026-09-15/12-production-login-mobile.png) | Main sign-in action fits; unavailable sign-up wording remains |
+| 4 | [Independent edit drafts](ui-ux-review/2026-09-15/21-edit-two-drafts-mobile.png) | Both drafts survive saving the other form; complete keyboard/error checks remain |
+| 7 | [Custom confirmation](ui-ux-review/2026-09-15/13e-custom-modal-desktop.png) | Clear retention wording, broken keyboard focus/Escape behavior |
+| 8 | [Desktop QR](ui-ux-review/2026-09-15/14-qr-desktop.png), [mobile QR](ui-ux-review/2026-09-15/15-qr-mobile.png) | Preview and options work; downloads/print/decoding remain |
+| 9 | [Workspace owner](ui-ux-review/2026-09-15/22-workspace-owner-mobile.png) | Shared link creation and owner controls render; other roles remain |
+| 10 | [Routing preview](ui-ux-review/2026-09-15/20-routing-preview-mobile.png) | Test context selects the saved mobile destination; forwarding and remaining faults remain |
+| 12 | [Webhook validation at Save](ui-ux-review/2026-09-15/18b-webhook-error-mobile.png), [monitoring empty state](ui-ux-review/2026-09-15/19-health-mobile.png) | Correct target rejection is invisible at Save; monitoring has a usable setup path |
+| 13 | [Settings](ui-ux-review/2026-09-15/16c-settings-mobile.png), [security](ui-ux-review/2026-09-15/17-security-mobile.png) | Navigation and local-mode identity/session diagnostics render; token/OIDC/ordinary-user checks remain |
+| 9 | [Workspace viewer](ui-ux-review/2026-09-15/24-workspace-viewer-mobile.png) | Accepted viewer sees shared destination and Copy, not Edit/Create/member management; API denial verified separately |
+| 11 | [Empty analytics](ui-ux-review/2026-09-15/25-analytics-empty-mobile.png), [populated analytics](ui-ux-review/2026-09-15/26b-analytics-populated-desktop.png) | Empty state, chart, totals and range correction work; first malformed desktop capture rejected |
+| 14 | [Protected-link error](ui-ux-review/2026-09-15/27-protected-error-mobile.png), [expired recipient](ui-ux-review/2026-09-15/28-expired-recipient-mobile.png) | 320 x 720 captures; password correction succeeds but error semantics are missing; expired page is an unstructured message |
+
+### Fresh Offline Regression
+
+The complete `tests/container-smoke.cjs` suite passed on 2026-09-15 using the exact
+deployed wrapper image above, a separate disposable container with network disabled,
+read-only root, dropped capabilities and temporary writable storage. The release
+wrapper does not contain the test harness: the first invocation failed with
+`MODULE_NOT_FOUND` and is not counted as a test. The unchanged tests from source
+commit `11c5cadceeb6824e578b203b39705b714fa88841` were then mounted read-only at
+`/kutt/tests`; the corrected full run exited zero.
+
+Passed groups include migrations/rollback, configuration, tokens/domain scopes,
+lifecycle, history/trash/restore, Library, transfer, QR, admin filters, campaigns,
+workspaces, routing, analytics, privacy, SSRF transport, webhooks, forwarding,
+destination health, credential-free Shortcut artifacts, security and OIDC.
+No browser tests or Apple Shortcuts application were run by this suite. It used
+its own temporary databases and did not attach production data or credentials.
+This is fresh API/protocol regression evidence, not completion of the rendered
+audit, a physical-device test, or a production backup/restore drill.
+At this checkpoint, the temporary fixture and regression containers, remote test
+files and SSH tunnel were removed; the responsive viewport override was reset.
+A byte-verified, integrity-checked synthetic database checkpoint is retained
+outside Git for resuming the audit. Production remained on the same healthy image
+with zero restarts. No production backup or new deployment is claimed.
 
 ## Prioritized Findings
 
@@ -83,6 +156,11 @@ P3: polish with no blocked task. These are product priorities, not CVSS scores.
 | UX-005 | P2 | Legacy URL validation lacks programmatic field/error association | Invalid-submit DOM, source | Open |
 | UX-006 | P2 | Import schema errors do not give a usable correction path | Error/preview/commit exercise | Open |
 | UX-007 | P2 | SSO-only login advertises sign-up even when registration is disabled | Production screenshot, source | Open |
+| UX-008 | P1 | Custom confirmation dialogs leave keyboard focus behind the overlay | Fresh keyboard/DOM checks, screenshot | Open |
+| UX-009 | P2 | Mobile webhook save errors are outside the visible viewport | Rejected private target, preserved draft and measured status geometry | Open |
+| UX-010 | P2 | Small navigation links fail minimum text contrast | Rendered computed colors and calculated ratio | Open |
+| UX-011 | P2 | Legacy Copy shows success even when the clipboard rejects the write | Controlled rejection, copied CSS state and unhandled error | Open |
+| UX-012 | P3 | Unavailable recipient pages are bare messages without a named page or next step | Fresh expired/paused pages and source | Open |
 
 ### UX-001: Name Core Actions
 
@@ -183,6 +261,11 @@ which is good and must remain true.
 
 Source: [shortener](../server/views/partials/shortener.hbs). Apply the review to
 related legacy auth, settings and inline-edit forms before choosing a shared fix.
+The [protected-link form](../server/views/partials/protected/form.hbs) reproduces
+the same problem: after a wrong password there is no `aria-invalid`,
+`aria-describedby`, alert or live region. The visible error is clear, and a correct
+password subsequently reached `https://example.org/audit-only`; preserve that
+recovery path. The 320px recipient form had no horizontal document overflow.
 
 Acceptance: stable error IDs, programmatic association, intentional focus and
 announcements after HTMX responses, and a clear stale-error lifecycle. Preserve
@@ -227,6 +310,107 @@ and login-disabled configurations. Short-link recipients must remain unauthentic
 
 ![Production SSO-only login](ui-ux-review/2026-09-15/01-production-login-desktop.png)
 
+### UX-008: Make Custom Dialogs Keyboard Operable
+
+Promoted from C-01. Pressing Enter on the row delete action opens the custom
+`Move link to trash?` confirmation, but focus remains on the trigger behind the
+overlay. Escape does not close it. The next Tab focuses the background pagination
+button `20`, not Cancel or Move to trash. The frame is a plain `div.dialog.open`
+without a dialog role, accessible name or modal state. Cancel closes the overlay
+but focus falls back to the document instead of returning to the trigger.
+
+This is independently reproduced in the application, not the native-confirm
+tool timeout. No link was deleted during this check. The confirmation clearly
+explains that aliases and data are retained; preserve that useful copy.
+
+Sources: [dialog frame](../server/views/partials/links/dialog/frame.hbs),
+[dialog handlers](../static/scripts/main.js).
+Evidence: [custom confirmation](ui-ux-review/2026-09-15/13e-custom-modal-desktop.png).
+
+Acceptance: named modal semantics, initial focus, Tab/Shift+Tab containment,
+Escape/cancel, focus restoration and background non-interactivity for every
+shared link/admin/domain dialog. Preserve explicit destructive confirmation,
+authorization, asynchronous loading/errors and repeated HTMX open/close behavior.
+Verify desktop/mobile and slow responses, including cancellation before load.
+
+### UX-009: Keep Save Errors Visible
+
+On mobile, creating a disabled webhook with receiver
+`https://127.0.0.1/blocked-test` correctly fails validation without sending a
+delivery. The form preserves its fields and selections. However, after Save,
+the error status occupies y=-313..-272 at scrollY=457 in an 844px viewport; it is
+entirely above the viewport. Focus is on the document, and there is no field-local
+message or visible error near Save. The live-region semantics help assistive
+technology but do not solve visual error discovery. Cancel also leaves the old
+error at the top after the editor closes.
+
+Sources: [integrations script](../static/scripts/webhooks.js),
+[integrations template](../server/views/webhooks.hbs).
+Evidence: [save position](ui-ux-review/2026-09-15/18b-webhook-error-mobile.png).
+
+Acceptance: show a clear error at the relevant form/field or bring an error summary
+into view, while retaining drafts, restoring usable focus and preserving live
+announcements. Clear obsolete editor errors on cancel or successful correction.
+Review long rule/forwarding/token forms for the same behavior without assuming
+every form is broken. Retain server URL validation and explicit save actions.
+
+### UX-010: Increase Navigation Text Contrast
+
+The enabled Library/Links navigation on the mobile monitoring page renders at
+14px, weight 400, foreground `rgb(32,148,243)` over `rgb(241,242,244)` with no
+background image. Relative-luminance calculation gives **2.8441:1**, below the
+4.5:1 minimum for ordinary text. These are functional text links, not disabled
+controls or exempt logotypes. The same link styling is visible in settings and
+workspace navigation, but each affected surface and state must be checked.
+
+Source: [styles](../static/css/styles.css).
+Evidence: [monitoring navigation](ui-ux-review/2026-09-15/19-health-mobile.png),
+[settings navigation](ui-ux-review/2026-09-15/16c-settings-mobile.png).
+
+Acceptance: preserve the existing palette while choosing readable link colors,
+including hover/visited/focus states on their actual backgrounds. Check button,
+placeholder and error text independently; do not infer whole-site compliance from
+one fixed token. Keyboard focus, reduced motion and zoom remain separate checks.
+Basis: [W3C Contrast (Minimum)](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html).
+
+### UX-011: Report Clipboard Failure Honestly
+
+Promoted from C-02. In the disposable document, `clipboard.writeText` was replaced
+temporarily with a rejected `NotAllowedError` promise. The workspace Copy action
+correctly reported `Copy failed. Select and copy the short link.` The legacy
+personal-row action instead set `.clipboard.small.copied`, emitted an unhandled
+`NotAllowedError`, and left the status region empty. No clipboard write succeeded
+in that test. A previous uninjected write was checked byte-for-byte successfully.
+
+Source: [legacy copy handler](../static/scripts/main.js). The screenshot attempt
+for the transient legacy copied state was rejected because its capture geometry
+was invalid; confirmation rests on current-run DOM state and console error, not
+that image. Reload removed the temporary override and its absence was verified.
+
+Acceptance: await the write before success styling, catch unavailable/denied
+clipboard errors, expose truthful accessible feedback and a selectable fallback.
+Cover top-level, row and legacy API-key copy actions without regressing workspace
+or QR fallback behavior. Do not request broader browser permissions to mask failure.
+
+### UX-012: Give Unavailable Links A Useful Recipient Page
+
+Paused and expired synthetic links correctly return HTTP 410 and never redirect.
+However, the browser displays only `This short link is not currently available.`
+on a bare page. Its title is the URL, with no heading/landmark or next step. The
+existing styled 404 page has both a meaningful title and a homepage link. This
+is a presentation/recovery-context improvement, not a failure of availability
+enforcement. The screenshot is a genuine 320 x 720 page, not a broken capture.
+
+Source: [unavailable response](../server/handlers/links.handler.js).
+Evidence: [expired recipient](ui-ux-review/2026-09-15/28-expired-recipient-mobile.png).
+
+Acceptance: give browser recipients an accessible title, heading and brief next
+step such as checking with the sender. Preserve 410, public unauthenticated access,
+privacy and existing API/HEAD behavior. Do not expose the destination, owner,
+password or detailed lifecycle reason, bypass policy, or suggest repeated retries
+will repair an expired/disabled link. Test paused, expired, scheduled, quota-capped
+and trashed links alongside password-protected and missing links.
+
 ## Source Concerns Requiring Rendered Validation
 
 These are not counted as confirmed UX defects. Validate, merge into an existing
@@ -234,22 +418,24 @@ finding, promote to a new UX ID, or reject with evidence. Do not blindly redesig
 
 | ID | Concern and source | Required validation |
 | --- | --- | --- |
-| C-01 | Legacy custom dialogs use a `div` and class toggling with no explicit dialog semantics, focus transfer/trap/return or Escape handler in [main.js](../static/scripts/main.js) and [dialog frame](../server/views/partials/links/dialog/frame.hbs) | Keyboard open/cancel/Escape/Tab/Shift+Tab, modal naming and focus return for link/admin/domain dialogs; distinguish native-dialog tool failures from app failures |
-| C-02 | `handleShortURLCopyLink` signals copied before awaiting `navigator.clipboard.writeText`; it does not handle rejection in [main.js](../static/scripts/main.js) | Denied/unavailable clipboard, actual copied bytes, success/failure announcements for short links and tokens; keep manual selection/download alternatives |
-| C-03 | Main Settings is a row of unrelated links plus long stacked forms; feature navigation differs between pages in [settings.hbs](../server/views/settings.hbs) | Test discovering every feature as admin/ordinary user, current-page context, back paths and mobile navigation; avoid creating duplicate destinations |
-| C-04 | Personal inline edit separates Update and Save availability, whereas workspace edit combines them; legacy expiry and lifecycle end coexist | Exercise editing both sets, cancel/navigation/reload and error cases; identify actual draft-loss or contradictory-state behavior before changing save semantics |
-| C-05 | Legacy CSS suppresses some outlines, uses pale action/text colors, and contains animations without a reduced-motion rule | Measure actual contrast and focus in enabled/error/hover states; keyboard-only paths, zoom and reduced motion. Do not claim global WCAG compliance from screenshots |
-| C-06 | Separate scripts manage fetch/loading/conflict states for rules, forwarding, analytics, monitoring and integrations | Fresh slow/offline/401/403/409/5xx tests, stale edit preservation, retry discovery, live-update reconnection, status announcements and duplicate-submit prevention |
+| C-01 | Confirmed and promoted to UX-008 | Shared admin/domain variants and Shift+Tab remain in the fix acceptance scope |
+| C-02 | Confirmed and promoted to UX-011 through controlled document-level rejection | Browser permission settings untouched; token and QR variants remain in acceptance coverage |
+| C-03 | Main Settings is a row of unrelated links plus long stacked forms; feature navigation differs between pages in [settings.hbs](../server/views/settings.hbs) | Admin and ordinary-user navigation are reachable; ordinary user has no Admin link. Still check every feature, current-page context and back paths before deciding whether a change is warranted |
+| C-04 | Suspected cross-form draft clobbering rejected: target Update retained paused/max-redirect drafts; Save availability retained an unsaved target. Close discarded the draft as requested | Keep separate forms unless further evidence warrants change. Legacy expiry/lifecycle-end interaction and workspace comparison still need checking |
+| C-05 | Navigation contrast confirmed as UX-010 | Remaining enabled/error/hover/focus, keyboard, zoom and reduced-motion measurements are not yet complete |
+| C-06 | Webhook error visibility confirmed as UX-009. Rules preserved draft on synthetic 401; normal retry saved. Live activity paused/resumed correctly. Invalid analytics range hid stale output and correction recovered it | Remaining slow/offline/403/409/5xx, actual stale-write conflicts, other editors, forced live reconnection and duplicate-submit tests still required |
+| C-07 | One HTMX swap error occurred during local fixture login (`insertBefore` on null), although login and subsequent navigation succeeded. A later fresh viewer login succeeded with no captured console errors | Not reproduced in that second run; retain as an unconfirmed race candidate, not a production outage or a confirmed defect |
 
 ## Remediation Order And Status Contract
 
 1. **AUDIT-00: finish the coverage matrix** using the approved browser mechanism;
    capture and inspect fresh desktop/mobile evidence, including ordinary-user and
-   workspace roles. Resolve C-01 through C-06. Status: **waiting for browser-tool
-   approval**, not complete.
+   workspace roles. Resolve C-01 through C-06. Status: **in progress in the
+   intermittently failing in-app browser**. Standalone Playwright permission is still pending
+   for unsupported/failing browser checks; no alternate browser was used.
 2. Fix UX-001, UX-003 and UX-002 in that order; shared components may overlap, but
    document and validate each finding independently.
-3. Fix UX-004 through UX-007, then all additional confirmed findings in severity
+3. Fix UX-008 before UX-004 through UX-007, then UX-009 through UX-012 and all additional confirmed findings in severity
    order. Reorder only with a written reason in the change log.
 4. Run a final full regression/security and desktop/mobile review, reconcile
    source/release/deployment versions and close the ledger only after all gates.
@@ -301,3 +487,6 @@ classifying a standards failure.
 | --- | --- | --- | --- |
 | 2026-09-15 | AUDIT-00, UX-001..007, C-01..06 | Created initial evidence-backed ledger after feature completion and exact-image fixture testing | Seven open findings; six unvalidated concerns. Tooling blocked the remainder of the rendered audit. No runtime fixes, release, deployment or completed-audit claim. |
 | 2026-09-15 | Goal | Created an active Codex goal referencing this ledger | Goal requires completing the audit, sequential remediation, an update after every change, and all publication/backup/deployment/verification gates before closure. Browser-tool permission remains pending. |
+| 2026-09-15 | AUDIT-00, UX-008, C-01..03 | Resumed in a fresh in-app tab and exact-image disposable fixture; confirmed custom modal focus/Escape defect; accepted mobile SSO/settings and desktop/mobile QR captures | Keyboard link creation and QR option changes passed; short-link clipboard bytes matched. Eight open findings, five remaining concerns. No runtime fixes or production mutation. Unsupported clipboard-denial simulation and remaining coverage stay open. |
+| 2026-09-15 | AUDIT-00, UX-009..011, C-02/04/05/06/07 | Confirmed off-screen webhook errors, measured low link contrast and legacy false clipboard-success feedback. Exercised shared-link creation, routing preview, security/monitoring views and independent edit saves | Eleven open findings. Synthetic clipboard and one routing 401 failure tested through the existing tab; overrides removed and normal save restored. No production changes. Cross-form draft-clobber suspicion rejected, other coverage remains open. One login HTMX error needs reproduction. |
+| 2026-09-15 | AUDIT-00, UX-005/012, C-03/06/07 | Added viewer acceptance/read-only rendering, direct role boundary checks, analytics empty/populated/range recovery, recipient password correction and 320px pages; full offline image regression passed | Twelve open findings. Native Library cancel/confirm worked; separate browser Restore stalled. API restore passed with pause retained. Fresh login did not reproduce C-07. Runtime fixes, full audit completion and release/deployment gates remain open. |
