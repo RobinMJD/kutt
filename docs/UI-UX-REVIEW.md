@@ -1,6 +1,6 @@
 # UI/UX Review And Remediation Ledger
 
-Last updated: 2026-09-15 (Europe/Paris).
+Last updated: 2026-09-16 (Europe/Paris).
 
 **Status: initial findings recorded; the full rendered audit is not yet complete.**
 Nineteen findings are confirmed, none is fixed. Remaining concerns and workflow
@@ -9,6 +9,11 @@ The ordinary rendered workflows now have bounded coverage. The explicit
 AUDIT-00 remainder below separates external acceptance gates from regression
 tests for already-confirmed defects; do not restart passing workflows or invent
 unspecified "remaining variants" on each continuation.
+
+**Latest progress:** genuine 200/400% browser zoom and independently decoded QR
+PDF output are now verified. Native print preview opens and cancels, but rendering
+fails in this automated browser for both Kutt and a plain-page control. User-assisted
+credential, permanent-deletion and real SSO/physical-scan gates remain open.
 
 ## Feature And Deployment Gate
 
@@ -43,7 +48,9 @@ confirmation. The dialog API did not return the pending dialog; subsequent
 interaction and capture commands timed out, including after trying a fresh tab.
 This is an **audit-tool blocker**, not evidence of a Kutt production outage or a
 confirmed application defect. Approval to finish using the installed standalone
-Playwright browser was requested and is still pending. Do not bypass that gate.
+Playwright browser was initially pending. The 2026-09-16 user continuation was
+explicitly treated as approval for that isolated-fixture browser only; this does
+not authorize production credential changes or irreversible actions.
 
 On the next continuation, the temporary tabs had been cleaned up and a fresh
 in-app tab worked. The audit resumed there, without standalone Playwright, using
@@ -59,7 +66,8 @@ without changing saved browser permissions. Reload removed the clipboard overrid
 and its absence was verified. A similarly scoped fetch override tested one
 synthetic 401 response for rule saving; remaining input commands timed out, so the
 unexecuted fault matrix is not counted. The override was removed and a normal
-save succeeded before the tab was closed. No standalone browser was used.
+save succeeded before the tab was closed. No standalone browser was used in that
+earlier segment; the later approved zoom/print pass is recorded separately below.
 
 Initially, an unsettled mobile viewport capture and a malformed full-page stitched
 capture were rejected. Later incorrectly scaled/duplicated captures were also
@@ -189,7 +197,7 @@ printer dialog, print job or physical scan was performed. Console history also
 contained the existing C-07 HTMX swap error around both local sign-ins; neither
 prevented the audited navigation or saved actions, and its cause remains open.
 
-No screen-reader, physical iPhone/Safari, browser zoom, actual
+Before the 2026-09-16 zoom pass, no screen-reader, physical iPhone/Safari, browser zoom, actual
 clipboard permission-denial or fresh human MFA acceptance is claimed. The
 clipboard test injected a rejected promise into the disposable document only.
 The native file chooser timed out with both observed file-input activation
@@ -561,13 +569,13 @@ healthy on the same exact `3.2.6-sr94.18` image with zero restarts.
 | Step | Workflow | Current result | Remaining acceptance |
 | --- | --- | --- | --- |
 | 1 | Production SSO entry | Desktop and fresh 390px mobile observed; clear Authentik action, misleading sign-up label. Separate synthetic exact-image SSO-only provider outage, recovery/retry and valid-state cancellation passed at mobile/desktop; anonymous redirects remain public | Real Authentik expired/revoked-session ceremony; error semantics/contrast remain UX-005/010 acceptance |
-| 2 | Empty home and first link | Mobile/desktop observed; native keyboard entry and Enter created a synthetic link at 390px. Fresh 320px homepage inspected; target/submit fit, but table actions remain clipped | 200/400% zoom; native zoom attempt had no measurable effect. Focus/error/action-access regression belongs to UX-001/002/005 |
+| 2 | Empty home and first link | Mobile/desktop observed; native keyboard entry and Enter created a synthetic link at 390px. Fresh 320px homepage inspected; target/submit fit, but table actions remain clipped. Genuine 200/400% zoom now confirms the same table clipping | Focus/error/action-access and zoom regression belong to UX-001/002/005; the earlier ineffective zoom command is superseded |
 | 3 | Invalid URL and campaign creation | Invalid input rejected; campaign applied and link created. Separate no-apply draft leaves target unchanged; long encoded Apply/Clear preserves unrelated URL components and explicitly states changes are not saved. Full native keyboard disclosure, field entry, Apply/Clear and reverse-Tab passed at 390px with polite live status; no new link submitted in that pass | Preserve passing campaign announcements/keyboard behavior; legacy invalid-field semantics remain UX-005 acceptance |
 | 4 | Recent links and inline editing | Desktop actions, mobile edit and native keyboard edit/save/cancel passed. Independent drafts survive. Clearing expiry then saving description silently restores it in both personal and stale admin forms (UX-015). Combined workspace save preserved availability. Admin invalid-target recovery returns the wrong form (UX-017) | UX-001/002/005/015/017 remediation acceptance; do not repeat passing edit/save/cancel as preliminary audit |
 | 5 | Library filtering and bulk pause | Pause succeeded; state label contradicts result; mobile heading overlap. Label creation/assignment/filter/rename and saved-filter save/reopen/rename/replace passed. Collection unassignment updates the filtered result without deleting the link. With 51 synthetic links, pages show 50/1, page selection does not carry, and Enter search resets a later page to page 1. Native keyboard search/select-page/Pause/Apply passed at 390px; selection clears but no explicit action-result message remains | Saved-filter/label permanent-deletion UI requires action-time approval; post-swap focus/feedback are UX-001/004 acceptance |
 | 6 | Import/export | Invalid schema, valid dry run/commit, preview invalidation and conflict abort/skip passed. Actual JSON export verified. Native chooser loads the synthetic file. Mobile malformed-JSON error followed by valid CSV dry run recovers with 1 new/0 errors; no import committed | Missing templates/help are UX-006; remaining keyboard and error announcements stay in fix acceptance |
 | 7 | Trash and history | Native bulk cancel/confirm and browser Restore cancel/confirm passed; full native Tab/Enter Restore now also passed, with pause/public 410 retained. Trashed alias reuse is rejected with the new-link draft retained; original link restored during cleanup. Custom dialog focus/Escape defective. History reflows at 320px; at 390px Older/Newer keyboard activation with limit 5 returns the correct entries and navigation state | Post-action focus and complete shared-modal Tab/Shift+Tab/Escape checks are UX-001/008 fix acceptance |
-| 8 | QR | Desktop/mobile preview, keyboard options, decoded rendered pixels, print-media visibility and truthful copy failure/pending handling passed. Native PNG/SVG download events now produce actual files; both independently decode to the public short URL at 512px | Print-dialog/PDF and physical scan remain |
+| 8 | QR | Desktop/mobile preview, keyboard options, decoded rendered pixels, print-media visibility and truthful copy failure/pending handling passed. Native PNG/SVG downloads independently decode. Genuine zoom preserves image fit. One-page A4 PDF rendered and independently decoded; native Print opens a cancellable browser preview | Preview rendering fails for both Kutt and a plain-page browser control; native Save-as-PDF/physical print and physical scan are not claimed |
 | 9 | Workspaces | Owner create/share/invite and role saves passed; native pending-revoke cancel/confirm passed. Invitation accept/decline and viewer UI passed. Outsider/pending/revoked page and API access denied. Stale editor Save after downgrade was rejected with an explicit role error and unchanged data. Sequential availability preservation passed, but concurrent save overwrites another client's pause/cap (UX-018); invalid alias discards draft (UX-019). Leave Cancel/Confirm and denied subsequent access passed. Native keyboard core creation/editing and membership disclosure/role selection/idempotent save/invalid-invite validation passed; original roles independently verified | UX-001/018/019 remediation; no permission increase or permanent membership removal claimed in the keyboard pass |
 | 10 | Routing and forwarding | Rule reorder changed first-match preview and persisted. Actual revision conflicts retained drafts; Reload and Save recovered. Forwarding 403/409/503/network errors and pending duplicate prevention passed. Native keyboard forwarding save/preview/clear-draft/reload and routing create/save/mobile-preview passed. A held real routing response preserved a newer draft; JSON 503 retained it and native retry saved it. Forwarding HTML 200 and routing JSON 200 `{}` falsely report save success | Preserve passing fault/keyboard behavior; UX-001 focus and UX-014 remediation |
 | 11 | Analytics and privacy | Empty/populated reports, date correction, tables/pagination, 403/retry, tracking save/reload and non-destructive retention preview passed. Native keyboard analytics navigation/recovery, tracking toggle/save/HTML-503 retry and retention preview/invalidation/Reload passed. Tracking status is polite and failed draft retained. API confirms tracking enabled and retention disabled/zero deletions. Malformed JSON 200 exposes stale report/raw error (UX-014). Native CSV artifact matches the report | UX-001/005/014 remediation, including stale Preview ready text after invalidation. Retention Apply/permanent deletion not executed; offline API coverage is not rendered deletion acceptance |
@@ -584,7 +592,7 @@ The following gates remain **unverified**, not passed, waived or silently deferr
 
 | Gate | Exact outstanding work | Required prerequisite |
 | --- | --- | --- |
-| A-01 | Genuine 200/400% browser zoom and QR print dialog/PDF output | Previously requested approval for the installed standalone browser on the isolated fixture; current in-app zoom commands had no measurable effect |
+| A-01 | Zoom and programmatic PDF complete; native preview rendering still unverified | Approved standalone fixture-only browser exercised real zoom, native Print/open/Cancel and independently decoded PDF. Browser preview fails on a plain-page control too; validate that UI in a working browser, not by substituting the headless PDF result |
 | A-02 | Token create/copy/revoke UI and credential-bearing setup/rotation variants | User performs credential entry/creation steps; do not generate or type new credentials through UI on the user's behalf |
 | A-03 | Saved-filter/label deletion and irreversible retention Apply UI | Present each exact disposable-fixture action and request action-time confirmation; no production deletion |
 | A-04 | Real Authentik expired/revoked-session recovery and physical QR scan | User-present authenticated session test and user confirmation of actual device scan; synthetic OIDC/decoded pixels are narrower evidence |
@@ -594,6 +602,61 @@ It remains an explicitly untested optional mode, not evidence of a production
 failure. Test it before enabling that mode. AUDIT-00 remains open for A-01..A-04;
 do not begin runtime remediation, claim exhaustive accessibility conformance, or
 repeat already-passing workflows to obscure these prerequisites.
+
+### 2026-09-16 Zoom And Print Follow-Up
+
+The user resumed with `continue`; the pending standalone-browser approval was
+explicitly acknowledged as limited to the disposable fixture. Playwright 1.62.1
+and bundled Chromium 151.0.7922.34 used fresh temporary profiles, existing synthetic
+fixture credentials and no personal browser profile. Routed page requests were
+restricted to the loopback fixture; no blocked external page requests or application
+console errors occurred in the successful zoom run. This is not a browser-wide
+network-egress audit. Production WAF/SSO and authentication configuration stayed
+unchanged.
+
+A small temporary fixture-origin extension called Chromium's native
+`chrome.tabs.setZoom` and read back its factor. At 100/200/400%, the 1440 x 1000
+browser content viewport measured 1440/720/360 CSS pixels wide, with device pixel
+ratios 1/2/4 and visual viewport scale 1. These are actual browser zoom measurements,
+not CSS zoom, pinch scale or a resized mobile viewport. Home, Library, settings,
+the empty routing editor and QR were inspected. Recent-link row/pagination actions
+remain beyond the 720/360 CSS-pixel viewport despite equal document scroll width
+(UX-002). Library heading links still disappear beneath filters at 400% (UX-003).
+No new finding ID is needed. The other measured controls were within horizontal
+bounds in those states; that does not establish every dialog or admin state passes.
+
+The QR image remained loaded and measured 512px at 200% and 332px at 400%. Its
+Print button invoked native `window.print` and emitted `beforeprint`. The separately
+generated A4 PDF contains one page, hides management controls and has no visually
+clipped QR/caption. Poppler rasterization followed by independent `jsqr` decoding
+returned exactly the displayed synthetic short URL, not its destination. The
+fixture caption uses `https://127.0.0.1:31076/audit-paused`; this is decoding evidence,
+not a reachable public-device scan or an assertion that loopback HTTP serves TLS.
+
+A headed Chromium profile opened actual `chrome://print/` and Cancel returned
+to Kutt. Selecting Save as PDF led to `Print preview failed.` with Save disabled.
+A plain heading/button control with Kutt styles removed failed identically;
+omitting Playwright's `--disable-extensions` flag did not fix it. This isolates a
+browser/harness limitation rather than confirming an application defect. No print
+job was sent, native Save was not completed, and programmatic PDF generation is
+not counted as native print-preview acceptance.
+
+Harness corrections: explicitly added the API-login session cookie, compared the
+4x floating-point zoom factor with numerical tolerance, and attached to the observed
+print target when Playwright did not expose it as a page event. Those initial failed
+runs are not product regressions. A blank scrolled Recent-links screenshot was
+rejected; use the measured control geometry and earlier accepted mobile evidence,
+not that capture. Accepted screenshots and structured results are indexed in
+[the evidence note](ui-ux-review/2026-09-16/README.md).
+
+Independent final checks found tracking enabled, retention disabled with zero
+deleted buckets, the original editor/viewer memberships, and paused public status
+410. The live fixture SQLite database had integrity `ok`, no foreign-key errors,
+four users, ten links, two memberships, and zero domains/API tokens/webhooks/deliveries.
+The exact fixture, private seed copy, tunnel and temporary browser profiles were
+removed. The retained synthetic checkpoint hash is unchanged. Production remains
+healthy on the exact `3.2.6-sr94.18` image with zero restarts. No runtime fix,
+production backup, release or deployment is claimed for this documentation pass.
 
 ### Continuation Evidence
 
@@ -780,6 +843,11 @@ the same inner-table clipping hides them and the row actions while document
 scroll width remains 390px. Include all admin table variants in this fix, rather
 than assuming the home-table correction covers their independent templates.
 
+Genuine Chromium 200/400% zoom independently reproduces this: document width is
+720/360 CSS pixels, yet personal pagination controls and row edit/delete controls
+remain around x=728..800. The no-overflow assertion alone still gives a false sense
+of reflow. See the [zoom measurements](ui-ux-review/2026-09-16/zoom-print-results.json).
+
 ![Empty mobile table hides its empty-state text](ui-ux-review/2026-09-15/03-home-empty-mobile.png)
 
 ### UX-003: Prevent Mobile Heading/Filter Overlap
@@ -802,6 +870,10 @@ site header. Every heading link must have an unobscured clickable hit region at
 320/390/768/1440px, with long titles and zoom. Check all pages using the shared
 heading, not only Library. Include a hit-test/overlap assertion in regression
 tests, because presence in the DOM did not catch this bug.
+
+The same overlap remains at genuine 400% browser zoom with a 360 CSS-pixel layout:
+[zoomed Library](ui-ux-review/2026-09-16/library-zoom-400.png). Fix acceptance must
+include browser zoom as well as narrow viewport tests.
 
 ![Wrapped Library navigation covered by filters](ui-ux-review/2026-09-15/09-library-mobile.png)
 
@@ -1383,3 +1455,5 @@ classifying a standards failure.
 | 2026-09-15 | AUDIT-00 cleanup | Removed exact disposable container, private seed copy and tunnel; verified native fetch/no audit overrides, reset viewport and closed tab. Discarded new workspace/link and policy experiments, retaining the prior ten-link checkpoint unchanged | Checkpoint SHA-256 remains `210eec1b08fb0bc69b74b18dd802f876d0c2d0ce3edcf88e8c315d0d7210729b`. No local/remote 31076 listener. Production remains healthy on the exact `3.2.6-sr94.18` image with zero restarts. No runtime fix, production backup, release or deployment; full audit and remediation gates remain open. |
 | 2026-09-15 | AUDIT-00, UX-001/005/009 | Completed bounded native keyboard privacy failure/retry, integrations validation/cancel/live, inline domain validation/reverse-Tab cancellation, retention preview/invalidation/Reload and idempotent membership role save/invalid-invite validation. Replaced vague remaining variants with explicit A-01..A-04 gates and existing-finding acceptance | Nineteen findings open, none fixed. No webhook, domain, invitation, credential or permanent deletion created/performed. Independent API/SQLite checks confirm restored tracking, disabled retention, original roles, four users/ten links and integrity `ok`. Prior docs commit `94676b8e648adebb4c61e53dade641b8f0660a3f` passed [Fork CI 34956236387](https://github.com/RobinMJD/kutt/actions/runs/34956236387) and [Shortcut CI 34956236480](https://github.com/RobinMJD/kutt/actions/runs/34956236480). |
 | 2026-09-15 | AUDIT-00 cleanup | Removed exact fixture `b566dd5ce6dd`, private seed and tunnel; native fetch verified, viewport reset/tab closed, unchanged retained checkpoint hash verified. Rejected scaled desktop capture replaced with inspected 1440 x 1000 evidence | No local/remote 31076 listener or required command session. Production remains healthy on the same exact image with zero restarts. A-01..A-04 remain unverified; no audit-complete, runtime remediation, production backup or deployment claim. |
+| 2026-09-16 | AUDIT-00, UX-002/003 | Continued with acknowledged fixture-only standalone-browser approval. Verified genuine 200/400% zoom, extending existing clipping/heading findings. Generated, rendered and independently decoded one-page QR PDF. Native print dialog opens/cancels; preview rendering fails in both Kutt and a plain-page control | Nineteen findings remain open, none fixed. A-01 narrowed to native preview rendering; A-02..A-04 remain explicit. Blank scrolled capture rejected. Previous docs commit `9729c0af309444295ce9d3f16c8b7d12746561e6` passed [Fork CI 34958954576](https://github.com/RobinMJD/kutt/actions/runs/34958954576) and [Shortcut CI 34958954678](https://github.com/RobinMJD/kutt/actions/runs/34958954678). No runtime release/deployment. |
+| 2026-09-16 | AUDIT-00 cleanup | Independent API/SQLite checks confirm tracking enabled, retention disabled/zero deletions, original roles, integrity `ok`, four users/ten links and no new credentials/integrations. Removed exact disposable container, seed, tunnel and all generated browser profiles | Retained checkpoint hash remains `210eec1b08fb0bc69b74b18dd802f876d0c2d0ce3edcf88e8c315d0d7210729b`; no local/remote 31076 listener. Production exact `3.2.6-sr94.18` image healthy, zero restarts. No production backup, fix or full-audit acceptance claim. |
