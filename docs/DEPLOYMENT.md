@@ -6,7 +6,7 @@ its hardened wrapper, WAF/Authentik routing, monitoring and private backup paths
 in its separate deployment repository. This public repository contains no real
 secrets, provider bindings or user data.
 
-### Expiry editor upgrade (3.2.6-sr94.19)
+### Expiry editor upgrade (3.2.6-sr94.19.1)
 
 This release changes no database schema or API-relative-expiry semantics. Browser
 forms now carry a signed expiry snapshot to distinguish unchanged display text

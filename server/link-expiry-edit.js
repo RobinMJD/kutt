@@ -41,8 +41,9 @@ async function prepare(req, res, next) {
 
 async function save(req, res, link, values) {
   try {
-    const [updated] = await require("./queries").link.update({ id: link.id }, values,
+    const [updated] = await require("./queries").link.update({ id: link.id, uuid: link.uuid, user_id: link.user_id ?? null, deleted_at: null }, values,
       { id: req.user.id, apiToken: req.apiToken }, { expiryExpected: req.expiryExpected });
+    if (!updated) throw new (require("./utils").CustomError)("Link changed ownership or is no longer available. Reload the editor.", 409);
     return updated;
   } catch (error) {
     if (req.isHTML && error.statusCode === 409) {
