@@ -46,7 +46,7 @@ function normalizeMatch(match) {
     delete newMatch.address;
   }
 
-  if (newMatch.user_id) {
+  if (Object.hasOwn(newMatch, "user_id")) {
     newMatch["links.user_id"] = newMatch.user_id;
     delete newMatch.user_id;
   }

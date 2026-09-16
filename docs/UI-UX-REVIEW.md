@@ -1183,7 +1183,7 @@ this finding; this is not merely the already-tested rejected/HTTP-error path.
 
 ### UX-015: Do Not Resubmit Stale Expiry After Availability Changes
 
-2026-09-17 implementation (`3.2.6-sr94.19.1` candidate): signed per-link expiry
+2026-09-17 implementation (`3.2.6-sr94.19.2` candidate): signed per-link expiry
 snapshots distinguish unchanged display text from a deliberate new duration.
 Unchanged text is omitted before relative-time parsing. Explicit changes compare
 the snapshot with stored expiry inside the update transaction; conflicts commit
@@ -1207,11 +1207,13 @@ No feature is closed before publication, backup/restore, exact-image tests and
 production acceptance.
 
 Pre-deployment review found that the shared save helper had dropped the lifecycle
-update's owner predicate. The `.19.1` candidate restores owner/UUID/live-record
+update's owner predicate. The `.19.2` candidate restores owner/UUID/live-record
 matching at write time for all three save paths, including concurrent retirement
-or reassignment. `.19` was tagged but never deployed; its immutable tag is retained
-as superseded evidence, not rewritten. Production remains `.18` until `.19.1`
-passes all release gates.
+or reassignment, qualifies null-owner matching for legacy anonymous admin edits,
+and retains authorization when refreshing conflict metadata. The focused suite
+passes with an additional anonymous-admin regression. `.19` and `.19.1` were
+tagged but never deployed; immutable tags are retained as superseded evidence,
+not rewritten. Production remains `.18` until `.19.2` passes all release gates.
 
 The legacy link editor and the Availability form share persisted expiry state but
 update separate HTML fragments. On the personal synthetic link:

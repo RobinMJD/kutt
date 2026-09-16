@@ -47,7 +47,7 @@ async function save(req, res, link, values) {
     return updated;
   } catch (error) {
     if (req.isHTML && error.statusCode === 409) {
-      const current = await require("./queries").link.find({ uuid: link.uuid }, { fresh: true });
+      const current = await require("./queries").link.find({ uuid: link.uuid, ...(!req.user.admin && { user_id: req.user.id }) }, { fresh: true });
       if (current) {
         const view = require("./utils").sanitize.link_html(current);
         // Refresh only conflict metadata, never another form or its drafts.

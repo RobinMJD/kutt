@@ -80,6 +80,16 @@ module.exports = async ({ request, session, database, restart }) => {
         assert.equal(state(link.id).max_visits, 23);
       }
     }
+    // Admin editing of legacy anonymous links still requires a null-owner
+    // predicate, qualified correctly when the saved row rejoins domains.
+    const anonymous = await (await request("POST", "/api/links", { target: "https://192.0.2.1/anonymous-expiry" }, session)).json();
+    db.prepare("UPDATE links SET user_id=NULL WHERE uuid=?").run(anonymous.id);
+    const anonymousHtml = await body(request("GET", "/admin/link/edit/" + anonymous.id, undefined, session, html));
+    const anonymousSaved = await body(request("PATCH", "/api/links/admin/" + anonymous.id,
+      { description: "Anonymous admin edit", expire_in: "2 days", expiry_snapshot: field(anonymousHtml, "expiry_snapshot") }, session, html));
+    assert(anonymousSaved.includes("Link has been updated."));
+    assert.equal(state(anonymous.id).description, "Anonymous admin edit");
+    assert(state(anonymous.id).expire_in);
     await restart();
     assert.equal(db.pragma("quick_check", { simple: true }), "ok");
     assert.deepEqual(db.pragma("foreign_key_check"), []);
