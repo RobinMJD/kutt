@@ -197,8 +197,8 @@ printer dialog, print job or physical scan was performed. Console history also
 contained the existing C-07 HTMX swap error around both local sign-ins; neither
 prevented the audited navigation or saved actions, and its cause remains open.
 
-Before the 2026-09-16 zoom pass, no screen-reader, physical iPhone/Safari, browser zoom, actual
-clipboard permission-denial or fresh human MFA acceptance is claimed. The
+Before the 2026-09-16 zoom pass, no screen-reader, physical iPhone/Safari, browser
+zoom, actual clipboard permission-denial or fresh human MFA acceptance was claimed. The
 clipboard test injected a rejected promise into the disposable document only.
 The native file chooser timed out with both observed file-input activation
 methods. Import testing continued through the visible Content field; it is not
@@ -581,7 +581,7 @@ healthy on the same exact `3.2.6-sr94.18` image with zero restarts.
 | 11 | Analytics and privacy | Empty/populated reports, date correction, tables/pagination, 403/retry, tracking save/reload and non-destructive retention preview passed. Native keyboard analytics navigation/recovery, tracking toggle/save/HTML-503 retry and retention preview/invalidation/Reload passed. Tracking status is polite and failed draft retained. API confirms tracking enabled and retention disabled/zero deletions. Malformed JSON 200 exposes stale report/raw error (UX-014). Native CSV artifact matches the report | UX-001/005/014 remediation, including stale Preview ready text after invalidation. Retention Apply/permanent deletion not executed; offline API coverage is not rendered deletion acceptance |
 | 12 | Monitoring and integrations | Mobile empty state, live transport recovery, real worker URL denial, queue/lock, actual conflict/reload and disable passed. Dashboard 50/51-row pagination, refresh reset and overdue guidance passed. Native keyboard monitoring enable/save/queue/failed-disable/retry and integration navigation/New/invalid receiver/Cancel/Live toggle passed. Private receiver was rejected without creating a webhook; polite status is off-screen at Save (UX-009). HTML 200 corrupts monitoring state (UX-014). Real 400 failure/retry and 204 delivery previously passed | UX-001/009/014 remediation. Webhook secret rotation is a credential UI handoff, not permission to create or disclose a secret during keyboard review |
 | 13 | Settings, tokens and security | Admin and ordinary-user mobile settings inspected; feature links reachable and Admin absent for ordinary user. Ordinary inline domain validation retains the draft, lacks field-error semantics and allows native reverse-Tab Cancel; no domain created. Security diagnostics and clipboard behavior observed. Shortcut entry fits at 320px with explicit return links/token scope. Local wrong-password/correction and synthetic SSO-only outage/cancel/retry/invalid-cookie recovery passed | Token lifecycle UI requires credential handoff; real OIDC session revocation remains. UX-001/005/011 acceptance; offline protocol tests do not replace those ceremonies |
-| 14 | Administration and recipient pages | Protected page reflows and password correction succeeds. Paused/expired/scheduled/capped return bare 410; cap permits one redirect. Styled 404 has return link. Admin filters/counts and invalid-domain draft retention passed. Create user repeats modal defect without credential entry; stale admin save/validation confirms UX-015/017. Report route redirects home when the report address is absent, matching deployment | UX-005/008/012/015/017 acceptance and true zoom. Mail-enabled report form is optional/non-deployed coverage, not a missing deployed workflow |
+| 14 | Administration and recipient pages | Protected page reflows and password correction succeeds. Paused/expired/scheduled/capped return bare 410; cap permits one redirect. Styled 404 has return link. Admin filters/counts and invalid-domain draft retention passed. Create user repeats modal defect without credential entry; stale admin save/validation confirms UX-015/017. Report route redirects home when the report address is absent, matching deployment | UX-005/008/012/015/017 fix acceptance, including admin/recipient zoom regression. Mail-enabled report form is optional/non-deployed coverage, not a missing deployed workflow |
 
 ### Finite AUDIT-00 Remainder
 
@@ -1362,9 +1362,11 @@ finding, promote to a new UX ID, or reject with evidence. Do not blindly redesig
 
 1. **AUDIT-00: finish the coverage matrix** using the approved browser mechanism;
    capture and inspect fresh desktop/mobile evidence, including ordinary-user and
-   workspace roles. Resolve C-01 through C-06. Status: **in progress in the
-   intermittently failing in-app browser**. Standalone Playwright permission is still pending
-   for unsupported/failing browser checks; no alternate browser was used.
+   workspace roles. C-01 through C-06 are resolved. Status: **bounded automated
+   coverage recorded; explicit A-01..A-04 acceptance remainder above**. Approved
+   standalone Playwright completed real zoom and PDF checks on 2026-09-16.
+   Browser permission is no longer pending. Do not confuse unresolved native
+   preview/user-assisted checks with missing permission or repeat passed coverage.
 2. Fix UX-015 first because it silently changes persisted availability, then
    UX-018 because it demonstrably removes another client's pause/limit, then
    UX-017 because its incorrect form/state risks the same data-integrity class
