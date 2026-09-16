@@ -71,8 +71,9 @@
             type="text" 
             placeholder="2 minutes/hours/days"
             value="{{relative_expire_in}}"
-            hx-preserve="true"
           />
+          <input type="hidden" name="expiry_snapshot" value="{{expiry_snapshot}}" />
+          {{#if error}}<small>Current expiry: {{#if expire_in}}{{expire_in}}{{else}}none{{/if}}</small>{{/if}}
           {{#if errors.expire_in}}<p class="error">{{errors.expire_in}}</p>{{/if}}
         </label>
       </div>

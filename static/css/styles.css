@@ -1709,7 +1709,11 @@ table .short-link-wrapper { display: flex; align-items: center; }
 #main-table-wrapper table tr.edit form button .loader { display: none; }
 #main-table-wrapper table tr.edit form.htmx-request button .loader { display: inline-block; }
 
-#main-table-wrapper table tr.edit form .response p { margin: 2rem 0 0; }
+#main-table-wrapper table tr.edit form .response p {
+  margin: 2rem 0 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
 
 #main-table-wrapper table tr.edit p.no-data {
   width: 100%;

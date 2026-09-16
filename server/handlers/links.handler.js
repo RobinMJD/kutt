@@ -160,10 +160,14 @@ async function lifecycle(req, res) {
   Object.assign(res.locals, utils.sanitize.link_html(link));
   const update = linkLifecycle.parse(req.body, link, req.isHTML);
   if (!Object.keys(update).length) throw new CustomError("Provide at least one lifecycle setting.", 400);
-  const [updated] = await query.link.update({ id: link.id, user_id: req.user.id }, update, { id: req.user.id, apiToken: req.apiToken });
+  if (req.isHTML) {
+    Object.assign(res.locals, linkLifecycle.describe({ ...link, ...update }), { clear_expiry: req.body.clear_expiry === "on" });
+    if (update.expire_in === null) req.expiryExpected = require("../link-expiry-edit").read(req.body.expiry_snapshot, link.uuid).expiry;
+  }
+  const updated = await require("../link-expiry-edit").save(req, res, link, update);
   res.set("Cache-Control", "no-store");
   if (req.isHTML) return res.render("partials/links/lifecycle", {
-    ...utils.sanitize.link_html(updated), success: "Lifecycle updated."
+    ...utils.sanitize.link_html(updated), clear_expiry: false, success: "Lifecycle updated."
   });
   return res.json(utils.sanitize.link(updated));
 }
@@ -237,17 +241,14 @@ async function edit(req, res) {
   }
 
   // Update link
-  const [updatedLink] = await query.link.update(
-    {
-      id: link.id
-    },
+  const updatedLink = await require("../link-expiry-edit").save(req, res, link,
     {
       ...(address && { address }),
       ...(description && { description }),
       ...(target && { target }),
       ...(expire_in && { expire_in }),
       ...((password || password === null) && { password })
-    }, { id: req.user.id, apiToken: req.apiToken }
+    }
   );
 
   if (req.isHTML) {
@@ -331,17 +332,14 @@ async function editAdmin(req, res) {
   }
 
   // Update link
-  const [updatedLink] = await query.link.update(
-    {
-      id: link.id
-    },
+  const updatedLink = await require("../link-expiry-edit").save(req, res, link,
     {
       ...(address && { address }),
       ...(description && { description }),
       ...(target && { target }),
       ...(expire_in && { expire_in }),
       ...((password || password === null) && { password })
-    }, { id: req.user.id, apiToken: req.apiToken }
+    }
   );
 
   if (req.isHTML) {

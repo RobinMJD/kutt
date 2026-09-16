@@ -1,19 +1,20 @@
 # UI/UX Review And Remediation Ledger
 
-Last updated: 2026-09-16 (Europe/Paris).
+Last updated: 2026-09-17 (Europe/Paris).
 
 **Status: initial findings recorded; the full rendered audit is not yet complete.**
-Nineteen findings are confirmed, none is fixed. Remaining concerns and workflow
+Nineteen findings are confirmed; UX-015 is implemented, not yet released or closed. Remaining concerns and workflow
 coverage are tracked below. Do not describe this as a completed accessibility audit.
 The ordinary rendered workflows now have bounded coverage. The explicit
 AUDIT-00 remainder below separates external acceptance gates from regression
 tests for already-confirmed defects; do not restart passing workflows or invent
 unspecified "remaining variants" on each continuation.
 
-**Latest progress:** genuine 200/400% browser zoom and independently decoded QR
-PDF output are now verified. Native print preview opens and cancels, but rendering
-fails in this automated browser for both Kutt and a plain-page control. User-assisted
-credential, permanent-deletion and real SSO/physical-scan gates remain open.
+**Latest progress:** the user authorized starting all fixes on 2026-09-17. UX-015
+now omits unchanged relative expiry, rejects explicit stale expiry changes
+transactionally, retains the draft and supports deliberate conflict review/retry.
+Publication, exact-image validation and deployment are pending. A-01..A-04 remain
+open alongside the fixes; earlier zoom/PDF evidence does not waive those checks.
 
 ## Feature And Deployment Gate
 
@@ -599,9 +600,11 @@ The following gates remain **unverified**, not passed, waived or silently deferr
 
 The optional mail-enabled report mode is not configured on the deployed service.
 It remains an explicitly untested optional mode, not evidence of a production
-failure. Test it before enabling that mode. AUDIT-00 remains open for A-01..A-04;
-do not begin runtime remediation, claim exhaustive accessibility conformance, or
-repeat already-passing workflows to obscure these prerequisites.
+failure. Test it before enabling that mode. AUDIT-00 remains open for A-01..A-04.
+On 2026-09-17 the user explicitly requested "Start with all fixes": begin the
+confirmed remediations now, retaining these user-assisted acceptance checks as
+pending rather than prerequisites for starting fixes. Do not claim exhaustive
+accessibility conformance or silently waive the outstanding checks.
 
 ### 2026-09-16 Zoom And Print Follow-Up
 
@@ -763,7 +766,7 @@ P3: polish with no blocked task. These are product priorities, not CVSS scores.
 | UX-012 | P3 | Unavailable recipient pages are bare messages without a named page or next step | Fresh expired/paused pages and source | Open |
 | UX-013 | P2 | Admin tab switches leave Next enabled beyond the last result | Four-user and zero-domain initial tab states; empty-page navigation and recovery | Open |
 | UX-014 | P2 | Editors accept unexpected successful-response shapes | Forwarding false success; monitoring state loss after HTML 200; analytics stale report/raw error after malformed JSON 200 | Open |
-| UX-015 | P1 | Saving an unrelated field silently restores an expiry cleared in the sibling form | Rendered sequential saves, screenshot and read-only fixture database checks | Open |
+| UX-015 | P1 | Saving an unrelated field silently restores an expiry cleared in the sibling form | Rendered sequential saves, screenshot and read-only fixture database checks | Implemented; release/deployment pending |
 | UX-016 | P2 | Local sign-in can initialize the link table twice and throw during replacement | Fresh redacted HTMX event timeline, console stack and source review | Open |
 | UX-017 | P1 | Admin edit responses lose owner context; validation returns a personal form with blank availability | Actual admin save/error response, rendered DOM, screenshot and unchanged API state | Open |
 | UX-018 | P1 | Stale workspace edits silently overwrite another client's availability | Two real clients, description-only rendered save and API before/after | Open |
@@ -1180,6 +1183,29 @@ this finding; this is not merely the already-tested rejected/HTTP-error path.
 
 ### UX-015: Do Not Resubmit Stale Expiry After Availability Changes
 
+2026-09-17 implementation (`3.2.6-sr94.19` candidate): signed per-link expiry
+snapshots distinguish unchanged display text from a deliberate new duration.
+Unchanged text is omitted before relative-time parsing. Explicit changes compare
+the snapshot with stored expiry inside the update transaction; conflicts commit
+none of the submitted fields. Responses retain the duration draft and show the
+current expiry for a deliberate retry. Successful saves refresh only their own
+form; independent sibling drafts survive. The removal checkbox is always available
+and clears its selection on success; stale removals also require conflict review.
+JSON API behavior and the schema are unchanged. Old browser forms must reload
+before submitting a nonempty duration without snapshot metadata.
+
+`tests/expiry-edit.cjs` covers both editor endpoints, stale/unrelated edits,
+conflict atomicity/retry, error drafts, invalid snapshots, lifecycle clears, API
+compatibility and restart. `tests/browser-expiry-edit.cjs` adds native rendered
+1440/390/320px interactions and independent-draft checks. The first browser run
+exposed a retained removal checkbox in the candidate (corrected) and pre-existing
+admin HTMX syntax errors from trailing trigger whitespace/delimiters (corrected
+in all three admin table templates). Conflict text now wraps inside the editor.
+The admin validation template must remain admin-specific for this conflict path;
+the separate owner-context problem in UX-017 and login race in UX-016 remain open.
+No feature is closed before publication, backup/restore, exact-image tests and
+production acceptance.
+
 The legacy link editor and the Availability form share persisted expiry state but
 update separate HTML fragments. On the personal synthetic link:
 
@@ -1360,13 +1386,15 @@ finding, promote to a new UX ID, or reject with evidence. Do not blindly redesig
 
 ## Remediation Order And Status Contract
 
-1. **AUDIT-00: finish the coverage matrix** using the approved browser mechanism;
+1. **AUDIT-00: retain the outstanding user-assisted acceptance checks** using the approved browser mechanism;
    capture and inspect fresh desktop/mobile evidence, including ordinary-user and
    workspace roles. C-01 through C-06 are resolved. Status: **bounded automated
    coverage recorded; explicit A-01..A-04 acceptance remainder above**. Approved
    standalone Playwright completed real zoom and PDF checks on 2026-09-16.
    Browser permission is no longer pending. Do not confuse unresolved native
    preview/user-assisted checks with missing permission or repeat passed coverage.
+   The user's 2026-09-17 instruction authorizes starting all confirmed fixes now;
+   these checks remain pending alongside remediation, not a sequencing blocker.
 2. Fix UX-015 first because it silently changes persisted availability, then
    UX-018 because it demonstrably removes another client's pause/limit, then
    UX-017 because its incorrect form/state risks the same data-integrity class
@@ -1422,6 +1450,7 @@ classifying a standards failure.
 
 | Date | IDs | Change | Validation and outstanding gates |
 | --- | --- | --- | --- |
+| 2026-09-17 | UX-015, remediation sequencing | User requested starting all fixes. Began expiry intent/concurrency remediation; preserved A-01..A-04 as outstanding acceptance, not a start blocker | Source work in progress. No release/deployment/closure claimed; next checks cover stale personal/admin saves, explicit expiry changes and independent drafts. |
 | 2026-09-15 | AUDIT-00, UX-001..007, C-01..06 | Created initial evidence-backed ledger after feature completion and exact-image fixture testing | Seven open findings; six unvalidated concerns. Tooling blocked the remainder of the rendered audit. No runtime fixes, release, deployment or completed-audit claim. |
 | 2026-09-15 | Goal | Created an active Codex goal referencing this ledger | Goal requires completing the audit, sequential remediation, an update after every change, and all publication/backup/deployment/verification gates before closure. Browser-tool permission remains pending. |
 | 2026-09-15 | AUDIT-00, UX-008, C-01..03 | Resumed in a fresh in-app tab and exact-image disposable fixture; confirmed custom modal focus/Escape defect; accepted mobile SSO/settings and desktop/mobile QR captures | Keyboard link creation and QR option changes passed; short-link clipboard bytes matched. Eight open findings, five remaining concerns. No runtime fixes or production mutation. Unsupported clipboard-denial simulation and remaining coverage stay open. |

@@ -298,6 +298,7 @@ const sanitize = {
   },
   link_html: link => {
     const timestamps = parseTimestamps(link);
+    const relativeExpiry = link.expire_in && ms(differenceInMilliseconds(parseDatetime(link.expire_in), new Date()), { long: true });
     return {
       ...link,
       ...timestamps,
@@ -309,7 +310,8 @@ const sanitize = {
       banned: !!link.banned,
       id: link.uuid,
       relative_created_at: getTimeAgo(timestamps.created_at),
-      relative_expire_in: link.expire_in && ms(differenceInMilliseconds(parseDatetime(link.expire_in), new Date()), { long: true }),
+      relative_expire_in: relativeExpiry,
+      expiry_snapshot: require("../link-expiry-edit").snapshot(link, relativeExpiry),
       password: !!link.password,
       visit_count: link.visit_count.toLocaleString("en-US"),
       link: getShortURL(link.address, link.domain),
@@ -317,6 +319,7 @@ const sanitize = {
   },
   link_admin: link => {
     const timestamps = parseTimestamps(link);
+    const relativeExpiry = link.expire_in && ms(differenceInMilliseconds(parseDatetime(link.expire_in), new Date()), { long: true });
     return {
       ...link,
       ...timestamps,
@@ -324,7 +327,8 @@ const sanitize = {
       domain: link.domain || env.DEFAULT_DOMAIN,
       id: link.uuid,
       relative_created_at: getTimeAgo(timestamps.created_at),
-      relative_expire_in: link.expire_in && ms(differenceInMilliseconds(parseDatetime(link.expire_in), new Date()), { long: true }),
+      relative_expire_in: relativeExpiry,
+      expiry_snapshot: require("../link-expiry-edit").snapshot(link, relativeExpiry),
       password: !!link.password,
       visit_count: link.visit_count.toLocaleString("en-US"),
       link: getShortURL(link.address, link.domain)

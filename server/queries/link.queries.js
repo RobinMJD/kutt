@@ -270,7 +270,7 @@ async function batchRemove(match) {
   }
 }
 
-async function update(match, update, actor = {}) {
+async function update(match, update, actor = {}, { expiryExpected } = {}) {
   if (update.password) {
     const salt = await bcrypt.genSalt(12);
     update.password = await bcrypt.hash(update.password, salt);
@@ -284,7 +284,10 @@ async function update(match, update, actor = {}) {
   }
   
   await knex.transaction(async db => {
-    const current = await db("links").where(match);
+    const selection = db("links").where(match);
+    if (expiryExpected !== undefined && !knex.client.config.client.includes("sqlite")) selection.forUpdate();
+    const current = await selection;
+    for (const link of current) require("../link-expiry-edit").check(link, expiryExpected);
     for (const link of current) await history.beforeUpdate(db, link, update, actor);
     await db("links").where(match).update({ ...update, updated_at: utils.dateToUTC(new Date()) });
   });

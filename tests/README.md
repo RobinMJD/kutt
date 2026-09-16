@@ -53,6 +53,13 @@ an external installation. The test refuses an initialized app, checks desktop
 and mobile controls, persists/reloads policies, verifies public redirects and
 captures screenshots to `KUTT_EVIDENCE_DIR` (or a fresh temporary directory).
 
+`tests/browser-expiry-edit.cjs` uses the same isolation settings on a fresh instance
+and requires `KUTT_EVIDENCE_DIR`. It tests personal/admin expiry intent, conflict
+review/retry, sibling draft preservation and paused public redirects at
+1440/390/320px. `tests/expiry-edit.cjs` is included in the full container suite;
+`KUTT_TEST_ONLY=expiry-edit` runs its focused API/rendered-fragment regression.
+No production credentials or records are used.
+
 `tests/browser-history.cjs` uses the same isolation settings and a separately
 fresh instance. It exercises delete confirmation, trash, history, restore and
 reload at desktop/mobile sizes, checks public redirects and captures screenshots.

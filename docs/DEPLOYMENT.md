@@ -6,6 +6,17 @@ its hardened wrapper, WAF/Authentik routing, monitoring and private backup paths
 in its separate deployment repository. This public repository contains no real
 secrets, provider bindings or user data.
 
+### Expiry editor upgrade (3.2.6-sr94.19)
+
+This release changes no database schema or API-relative-expiry semantics. Browser
+forms now carry a signed expiry snapshot to distinguish unchanged display text
+from an intentional new expiry. Reload editors opened before the upgrade before
+saving a nonempty duration. A stale explicit expiry change (including removal)
+is rejected atomically, retains the draft, and displays the current expiry for
+review before retry. Keep the existing JWT secret: rotating it invalidates form
+snapshots as well as sessions. Rollback to the prior image is schema-compatible
+but reintroduces the stale-expiry defect; it is not a data-recovery procedure.
+
 ## Initial setup
 
 Start with the SQLite Compose example and a private `.env` based on

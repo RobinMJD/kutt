@@ -92,6 +92,7 @@ router.patch(
   asyncHandler(auth.jwt),
   locals.editLink,
   auth.sessionOrigin,
+  asyncHandler(require("../link-expiry-edit").prepare),
   require("../link-campaign").middleware,
   validators.editLink,
   asyncHandler(helpers.verify),
@@ -100,12 +101,13 @@ router.patch(
 
 router.patch(
   "/admin/:id",
-  locals.viewTemplate("partials/links/edit"),
+  locals.viewTemplate("partials/admin/links/edit"),
   asyncHandler(auth.apikey),
   asyncHandler(auth.jwt),
   asyncHandler(auth.admin),
   locals.editLink,
   auth.sessionOrigin,
+  asyncHandler(require("../link-expiry-edit").prepare),
   require("../link-campaign").middleware,
   validators.editLink,
   asyncHandler(helpers.verify),
