@@ -27,13 +27,14 @@ deployment/recovery gate in `.27`. UX-006 import templates and actionable
 format errors passed all deployment/recovery gates in `.28`. UX-007 configuration-aware login copy passed all gates in `.29`.
 UX-009 local webhook errors passed every release/deployment/recovery gate in `.30`.
 UX-010 readable palette changes passed all release/deployment/recovery gates in `.31`.
-UX-011 clipboard remediation is published as `.32` with passing release CI and
-exact wrapper/rendered tests; deployed healthy, post-validation remains open.
+UX-011 clipboard remediation passed release, exact rendered/runtime, deployment
+and clean recovery gates in `.32`.
 UX-014 response validation passes focused and 321 rendered fault cases and `.33`
 release CI and exact rendered checks; full wrapper/deployment remain open. UX-016
 normal-navigation comparison removes duplicate script/table initialization;
 focused API and twelve native HTTPS keyboard sign-ins pass. Release gates remain open.
-Compact-header crowding is UX-021.
+Compact-header crowding and the newly confirmed Account security heading issue
+are implemented for `.36` as UX-021/022; rendered checks pass, release gates remain.
 A-01..A-04 remain
 open alongside the fixes; earlier zoom/PDF evidence does not waive those checks.
 
@@ -783,7 +784,7 @@ P3: polish with no blocked task. These are product priorities, not CVSS scores.
 | UX-008 | P1 | Custom confirmation dialogs leave keyboard focus behind the overlay | Fresh keyboard/DOM checks, screenshot | Verified/closed in .25, including exact-image deployment and clean post-backup restore |
 | UX-009 | P2 | Mobile webhook save errors are outside the visible viewport | Rejected private target, preserved draft and measured status geometry | Closed: .30 published, exact tests, deployment and pre/post recovery passed |
 | UX-010 | P2 | Navigation links and routing errors fail minimum text contrast | Rendered computed colors and calculated ratios | Closed: .31 publication, exact tests, deployment and clean recovery passed |
-| UX-011 | P2 | Legacy Copy shows success even when the clipboard rejects the write | Controlled rejection, copied CSS state and unhandled error | .32 exact tests/pre-restore passed; deployed, post-validation open |
+| UX-011 | P2 | Legacy Copy shows success even when the clipboard rejects the write | Controlled rejection, copied CSS state and unhandled error | Closed: .32 publication, exact tests, deployment and clean recovery passed |
 | UX-012 | P3 | Unavailable recipient pages are bare messages without a named page or next step | Fresh expired/paused pages and source | Implemented for .35; focused and rendered checks passed, release/deployment open |
 | UX-013 | P2 | Admin tab switches leave Next enabled beyond the last result | Four-user and zero-domain initial tab states; empty-page navigation and recovery | Verified/closed in .22 |
 | UX-014 | P2 | Editors accept unexpected successful-response shapes | Forwarding false success; monitoring state loss after HTML 200; analytics stale report/raw error after malformed JSON 200 | .33 release CI passed; exact wrapper/deployment gates open |
@@ -793,9 +794,27 @@ P3: polish with no blocked task. These are product priorities, not CVSS scores.
 | UX-018 | P1 | Stale workspace edits silently overwrite another client's availability | Two real clients, description-only rendered save and API before/after | Verified/closed in .20 |
 | UX-019 | P2 | Workspace validation errors discard the unsaved edit draft | Invalid-alias response, collapsed editor and fresh field inspection | Verified/closed in .20 |
 | UX-020 | P1 | Checked workspace checkbox decoration covers editor fields | Fresh validation screenshot and inherited pseudo-element source | Verified/closed in .20 |
-| UX-021 | P3 | Compact authenticated header crowds the brand and wraps Log out mid-label | Fresh 320px desktop-browser captures during UX-011 verification | Open |
+| UX-021 | P3 | Compact authenticated header crowds the brand and wraps Log out mid-label | Fresh 320px desktop-browser captures during UX-011 verification | Implemented for .36; rendered checks passed, release/deployment pending |
+| UX-022 | P2 | Account security page heading crowds Connected identity and splits Settings mid-word | Fresh 320px UX-021 source captures and obsolete header class | Implemented for .36; rendered checks passed, release/deployment pending |
 
 ### UX-021: Let The Compact Header Wrap Deliberately
+
+Implemented for `.36`, not closed. A dedicated `site-header` class scopes changes
+away from nested page/section headers. Natural height, deliberate gaps and flex
+wrapping keep the brand and account actions separate; account labels do not
+split. A bounded brand span wraps even unbroken long names, and the decorative
+logo no longer duplicates its accessible name. Account navigation is named.
+Action destinations, role visibility and auth policy are unchanged; no schema,
+dependency or secret change. Image-only rollback to `.35.1` is compatible.
+
+Fresh `tests/browser-header.cjs` passed 36 layouts: signed-out/user/admin,
+Kutt/Shorter Link/an unbroken long configured name, and 320/390/768/1440px.
+It checks control/brand geometry rather than relying only on document overflow,
+single-line action labels, keyboard settings navigation/logout and management
+denial. Captures exposed UX-022 below; the corrected full run includes H1/next
+section separation and the Settings label. Compact and desktop fixed captures
+were inspected in `ux021-fixed-captures`; no console errors. Publication, exact
+wrapper tests, backup/deployment and verified recovery remain open.
 
 Fresh 320px captures (`ux011-source/copy-top-compact.png` and
 `copy-row-compact.png`, outside Git in the private audit directory) show the
@@ -806,6 +825,22 @@ Keep account actions distinct from the brand and permit a deliberate navigation
 wrap with a stable gap. Verify signed-out, ordinary user and admin states at
 320/390/768/1440px, including the longer configured site name and keyboard focus.
 No account action or authorization behavior should change.
+
+### UX-022: Use The Responsive Account-Security Heading
+
+Fresh `ux021-source-captures/31093-admin-320.png` and long-brand user captures
+show the page heading wrapping into the identity heading and Settings splitting
+mid-word. The page retained `link-archive-heading`, which has no responsive rule,
+so the global fixed-height site-header styles applied. The shared `archive-heading`
+class already used by other settings pages removes that fixed height and permits
+wrapping. Updated this one class, without touching identity/session behavior.
+This is distinct from UX-021's site navigation and was missed in earlier heading
+coverage. Browser acceptance now checks that the entire H1 stays within its
+header, Settings remains unbroken, and Connected identity begins below it.
+The complete 36-layout rendered rerun passed the added geometry assertions;
+compact and desktop captures confirm the identity heading stays separate.
+Both header fixes share `.36` and `tests/header.cjs`/`tests/browser-header.cjs`.
+All publication/deployment/recovery gates remain open.
 
 ### UX-001: Name Core Actions
 
@@ -1479,7 +1514,16 @@ unchanged test at all three widths. Exact wrapper
 passed full regression and a valid zero-critical/high scan. Pre-backup
 2026-09-17 05:34:35 UTC local `85355d13...`, NAS `6d5cb417...` verified all
 61 files and exact writable recovery. Deployed 05:37:04 UTC healthy with zero
-restarts; post-validation and clean post-backup recovery remain open.
+restarts. First public run stopped on intermittent safe-URL validation HTTP 400
+during webhook disable; evidence is preserved, and the unchanged full rerun
+passed including real HTTPS delivery. Cause is unconfirmed, not claimed fixed.
+Full WAF routes, signed Authentik logout/replay, original data, two health samples
+65 seconds apart and whole-lab validation passed with no new failed units,
+unhealthy containers, restarts or firing alerts. Clean post-backup at 05:55:31 UTC:
+local `2d98d6dc3d8a1b2bbca5a26a705506d83a3fe768940c96e67002b2f5aef899bd`,
+NAS `a6eef154eeb4aabc9ae121fda2fd7399034176a24a0469b664618633f05200dd`.
+61 files verified, exact writable restore passed with one original user/one link,
+unchanged original records and matching config/secrets. UX-011 is closed.
 
 Promoted from C-02. In the disposable document, `clipboard.writeText` was replaced
 temporarily with a rejected `NotAllowedError` promise. The workspace Copy action

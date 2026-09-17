@@ -1207,6 +1207,16 @@ header nav ul li {
 
 header nav ul li:last-child { margin-left: 0; }
 
+.site-header { height: auto; min-height: 102px; flex-wrap: wrap; gap: 1rem 2rem; padding-block: 1rem; }
+.site-header .logo-wrapper { min-width: 0; max-width: 100%; flex: 1 1 auto; flex-wrap: wrap; gap: 0.5rem 0; }
+.site-header a.logo { min-width: 0; max-width: 100%; }
+.site-header .site-name { min-width: 0; overflow-wrap: anywhere; }
+.site-header .logo img { flex: 0 0 18px; }
+.site-header nav { min-width: 0; max-width: 100%; margin-left: auto; }
+.site-header nav ul { flex-wrap: wrap; gap: 0.75rem 2rem; }
+.site-header nav ul li { margin: 0; }
+.site-header nav a { white-space: nowrap; }
+
 /* SHORTENER */
 
 main {
@@ -2311,6 +2321,8 @@ svg.map path.active { stroke: hsl(261, 46%, 50%); stroke-width: 1.5; }
   header .logo img { margin-right: 8px; }
   header nav ul li { margin-left: 0.75rem }
   header nav ul li a.button { height: 28px; padding: 0 1rem; font-size: 11px; }
+  .site-header { min-height: 72px; gap: 1rem; padding: 16px; }
+  .site-header nav ul { gap: 0.75rem; }
 
   form#login-signup label { margin-bottom: 1.5rem; }
   form#login-signup input {
