@@ -40,12 +40,17 @@
     hx-get="/add-domain-form"
     hx-target="#domain-form-wrapper"
     hx-swap="innerHTML"
-    hx-on::after-request="event.srcElement.classList.add('hidden')"
+    hx-on::after-request="
+      const loaded = event.detail.successful &amp;&amp; document.querySelector('#add-domain');
+      document.getElementById('domain-load-error').hidden = !!loaded;
+      if (loaded) this.classList.add('hidden');
+    "
   >
     <span>{{> icons/plus}}</span>
     Add domain
   </button>
   {{> icons/spinner}}
+  <p id="domain-load-error" class="error" role="alert" hidden>Could not load the domain form. Try again.</p>
   <div id="domain-form-wrapper">
   </div>
 </div>

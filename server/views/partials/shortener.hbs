@@ -46,7 +46,7 @@
         {{> icons/send}}
         {{> icons/spinner}}
       </button>
-      {{#if errors.target}}<p class="error">{{errors.target}}</p>{{/if}}
+      {{#if errors.target}}<p class="error" data-error-field="target">{{errors.target}}</p>{{/if}}
       {{#unless errors}}
         {{#if error}}
           <p class="error">{{error}}</p>

@@ -4,8 +4,10 @@
   hx-sync="this:abort"
   hx-swap="outerHTML"
   hx-on::after-request="
-    document.querySelector('.show-domain-form').classList.remove('hidden');
-    document.querySelector('#add-domain').remove();
+    if (event.detail.successful && event.detail.xhr.getResponseHeader('HX-Reswap') === 'none') {
+      document.querySelector('.show-domain-form').classList.remove('hidden');
+      document.querySelector('#add-domain')?.remove();
+    }
   "
 >
   <div class="inputs">

@@ -3,7 +3,7 @@
 Last updated: 2026-09-17 (Europe/Paris).
 
 **Status: initial findings recorded; the full rendered audit is not yet complete.**
-Twenty findings are confirmed; UX-001/002/003/013/015/017/018/019/020 are verified/closed. Remaining concerns and workflow
+Twenty findings are confirmed; UX-001/002/003/004/008/013/015/017/018/019/020 are verified/closed. Remaining concerns and workflow
 coverage are tracked below. Do not describe this as a completed accessibility audit.
 The ordinary rendered workflows now have bounded coverage. The explicit
 AUDIT-00 remainder below separates external acceptance gates from regression
@@ -19,10 +19,11 @@ and post-release restore passed. UX-018/019/020 passed the same gates in `.20`.
 UX-017 passed publication, exact deployment, live validation and post-backup restore in `.21`.
 UX-001/013 passed publication, exact deployment, live validation and post-backup restore in `.22`. UX-003
 passed publication, exact deployment, live validation and post-backup restore in `.23`. UX-002
-passed those gates in `.24`. UX-008 native-modal implementation, source regression,
-rendered tests and publication CI passed for `.25`; exact-image/deployment gates
-remain open. UX-004 accurate lifecycle labels and bulk-result feedback are
-implemented locally with initial API and browser checks passing, not released.
+passed those gates in `.24`. UX-008 passed publication, exact-image regression,
+deployment, live checks and clean post-backup writable recovery in `.25`.
+UX-004 accurate lifecycle labels and bulk-result feedback passed the same gates in `.26.1`.
+UX-005 validation
+semantics, focus and draft recovery are being implemented and tested, not released.
 A-01..A-04 remain
 open alongside the fixes; earlier zoom/PDF evidence does not waive those checks.
 
@@ -765,11 +766,11 @@ P3: polish with no blocked task. These are product priorities, not CVSS scores.
 | UX-001 | P1 | Core icon controls lack accessible names | Rendered DOM and source | Verified/closed in .22 |
 | UX-002 | P1 | Mobile recent-links table hides essential actions and the empty state | Mobile screenshots, source | Verified/closed in .24 |
 | UX-003 | P1 | Library heading links overlap mobile filter controls | Screenshot and measured DOM | Verified/closed in .23 |
-| UX-004 | P2 | `active` filter includes visibly paused links | Successful bulk pause, source | Implemented locally; validation/publication/deployment gates pending |
-| UX-005 | P2 | Legacy URL validation lacks programmatic field/error association | Invalid-submit DOM, source | Open |
+| UX-004 | P2 | `active` filter includes visibly paused links | Successful bulk pause, source | Verified/closed in .26.1; intermittent webhook acceptance failure separately retained |
+| UX-005 | P2 | Legacy URL validation lacks programmatic field/error association | Invalid-submit DOM, source | Implementation and browser validation in progress; not released |
 | UX-006 | P2 | Import schema errors do not give a usable correction path | Error/preview/commit exercise | Open |
 | UX-007 | P2 | SSO-only login advertises sign-up even when registration is disabled | Production screenshot, source | Open |
-| UX-008 | P1 | Custom confirmation dialogs leave keyboard focus behind the overlay | Fresh keyboard/DOM checks, screenshot | Published .25; exact-image/deployment gates pending |
+| UX-008 | P1 | Custom confirmation dialogs leave keyboard focus behind the overlay | Fresh keyboard/DOM checks, screenshot | Verified/closed in .25, including exact-image deployment and clean post-backup restore |
 | UX-009 | P2 | Mobile webhook save errors are outside the visible viewport | Rejected private target, preserved draft and measured status geometry | Open |
 | UX-010 | P2 | Navigation links and routing errors fail minimum text contrast | Rendered computed colors and calculated ratios | Open |
 | UX-011 | P2 | Legacy Copy shows success even when the clipboard rejects the write | Controlled rejection, copied CSS state and unhandled error | Open |
@@ -992,7 +993,7 @@ include browser zoom as well as narrow viewport tests.
 
 ### UX-004: Use Accurate Lifecycle Filter Names
 
-Implemented for candidate `.26.1`, not deployed: Library and Workspace labels now say
+Verified/closed in `.26.1`: Library and Workspace labels now say
 `Not in trash` / `In trash`; Library also says `Not paused`. Existing API values
 and saved filters are unchanged. Bulk POST/303/GET returns a bounded, signed,
 user-bound action/count receipt; the page focuses the result and clears selection.
@@ -1009,9 +1010,29 @@ checks also confirm that a paused row remains under the preserved `active` value
 with the new label. `.26` CI caught a fixture cleanup omission: the new Workspace
 check left its share behind for a later suite's zero-share assertion. `.26` did
 not publish an image. `.26.1` removes only its synthetic workspace in `finally`;
-the failing assertion is preserved and the full suite must rerun. This is test
-isolation, not a production data mutation. Release/deployment gates remain open. No schema, authorization or
-public redirect changes.
+the failing assertion is preserved and the full suite passed tag CI
+`35176179342` (Shortcut CI `35176179320` also passed). This is test
+isolation, not a production data mutation. No schema, authorization or public
+redirect changes. Tag source `698831f477f1fe1d6c88709ed8f4849ca113c920`, registry
+digest `4d170a190f62fdd67f25b4982708a3d45285e91ea14ce803723c2155ca4f1711`, exact
+wrapper `ef05236dc23244d23136692853faf948f25357d6014e98cedcdd0c6607afd7c3`.
+Full exact-wrapper regression, valid zero-critical/high scan and rendered
+1440/390/320px tests passed. Pre-backup 2026-09-17 03:08:27 UTC: local
+`34349067...`, NAS `3854bbfa...`; 61 files verified and writable exact-image
+restore passed. Deployed at 03:15:38 UTC, healthy with zero restarts. Full WAF
+regression, real Authentik-signed logout, original-record checks, two health
+samples 65 seconds apart and whole-lab validation passed. Post-backup 03:33:00
+UTC: local `27ce64b9...`, NAS `19694547...`; 61 files verified and exact-image
+writable recovery passed with one original user/link and matching config/secrets.
+Evidence: `/srv/homelab/security-reports/2026-09-17-kutt-ux004/`.
+
+Operational follow-up: the first live synthetic webhook receiver registration
+again returned 400. Its error body was not retained. A full diagnostic retry
+passed registration, real HTTPS delivery and all remaining assertions. Twelve
+subsequent A/AAAA checks completed in 2-6ms; that does not establish the earlier
+cause. Keep the diagnostic helper for the next acceptance run. Do not claim this
+intermittent failure is fixed or disable SSRF/WAF checks to bypass it. It is not
+attributable to this label/receipt change on current evidence.
 
 After selecting the synthetic link, choosing Pause and applying it, the row
 correctly says `Paused` but remains under the selected `active` filter. The query
@@ -1037,6 +1058,25 @@ alone does not explain whether the requested action succeeded.
 ![Paused result remains under the active filter](ui-ux-review/2026-09-15/10-library-paused-mobile.png)
 
 ### UX-005: Associate Validation Errors With Fields
+
+Implemented for candidate `.27`, not published/deployed: shared HTMX validation associates field messages, removes stale
+errors when edited, preserves drafts on transport errors and focuses errors only
+when the user has not moved to another form. `hx-preserve` attributes are refreshed
+after replacement. Native login autofocus must settle before error focus; this
+was caught and corrected in the rendered regression. Inline Add domain
+now closes only on confirmed successful insertion, not on a failed request.
+Retention draft edits invalidate the preview acknowledgement and readiness text.
+Desktop/390/320px URL/alias/expiry correction, inline domain 503/retry, cross-form
+delayed-response focus, offline draft retention, existing description preservation,
+owner/admin validation, retention no-delete and protected/local-password correction
+passed on synthetic fixtures. SSO-only provider outage at 390px and valid-state
+cancellation at 390/1440px preserve keyboard retry and never issue an authenticated
+cookie or expose a password fallback. Captures were inspected outside Git.
+Focused server contracts pass, retaining existing JSON/HTML status and authorization
+boundaries with no credential echo. Full source regression passed; the final
+minor form-loading/general-error changes also passed fresh rendered tests.
+Immutable tag/exact-image regression and release/deployment gates remain open.
+No production deployment or finding closure is claimed yet.
 
 Submitting `not a url` renders `URL is not valid.` and a red decoration, but the
 input has no `aria-invalid` or `aria-describedby` relationship and the error has
@@ -1122,7 +1162,7 @@ and login-disabled configurations. Short-link recipients must remain unauthentic
 
 ### UX-008: Make Custom Dialogs Keyboard Operable
 
-Implemented in candidate `.25`: use the [native HTML modal dialog](https://html.spec.whatwg.org/multipage/interactive-elements.html#the-dialog-element)
+Verified/closed in `.25`: use the [native HTML modal dialog](https://html.spec.whatwg.org/multipage/interactive-elements.html#the-dialog-element)
 for top-layer/background isolation, with a shared frame, explicit naming,
 initial/restored focus, cyclic keyboard navigation and a close action during
 loading. Cancelled GET responses cannot overwrite a later opening. An in-flight
@@ -1140,8 +1180,24 @@ Final rendered source tests passed at 1440/390/320px, including real synthetic
 write success, failed-write draft/retry, duplicate Enter, cancelled actions with
 unchanged data, actual trash success and removed-opener section focus. Captures
 were inspected outside Git. Full isolated source regression passed, including
-authorization, OIDC, workers, migrations and rollback. Release/exact-image and
-deployment/recovery gates remain pending; this is not yet a completed fix.
+authorization, OIDC, workers, migrations and rollback. Release/tag source
+`c0d5a34bb39efff058b77db41c734cc7c053ba3f`, Fork CI `35174588864` and Shortcut
+CI `35174588893` passed. Registry digest `47e6a9fef75c9826bde35827dbb85375c7a3b8f094c436e54ab3f510011084d4`;
+exact wrapper `d4bba31102fddf470a58d87488f41eccc649b2de6882893ff073da246a6f19f7`
+passed full regression, rendered 1440/390/320px tests and a valid zero-critical/high
+scan. Pre-backup 02:27:57 UTC: local `69a59de9...`, NAS `7e7ffa6c...`; all 61 files
+verified and exact-image writable restore/config/secret comparison passed.
+Deployed 2026-09-17 02:46:28 UTC, healthy with zero restarts. Full public WAF
+regression, real signed Authentik logout/replay, original-record/integrity checks,
+two health samples 65 seconds apart and whole-lab validation passed. Initial
+webhook receiver validation returned 400; targeted and complete retries passed,
+including real HTTPS delivery. Root cause is unconfirmed and retained in evidence;
+SSRF/WAF protections were not changed. Clean post-backup 03:05:43 UTC: local
+`e8bce3fd...`, NAS `90a498e9...`, 61 files verified, exact-image writable restore
+passed with one original user/link and matching config/secrets. An earlier
+validation-window snapshot contained the temporary smoke user; retained separately,
+it is superseded as final clean recovery evidence. Report:
+`/srv/homelab/security-reports/2026-09-17-kutt-ux008/`.
 
 Promoted from C-01. Pressing Enter on the row delete action opens the custom
 `Move link to trash?` confirmation, but focus remains on the trigger behind the

@@ -640,6 +640,8 @@ p.success {
 }
 
 p.error { color: red; }
+p.error[hidden] { display: none; }
+p.error[role="alert"] { animation: none; }
 p.success { color: #0ea30e; }
 
 table {

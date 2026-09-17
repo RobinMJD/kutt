@@ -44,7 +44,9 @@
   }
   document.querySelector("#privacy-reload").onclick = () => work(() => load());
   if (retention) {
-    form.addEventListener("input", resetPreview);
+    form.addEventListener("input", () => {
+      resetPreview(); message("Draft changed. Preview again before applying.");
+    });
     form.onsubmit = event => { event.preventDefault(); work(async () => {
       const data = await api(endpoint + "/preview", "POST", { days: form.elements.mode.value === "keep" ? 0 : Number(form.elements.days.value), revision });
       confirmation = data.confirmation; previewDays = data.days;

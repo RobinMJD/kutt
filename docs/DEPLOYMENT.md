@@ -77,7 +77,7 @@ browser zoom and role boundaries are covered; exact-image regression, deployment
 live WAF/OIDC checks, monitoring and post-backup restore passed. Evidence is in
 the UI/UX ledger.
 
-### Library lifecycle labels and bulk feedback (3.2.6-sr94.26.1 candidate)
+### Library lifecycle labels and bulk feedback (3.2.6-sr94.26.1)
 
 The `.26` artifact did not publish an image: CI caught synthetic Workspace
 fixture leakage. `.26.1` adds cleanup without changing runtime behavior.
@@ -89,9 +89,13 @@ receipt cookie is user-bound and contains no link data; it is not an access
 credential. No schema, API, dependency, secret or WAF/SSO changes are needed.
 Reload management pages after deployment. Image-only rollback to `.25` retains
 data but restores ambiguous labels and missing feedback. Publication, exact-image
-and deployment acceptance remain open in the UI/UX ledger.
+regression, responsive browser tests, pre-backup recovery and deployment passed.
+Post-deployment WAF/OIDC, health and clean post-backup recovery passed. An
+intermittent synthetic webhook registration rejection remains recorded separately
+in the UI/UX ledger: the complete diagnostic retry passed, but the first cause
+is unconfirmed. SSRF/WAF checks were not weakened.
 
-### Native modal dialogs (3.2.6-sr94.25 candidate)
+### Native modal dialogs (3.2.6-sr94.25)
 
 Shared native dialogs isolate the background and retain keyboard focus. Close
 and Escape cancel only a pending read, not an in-flight write. Failed writes
@@ -100,8 +104,48 @@ automatic mutation retry is added. Requests are bounded at 30 seconds, duplicate
 writes are dropped, and cancelled/superseded responses cannot update another
 opening. Reload old management pages after upgrade. No schema, API, dependency,
 secret or WAF/SSO change. Image-only rollback to `.24` is compatible but restores
-the modal accessibility defects. Release/deployment/recovery gates remain in
-the UI/UX ledger.
+the modal accessibility defects. Release/deployment/live health and clean
+post-backup recovery passed; evidence is recorded in the UI/UX ledger.
+
+### Form validation and draft recovery (3.2.6-sr94.27 candidate)
+
+The shared validation script refreshes field/error associations after HTMX swaps,
+including retained inputs, preserves existing descriptions and focuses errors
+after automatic focus settles. It does not steal focus from another form edited
+while a request was pending. Editing clears obsolete validation messages; an
+uncertain transport-failure warning remains until retry. Network/server failures
+retain drafts and never trigger automatic mutation retries. Inline Add domain
+closes only after the server's confirmed insertion response. Retention draft
+edits clear stale preview readiness and acknowledgement without applying deletion.
+The login page has a main landmark and SSO-only errors expose a keyboard retry.
+Local password login stays disabled wherever configured; no fallback is enabled.
+
+Reload open management pages after deployment. No migration, API status, secret,
+dependency, WAF/SSO or authorization change is required. Image-only rollback to
+`.26.1` preserves data but restores the validation/focus defects. Exact release,
+deployment and recovery gates are tracked in the ledger, not assumed complete.
+
+`tests/validation.cjs` runs in container smoke CI. Rendered validation uses fresh
+loopback-only disposable fixtures, never production data:
+
+```sh
+KUTT_BROWSER_DISPOSABLE=1 KUTT_TEST_URL=http://127.0.0.1:3000 \
+  KUTT_EVIDENCE_DIR=/tmp/kutt-validation node tests/browser-validation.cjs
+```
+
+Use an already installed Playwright module, optionally selected with
+`PLAYWRIGHT_MODULE`. The fixture must permit initial bootstrap/local login and
+must have an empty temporary SQLite database. Tests refuse initialized fixtures.
+The separate `tests/browser-oidc-validation.cjs` requires an SSO-only fixture and
+`KUTT_TEST_PROVIDER_URL` pointing to `tests/fixtures/oidc-error-provider.cjs`.
+That test-only provider requires `KUTT_BROWSER_DISPOSABLE=1` and the two loopback
+URLs; it starts unavailable, enables discovery on POST `/fixture-ready`, then
+returns a valid-state cancellation. Use `NODE_ENV=development` only on this
+isolated fixture for loopback HTTP OIDC; production HTTPS requirements must not
+change. If containerized, publish both ports on `127.0.0.1` only. Fresh rendered
+fixtures cover WAF-like failures, retry, draft retention, keyboard/error focus,
+owner/admin/recipient forms and 1440/390/320px reflow. Synthetic provider tests do
+not replace real Authentik session-expiry acceptance.
 
 ## Initial setup
 
