@@ -588,7 +588,12 @@ restored; the exact fixture, private seed and tunnel were removed, viewport rese
 and tab closed. The retained checkpoint hash is unchanged. Production remains
 healthy on the same exact `3.2.6-sr94.18` image with zero restarts.
 
-| Step | Workflow | Current result | Remaining acceptance |
+The following matrix preserves the **pre-remediation audit observations** from
+2026-09-15/16. It is not the current defect status: the later finding sections
+record the fixes and release acceptance. Only A-01..A-04 below remain open from
+this matrix; do not reopen a closed UX finding from its historical observation.
+
+| Step | Workflow | Pre-remediation result | Acceptance identified at that time |
 | --- | --- | --- | --- |
 | 1 | Production SSO entry | Desktop and fresh 390px mobile observed; clear Authentik action, misleading sign-up label. Separate synthetic exact-image SSO-only provider outage, recovery/retry and valid-state cancellation passed at mobile/desktop; anonymous redirects remain public | Real Authentik expired/revoked-session ceremony; error semantics/contrast remain UX-005/010 acceptance |
 | 2 | Empty home and first link | Mobile/desktop observed; native keyboard entry and Enter created a synthetic link at 390px. Fresh 320px homepage inspected; target/submit fit, but table actions remain clipped. Genuine 200/400% zoom now confirms the same table clipping | Focus/error/action-access and zoom regression belong to UX-001/002/005; the earlier ineffective zoom command is superseded |
@@ -902,6 +907,33 @@ identity. Neither an identity nor a successful report was invented. Source
 coverage and control-level notes are preserved privately under
 `security-final/artifacts/03_coverage/` in the audit work directory. Runtime,
 Grype, release and deployment gates are separate; human acceptance is still open.
+
+### Final Publication And Source Reconciliation
+
+Verified on 2026-09-17 after the final deployment and fixture cleanup:
+
+- The `.36.1` runtime tree (server, static assets, migrations, package manifests
+  and Dockerfile) matches the validated main closeout commit
+  `784bb383219c63c4a6563b369bbea808df21912f`. Its
+  [full regression CI](https://github.com/RobinMJD/kutt/actions/runs/35191841117)
+  passed. Subsequent documentation corrections do not change that runtime.
+- The upstream PR head `88dcf1368a8867055998617c174b079510cbb91f` passed its
+  [exact-head regression CI](https://github.com/RobinMJD/kutt/actions/runs/35191554767).
+  [PR #1046](https://github.com/thedevs-network/kutt/pull/1046) contains the
+  community and UI changes; maintainer review/merge is still external.
+- All 43 declared Kutt deployment files match published homelab commit
+  `d58c9ea51ecca786ce8b6af482d1cf7ddd50c7c4`. Both the
+  [Kutt deployment check](https://github.com/RobinMJD/homelab/actions/runs/35191992890)
+  and [repository hygiene CI](https://github.com/RobinMJD/homelab/actions/runs/35191993071)
+  passed. The exact deployed image is healthy with zero restarts and no remaining
+  browser fixture containers. The pre/post restore evidence is recorded above.
+- The Kutt checkout was clean and synchronized. The live homelab checkout has
+  unrelated changes and older branch metadata, deliberately preserved; a clean
+  isolated worktree published only the Kutt files and its probe target. Matching
+  Kutt deployment files is not a claim that the whole homelab checkout is clean.
+
+This reconciliation does not close A-01..A-04 or repair the security report
+tooling failure. Those prerequisites still prevent full goal completion.
 
 ### UX-001: Name Core Actions
 
@@ -2156,8 +2188,10 @@ screenshots and all release/deployment gates passed as recorded under UX-018.
 
 ## Source Concerns Requiring Rendered Validation
 
-These are not counted as confirmed UX defects. Validate, merge into an existing
-finding, promote to a new UX ID, or reject with evidence. Do not blindly redesign.
+These were the source concerns requiring rendered validation at audit start.
+Their triage is complete: confirmed cases became UX findings; rejected or merged
+cases retain the evidence below. Historical acceptance notes refer to the later
+fix sections, not additional open defects. A-01..A-04 remain separate.
 
 | ID | Concern and source | Required validation |
 | --- | --- | --- |
@@ -2167,7 +2201,7 @@ finding, promote to a new UX ID, or reject with evidence. Do not blindly redesig
 | C-04 | Original independent-form clobber suspicion rejected; stale personal/admin expiry confirmed as UX-015. Sequential shared availability survives, but concurrent shared save loses it (UX-018). Personal validation retains lifecycle, while shared validation loses draft (UX-019) | Preserve passing independent-draft behavior. Admin context is UX-017; shared races and validation now have concrete remediation acceptance |
 | C-05 | Navigation and routing-error contrast confirmed as UX-010; native focused submit has only slight movement, included in UX-001 acceptance | Reduced-motion sampled settled states passed. 320px home exposes clipped actions despite zero document overflow. Native zoom attempt did not change dimensions/scale; actual zoom, broader focus and animated/loading-state coverage remain incomplete |
 | C-06 | Webhook error visibility confirmed as UX-009; forwarding/routing false success, monitoring malformed-response state loss and analytics stale report confirmed as UX-014. Actual two-client conflicts retain drafts and recover in routing, forwarding and monitoring. Real worker denial, monitoring disable, rule ordering/preview, forwarding duplicate prevention and live transport recovery pass | Other editor faults remain; document-local simulation and real transport interruption are not an expired-SSO ceremony |
-| C-07 | Promoted to UX-016: fresh event trace confirms two table requests and a disconnected-target swap exception after a successful native sign-in | Complete internal reinitialization mechanism still needs instrumentation; do not call this failed authentication or data loss |
+| C-07 | Promoted to UX-016: fresh event trace confirms two table requests and a disconnected-target swap exception after a successful native sign-in | Mechanism instrumented and single-document navigation verified/closed in .35.1; see UX-016. This was not failed authentication or data loss |
 
 ## Remediation Order And Status Contract
 
@@ -2215,15 +2249,21 @@ and use its authoritative live checkout only for scoped deployment changes.
 
 ## Validation Checklist
 
-- [ ] Finish every remaining coverage row and triage each source concern.
-- [ ] Check desktop/mobile at 1440/768/390/320px, zoom, keyboard, focus and reduced motion.
-- [ ] Check screen-reader-relevant names, landmarks, errors, status and modal semantics.
-- [ ] Measure contrast and interactive target geometry, including spacing exceptions.
-- [ ] Exercise empty/populated/paginated/long-data, slow/offline/error and stale-edit states.
-- [ ] Test admin, ordinary user, workspace owner/editor/viewer and outsider boundaries.
-- [ ] Keep all existing APIs, persisted filters, redirects and migrations compatible.
-- [ ] Close each finding only after its source/release/deployment/backup/verification gates.
-- [ ] Complete final regressions and retain a clean, pushed source tree and accurate deployment docs.
+This requirement-by-requirement status replaces the initial blank checklist.
+Passing fix regressions are not substituted for the unperformed human workflows.
+
+| Requirement | Evidence and current result | Remaining gate |
+| --- | --- | --- |
+| Finish workflow coverage and triage source concerns | C-01..C-07 triaged; ordinary rendered workflows and all confirmed fixes have recorded acceptance | AUDIT-00 remains open for A-01..A-04 |
+| Desktop/mobile, true zoom, keyboard, focus and reduced motion | UX-001/002/003/008/010/021/022 and their named browser suites record measured layouts, focus, motion and real 200/400% zoom | Native print preview and user-assisted workflows remain unverified; no all-workflows accessibility claim |
+| Names, landmarks, errors, status and modal semantics | UX-001/005/008/009/011/014 include rendered semantics, error recovery, focus and dialog tests | Credential-bearing and permanent-deletion UI ceremonies remain A-02/03 |
+| Contrast and interactive target geometry | UX-002/003/010/021/022 record measured colors, bounds and hit regions rather than screenshots alone | Evidence is limited to the reviewed states, not exhaustive accessibility conformance |
+| Empty/populated/paginated/long-data, slow/offline/error and stale edits | Workflow matrix and UX-004/006/013/014/015/017/018/019 cover these states, including real independent-client conflicts | Real Authentik expired/revoked-session recovery remains A-04 |
+| Admin, ordinary user, owner/editor/viewer and outsider boundaries | Recorded rendered role transitions plus full authorization regressions; stale edits cannot regain revoked access | Token lifecycle UI remains A-02; protocol tests do not replace it |
+| Existing APIs, filters, public redirects and migrations | Full source/exact-wrapper/public WAF regressions passed; original data fingerprints, integrity and foreign keys preserved | SQLite verified; no new PostgreSQL/MariaDB parity claim |
+| Close fixes only after publication/deployment/recovery | UX-001..UX-022 each have versioned-release, test, live and recovery evidence | All 22 confirmed defects closed; broader audit remains open |
+| Final regression and security review | Full final regression passed; bounded source-diff review covered 124 source/config/test files; image scan found zero critical/high and three medium BusyBox matches without a listed fix | Security report finalization blocked by missing tool-issued scan identity; no sealed security verdict |
+| Published source and accurate recovery/deployment docs | Final publication/reconciliation section verifies runtime equality, CI, 43 live declarative files and recoverable pre/post backups | Unrelated dirty homelab work preserved; not a global clean-checkout claim |
 
 Accessibility review references: [W3C Name, Role, Value](https://www.w3.org/WAI/WCAG22/Understanding/name-role-value.html),
 [Reflow](https://www.w3.org/WAI/WCAG22/Understanding/reflow.html) and
