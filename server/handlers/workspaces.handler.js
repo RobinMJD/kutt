@@ -3,6 +3,7 @@ const lifecycle = require("../link-lifecycle");
 const { sameOrigin } = require("./link-history.handler");
 const { sessionOnly } = require("./tokens.handler");
 const { CustomError } = require("../utils");
+const editing = require("../workspace-edit");
 
 function boundary(req, res, next) {
   res.set("Cache-Control", "private, no-store");
@@ -20,6 +21,7 @@ function formLink(body) {
   // Empty password on an edit preserves protection unless explicitly cleared.
   if (input.password === "") delete input.password;
   if (body.clear_password === "on") input.password = null;
+  if (body.operation === "edit_link") input.edit_revision = body.edit_revision ?? "";
   if (body.policy === "on") {
     const parsed = lifecycle.parse(body, {}, true);
     for (const key of ["starts_at", "ends_at"]) if (parsed[key] != null) parsed[key] = new Date(parsed[key]).toISOString();
@@ -67,10 +69,10 @@ const api = operation => async (req, res) => {
   res.status(["create", "invite", "create_link"].includes(operation) ? 201 : 200).json(result);
 };
 
-async function page(req, res, error) {
+async function page(req, res, error, failedEdit) {
   const all = await spaces.list(req.user.id);
-  let selected;
-  if (req.params.id) selected = await spaces.detail(req.user.id, req.params.id, req.query);
+  let selected, inlineError = false;
+  if (req.params.id) selected = await spaces.detail(req.user.id, req.params.id, req.query, failedEdit?.id);
   const url = selected ? "/settings/workspaces/" + selected.id : "/settings/workspaces";
   if (selected) {
     selected.owner = selected.role === "owner";
@@ -82,10 +84,22 @@ async function page(req, res, error) {
     selected.trash = selected.state === "trash";
     selected.members = selected.members.map(m => ({ ...m, editor: m.role === "editor" }));
     selected.data = selected.data.map(link => ({ ...link, can_edit: selected.editor && link.editable, can_unshare: selected.owner,
-      trashed: !!link.deleted_at }));
+      trashed: !!link.deleted_at, edit_values: { ...link } }));
+    const link = failedEdit && selected.data.find(link => link.id === failedEdit.id && link.can_edit && !link.trashed);
+    if (link) {
+      inlineError = true;
+      link.edit_error = error;
+      link.edit_values = { ...link.edit_values, ...editing.draft(req.body),
+        starts_at_input: typeof req.body.starts_at === "string" ? req.body.starts_at : link.starts_at_input,
+        ends_at_input: typeof req.body.ends_at === "string" ? req.body.ends_at : link.ends_at_input,
+        // Validation cannot silently accept a newer snapshot. Only an explicit
+        // conflict response shows current values and offers a deliberate retry.
+        edit_revision: failedEdit.conflict ? link.edit_revision : typeof req.body.edit_revision === "string" ? req.body.edit_revision : "" };
+      link.edit_conflict = failedEdit.conflict;
+    }
   }
   const pageURL = number => url + "?" + new URLSearchParams({ q: selected.q, state: selected.state, page: number });
-  return res.render("workspaces", { title: selected?.name || "Workspaces", all, selected, error, action_url: url,
+  return res.render("workspaces", { title: selected?.name || "Workspaces", all, selected, error: inlineError ? undefined : error, action_url: selected ? pageURL(selected.page) : url,
     previous: selected?.page > 1 ? pageURL(selected.page - 1) : null,
     next: selected && selected.page * selected.limit < selected.total ? pageURL(selected.page + 1) : null });
 }
@@ -102,7 +116,7 @@ async function submit(req, res) {
   } catch (error) {
     if (!(error instanceof CustomError)) throw error;
     res.status(error.statusCode || 400);
-    return page(req, res, error.message);
+    return page(req, res, error.message, operation === "edit_link" ? { id: req.body.link_id, conflict: error.workspaceEditConflict === true } : undefined);
   }
 }
 

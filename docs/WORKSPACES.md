@@ -46,6 +46,23 @@ search, active/trash filters and 50-row pagination. Editors can create and edit
 links, set lifecycle controls, and trash/restore. Empty edit password preserves
 protection; **Remove password** explicitly clears it. Dates are UTC.
 
+### Concurrent editing (in development)
+
+Shared browser edits carry an opaque snapshot of persisted link settings. An
+intervening personal or workspace edit rejects the whole stale save with HTTP
+409. The response keeps the editor open with the non-secret draft, shows the
+current saved values, and offers discard/reload or deliberate reconciliation and
+retry. Validation errors also retain the draft and focus its linked error.
+Passwords are never echoed back: re-enter an attempted password change after an
+error. Membership/ownership are checked again before rendering any draft. Visitors
+incrementing counters do not invalidate an editor. Old open forms must reload once.
+
+The snapshot uses the existing JWT secret; no migration or new secret is needed.
+Rotating that secret invalidates snapshots as well as sessions. Image rollback
+preserves data but restores the stale-write risk. Never restore an old database
+just to revert this UI change. Publication/deployment acceptance is tracked in
+[UI-UX-REVIEW.md](UI-UX-REVIEW.md), not claimed by this implementation note.
+
 Personal tags/collections, imports/exports, QR pages and analytics retain their
 existing personal authorization. They do not inherit workspace permissions.
 Shared link metadata never includes password hashes, personal labels or audit
@@ -80,6 +97,12 @@ on create), `description`, `password`, `paused`, ISO `starts_at`/`ends_at`, and
 `max_visits`. Creation also accepts an owner-controlled `domain`; domain moves
 stay with the personal owner. Unknown fields are rejected. `password: null`
 clears protection. Redirect quotas/history/alias reservations are preserved.
+Workspace detail responses now include opaque `edit_revision` per link. Supply
+it with a PATCH to get atomic stale-write rejection. Omission retains legacy
+partial-update semantics, so API clients should PATCH only fields they intend to
+change. On 409 reload detail, reconcile changes, and retry with its new revision;
+do not automatically replay a stale full object. Revisions are not authorization
+credentials and never override current membership, owner or token checks.
 Create returns `201` and `{id, action}`; edits return `200`; membership/sharing
 removal and workspace closure return `204`. No membership/nonexistent workspace
 is `404`; insufficient role/scope is `403`; state conflicts are `409`.

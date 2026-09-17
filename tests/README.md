@@ -135,6 +135,15 @@ test accounts and exercises desktop/mobile creation, invitations/acceptance,
 sharing, editing, role changes, trash/restore, clipboard, revocation and closure.
 Public redirects must survive closure. It refuses an initialized instance.
 
+`workspace-edit.cjs` adds atomic edit-revision tests across personal/shared
+clients, native draft retention, safe escaping/password non-disclosure, filtered
+row recovery, optional API revisions, role revocation, visits and restart. Use
+`KUTT_TEST_ONLY=workspace-edit` for the focused subset.
+`browser-workspace-edit.cjs` requires a fresh loopback fixture and evidence path.
+It exercises native conflict/review/retry and invalid-alias correction at
+1440/390/320px, checks focused visible errors and retained native checkbox state,
+and confirms a revoked editor can no longer submit. No real account is used.
+
 ## Final roadmap and security validation
 
 The full suite also runs `analytics.cjs`, `privacy.cjs`, `webhooks.cjs`,

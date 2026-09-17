@@ -2470,6 +2470,7 @@ svg.map path.active { stroke: hsl(261, 46%, 50%); stroke-width: 1.5; }
 .workspaces button.library-icon svg { width: 20px; height: 20px; }
 .workspaces .workspace-checkbox { display: flex; flex-direction: row; align-items: center; gap: 0.6rem; min-height: 42px; }
 .workspace-checkbox input { width: 18px; height: 18px; }
+.workspaces input[type="checkbox"]::after { content: none; display: none; }
 .workspace-list, .workspace-links { list-style: none; padding: 0; margin: 1rem 0 2rem; }
 .workspace-list > li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid #b8c2cc; }
 .workspace-list > li > div { min-width: 0; }
@@ -2577,3 +2578,10 @@ svg.map path.active { stroke: hsl(261, 46%, 50%); stroke-width: 1.5; }
   #apikey p { font-size: 0.85rem; }
   #apikey .clipboard { width: 22px; height: 22px; }
 }
+/* Shared edit conflicts keep the saved state and draft readable at narrow widths. */
+.workspace-current { padding: 0.75rem 0; border-bottom: 1px solid #c8ced2; }
+.workspace-current dl { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 0.4rem 0.8rem; }
+.workspace-current dd { margin: 0; overflow-wrap: anywhere; }
+.workspace-current dt { font-weight: 600; }
+.workspace-edit-error { overflow-wrap: anywhere; scroll-margin-top: 1rem; }
+.workspace-edit-error:focus { outline: 2px solid #245b80; outline-offset: 3px; }

@@ -17,6 +17,17 @@ review before retry. Keep the existing JWT secret: rotating it invalidates form
 snapshots as well as sessions. Rollback to the prior image is schema-compatible
 but reintroduces the stale-expiry defect; it is not a data-recovery procedure.
 
+### Shared editor upgrade (3.2.6-sr94.20 candidate)
+
+No schema or secret change. Reload old workspace edit forms once to obtain an
+opaque edit revision. Browser conflicts reject the entire stale save and retain
+non-secret drafts for review against current saved values. Password changes need
+re-entry after errors. API clients may opt into the same check with `edit_revision`;
+existing partial PATCH clients remain compatible. Preserve the JWT secret and
+current database on image rollback; the prior image restores the lost-update
+risk. No WAF/SSO or public redirect change is needed. Do not deploy before the
+ledger's exact-image, backup/restore and regression gates pass.
+
 ## Initial setup
 
 Start with the SQLite Compose example and a private `.env` based on

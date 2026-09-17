@@ -7,6 +7,7 @@ const queries = require("./queries");
 const history = require("./link-history");
 const lifecycle = require("./link-lifecycle");
 const redis = require("./redis");
+const editing = require("./workspace-edit");
 
 const fail = (message, status = 400) => { throw new utils.CustomError(message, status); };
 const uuid = value => typeof value === "string" && /^[a-f0-9-]{36}$/i.test(value);
@@ -139,7 +140,7 @@ async function domain(db, link, ownerId) {
   return found;
 }
 
-async function detail(userId, id, input = {}) {
+async function detail(userId, id, input = {}, editId) {
   const page = input.page === undefined ? 1 : Number(input.page);
   if (typeof input.page === "object" || !Number.isSafeInteger(page) || page < 1 || page > 100000) fail("Invalid page.");
   const state = input.state ?? "active", search = input.q ?? "";
@@ -157,12 +158,22 @@ async function detail(userId, id, input = {}) {
     const links = await query.clone().leftJoin("domains as d", "d.id", "l.domain_id")
       .select("l.*", "d.address as domain", "d.user_id as domain_owner", "d.banned as domain_banned")
       .orderBy("l.id", "desc").offset((page - 1) * 50).limit(50);
+    // An intervening edit can move this row outside the current search/page.
+    // Recover it only from this authorized workspace, never from posted data.
+    if (uuid(editId) && !links.some(link => link.uuid === editId)) {
+      const edited = await db("workspace_links as rel").join("links as l", "l.id", "rel.link_id")
+        .leftJoin("domains as d", "d.id", "l.domain_id")
+        .where({ "rel.workspace_id": id, "l.user_id": space.owner_id, "l.uuid": editId })
+        .select("l.*", "d.address as domain", "d.user_id as domain_owner", "d.banned as domain_banned").first();
+      if (edited) links.unshift(edited);
+    }
     const members = space.role === "owner" ? await db("workspace_members as m").join("users as u", "u.id", "m.user_id")
       .where({ "m.workspace_id": id }).select("m.id", "m.role", "m.accepted_at", "u.email", "u.banned", "u.verified").orderBy("u.email") : [];
     const domains = space.role !== "viewer" ? await db("domains").where({ user_id: space.owner_id, banned: false }).select("address").orderBy("address") : [];
     return { ...publicSpace(space), membership_id: space.membership_id, members: members.map(m => ({ id: m.id, email: m.email, role: m.role, accepted: m.accepted_at != null, unavailable: !!m.banned || !m.verified })),
       domains, page, limit: 50, total: Number(n), q: search, state,
       data: links.map(({ domain_owner, domain_banned, ...link }) => ({ ...utils.sanitize.link(link),
+        edit_revision: editing.revision(link),
         editable: !link.banned && !link.archived_domain && (link.domain_id == null || domain_owner === space.owner_id && !domain_banned) })) };
   });
 }
@@ -203,7 +214,7 @@ async function changeLink(userId, id, action, linkId, input, actor) {
   await access(knex, userId, id, "editor");
   if (!["create", "edit", "trash", "restore"].includes(action)) fail("Invalid link action.");
   if (action !== "create" && !uuid(linkId)) fail("Link was not found.", 404);
-  const allowed = ["target", "address", "description", "password", "domain", "paused", "starts_at", "ends_at", "max_visits", ...require("./link-campaign").fields];
+  const allowed = ["target", "address", "description", "password", "domain", "paused", "starts_at", "ends_at", "max_visits", "edit_revision", ...require("./link-campaign").fields];
   if (!input || typeof input !== "object" || Array.isArray(input) || Object.keys(input).some(k => !allowed.includes(k))) fail("Unknown link field.");
   input = require("./link-campaign").normalize(input);
   // Reuse import validation and the existing ban checks; no destination fetch.
@@ -217,8 +228,10 @@ async function changeLink(userId, id, action, linkId, input, actor) {
     const space = await access(db, userId, id, "editor", true);
     let link;
     if (action !== "create") {
-      link = await db("links as l").join("workspace_links as rel", "rel.link_id", "l.id")
-        .where({ "rel.workspace_id": id, "l.uuid": linkId, "l.user_id": space.owner_id }).select("l.*").first();
+      const selection = db("links as l").where({ "l.uuid": linkId, "l.user_id": space.owner_id })
+        .whereIn("l.id", db("workspace_links").where({ workspace_id: id }).select("link_id"));
+      if (!knex.client.config.client.includes("sqlite")) selection.forUpdate();
+      link = await selection.select("l.*").first();
       if (!link) fail("Link was not found.", 404);
       if (link.banned) fail("Banned links cannot be changed.", 409);
       await domain(db, link, space.owner_id);
@@ -233,6 +246,7 @@ async function changeLink(userId, id, action, linkId, input, actor) {
       return { ...link, deleted_at: null };
     }
     if (link?.deleted_at != null) fail("Restore the link before editing.", 409);
+    if (action === "edit") editing.check(link, input.edit_revision);
     if (action === "edit" && input.domain !== undefined) fail("Move domains through the owner's personal link management.");
     const currentDomain = link ? await domain(db, link, space.owner_id) : null;
     const normalized = require("./link-transfer").normalized({

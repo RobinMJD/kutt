@@ -3,7 +3,7 @@
 Last updated: 2026-09-17 (Europe/Paris).
 
 **Status: initial findings recorded; the full rendered audit is not yet complete.**
-Nineteen findings are confirmed; UX-015 is implemented, not yet released or closed. Remaining concerns and workflow
+Twenty findings are confirmed; UX-015 is verified/closed. Remaining concerns and workflow
 coverage are tracked below. Do not describe this as a completed accessibility audit.
 The ordinary rendered workflows now have bounded coverage. The explicit
 AUDIT-00 remainder below separates external acceptance gates from regression
@@ -13,7 +13,9 @@ unspecified "remaining variants" on each continuation.
 **Latest progress:** the user authorized starting all fixes on 2026-09-17. UX-015
 now omits unchanged relative expiry, rejects explicit stale expiry changes
 transactionally, retains the draft and supports deliberate conflict review/retry.
-Publication, exact-image validation and deployment are pending. A-01..A-04 remain
+Release `.19.2` and its CI passed; exact-image browser/restore/scan checks passed.
+Full wrapper regression, deployment, public WAF/OIDC checks, post-change health
+and post-release restore passed. UX-018/019/020 are implemented and under test. A-01..A-04 remain
 open alongside the fixes; earlier zoom/PDF evidence does not waive those checks.
 
 ## Feature And Deployment Gate
@@ -24,10 +26,10 @@ open alongside the fixes; earlier zoom/PDF evidence does not waive those checks.
   are not prerequisites for this audit.
 - Source reviewed: `ecb23daa1b4a6fa10c3ec3dd59470ec882e1be3f`, package
   `3.2.6-sr94.18`. The checkout was clean and synchronized before the audit.
-- Fresh live inspection: container `kutt`, image `local/kutt:3.2.6-sr94.18`,
+- Baseline at audit start: container `kutt`, image `local/kutt:3.2.6-sr94.18`,
   healthy, zero restarts. Exact wrapper image:
   `sha256:17639101731d1f741b6e596c0f975ad46ee46a87455394a4759965a847116114`.
-- Production observation was limited to the public login page and container
+- Initial audit production observation was limited to the public login page and container
   inspection. All creation, editing, bulk-action and import exercises used an
   isolated instance of that exact image, a fresh temporary SQLite database and
   synthetic `example.org` / `example.invalid` data. No real user data was copied.
@@ -766,11 +768,12 @@ P3: polish with no blocked task. These are product priorities, not CVSS scores.
 | UX-012 | P3 | Unavailable recipient pages are bare messages without a named page or next step | Fresh expired/paused pages and source | Open |
 | UX-013 | P2 | Admin tab switches leave Next enabled beyond the last result | Four-user and zero-domain initial tab states; empty-page navigation and recovery | Open |
 | UX-014 | P2 | Editors accept unexpected successful-response shapes | Forwarding false success; monitoring state loss after HTML 200; analytics stale report/raw error after malformed JSON 200 | Open |
-| UX-015 | P1 | Saving an unrelated field silently restores an expiry cleared in the sibling form | Rendered sequential saves, screenshot and read-only fixture database checks | Implemented; release/deployment pending |
+| UX-015 | P1 | Saving an unrelated field silently restores an expiry cleared in the sibling form | Rendered sequential saves, screenshot and read-only fixture database checks | Verified/closed in .19.2 |
 | UX-016 | P2 | Local sign-in can initialize the link table twice and throw during replacement | Fresh redacted HTMX event timeline, console stack and source review | Open |
 | UX-017 | P1 | Admin edit responses lose owner context; validation returns a personal form with blank availability | Actual admin save/error response, rendered DOM, screenshot and unchanged API state | Open |
-| UX-018 | P1 | Stale workspace edits silently overwrite another client's availability | Two real clients, description-only rendered save and API before/after | Open |
-| UX-019 | P2 | Workspace validation errors discard the unsaved edit draft | Invalid-alias response, collapsed editor and fresh field inspection | Open |
+| UX-018 | P1 | Stale workspace edits silently overwrite another client's availability | Two real clients, description-only rendered save and API before/after | Implemented; validation/release pending |
+| UX-019 | P2 | Workspace validation errors discard the unsaved edit draft | Invalid-alias response, collapsed editor and fresh field inspection | Implemented; validation/release pending |
+| UX-020 | P1 | Checked workspace checkbox decoration covers editor fields | Fresh validation screenshot and inherited pseudo-element source | Implemented; validation/release pending |
 
 ### UX-001: Name Core Actions
 
@@ -1183,6 +1186,45 @@ this finding; this is not merely the already-tested rejected/HTTP-error path.
 
 ### UX-015: Do Not Resubmit Stale Expiry After Availability Changes
 
+**Verified/closed 2026-09-17.** Cutover at 2026-09-16 23:51:55 UTC used the
+exact wrapper below. Full live HTTPS/WAF regression, the new signed-form expiry
+test, real Authentik-signed logout/replay, original-record fingerprints, SQLite
+integrity/foreign keys and whole-lab configuration validation passed. Two health
+samples 65 seconds apart found the exact image healthy, zero restarts, three fresh
+probes, no failed units/unhealthy containers or Kutt alerts. No WAF/SSO change.
+
+Post-release local snapshot `ab7cbc7e` / NAS `0655a150`, taken at
+2026-09-17 00:01:09 UTC, was fully restored with 59 files byte-verified. Its SQLite
+passed exact-image migration/integrity/foreign-key/write checks. Restored
+deployment manifests and JWT/OIDC secret files match the live files. Evidence is
+root-only at `/srv/homelab/security-reports/2026-09-17-kutt-ux015/`.
+Inspected [desktop](ui-ux-review/2026-09-17/expiry-conflict-1440.png),
+[390px](ui-ux-review/2026-09-17/expiry-conflict-390.png), and
+[320px](ui-ux-review/2026-09-17/expiry-conflict-320.png) captures show the retained
+conflict draft; known clipping/contrast findings remain separate.
+
+Release [v3.2.6-sr94.19.2](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.19.2),
+source `1e4e6bb89d70572c96fd168769b40eca999c511a`, passed
+[CI 35163091323](https://github.com/RobinMJD/kutt/actions/runs/35163091323),
+including the Redis worker/restart suite. Source image digest:
+`sha256:045f4c052a139cf1fcb2ae773d7074d2a0659e379dd08b88ab5fc3cadbf19749`.
+Exact hardened wrapper:
+`sha256:76ffaad23e3c0a392dd31893313aa442e4a8658c87c7903c746cd3b8b005a3ac`.
+The loopback-only exact-image browser test passed at 1440/390/320px with no
+console warnings/errors; all three conflict captures were visually inspected.
+Browser plugin/skill is not available in this session; the previously approved
+installed standalone Playwright was used only against the disposable fixture.
+The known mobile table clipping and contrast findings are not waived.
+
+Pre-change application-consistent backup at 2026-09-16 23:30:21 UTC:
+local `46a7c3c6`, NAS `47e1baf4`. Full NAS byte restore verified 57 files;
+exact-candidate SQLite migration/integrity/foreign-key/write checks passed.
+Restored Compose/dependency manifests and JWT/OIDC secret files match the live
+baseline without disclosure. Grype with its valid September 15 database found
+zero critical/high and three medium matches. This is local/NAS evidence, not
+external-SSD validation. Full wrapper regression and deployment subsequently
+passed as recorded above.
+
 2026-09-17 implementation (`3.2.6-sr94.19.2` candidate): signed per-link expiry
 snapshots distinguish unchanged display text from a deliberate new duration.
 Unchanged text is omitted before relative-time parsing. Explicit changes compare
@@ -1334,6 +1376,20 @@ remained personal. Preserve that passing behavior during the admin fix.
 
 ### UX-018: Prevent Lost Availability Updates In Shared Editing
 
+2026-09-17 implementation in progress: native shared forms now carry an opaque
+revision of persisted editable state. The transaction compares it after current
+membership and link-row locking; personal edits invalidate shared drafts too.
+Conflicts save nothing, show authorized current values next to retained non-secret
+drafts, and offer explicit discard/reload or reviewed retry. The API accepts an
+optional `edit_revision`, preserving existing partial-update callers. Focused
+server tests passed for atomic conflicts, independent personal edits, owner/editor
+roles, invalid metadata, filtered recovery, API compatibility, visits, restart and
+revoked access. Native browser conflict/validation/revocation checks pass at
+1440/390/320px with focused visible errors and independent API corroboration.
+The first browser attempts needed a direct-child Summary selector and canonical
+datetime-local minute values; corrected reruns passed. `.20` is the release
+candidate; full regression and exact release/deployment gates remain pending.
+
 Open the shared link editor while it is active with no cap. An independent
 authenticated owner client sets `paused: true` and `max_visits: 19`. Without
 reloading the editor, change only Description and select Save link. The response
@@ -1358,6 +1414,13 @@ warning after the overwrite is insufficient.
 
 ### UX-019: Retain Shared Edit Drafts On Validation Failure
 
+Being fixed with UX-018 because both use the same error renderer, moving this
+finding earlier in the order. The relevant authorized editor stays open with
+non-secret draft fields and one focused, linked error (no duplicate announcement). Password values are never
+returned; attempted password changes receive a re-entry notice. Current
+membership/ownership still controls whether the editor can render. Tests and
+release/deployment remain pending; this finding is not yet closed.
+
 In the shared edit form, set an invalid alias, check Paused and enter cap 7.
 Save link returns `Invalid or reserved alias.` above the workspace and collapses
 the editor. Reopening shows the original alias with Paused unchecked and no cap;
@@ -1377,6 +1440,21 @@ submitted passwords in HTML; explain re-entry when necessary. If authorization
 was revoked, keep the current denial and do not expose inaccessible content.
 Test alias/target/lifecycle validation, safe escaping, browser-back behavior and
 mobile error visibility alongside the stale-write handling in UX-018.
+
+### UX-020: Contain Checked Workspace Controls
+
+During UX-019 screenshot review, a checked Paused input painted a large purple
+rectangle over multiple form fields. Workspaces inherit native checkbox
+appearance/`position: static` from Library but retained the legacy absolutely
+positioned `::after` decoration. Its percentages therefore sized against the
+form instead of the input. The offending validation capture is rejected as
+acceptance evidence, retained outside Git for diagnosis.
+
+The fix removes only the workspace pseudo-element, preserving native checked
+state and keyboard behavior. It accompanies UX-018/019 because their retained
+checked drafts must be visible and usable. Tests assert `::after` has no content
+and the native checkbox stays checked at desktop/390/320px; fresh inspected
+screenshots and release/deployment acceptance remain pending.
 
 ## Source Concerns Requiring Rendered Validation
 

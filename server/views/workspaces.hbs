@@ -78,20 +78,38 @@
             {{#if trashed}}<button name="operation" value="restore_link">Restore</button>{{else}}<button name="operation" value="trash_link" title="Move to trash" aria-label="Move to trash" class="library-icon" data-confirm="Move this shared link to trash? Its public redirect will stop.">{{> icons/trash}}</button>{{/if}}
           </form>{{/if}}
         </div>
-        {{#if can_edit}}{{#unless trashed}}<details class="workspace-edit"><summary>Edit link</summary>
-          <form method="post" action="{{@root.action_url}}" class="workspace-form" aria-label="Edit {{address}}">
+        {{#if can_edit}}{{#unless trashed}}<details class="workspace-edit" id="workspace-edit-{{id}}" {{#if edit_error}}open{{/if}}><summary>Edit link</summary>
+          {{#if edit_error}}<p class="library-error workspace-edit-error" id="workspace-error-{{id}}" role="alert" tabindex="-1">{{edit_error}}</p>{{/if}}
+          {{#if edit_conflict}}<section class="workspace-current" aria-label="Current saved values">
+            <h3>Current saved values</h3>
+            <dl><dt>Destination</dt><dd>{{target}}</dd><dt>Alias</dt><dd>{{address}}</dd>
+              <dt>Description</dt><dd>{{#if description}}{{description}}{{else}}None{{/if}}</dd>
+              <dt>Password</dt><dd>{{#if password}}Protected{{else}}None{{/if}}</dd>
+              <dt>Paused</dt><dd>{{#if paused}}Yes{{else}}No{{/if}}</dd>
+              <dt>Start (UTC)</dt><dd>{{#if starts_at}}{{starts_at}}{{else}}None{{/if}}</dd>
+              <dt>End (UTC)</dt><dd>{{#if ends_at}}{{ends_at}}{{else}}None{{/if}}</dd>
+              <dt>Legacy expiry</dt><dd>{{#if expire_in}}{{expire_in}}{{else}}None{{/if}}</dd>
+              <dt>Maximum redirects</dt><dd>{{#if max_visits}}{{max_visits}}{{else}}Unlimited{{/if}}</dd>
+            </dl>
+            <a href="{{@root.action_url}}#workspace-edit-{{id}}">Discard draft and reload</a>
+          </section>{{/if}}
+          <form method="post" action="{{@root.action_url}}" class="workspace-form" aria-label="Edit {{address}}" {{#if edit_error}}aria-describedby="workspace-error-{{id}}"{{/if}}>
+            {{#with edit_values}}
             <input type="hidden" name="operation" value="edit_link" /><input type="hidden" name="link_id" value="{{id}}" /><input type="hidden" name="policy" value="on" />
+            <input type="hidden" name="edit_revision" value="{{edit_revision}}" />
             <label class="workspace-wide">Destination<input name="target" type="url" value="{{target}}" required maxlength="2040" /></label>
             {{> campaign}}
             <label>Alias<input name="address" value="{{address}}" required maxlength="64" /></label>
             <label>Description<input name="description" value="{{description}}" maxlength="2040" /></label>
             <label>New password<input name="password" type="password" minlength="3" maxlength="64" autocomplete="new-password" /></label>
-            {{#if password}}<label class="workspace-checkbox"><input type="checkbox" name="clear_password" />Remove password</label>{{/if}}
+            {{#if password_reentry}}<p class="workspace-wide">Password was not retained. Enter it again to change protection.</p>{{/if}}
+            <label class="workspace-checkbox"><input type="checkbox" name="clear_password" {{#if clear_password}}checked{{/if}} />Remove password</label>
             <label class="workspace-checkbox"><input name="paused" type="checkbox" {{#if paused}}checked{{/if}} />Paused</label>
             <label>Start (UTC)<input type="datetime-local" name="starts_at" value="{{starts_at_input}}" step="1" /></label>
             <label>End (UTC)<input type="datetime-local" name="ends_at" value="{{ends_at_input}}" step="1" /></label>
             <label>Maximum redirects<input type="number" name="max_visits" min="1" max="2147483647" value="{{max_visits}}" /></label>
             <button type="submit" class="primary">Save link</button>
+            {{/with}}
           </form>
         </details>{{/unless}}{{/if}}
       </li>{{else}}<li>No matching shared links.</li>{{/each}}
