@@ -784,7 +784,7 @@ P3: polish with no blocked task. These are product priorities, not CVSS scores.
 | UX-009 | P2 | Mobile webhook save errors are outside the visible viewport | Rejected private target, preserved draft and measured status geometry | Closed: .30 published, exact tests, deployment and pre/post recovery passed |
 | UX-010 | P2 | Navigation links and routing errors fail minimum text contrast | Rendered computed colors and calculated ratios | Closed: .31 publication, exact tests, deployment and clean recovery passed |
 | UX-011 | P2 | Legacy Copy shows success even when the clipboard rejects the write | Controlled rejection, copied CSS state and unhandled error | .32 exact tests/pre-restore passed; deployed, post-validation open |
-| UX-012 | P3 | Unavailable recipient pages are bare messages without a named page or next step | Fresh expired/paused pages and source | Open |
+| UX-012 | P3 | Unavailable recipient pages are bare messages without a named page or next step | Fresh expired/paused pages and source | Implemented for .35; focused and rendered checks passed, release/deployment open |
 | UX-013 | P2 | Admin tab switches leave Next enabled beyond the last result | Four-user and zero-domain initial tab states; empty-page navigation and recovery | Verified/closed in .22 |
 | UX-014 | P2 | Editors accept unexpected successful-response shapes | Forwarding false success; monitoring state loss after HTML 200; analytics stale report/raw error after malformed JSON 200 | .33 release CI passed; exact wrapper/deployment gates open |
 | UX-015 | P1 | Saving an unrelated field silently restores an expiry cleared in the sibling form | Rendered sequential saves, screenshot and read-only fixture database checks | Verified/closed in .19.2 |
@@ -1499,6 +1499,26 @@ Cover top-level, row and legacy API-key copy actions without regressing workspac
 or QR fallback behavior. Do not request broader browser permissions to mask failure.
 
 ### UX-012: Give Unavailable Links A Useful Recipient Page
+
+Implemented for `.35`, not closed. Browser GET/HEAD receives the normal branded
+layout, meaningful title, main landmark/H1, neutral unavailable message, sender
+contact guidance and homepage link. It does not disclose the reason, destination,
+password, owner or schedule. HTTP 410 and no-store remain; HEAD stays bodyless,
+JSON/default requests and protected-link POST keep their prior response contract.
+Availability checks, counters, authentication and redirects are unchanged.
+No schema, secret or dependency change; image-only rollback to `.34` is compatible.
+
+Focused tests passed paused/scheduled/ended/legacy-expired/capped states, protected
+and info paths, no destination/password leakage, no counter consumption, HEAD,
+API compatibility and active anonymous redirection. Twelve fresh browser cases
+cover the four API-configurable unavailable states at 1440/390/320px, anonymous
+viewing, keyboard homepage navigation and private management denial. The fixture
+homepage deliberately redirects to login; the harness initially expected `/`
+and was corrected to validate the existing configured login behavior. Console,
+overflow and title/landmark checks passed; desktop and compact captures were
+inspected in `ux012-source-captures`. Tests: `tests/unavailable.cjs` and
+`tests/browser-unavailable.cjs`. Publication, exact-image tests, backups,
+deployment and recovery remain open.
 
 Paused and expired synthetic links correctly return HTTP 410 and never redirect.
 However, the browser displays only `This short link is not currently available.`

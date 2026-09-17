@@ -501,7 +501,7 @@ async function redirect(req, res, next) {
   }
 
   res.set("Cache-Control", "no-store");
-  if (!await linkLifecycle.allow(link)) return unavailable(res);
+  if (!await linkLifecycle.allow(link)) return unavailable(req, res);
 
   // 5. If wants to see link info, then redirect
   const isRequestingInfo = /.*\+$/gi.test(req.params.id);
@@ -549,8 +549,11 @@ async function redirect(req, res, next) {
   return finishRedirect(req, res, link);
 };
 
-function unavailable(res) {
+function unavailable(req, res) {
   res.set("Cache-Control", "no-store");
+  if (req.isHTML && ["GET", "HEAD"].includes(req.method)) {
+    return res.status(410).render("unavailable", { title: "Link unavailable" });
+  }
   return res.status(410).send("This short link is not currently available.");
 }
 
@@ -570,9 +573,9 @@ async function recordVisit(req, link) {
 
 async function finishRedirect(req, res, link) {
   res.set("Cache-Control", "no-store");
-  if (!await require("../protected-links").available(link)) return unavailable(res);
+  if (!await require("../protected-links").available(link)) return unavailable(req, res);
   const target = await require("../link-forwarding").resolve(req, link);
-  if (!await linkLifecycle.allow(link, req.method !== "HEAD")) return unavailable(res);
+  if (!await linkLifecycle.allow(link, req.method !== "HEAD")) return unavailable(req, res);
   await recordVisit(req, link);
   return res.redirect(target);
 }
@@ -589,7 +592,7 @@ async function redirectProtected(req, res) {
 
   res.set("Cache-Control", "no-store");
   await require("../protected-links").requireAvailable(link);
-  if (!await linkLifecycle.allow(link)) return unavailable(res);
+  if (!await linkLifecycle.allow(link)) return unavailable(req, res);
   await require("../protected-links").attempt(req, res, link);
   // 3. Check if password matches
   const matches = await bcrypt.compare(req.body.password, link.password);
@@ -601,7 +604,7 @@ async function redirectProtected(req, res) {
   res.set("Cache-Control", "no-store");
   const forwarding = require("../link-forwarding");
   const target = await forwarding.resolve(req, link, req.body.routing_query, forwarding.submittedPath(req.body));
-  if (!await linkLifecycle.allow(link, true)) return unavailable(res);
+  if (!await linkLifecycle.allow(link, true)) return unavailable(req, res);
   await recordVisit(req, link);
 
   // 5. Send target
