@@ -3,7 +3,7 @@
 Last updated: 2026-09-17 (Europe/Paris).
 
 **Status: initial findings recorded; the full rendered audit is not yet complete.**
-Twenty-one findings are confirmed; UX-001/002/003/004/005/006/007/008/009/010/013/015/017/018/019/020 are verified/closed. Remaining concerns and workflow
+Twenty-two findings are confirmed; UX-001/002/003/004/005/006/007/008/009/010/011/013/014/015/017/018/019/020 are verified/closed. Remaining concerns and workflow
 coverage are tracked below. Do not describe this as a completed accessibility audit.
 The ordinary rendered workflows now have bounded coverage. The explicit
 AUDIT-00 remainder below separates external acceptance gates from regression
@@ -29,12 +29,11 @@ UX-009 local webhook errors passed every release/deployment/recovery gate in `.3
 UX-010 readable palette changes passed all release/deployment/recovery gates in `.31`.
 UX-011 clipboard remediation passed release, exact rendered/runtime, deployment
 and clean recovery gates in `.32`.
-UX-014 response validation passes focused and 321 rendered fault cases and `.33`
-release CI and exact rendered checks; full wrapper/deployment remain open. UX-016
+UX-014 response validation passed every release/deployment/recovery gate in `.33`. UX-016
 normal-navigation comparison removes duplicate script/table initialization;
 focused API and twelve native HTTPS keyboard sign-ins pass. Release gates remain open.
 Compact-header crowding and the newly confirmed Account security heading issue
-are implemented for `.36` as UX-021/022; rendered checks pass, release gates remain.
+are implemented for `.36.1` as UX-021/022; rendered checks pass, release gates remain.
 A-01..A-04 remain
 open alongside the fixes; earlier zoom/PDF evidence does not waive those checks.
 
@@ -787,7 +786,7 @@ P3: polish with no blocked task. These are product priorities, not CVSS scores.
 | UX-011 | P2 | Legacy Copy shows success even when the clipboard rejects the write | Controlled rejection, copied CSS state and unhandled error | Closed: .32 publication, exact tests, deployment and clean recovery passed |
 | UX-012 | P3 | Unavailable recipient pages are bare messages without a named page or next step | Fresh expired/paused pages and source | Implemented for .35; focused and rendered checks passed, release/deployment open |
 | UX-013 | P2 | Admin tab switches leave Next enabled beyond the last result | Four-user and zero-domain initial tab states; empty-page navigation and recovery | Verified/closed in .22 |
-| UX-014 | P2 | Editors accept unexpected successful-response shapes | Forwarding false success; monitoring state loss after HTML 200; analytics stale report/raw error after malformed JSON 200 | .33 release CI passed; exact wrapper/deployment gates open |
+| UX-014 | P2 | Editors accept unexpected successful-response shapes | Forwarding false success; monitoring state loss after HTML 200; analytics stale report/raw error after malformed JSON 200 | Verified/closed in .33 |
 | UX-015 | P1 | Saving an unrelated field silently restores an expiry cleared in the sibling form | Rendered sequential saves, screenshot and read-only fixture database checks | Verified/closed in .19.2 |
 | UX-016 | P2 | Local sign-in can initialize the link table twice and throw during replacement | Controlled original/fixed comparison, fresh HTTPS sign-ins and API contracts | Implemented for .34; focused and rendered checks passed, release/deployment open |
 | UX-017 | P1 | Admin edit responses lose owner context; validation returns a personal form with blank availability | Actual admin save/error response, rendered DOM, screenshot and unchanged API state | Verified/closed in .21 |
@@ -839,8 +838,12 @@ coverage. Browser acceptance now checks that the entire H1 stays within its
 header, Settings remains unbroken, and Connected identity begins below it.
 The complete 36-layout rendered rerun passed the added geometry assertions;
 compact and desktop captures confirm the identity heading stays separate.
-Both header fixes share `.36` and `tests/header.cjs`/`tests/browser-header.cjs`.
-All publication/deployment/recovery gates remain open.
+Both header fixes share `.36.1` and `tests/header.cjs`/`tests/browser-header.cjs`.
+The `.36` full CI caught an obsolete `<header>`-only selector in the login-copy
+regression after the new header class was added. The selector now accepts header
+attributes and explicitly asserts its presence; all seven configuration-policy
+checks remain. No `.36` image was published or deployed. `.36.1` retains the same
+runtime changes. Publication/deployment/recovery gates remain open.
 
 ### UX-001: Name Core Actions
 
@@ -1487,7 +1490,7 @@ Basis: [W3C Contrast (Minimum)](https://www.w3.org/WAI/WCAG22/Understanding/cont
 
 ### UX-011: Report Clipboard Failure Honestly
 
-Implemented for `.32`; not yet closed. A shared handler awaits the browser's
+Verified/closed in `.32`. A shared handler awaits the browser's
 write promise before success feedback. Missing, denied and synchronous failures
 are caught, retain a labelled read-only selectable fallback and never put the
 value or exception into announcements/logs. Repeated activation while pending is
@@ -1604,7 +1607,7 @@ that recovery does not silently reset unrelated filters.
 
 ### UX-014: Validate Save Responses Before Reporting Success
 
-Implemented for `.33` on 2026-09-17; not closed. A shared response reader checks
+Verified/closed in `.33` on 2026-09-17. A shared response reader checks
 redirects, JSON content type and complete consumed-field shapes before any local
 revision/state/success update. Save responses must advance the submitted revision.
 Malformed errors remain generic without parser details. Ordinary API errors retain
@@ -1639,8 +1642,20 @@ exact wrapper/browser regression, backup/restore, deployment and public/lab
 post-validation remain required. Image-only rollback to `.32` is compatible
 but restores false-success behavior; no database restore is needed for rollback.
 Published `.33`, source `b529a0b8c07158e8525eef07ef3f76914a073702`; Fork CI
-`35185836518` and Shortcut CI `35185836516` passed. Exact wrapper/regression,
-backup/deployment/recovery gates remain open.
+`35185836518` and Shortcut CI `35185836516` passed. Exact wrapper
+`sha256:085c7c97d1983690b707639cf20ffb40feb510671865112f98e6889d1cbe866a`
+passed full isolated regression, valid zero-critical/high scan and all 321 fresh
+rendered fault cases. Pre-backup 05:58:28 UTC: local `cc788266...`, NAS `36953d43...`,
+61 files and exact writable restore verified. Deployed 05:59:38 UTC, healthy with
+zero restarts. Full public WAF/API regression, real HTTPS webhook delivery,
+Authentik-signed logout/replay, original records, two healthy samples 65 seconds
+apart and whole-lab validation passed without new failed units, unhealthy
+containers or alerts. Clean post-backup 2026-09-17 06:12:30 UTC:
+local `5a8f5e9c6594c49a95453a3f09ebe680b0b779ad4f77f0c9c83fe6fdef3c9e52`,
+NAS `c8292387a8213139d71ade2e5a960d11411defa88b50e3f9be4f93fd046ce731`.
+All 62 files verified; exact writable restore passed with original one-user/one-link
+counts and matching database/config/secrets. Evidence:
+`/srv/homelab/security-reports/2026-09-17-kutt-ux014/`.
 
 On a synthetic forwarding page, edit an allowlist, then intercept its PUT in the
 disposable document with HTTP 200, `Content-Type: text/html`, and a minimal login
@@ -1851,7 +1866,10 @@ also navigates via `303` instead of the welcome-body swap. Four existing OIDC
 success assertions now require exactly `303` and `Location: /`; failure, logout,
 revocation and identity-boundary assertions remain intact. `.35` inherited that
 test mismatch. `.35.1` supersedes both pending releases and includes UX-012;
-full CI, exact wrapper/browser, backup/deployment and recovery remain open.
+Fork CI `35187760107` and Shortcut CI `35187760017` passed. Exact `.35.1`
+browser sign-in and unavailable-recipient suites passed, with compact captures
+visually inspected. Fresh HTTPS cross-site form rejection and legitimate sign-in
+also passed. Full wrapper, backup/deployment and recovery remain open.
 
 A fresh native local sign-in succeeded, then emitted `htmx:swapError` and
 `Cannot read properties of null (reading 'insertBefore')` without intervening

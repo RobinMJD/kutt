@@ -44,7 +44,9 @@ module.exports = async ({ request, session, root, directory, env }) => {
         const html = await page.text(), enabled = local && registration && mail, closed = !local && !oidc;
         const title = closed ? "Login is closed" : enabled ? "Log in or sign up" : "Log in";
         assert(html.includes(` | ${title}</title>`), name + " title");
-        const header = html.match(/<header>[\s\S]*?<\/header>/)[0];
+        const headerMatch = html.match(/<header\b[^>]*>[\s\S]*?<\/header>/);
+        assert(headerMatch, name + " site header");
+        const header = headerMatch[0];
         assert.equal(/href="\/login"/.test(header), !closed, name + " login entry");
         assert.equal(header.includes("Log in / Sign up"), enabled, name + " header registration copy");
         assert.equal(html.includes('class="secondary signup"'), enabled, name + " registration control");
