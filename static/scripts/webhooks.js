@@ -1,22 +1,32 @@
 (() => {
   const root = document.querySelector(".integrations-page"); if (!root) return;
   const $ = id => document.getElementById(id), form = $("hook-form");
-  let rows = [], editing = null, selected = null, older = null, source = null, after = "0", busy = false, secret = "", deliveryBusy = false;
+  let rows = [], editing = null, selected = null, older = null, source = null, after = "0", busy = false, secret = "", deliveryBusy = false, editorOpener = null, validationError = false;
   const status = (text, error = false) => { $("integration-status").textContent = text; $("integration-status").className = error ? "integration-error" : ""; };
+  function clearFormError() { $("hook-form-error").textContent = ""; $("hook-form-error").hidden = true; validationError = false; }
   const date = value => value ? new Date(value).toLocaleString() : "-";
   async function api(path, method = "GET", body) {
     const response = await fetch("/api/v2/" + path, { method, credentials: "same-origin", cache: "no-store",
       headers: { Accept: "application/json", ...(body === undefined ? {} : { "Content-Type": "application/json" }) },
       ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
     let data; if (response.status !== 204) try { data = await response.json(); } catch { /* Non-JSON edge errors stay generic. */ }
-    if (!response.ok) throw new Error(data?.error || "Request failed (" + response.status + "). Reload and try again.");
+    if (!response.ok) throw Object.assign(new Error(data?.error || "Request failed (" + response.status + "). Reload and try again."), { status: response.status });
     return data;
   }
-  async function action(run) {
+  async function action(run, fromForm = false) {
     if (busy) return; busy = true;
+    let errorTarget = null;
+    if (fromForm) { clearFormError(); status(""); }
     root.querySelectorAll("button,input").forEach(el => { el.disabled = true; });
-    try { await run(); } catch (error) { status(error.message, true); }
-    finally { busy = false; root.querySelectorAll("button,input").forEach(el => { el.disabled = false; }); }
+    try { await run(); } catch (error) {
+      if (fromForm && !$("hook-editor").hidden) {
+        errorTarget = $("hook-form-error"); errorTarget.textContent = error.message; errorTarget.hidden = false;
+        validationError = error.status === 400 || error.status === 422;
+      } else { status(error.message, true); if (fromForm) errorTarget = $("integration-status"); }
+    } finally {
+      busy = false; root.querySelectorAll("button,input").forEach(el => { el.disabled = false; });
+      if (errorTarget && (document.activeElement === document.body || form.contains(document.activeElement))) errorTarget.focus();
+    }
   }
   function node(tag, text, cls) { const el = document.createElement(tag); el.textContent = text; if (cls) el.className = cls; return el; }
   function button(text, click) { const el = node("button", text); el.type = "button"; el.addEventListener("click", click); return el; }
@@ -24,6 +34,7 @@
   function showSecret(value) { hideSecret(); if (value) { secret = value; $("hook-secret-value").textContent = value; $("hook-secret").hidden = false; } }
   function editor(row) {
     if (busy) return;
+    editorOpener = document.activeElement; clearFormError(); status("");
     hideSecret(); editing = row || null; form.reset();
     $("hook-editor-title").textContent = row ? "Edit webhook" : "New webhook";
     form.elements.name.value = row?.name || ""; form.elements.url.value = row?.url || "";
@@ -105,10 +116,11 @@
       events: Array.from(form.querySelectorAll("[name=events]:checked"), el => el.value), ...(editing ? { revision: editing.revision } : {}) };
     const result = await api("webhooks" + (editing ? "/" + editing.id : ""), editing ? "PUT" : "POST", data);
     $("hook-editor").hidden = true; editing = null; await loadHooks(); showSecret(result.secret); status("Webhook saved.");
-  }); });
+  }, true); });
+  form.addEventListener("input", () => { if (validationError) clearFormError(); });
   $("hook-new").onclick = () => editor(null);
-  $("hook-cancel").onclick = () => { $("hook-editor").hidden = true; editing = null; };
-  $("hooks-reload").onclick = () => action(async () => { hideSecret(); $("hook-editor").hidden = true; editing = null; await loadHooks(); const result = await api("events"); $("events-list").replaceChildren(); result.data.forEach(event); after = result.cursor; connect(); status("Integrations loaded."); });
+  $("hook-cancel").onclick = () => { $("hook-editor").hidden = true; editing = null; clearFormError(); if (editorOpener?.isConnected) editorOpener.focus(); };
+  $("hooks-reload").onclick = () => action(async () => { hideSecret(); clearFormError(); $("hook-editor").hidden = true; editing = null; await loadHooks(); const result = await api("events"); $("events-list").replaceChildren(); result.data.forEach(event); after = result.cursor; connect(); status("Integrations loaded."); });
   $("hook-secret-hide").onclick = hideSecret;
   $("hook-secret-copy").onclick = () => action(async () => { if (secret) { await navigator.clipboard.writeText(secret); status("Signing secret copied."); } });
   $("deliveries-reload").onclick = () => action(() => loadDeliveries());

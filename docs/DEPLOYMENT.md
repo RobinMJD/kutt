@@ -148,6 +148,17 @@ fixtures cover WAF-like failures, retry, draft retention, keyboard/error focus,
 owner/admin/recipient forms and 1440/390/320px reflow. Synthetic provider tests do
 not replace real Authentik session-expiry acceptance.
 
+### Visible webhook errors (3.2.6-sr94.30 candidate)
+
+Webhook save failures now remain beside the editor's Save action with an alert
+and recoverable focus. Drafts survive errors; validation correction and Cancel
+clear obsolete editor feedback. Requests and URL/SSRF/access checks are unchanged.
+No schema, dependency or secret changes. Reload Integrations after deployment.
+Image-only rollback preserves data but restores off-screen errors. The focused
+API and `tests/browser-webhook-errors.cjs` disposable browser tests cover rejection,
+retry, concurrency, keyboard focus and mobile visibility. Release/deployment and
+backup/restore evidence belongs in the UI/UX ledger before closing the finding.
+
 ### Configuration-aware login copy (3.2.6-sr94.29 candidate)
 
 The login header/title and verification-return links advertise sign-up only when

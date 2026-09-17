@@ -25,7 +25,10 @@ UX-004 accurate lifecycle labels and bulk-result feedback passed the same gates 
 UX-005 validation semantics, focus and draft recovery passed every release and
 deployment/recovery gate in `.27`. UX-006 import templates and actionable
 format errors are published in `.28` with passing CI, awaiting exact-image and
-deployment gates. UX-007 configuration-aware login copy is being tested locally.
+deployment gates. UX-007 configuration-aware login copy is published in `.29`
+with passing CI and source checks; exact-image/deployment gates remain open.
+UX-009 now has local, focused webhook errors with passing rendered draft/retry
+checks; publication and deployment are not yet complete.
 A-01..A-04 remain
 open alongside the fixes; earlier zoom/PDF evidence does not waive those checks.
 
@@ -771,9 +774,9 @@ P3: polish with no blocked task. These are product priorities, not CVSS scores.
 | UX-004 | P2 | `active` filter includes visibly paused links | Successful bulk pause, source | Verified/closed in .26.1; intermittent webhook acceptance failure separately retained |
 | UX-005 | P2 | Legacy URL validation lacks programmatic field/error association | Invalid-submit DOM, source | Verified/closed in .27 |
 | UX-006 | P2 | Import schema errors do not give a usable correction path | Error/preview/commit exercise | Published .28 with passing CI; exact-image/deployment/recovery gates pending |
-| UX-007 | P2 | SSO-only login advertises sign-up even when registration is disabled | Production screenshot, source | Local implementation and four-mode rendered checks passed; remaining test/release/deployment gates open |
+| UX-007 | P2 | SSO-only login advertises sign-up even when registration is disabled | Production screenshot, source | Published .29, CI and source checks passed; exact-image/deployment gates open |
 | UX-008 | P1 | Custom confirmation dialogs leave keyboard focus behind the overlay | Fresh keyboard/DOM checks, screenshot | Verified/closed in .25, including exact-image deployment and clean post-backup restore |
-| UX-009 | P2 | Mobile webhook save errors are outside the visible viewport | Rejected private target, preserved draft and measured status geometry | Open |
+| UX-009 | P2 | Mobile webhook save errors are outside the visible viewport | Rejected private target, preserved draft and measured status geometry | Implemented, rendered source checks passed; release/deployment gates open |
 | UX-010 | P2 | Navigation links and routing errors fail minimum text contrast | Rendered computed colors and calculated ratios | Open |
 | UX-011 | P2 | Legacy Copy shows success even when the clipboard rejects the write | Controlled rejection, copied CSS state and unhandled error | Open |
 | UX-012 | P3 | Unavailable recipient pages are bare messages without a named page or next step | Fresh expired/paused pages and source | Open |
@@ -1186,7 +1189,9 @@ relax parser/security validation to accept malformed data.
 
 ### UX-007: Match Login Copy To Enabled Authentication
 
-Implemented locally, not released: header/title and verification-return links
+Published `.29`, source `11e329c0432ffa70638bbc8c7d900a3215e5036e`:
+Fork CI `35181420690` and Shortcut CI `35181420694` passed.
+Header/title and verification-return links
 derive their copy from actual visible registration availability, including mail
 and local-login configuration. SSO-only and registration-disabled pages say
 `Log in`; closed login remains explicitly closed with no header sign-in link.
@@ -1200,8 +1205,9 @@ copy, keyboard entry, expected controls and no overflow or browser errors.
 Inspected SSO compact and registration desktop captures are outside Git. Initial
 test setup mistakes (expecting 403 instead of legacy JSON 400/HTML 200, an
 unbootstrapped browser fixture, and a mismatched synthetic default-domain port)
-were corrected without changing production behavior. Publication and exact-image
-deployment/recovery gates remain open.
+were corrected without changing production behavior. Fresh exact-wrapper browser
+checks also passed all four modes at 1440/390/320px, with the SSO compact capture
+visually inspected. Full wrapper regression and deployment/recovery remain open.
 
 Production offers only `Sign in with Authentik`, but the header says `Log in /
 Sign up` and the page title mentions signing up. Self-registration is disabled.
@@ -1282,6 +1288,30 @@ authorization, asynchronous loading/errors and repeated HTMX open/close behavior
 Verify desktop/mobile and slow responses, including cancellation before load.
 
 ### UX-009: Keep Save Errors Visible
+
+Implementation 2026-09-17: the editor now has a named form and a local live error
+beside Save. Failure retains all fields and focuses the message after controls
+unlock, unless focus moved outside the form. Validation errors clear on correction;
+authorization/conflict/uncertain transport failures remain until retry or cancel.
+Cancel clears editor errors and returns focus to its opener. New/Reload also
+clear obsolete editor errors. The fallback form uses POST, never private receiver
+data in a URL. No API policy, URL/SSRF validation, schema or secret change.
+
+`tests/browser-webhook-errors.cjs` passed on fresh synthetic loopback fixtures at
+1440/390/320px: keyboard submission, genuine private-target 400 without creation,
+visible focused error/draft retention, cancel/correction, injected HTML503/403/409,
+duplicate-save prevention, no focus theft after moving to navigation, genuine
+disabled webhook creation, a competing API revision, retained stale draft and
+explicit reload/edit recovery. The disposable webhook was deleted. No delivery
+was queued and no real credentials were used. Browser errors/overflow checks
+passed; the compact screenshot was visually inspected. Evidence:
+`/Users/robin/Documents/Codex/Work/kutt-ux-audit-20260916/ux009-source/`.
+Known error contrast remains UX-010. Existing long-form correction/retention tests
+are recorded under UX-005/006; unexpected response shapes remain UX-014.
+Focused API tests passed, including ownership/scopes/CSRF, encrypted secrets,
+SSRF/URL checks, delivery retries, revision conflicts and restart recovery.
+Publication, exact-image checks, backups, deployment and post-release recovery
+remain gates; UX-009 is not closed.
 
 On mobile, creating a disabled webhook with receiver
 `https://127.0.0.1/blocked-test` correctly fails validation without sending a

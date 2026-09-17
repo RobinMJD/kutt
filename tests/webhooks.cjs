@@ -20,6 +20,11 @@ module.exports = async ({ request, session, database, account, restart, root, di
     assert.equal(transport.status, 0, transport.stderr);
     console.log(transport.stdout.trim());
     env.NODE_OPTIONS = "--require=" + path.join(root, "tests/webhooks-offline.cjs"); await restart();
+    const page = await request("GET", "/settings/integrations", undefined, session);
+    assert.equal(page.status, 200);
+    const html = await page.text();
+    assert.match(html, /id="hook-form" method="post" action="\/api\/v2\/webhooks" aria-labelledby="hook-editor-title"/);
+    assert.match(html, /id="hook-form-error"[^>]*role="alert"[^>]*tabindex="-1"[^>]*hidden/);
     await check(request("GET", "/api/webhooks"), 401); await check(request("GET", "/api/events"), 401);
     for (const body of [{ ...config, url: "http://hooks.example.com" }, { ...config, url: "https://mixed.example.com" }, { ...config, events: ["visit.created"] }, { ...config, enabled: "true" }, { ...config, name: "" }, { ...config, user_id: 2 }]) await check(hook("POST", "", body), 400);
     await check(hook("POST", "", config, session, { Origin: "https://evil.invalid" }), 403);
