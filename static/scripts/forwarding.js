@@ -17,9 +17,9 @@
   }
   async function request(method, suffix = "", body) {
     const response = await fetch(api + suffix, { method, credentials: "same-origin", headers: { Accept: "application/json", "Content-Type": "application/json" }, ...(body && { body: JSON.stringify(body) }) });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(response.status === 409 ? "Changed elsewhere. Reload saved allowlists before saving." : data.error || "Request failed (" + response.status + "). Please retry.");
-    return data;
+    return window.KuttResponses.read(response, suffix ? window.KuttResponses.preview : value =>
+      window.KuttResponses.forwarding(value) && (method !== "PUT" || value.revision === body.revision + 1),
+    "Changed elsewhere. Reload saved allowlists before saving.");
   }
   async function load() {
     if (busy) return;

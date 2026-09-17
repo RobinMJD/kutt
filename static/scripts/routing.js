@@ -10,9 +10,8 @@
   const get = (node, field) => node.querySelector(`[data-field="${field}"]`);
   async function api(path, method = "GET", body) {
     const response = await fetch(endpoint + path, { method, credentials: "same-origin", headers: { Accept: "application/json", "Content-Type": "application/json" }, body: body && JSON.stringify(body) });
-    let value; try { value = await response.json(); } catch { throw Error("Request failed. Check your session and retry."); }
-    if (!response.ok) throw Error(value.error || "Request failed (" + response.status + ").");
-    return value;
+    return window.KuttResponses.read(response, path ? window.KuttResponses.preview : value =>
+      window.KuttResponses.routing(value) && (method !== "PUT" || value.revision === body.revision + 1));
   }
   function refresh() {
     [...list.children].forEach((rule, index) => {

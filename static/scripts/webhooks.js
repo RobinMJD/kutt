@@ -9,9 +9,15 @@
     const response = await fetch("/api/v2/" + path, { method, credentials: "same-origin", cache: "no-store",
       headers: { Accept: "application/json", ...(body === undefined ? {} : { "Content-Type": "application/json" }) },
       ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
-    let data; if (response.status !== 204) try { data = await response.json(); } catch { /* Non-JSON edge errors stay generic. */ }
-    if (!response.ok) throw Object.assign(new Error(data?.error || "Request failed (" + response.status + "). Reload and try again."), { status: response.status });
-    return data;
+    const checks = window.KuttResponses;
+    if (method === "DELETE") return checks.acknowledgement(response, 204);
+    if (path.endsWith("/retry")) return checks.acknowledgement(response, 202, "Accepted");
+    const create = path === "webhooks" && method === "POST", rotate = path.endsWith("/rotate"), test = path.endsWith("/test");
+    const schema = path === "events" ? checks.events : /\/deliveries(?:\?|$)/.test(path) ? checks.deliveries :
+      test ? checks.deliveryQueued : create || rotate ? checks.hookSecret : method === "GET" ? checks.hookList : checks.hook;
+    if (response.ok && response.status !== (create ? 201 : test ? 202 : 200)) throw checks.unexpected();
+    return checks.read(response, data => schema(data) &&
+      (!(method === "PUT" || rotate) || data.revision === body.revision + 1) && (!create || data.revision === 1));
   }
   async function action(run, fromForm = false) {
     if (busy) return; busy = true;
@@ -96,6 +102,7 @@
     finally { deliveryBusy = false; }
   }
   function event(value) {
+    if (!window.KuttResponses.event(value)) throw window.KuttResponses.unexpected();
     const list = $("events-list");
     if (Array.from(list.children).some(el => el.dataset.id === value.id)) return;
     const item = node("li", value.type + " - " + date(value.occurred_at) + (value.data.link_id ? " - " + value.data.link_id : ""));

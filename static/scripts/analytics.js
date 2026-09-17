@@ -44,21 +44,19 @@
     for (const [key, value] of [...params]) if (!value) params.delete(key);
     status.textContent = "Loading..."; status.classList.remove("error");
     document.querySelector("#analytics-report").hidden = true;
+    for (const format of ["json", "csv"]) document.querySelector("#analytics-" + format).removeAttribute("href");
     form.querySelector('button[type="submit"]').disabled = true;
     try {
       const response = await fetch("/api/analytics?" + params, { headers: { Accept: "application/json" }, signal: controller.signal, cache: "no-store" });
-      const type = response.headers.get("Content-Type") || "";
-      if (!type.includes("application/json")) throw new Error("Analytics request was rejected. Sign in again or retry.");
-      const data = await response.json(); if (!response.ok) throw new Error(data.error || "Unable to load analytics.");
+      const data = await window.KuttResponses.read(response, window.KuttResponses.analytics);
       if (current !== serial) return;
-      document.querySelector("#analytics-report").hidden = false;
       document.querySelector("#analytics-total").textContent = data.total.toLocaleString();
       document.querySelector("#analytics-links").textContent = data.visited_links + " / " + data.matched_links;
       options("domain", data.available_filters.domains, "All domains", data.filters.domain);
       options("tag", data.available_filters.tags, "All tags", data.filters.tag);
       table("days", data.by_day.map(row => ({ name: row.date, visits: row.visits })), "Date");
       table("tags", data.tags, "Tag");
-      for (const [kind, rows] of Object.entries(data.stats)) table(kind, rows, ({ os: "OS", referrer: "Referrer", browser: "Browser", country: "Country" })[kind]);
+      for (const kind of window.KuttResponses.dimensions) table(kind, data.stats[kind], ({ os: "OS", referrer: "Referrer", browser: "Browser", country: "Country" })[kind]);
       if (chart) chart.destroy();
       chart = new Chart(document.querySelector("#analytics-chart"), {
         type: "bar", data: { labels: data.by_day.map(row => row.date), datasets: [{ label: "Visits", data: data.by_day.map(row => row.visits), backgroundColor: "#267ba2", borderColor: "#175470", borderWidth: 1 }] },
@@ -66,6 +64,7 @@
       });
       for (const format of ["json", "csv"]) { const exportParams = new URLSearchParams(params); exportParams.set("format", format); document.querySelector("#analytics-" + format).href = "/api/analytics?" + exportParams; }
       document.querySelector("#analytics-updated").textContent = "Updated " + new Date(data.generated_at).toLocaleString();
+      document.querySelector("#analytics-report").hidden = false;
       status.textContent = data.selected_link ? "Link: " + data.selected_link : data.total ? "Report ready" : "No tracked visits in this range";
       history.replaceState(null, "", "/settings/analytics?" + params);
     } catch (error) {

@@ -7,9 +7,10 @@
   const node = (tag, text, parent) => { const result = document.createElement(tag); result.textContent = text; parent.append(result); return result; };
   async function request(url, method = "GET", body) {
     const response = await fetch(url, { method, credentials: "same-origin", headers: { Accept: "application/json", "Content-Type": "application/json" }, ...(body && { body: JSON.stringify(body) }) });
-    const value = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(response.status === 409 ? "Changed elsewhere. Reload saved monitoring before saving." : value.error || "Request failed (" + response.status + "). Please retry.");
-    return value;
+    return window.KuttResponses.read(response, value => page.dataset.healthDashboard ? window.KuttResponses.healthList(value) :
+      window.KuttResponses.health(value) && (method !== "PUT" || value.revision === body.revision + 1) &&
+        (method !== "POST" || value.queued === true),
+    "Changed elsewhere. Reload saved monitoring before saving.");
   }
   if (page.dataset.healthDashboard) {
     const list = document.querySelector("#health-links"), refresh = document.querySelector("#health-refresh"), more = document.querySelector("#health-more");
