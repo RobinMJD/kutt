@@ -3,7 +3,7 @@
 Last updated: 2026-09-17 (Europe/Paris).
 
 **Status: initial findings recorded; the full rendered audit is not yet complete.**
-Twenty findings are confirmed; UX-001/002/003/004/005/008/013/015/017/018/019/020 are verified/closed. Remaining concerns and workflow
+Twenty findings are confirmed; UX-001/002/003/004/005/006/008/013/015/017/018/019/020 are verified/closed. Remaining concerns and workflow
 coverage are tracked below. Do not describe this as a completed accessibility audit.
 The ordinary rendered workflows now have bounded coverage. The explicit
 AUDIT-00 remainder below separates external acceptance gates from regression
@@ -24,11 +24,12 @@ deployment, live checks and clean post-backup writable recovery in `.25`.
 UX-004 accurate lifecycle labels and bulk-result feedback passed the same gates in `.26.1`.
 UX-005 validation semantics, focus and draft recovery passed every release and
 deployment/recovery gate in `.27`. UX-006 import templates and actionable
-format errors are published in `.28` with passing CI, awaiting exact-image and
-deployment gates. UX-007 configuration-aware login copy is published in `.29`
+format errors passed all deployment/recovery gates in `.28`. UX-007 configuration-aware login copy is published in `.29`
 with passing CI and source checks; exact-image/deployment gates remain open.
 UX-009 now has local, focused webhook errors with passing rendered draft/retry
-checks; publication and deployment are not yet complete.
+checks, published as `.30` with passing CI; exact deployment gates remain open.
+UX-010 readable palette changes pass 96 rendered contrast checks; publication
+and deployment remain open.
 A-01..A-04 remain
 open alongside the fixes; earlier zoom/PDF evidence does not waive those checks.
 
@@ -773,11 +774,11 @@ P3: polish with no blocked task. These are product priorities, not CVSS scores.
 | UX-003 | P1 | Library heading links overlap mobile filter controls | Screenshot and measured DOM | Verified/closed in .23 |
 | UX-004 | P2 | `active` filter includes visibly paused links | Successful bulk pause, source | Verified/closed in .26.1; intermittent webhook acceptance failure separately retained |
 | UX-005 | P2 | Legacy URL validation lacks programmatic field/error association | Invalid-submit DOM, source | Verified/closed in .27 |
-| UX-006 | P2 | Import schema errors do not give a usable correction path | Error/preview/commit exercise | Published .28 with passing CI; exact-image/deployment/recovery gates pending |
+| UX-006 | P2 | Import schema errors do not give a usable correction path | Error/preview/commit exercise | Verified and closed in .28 |
 | UX-007 | P2 | SSO-only login advertises sign-up even when registration is disabled | Production screenshot, source | Published .29, CI and source checks passed; exact-image/deployment gates open |
 | UX-008 | P1 | Custom confirmation dialogs leave keyboard focus behind the overlay | Fresh keyboard/DOM checks, screenshot | Verified/closed in .25, including exact-image deployment and clean post-backup restore |
-| UX-009 | P2 | Mobile webhook save errors are outside the visible viewport | Rejected private target, preserved draft and measured status geometry | Implemented, rendered source checks passed; release/deployment gates open |
-| UX-010 | P2 | Navigation links and routing errors fail minimum text contrast | Rendered computed colors and calculated ratios | Open |
+| UX-009 | P2 | Mobile webhook save errors are outside the visible viewport | Rejected private target, preserved draft and measured status geometry | Published .30 with passing CI; exact deployment gates open |
+| UX-010 | P2 | Navigation links and routing errors fail minimum text contrast | Rendered computed colors and calculated ratios | Implemented; source browser/palette tests passed, release/deployment gates open |
 | UX-011 | P2 | Legacy Copy shows success even when the clipboard rejects the write | Controlled rejection, copied CSS state and unhandled error | Open |
 | UX-012 | P3 | Unavailable recipient pages are bare messages without a named page or next step | Fresh expired/paused pages and source | Open |
 | UX-013 | P2 | Admin tab switches leave Next enabled beyond the last result | Four-user and zero-domain initial tab states; empty-page navigation and recovery | Verified/closed in .22 |
@@ -1147,7 +1148,7 @@ together after draft edits and Reload; do not apply deletion during this check.
 
 ### UX-006: Make Import Errors Actionable
 
-Published in `.28`, not deployed: authenticated JSON/CSV template downloads
+Verified/closed in `.28`: authenticated JSON/CSV template downloads
 contain one generic paused sample and no account data. Both API aliases require
 the same account authentication; scoped keys require `links:create` and cannot
 inherit a cookie's authority. Schema/CSV failures identify the accepted structure
@@ -1164,11 +1165,24 @@ Import submission is disabled until handlers are installed and its fallback
 method is POST, preventing private draft content from entering the URL if the
 script is delayed. A fresh browser run passed those checks, keyboard template
 downloads, HTML 503/retry, oversized-file preservation and normal import/export
-at 1440/390/320px with no unexpected console or page errors. No production change;
+at 1440/390/320px with no unexpected console or page errors.
 Tag `c7c2609a3e4216b0e40eb7b0dc4a85787ffd315d` passed Fork CI `35180439167`
 and Shortcut CI `35180439166`, publishing registry digest
 `e369f32e93497be326ee628991e1c91778e2303644adb285e2630ec92ace34db`.
-Exact deployment/recovery gates remain pending.
+Exact wrapper `sha256:234eda73d0954c3596987ddac9b851dc5f0de981200a8049d7dacd1075d6ca7d`
+passed full regression, valid zero-critical/high scan and fresh desktop/mobile
+browser tests. Pre-backup at 04:15:54 UTC: local `79b9c36f...`, NAS `a5dbc24f...`,
+61 files verified and exact-image writable restore passed. Deployed 2026-09-17
+04:22:32 UTC, healthy with zero restarts. Full public WAF/template/import/redirect
+checks, Authentik-signed logout/replay, original-data integrity, two health samples
+65 seconds apart and whole-lab validation passed (existing template warnings remain).
+The first live webhook registration failed URL/DNS validation; complete unchanged
+rerun passed with real HTTPS delivery. Twelve subsequent bounded safe validations
+passed in 1-8ms; transient cause remains unconfirmed, not fixed. Controls unchanged.
+Clean post-backup 04:39:52 UTC: local `fe19d53c...`, NAS `d43bc5e6...`, 61 files
+verified and exact-image writable restore passed with matching database/config/
+secrets and one original user/link. Root-only evidence:
+`/srv/homelab/security-reports/2026-09-17-kutt-ux006/`.
 
 The import form provides File, Format and Content but no reachable schema/sample
 or template. Pasting `{"bad":true}` yields `Unsupported export schema.` in the
@@ -1310,8 +1324,9 @@ Known error contrast remains UX-010. Existing long-form correction/retention tes
 are recorded under UX-005/006; unexpected response shapes remain UX-014.
 Focused API tests passed, including ownership/scopes/CSRF, encrypted secrets,
 SSRF/URL checks, delivery retries, revision conflicts and restart recovery.
-Publication, exact-image checks, backups, deployment and post-release recovery
-remain gates; UX-009 is not closed.
+Published `.30`, commit `3fe98c4b56e836561e19950b8141f37d749c5e1f`, Fork CI
+`35182167790` and Shortcut CI `35182167771` passed. Exact-image checks, backups,
+deployment and post-release recovery remain gates; UX-009 is not closed.
 
 On mobile, creating a disabled webhook with receiver
 `https://127.0.0.1/blocked-test` correctly fails validation without sending a
@@ -1333,6 +1348,23 @@ Review long rule/forwarding/token forms for the same behavior without assuming
 every form is broken. Retain server URL validation and explicit save actions.
 
 ### UX-010: Increase Navigation And Error Text Contrast
+
+Implemented 2026-09-17: darker existing blue links, red errors, placeholders and
+secondary descriptions; readable white text throughout the four existing button
+gradients. No layout, API or access-policy change. Fresh 1440/390/320px browser
+checks passed 96 measured states with minimum 4.608:1: settings/workspace/health/
+integration navigation, hover/focus, real routing conflict, login rejection,
+placeholders, legacy descriptions, plus 33 samples of each enabled gradient.
+Mobile navigation, desktop routing and compact login screenshots were inspected;
+raw color measurements are in `ux010-source/contrast.json` outside Git. The shared
+auth error class was checked; a fresh real SSO/MFA ceremony remains A-03.
+The CI palette contract in `tests/contrast.cjs` also passes. Initial test-harness
+issues (settings ID selector, startup readiness, ancestor animation settlement,
+and the isolated runner not serving static files) were corrected without changing
+product behavior. Browser console/overflow checks pass. Disabled controls are
+excluded; these bounded checks do not certify every text state or accessibility.
+No separate visited color is declared; author link color applies in both states.
+Publication, exact-image regression, deployment and recovery remain open.
 
 The enabled Library/Links navigation on the mobile monitoring page renders at
 14px, weight 400, foreground `rgb(32,148,243)` over `rgb(241,242,244)` with no

@@ -8,21 +8,22 @@
 :root {
   --bg-color: hsl(206, 12%, 95%);
   --text-color: hsl(200, 35%, 25%);
-  --color-primary: hsl(207, 90%, 54%);
+  --color-primary: #1769c2;
+  --error-text-color: #a4262c;
   --outline-color: hsl(188, 100%, 54%);
   --button-bg: linear-gradient(to right, #e0e0e0, #bdbdbd);
   --button-bg-box-shadow-color: rgba(160, 160, 160, 0.5);
-  --button-bg-primary: linear-gradient(to right, hsl(207, 90%, 61%), hsl(218, 100%, 58%));
+  --button-bg-primary: linear-gradient(to right, hsl(207, 90%, 35%), hsl(218, 100%, 38%));
   --button-bg-primary-box-shadow-color: hsla(207, 90%, 61%, 0.5);
-  --button-bg-secondary: linear-gradient(to right, hsl(262, 47%, 55%), hsl(265, 100%, 46%));
+  --button-bg-secondary: linear-gradient(to right, hsl(262, 47%, 45%), hsl(265, 100%, 38%));
   --button-bg-secondary-box-shadow-color: hsla(258, 58%, 42%, 0.5);
-  --button-bg-danger: linear-gradient(to right, hsl(0, 84%, 58%), hsl(0, 78%, 50%));
+  --button-bg-danger: linear-gradient(to right, hsl(0, 84%, 40%), hsl(0, 78%, 36%));
   --button-bg-danger-box-shadow-color: hsla(0, 58%, 42%, 0.5);
-  --button-bg-success: linear-gradient(to right, hsl(130, 58%, 45%), hsl(130, 67%, 45%));
+  --button-bg-success: linear-gradient(to right, hsl(130, 58%, 28%), hsl(130, 67%, 27%));
   --button-bg-success-box-shadow-color: hsla(128, 80%, 48%, 0.5);
   --button-action-shadow-color: hsla(200, 15%, 60%, 0.12);
   --underline-color: hsl(200, 35%, 65%);
-  --secondary-text-color: hsl(200, 14%, 60%);
+  --secondary-text-color: #586976;
   --send-icon-hover-color: hsl(262, 52%, 47%);
   --send-spinner-icon-color: hsl(200, 15%, 70%);
   --success-icon-color: hsl(144, 40%, 57%);
@@ -499,7 +500,7 @@ input[type="email"]::placeholder,
 input[type="password"]::placeholder {
   font-size: 14px;
   letter-spacing: 0.05em;
-  color: #888;
+  color: #666;
 }
 
 .error input[type="text"],
@@ -604,7 +605,7 @@ input.table-input::placeholder {
 
 select:has(option[value=""]:checked) {
   letter-spacing: 0.05em;
-  color: #888;
+  color: #666;
 }
 
 label {
@@ -639,10 +640,10 @@ p.success {
   animation: fadein 0.3s ease-in-out;
 }
 
-p.error { color: red; }
+p.error { color: var(--error-text-color); }
 p.error[hidden] { display: none; }
 p.error[role="alert"] { animation: none; }
-p.success { color: #0ea30e; }
+p.success { color: #26743c; }
 
 table {
   width: 100%;
@@ -1521,11 +1522,11 @@ table .short-link-wrapper { display: flex; align-items: center; }
   align-items: center;
   margin: 0;
   font-size: 14px;
-  color: #888;
+  color: var(--secondary-text-color);
 }
 #main-table-wrapper table td .description a {
-  color: #aaa;
-  border-bottom-color: #aaa;
+  color: var(--secondary-text-color);
+  border-bottom-color: var(--secondary-text-color);
 }
 #main-table-wrapper table td .description svg {
   stroke: #aaa;
@@ -1533,7 +1534,7 @@ table .short-link-wrapper { display: flex; align-items: center; }
   width: 0.85em;
   margin-right: 0.25rem;
 }
-#main-table-wrapper table td .description span { color: #aaa; }
+#main-table-wrapper table td .description span { color: var(--secondary-text-color); }
 #main-table-wrapper table td .description a:hover { border-bottom-color: transparent; }
 
 #main-table-wrapper table .status {

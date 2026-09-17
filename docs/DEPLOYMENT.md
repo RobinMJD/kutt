@@ -148,6 +148,17 @@ fixtures cover WAF-like failures, retry, draft retention, keyboard/error focus,
 owner/admin/recipient forms and 1440/390/320px reflow. Synthetic provider tests do
 not replace real Authentik session-expiry acceptance.
 
+### Readable UI colors (3.2.6-sr94.31 candidate)
+
+Darker existing link/error colors and button gradients improve text contrast,
+including placeholders and secondary descriptions. No schema, dependency, API,
+authorization or layout change. Refresh pages to load the new stylesheet.
+`tests/contrast.cjs` enforces palette contrast in CI; `tests/browser-contrast.cjs`
+checks actual backgrounds, interaction states and error workflows on a fresh
+synthetic loopback fixture. Custom CSS overrides need their own measurements.
+Image-only rollback preserves data but restores low-contrast colors. Publication,
+deployment and recovery acceptance remains in the UI/UX ledger.
+
 ### Visible webhook errors (3.2.6-sr94.30 candidate)
 
 Webhook save failures now remain beside the editor's Save action with an alert
