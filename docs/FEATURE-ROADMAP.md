@@ -41,8 +41,10 @@ secrets, local configuration or application data.
 Unicode aliases and extra database engines are optional follow-ups. Each item
 needs tests and migration/rollback notes before completion. The completed feature
 series is submitted as [upstream PR #1046](https://github.com/thedevs-network/kutt/pull/1046)
-on `feature/managed-links-roadmap`; subsequent enhancements stay outside that
-review branch. Maintainer review/merge is not claimed.
+on `feature/managed-links-roadmap`. Its 2026-09-17 update also includes the
+selected community improvements and all 22
+confirmed UI/UX fixes through `v3.2.6-sr94.36.1`. Optional deferred community
+proposals are still excluded. Maintainer review/merge is not claimed.
 
 ## Final Roadmap Deployment Evidence
 
