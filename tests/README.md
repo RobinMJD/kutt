@@ -58,6 +58,14 @@ and requires `KUTT_EVIDENCE_DIR`. It tests personal/admin expiry intent, conflic
 review/retry, sibling draft preservation and paused public redirects at
 1440/390/320px. `tests/expiry-edit.cjs` is included in the full container suite;
 `KUTT_TEST_ONLY=expiry-edit` runs its focused API/rendered-fragment regression.
+
+`KUTT_TEST_ONLY=admin-edit` tests fresh owner/domain metadata on admin editor
+success and errors, non-secret draft retention, anonymous/custom-domain cases,
+API privacy, authorization and restart. `tests/browser-admin-edit.cjs` uses the
+same disposable loopback settings and evidence path for native admin
+save/error/retry/filter/open/close at 1440/390/320px. Known table clipping and
+error accessibility findings are separate; programmatic access to an off-screen
+row action is not acceptance of the mobile table layout.
 No production credentials or records are used.
 
 `tests/browser-history.cjs` uses the same isolation settings and a separately

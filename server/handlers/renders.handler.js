@@ -297,12 +297,8 @@ async function linkEdit(req, res) {
 }
 
 async function linkEditAdmin(req, res) {
-  const link = await query.link.find({
-    uuid: req.params.id,
-  });
   res.render("partials/admin/links/edit", {
-    ...(link && utils.sanitize.link_html(link)),
-    domain: link.domain || env.DEFAULT_DOMAIN,
+    ...await require("../link-admin-edit").view(req.params.id),
   });
 }
 

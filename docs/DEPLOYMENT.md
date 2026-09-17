@@ -28,6 +28,16 @@ current database on image rollback; the prior image restores the lost-update
 risk. No WAF/SSO or public redirect change is needed. Do not deploy before the
 ledger's exact-image, backup/restore and regression gates pass.
 
+### Admin editor upgrade (3.2.6-sr94.21 candidate)
+
+No schema, dependency, secret or access-policy changes. The admin editor now
+renders fresh joined owner/domain context after save and validation, retains
+non-secret drafts, and keeps the admin endpoint. Missing records do not produce
+an actionable editor. Ordinary API projections remain unchanged. Image-only
+rollback is schema-compatible but restores the misleading owner/error display;
+keep the current database and secrets. Deployment acceptance remains in the
+UI/UX ledger until the exact-image and post-change gates pass.
+
 ## Initial setup
 
 Start with the SQLite Compose example and a private `.env` based on

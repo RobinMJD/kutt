@@ -107,6 +107,7 @@ router.patch(
   asyncHandler(auth.admin),
   locals.editLink,
   auth.sessionOrigin,
+  asyncHandler(require("../link-admin-edit").prepare),
   asyncHandler(require("../link-expiry-edit").prepare),
   require("../link-campaign").middleware,
   validators.editLink,

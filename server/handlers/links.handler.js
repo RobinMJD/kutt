@@ -346,7 +346,7 @@ async function editAdmin(req, res) {
     res.render("partials/admin/links/edit", {
       swap_oob: true,
       success: "Link has been updated.",
-      ...utils.sanitize.link_admin({ ...updatedLink }),
+      ...await require("../link-admin-edit").view(updatedLink.uuid),
     });
     return;
   }

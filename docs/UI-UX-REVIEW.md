@@ -770,7 +770,7 @@ P3: polish with no blocked task. These are product priorities, not CVSS scores.
 | UX-014 | P2 | Editors accept unexpected successful-response shapes | Forwarding false success; monitoring state loss after HTML 200; analytics stale report/raw error after malformed JSON 200 | Open |
 | UX-015 | P1 | Saving an unrelated field silently restores an expiry cleared in the sibling form | Rendered sequential saves, screenshot and read-only fixture database checks | Verified/closed in .19.2 |
 | UX-016 | P2 | Local sign-in can initialize the link table twice and throw during replacement | Fresh redacted HTMX event timeline, console stack and source review | Open |
-| UX-017 | P1 | Admin edit responses lose owner context; validation returns a personal form with blank availability | Actual admin save/error response, rendered DOM, screenshot and unchanged API state | Open |
+| UX-017 | P1 | Admin edit responses lose owner context; validation returns a personal form with blank availability | Actual admin save/error response, rendered DOM, screenshot and unchanged API state | Implemented; validation/release pending |
 | UX-018 | P1 | Stale workspace edits silently overwrite another client's availability | Two real clients, description-only rendered save and API before/after | Implemented; validation/release pending |
 | UX-019 | P2 | Workspace validation errors discard the unsaved edit draft | Invalid-alias response, collapsed editor and fresh field inspection | Implemented; validation/release pending |
 | UX-020 | P1 | Checked workspace checkbox decoration covers editor fields | Fresh validation screenshot and inherited pseudo-element source | Implemented; validation/release pending |
@@ -1338,6 +1338,24 @@ choosing the fix. Do not hide console errors, discard legitimate responses or
 disable security to obtain a clean test.
 
 ### UX-017: Preserve Admin Context Across Save And Validation
+
+Implementation in progress: the admin editor now uses a fresh authorized
+owner/domain join for initial, successful and rejected HTML responses. A small
+admin-only preparation step retains bounded non-secret drafts before validation;
+posted owner/domain metadata is ignored. Ordinary JSON responses keep their
+existing projection. Missing/deleted records do not produce an actionable form.
+The `.19.2` admin-template prerequisite is retained and the response selector is
+scoped to the specific editor, not every form on the page.
+
+Focused source tests pass for own/other/anonymous and custom-domain links,
+invalid target/alias/expiry, no-change/retry, fresh owner email, authorization,
+password non-disclosure and restart. Native browser source tests at
+1440/390/320px pass save/error/correction, owner labels/filtering, repeated
+open/close and independently unchanged pause/cap. The first browser attempt
+used an exact accessible label that changes when its inline error appears;
+the harness now selects the stable named input. The label/error association
+and mobile table clipping remain separate UX-001/005 and UX-002 findings.
+Exact release, restore, deployment and post-change acceptance are still pending.
 
 After a successful admin description update, the row still shows the destination
 and description but loses its owner email and View links by this user control.

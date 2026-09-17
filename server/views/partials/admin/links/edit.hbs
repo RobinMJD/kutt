@@ -5,7 +5,7 @@
       hx-patch="/api/links/admin/{id}"
       hx-ext="path-params"
       hx-vals='{"id":"{{id}}"}' 
-      hx-select="form"
+      hx-select="#edit-form-{{id}}"
       hx-swap="outerHTML"
       hx-sync="this:replace"
       class="{{class}}"
