@@ -3,7 +3,7 @@
 Last updated: 2026-09-17 (Europe/Paris).
 
 **Status: initial findings recorded; the full rendered audit is not yet complete.**
-Twenty findings are confirmed; UX-015 is verified/closed. Remaining concerns and workflow
+Twenty findings are confirmed; UX-015/018/019/020 are verified/closed. Remaining concerns and workflow
 coverage are tracked below. Do not describe this as a completed accessibility audit.
 The ordinary rendered workflows now have bounded coverage. The explicit
 AUDIT-00 remainder below separates external acceptance gates from regression
@@ -15,7 +15,9 @@ now omits unchanged relative expiry, rejects explicit stale expiry changes
 transactionally, retains the draft and supports deliberate conflict review/retry.
 Release `.19.2` and its CI passed; exact-image browser/restore/scan checks passed.
 Full wrapper regression, deployment, public WAF/OIDC checks, post-change health
-and post-release restore passed. UX-018/019/020 are implemented and under test. A-01..A-04 remain
+and post-release restore passed. UX-018/019/020 passed the same gates in `.20`.
+UX-017 has passed source tests and release CI; deployment validation is next.
+UX-001 accessibility implementation is underway. A-01..A-04 remain
 open alongside the fixes; earlier zoom/PDF evidence does not waive those checks.
 
 ## Feature And Deployment Gate
@@ -771,9 +773,9 @@ P3: polish with no blocked task. These are product priorities, not CVSS scores.
 | UX-015 | P1 | Saving an unrelated field silently restores an expiry cleared in the sibling form | Rendered sequential saves, screenshot and read-only fixture database checks | Verified/closed in .19.2 |
 | UX-016 | P2 | Local sign-in can initialize the link table twice and throw during replacement | Fresh redacted HTMX event timeline, console stack and source review | Open |
 | UX-017 | P1 | Admin edit responses lose owner context; validation returns a personal form with blank availability | Actual admin save/error response, rendered DOM, screenshot and unchanged API state | Implemented; validation/release pending |
-| UX-018 | P1 | Stale workspace edits silently overwrite another client's availability | Two real clients, description-only rendered save and API before/after | Implemented; validation/release pending |
-| UX-019 | P2 | Workspace validation errors discard the unsaved edit draft | Invalid-alias response, collapsed editor and fresh field inspection | Implemented; validation/release pending |
-| UX-020 | P1 | Checked workspace checkbox decoration covers editor fields | Fresh validation screenshot and inherited pseudo-element source | Implemented; validation/release pending |
+| UX-018 | P1 | Stale workspace edits silently overwrite another client's availability | Two real clients, description-only rendered save and API before/after | Verified/closed in .20 |
+| UX-019 | P2 | Workspace validation errors discard the unsaved edit draft | Invalid-alias response, collapsed editor and fresh field inspection | Verified/closed in .20 |
+| UX-020 | P1 | Checked workspace checkbox decoration covers editor fields | Fresh validation screenshot and inherited pseudo-element source | Verified/closed in .20 |
 
 ### UX-001: Name Core Actions
 
@@ -1394,7 +1396,7 @@ remained personal. Preserve that passing behavior during the admin fix.
 
 ### UX-018: Prevent Lost Availability Updates In Shared Editing
 
-2026-09-17 implementation in progress: native shared forms now carry an opaque
+2026-09-17 verified/closed in `.20`: native shared forms now carry an opaque
 revision of persisted editable state. The transaction compares it after current
 membership and link-row locking; personal edits invalidate shared drafts too.
 Conflicts save nothing, show authorized current values next to retained non-secret
@@ -1405,8 +1407,28 @@ roles, invalid metadata, filtered recovery, API compatibility, visits, restart a
 revoked access. Native browser conflict/validation/revocation checks pass at
 1440/390/320px with focused visible errors and independent API corroboration.
 The first browser attempts needed a direct-child Summary selector and canonical
-datetime-local minute values; corrected reruns passed. `.20` is the release
-candidate; full regression and exact release/deployment gates remain pending.
+datetime-local minute values; corrected reruns passed.
+
+[Release .20](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.20), source
+`eaf4acadf4f50f550ac3e2393b842004169a39b0`, passed
+[CI 35165064197](https://github.com/RobinMJD/kutt/actions/runs/35165064197).
+Registry digest: `sha256:ad8acf4d97aecde885d6d4dbb54f30225d9d3451f8280840e97415f7f05722f2`.
+Exact deployed wrapper: `sha256:a428df28edcae0e4921fbffcb8004bd500845a698a5b6be758763bab4784e65a`.
+Full wrapper regression, exact-image conflict/validation browsers at all three
+sizes, and the existing desktop/mobile workspace regression passed. Inspected
+captures: [desktop conflict](ui-ux-review/2026-09-17/workspace-conflict-1440.png)
+and [320px validation](ui-ux-review/2026-09-17/workspace-validation-320.png).
+The valid September 15 Grype database reported zero critical/high findings.
+
+Pre-change local/NAS backups `f7162e59`/`0d7d3d4f` and post-change
+`a7a6934f`/`e3a8bca7` were byte-restored (59 files), configuration/secret-compared
+without disclosure, and passed exact-image migration/integrity/foreign-key/write
+tests. Post backup time: 2026-09-17 00:32:38 UTC. Cutover was 00:20:24 UTC.
+Public WAF conflict/validation and full feature smoke, real Authentik-signed
+logout, original-record fingerprints, and two health samples 65 seconds apart
+passed with zero restarts, alerts, unhealthy containers or failed units.
+Whole-lab validation passed. Private evidence remains under
+`/srv/homelab/security-reports/2026-09-17-kutt-ux018/`.
 
 Open the shared link editor while it is active with no cap. An independent
 authenticated owner client sets `paused: true` and `max_visits: 19`. Without
@@ -1432,12 +1454,12 @@ warning after the overwrite is insufficient.
 
 ### UX-019: Retain Shared Edit Drafts On Validation Failure
 
-Being fixed with UX-018 because both use the same error renderer, moving this
+Verified/closed with UX-018 in `.20` because both use the same error renderer, moving this
 finding earlier in the order. The relevant authorized editor stays open with
 non-secret draft fields and one focused, linked error (no duplicate announcement). Password values are never
 returned; attempted password changes receive a re-entry notice. Current
-membership/ownership still controls whether the editor can render. Tests and
-release/deployment remain pending; this finding is not yet closed.
+membership/ownership still controls whether the editor can render. All release,
+browser, backup/restore and post-deployment gates are recorded under UX-018.
 
 In the shared edit form, set an invalid alias, check Paused and enter cap 7.
 Save link returns `Invalid or reserved alias.` above the workspace and collapses
@@ -1469,10 +1491,10 @@ form instead of the input. The offending validation capture is rejected as
 acceptance evidence, retained outside Git for diagnosis.
 
 The fix removes only the workspace pseudo-element, preserving native checked
-state and keyboard behavior. It accompanies UX-018/019 because their retained
+state and keyboard behavior. Verified/closed with UX-018/019 because their retained
 checked drafts must be visible and usable. Tests assert `::after` has no content
-and the native checkbox stays checked at desktop/390/320px; fresh inspected
-screenshots and release/deployment acceptance remain pending.
+and the native checkbox stays checked at desktop/390/320px. Fresh inspected
+screenshots and all release/deployment gates passed as recorded under UX-018.
 
 ## Source Concerns Requiring Rendered Validation
 
