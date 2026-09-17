@@ -125,6 +125,14 @@ async function signup(req, res) {
   return res.status(201).send({ message: "A verification email has been sent." });
 }
 
+function completeBrowserLogin(req, res, token) {
+  utils.setToken(res, token);
+  // A full document navigation avoids reinjecting layout scripts into HTMX's
+  // active document and racing its pending table initialization.
+  if (req.get("HX-Request") === "true") return res.set("HX-Redirect", "/").status(204).end();
+  return res.redirect(303, "/");
+}
+
 async function createAdminUser(req, res) {
   const isThereAUser = await query.user.findAny();
   if (isThereAUser) {
@@ -144,9 +152,7 @@ async function createAdminUser(req, res) {
   const token = utils.signToken(user);
 
   if (req.isHTML) {
-    utils.setToken(res, token);
-    res.render("partials/auth/welcome");
-    return;
+    return completeBrowserLogin(req, res, token);
   }
   
   return res.status(201).send({ token });
@@ -156,9 +162,7 @@ function login(req, res) {
   const token = utils.signToken(req.user, req.authInfo);
 
   if (req.isHTML) {
-    utils.setToken(res, token);
-    res.render("partials/auth/welcome");
-    return;
+    return completeBrowserLogin(req, res, token);
   }
   
   return res.status(200).send({ token });
