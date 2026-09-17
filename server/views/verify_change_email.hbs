@@ -12,7 +12,7 @@
     {{#if user}}
       <a href="/settings" title="Settings">Settings →</a>
     {{else}}
-      <a href="/login" title="Log in or sign up">Log in / sign up →</a>
+      {{#unless login_disabled}}<a href="/login" title="{{login_title}}">{{login_label}} →</a>{{/unless}}
     {{/if}}
   {{/if}}
 </section>

@@ -9,7 +9,7 @@
       {{> icons/x}}
       Invalid verification. Please try again.
     </h2>
-    <a href="/login" title="Log in or sign up">Log in / sign up →</a>
+    {{#unless login_disabled}}<a href="/login" title="{{login_title}}">{{login_label}} →</a>{{/unless}}
   {{/if}}
 </section>
 {{> footer}}

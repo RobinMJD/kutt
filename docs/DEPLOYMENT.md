@@ -107,7 +107,7 @@ secret or WAF/SSO change. Image-only rollback to `.24` is compatible but restore
 the modal accessibility defects. Release/deployment/live health and clean
 post-backup recovery passed; evidence is recorded in the UI/UX ledger.
 
-### Form validation and draft recovery (3.2.6-sr94.27 candidate)
+### Form validation and draft recovery (3.2.6-sr94.27)
 
 The shared validation script refreshes field/error associations after HTMX swaps,
 including retained inputs, preserves existing descriptions and focuses errors
@@ -123,7 +123,8 @@ Local password login stays disabled wherever configured; no fallback is enabled.
 Reload open management pages after deployment. No migration, API status, secret,
 dependency, WAF/SSO or authorization change is required. Image-only rollback to
 `.26.1` preserves data but restores the validation/focus defects. Exact release,
-deployment and recovery gates are tracked in the ledger, not assumed complete.
+deployment, public WAF/SSO regression, monitored health and clean post-backup
+writable recovery passed; evidence is recorded in the ledger.
 
 `tests/validation.cjs` runs in container smoke CI. Rendered validation uses fresh
 loopback-only disposable fixtures, never production data:
@@ -146,6 +147,19 @@ change. If containerized, publish both ports on `127.0.0.1` only. Fresh rendered
 fixtures cover WAF-like failures, retry, draft retention, keyboard/error focus,
 owner/admin/recipient forms and 1440/390/320px reflow. Synthetic provider tests do
 not replace real Authentik session-expiry acceptance.
+
+### Configuration-aware login copy (3.2.6-sr94.29 candidate)
+
+The login header/title and verification-return links advertise sign-up only when
+the local form, registration and mail are all enabled. SSO-only and local-only
+installations without visible registration say `Log in`; closed login has no
+header entry and an explicit closed title. This is a presentation change, not
+an authentication policy change: OIDC provisioning, API registration gates,
+sessions, WAF and public redirects remain unchanged. No migration or secret
+rotation. Reload login pages after deployment. Image-only rollback preserves
+data but restores misleading copy. Seven API modes and desktop/mobile workflows
+are covered by `tests/login-copy.cjs` and `tests/browser-login-copy.cjs`; exact
+release/deployment/recovery status is tracked in the UI/UX ledger.
 
 ### Import correction (3.2.6-sr94.28 candidate)
 

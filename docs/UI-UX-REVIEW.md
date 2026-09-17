@@ -3,7 +3,7 @@
 Last updated: 2026-09-17 (Europe/Paris).
 
 **Status: initial findings recorded; the full rendered audit is not yet complete.**
-Twenty findings are confirmed; UX-001/002/003/004/008/013/015/017/018/019/020 are verified/closed. Remaining concerns and workflow
+Twenty findings are confirmed; UX-001/002/003/004/005/008/013/015/017/018/019/020 are verified/closed. Remaining concerns and workflow
 coverage are tracked below. Do not describe this as a completed accessibility audit.
 The ordinary rendered workflows now have bounded coverage. The explicit
 AUDIT-00 remainder below separates external acceptance gates from regression
@@ -22,9 +22,10 @@ passed publication, exact deployment, live validation and post-backup restore in
 passed those gates in `.24`. UX-008 passed publication, exact-image regression,
 deployment, live checks and clean post-backup writable recovery in `.25`.
 UX-004 accurate lifecycle labels and bulk-result feedback passed the same gates in `.26.1`.
-UX-005 validation semantics, focus and draft recovery are published in `.27`, with
-tag CI passing; exact-image/deployment gates remain open. UX-006 import templates
-and actionable format errors are implemented locally and being tested.
+UX-005 validation semantics, focus and draft recovery passed every release and
+deployment/recovery gate in `.27`. UX-006 import templates and actionable
+format errors are published in `.28` with passing CI, awaiting exact-image and
+deployment gates. UX-007 configuration-aware login copy is being tested locally.
 A-01..A-04 remain
 open alongside the fixes; earlier zoom/PDF evidence does not waive those checks.
 
@@ -768,9 +769,9 @@ P3: polish with no blocked task. These are product priorities, not CVSS scores.
 | UX-002 | P1 | Mobile recent-links table hides essential actions and the empty state | Mobile screenshots, source | Verified/closed in .24 |
 | UX-003 | P1 | Library heading links overlap mobile filter controls | Screenshot and measured DOM | Verified/closed in .23 |
 | UX-004 | P2 | `active` filter includes visibly paused links | Successful bulk pause, source | Verified/closed in .26.1; intermittent webhook acceptance failure separately retained |
-| UX-005 | P2 | Legacy URL validation lacks programmatic field/error association | Invalid-submit DOM, source | Published .27, CI passed; exact-image/deployment gates pending |
-| UX-006 | P2 | Import schema errors do not give a usable correction path | Error/preview/commit exercise | Implemented locally; API/full regression and release/deployment gates pending |
-| UX-007 | P2 | SSO-only login advertises sign-up even when registration is disabled | Production screenshot, source | Open |
+| UX-005 | P2 | Legacy URL validation lacks programmatic field/error association | Invalid-submit DOM, source | Verified/closed in .27 |
+| UX-006 | P2 | Import schema errors do not give a usable correction path | Error/preview/commit exercise | Published .28 with passing CI; exact-image/deployment/recovery gates pending |
+| UX-007 | P2 | SSO-only login advertises sign-up even when registration is disabled | Production screenshot, source | Local implementation and four-mode rendered checks passed; remaining test/release/deployment gates open |
 | UX-008 | P1 | Custom confirmation dialogs leave keyboard focus behind the overlay | Fresh keyboard/DOM checks, screenshot | Verified/closed in .25, including exact-image deployment and clean post-backup restore |
 | UX-009 | P2 | Mobile webhook save errors are outside the visible viewport | Rejected private target, preserved draft and measured status geometry | Open |
 | UX-010 | P2 | Navigation links and routing errors fail minimum text contrast | Rendered computed colors and calculated ratios | Open |
@@ -1060,7 +1061,7 @@ alone does not explain whether the requested action succeeded.
 
 ### UX-005: Associate Validation Errors With Fields
 
-Published in `.27`, not yet deployed: shared HTMX validation associates field messages, removes stale
+Verified/closed in `.27`: shared HTMX validation associates field messages, removes stale
 errors when edited, preserves drafts on transport errors and focuses errors only
 when the user has not moved to another form. `hx-preserve` attributes are refreshed
 after replacement. Native login autofocus must settle before error focus; this
@@ -1079,8 +1080,20 @@ minor form-loading/general-error changes also passed fresh rendered tests.
 Immutable tag `44162194eafd9782bd51108d57c7cdc18313631d` passed Fork CI
 `35178705993` and Shortcut CI `35178705995`; published registry digest
 `ed3fd0ff76b89dd54829e2ded283df319b621cc3db2abd222fe63bb41951104b`.
-Exact-wrapper and deployment/recovery gates remain open.
-No production deployment or finding closure is claimed yet.
+Exact wrapper `cfe6ea528b26a673c0269329a727b90c0f87502a1630fae48729601c9212938e`
+passed full regression, browser validation/SSO-only failure recovery and valid
+zero-critical/high scan. The first offline full run had an undiagnosed fetch
+transport failure in privacy; the full diagnostic rerun passed unchanged.
+Deployed 2026-09-17 04:02:23 UTC, healthy with zero restarts. Full public WAF
+regression and real Authentik-signed logout passed; original data/integrity match.
+Two health samples 65 seconds apart showed zero restarts, failed units, unhealthy
+containers or relevant alerts, and all-lab validation passed with existing
+Mail Bridge/Passkey environment-template warnings. Clean post-backup at 04:14:07
+UTC: local `728f98f5f2eb9c67d022e9cff157d6799b8959199e877aa4af03544e4d7db0bf`,
+NAS `d67b94e7a1962125e5afc95edf69d07f36f641131b848f1e23abf52463617166`.
+All 61 files verified; exact-image writable restore retained the original one
+user/link, with database byte-match, integrity/FK and config/secret comparisons.
+Evidence: private `2026-09-17-kutt-ux005` report. UX-005 is closed.
 
 Submitting `not a url` renders `URL is not valid.` and a red decoration, but the
 input has no `aria-invalid` or `aria-describedby` relationship and the error has
@@ -1131,7 +1144,7 @@ together after draft edits and Reload; do not apply deletion during this check.
 
 ### UX-006: Make Import Errors Actionable
 
-Implemented locally, not released: authenticated JSON/CSV template downloads
+Published in `.28`, not deployed: authenticated JSON/CSV template downloads
 contain one generic paused sample and no account data. Both API aliases require
 the same account authentication; scoped keys require `links:create` and cannot
 inherit a cookie's authority. Schema/CSV failures identify the accepted structure
@@ -1149,7 +1162,10 @@ method is POST, preventing private draft content from entering the URL if the
 script is delayed. A fresh browser run passed those checks, keyboard template
 downloads, HTML 503/retry, oversized-file preservation and normal import/export
 at 1440/390/320px with no unexpected console or page errors. No production change;
-immutable-release and exact deployment/recovery gates remain pending.
+Tag `c7c2609a3e4216b0e40eb7b0dc4a85787ffd315d` passed Fork CI `35180439167`
+and Shortcut CI `35180439166`, publishing registry digest
+`e369f32e93497be326ee628991e1c91778e2303644adb285e2630ec92ace34db`.
+Exact deployment/recovery gates remain pending.
 
 The import form provides File, Format and Content but no reachable schema/sample
 or template. Pasting `{"bad":true}` yields `Unsupported export schema.` in the
@@ -1169,6 +1185,23 @@ relax parser/security validation to accept malformed data.
 ![Import schema error lacks a correction path](ui-ux-review/2026-09-15/11-import-error-desktop.png)
 
 ### UX-007: Match Login Copy To Enabled Authentication
+
+Implemented locally, not released: header/title and verification-return links
+derive their copy from actual visible registration availability, including mail
+and local-login configuration. SSO-only and registration-disabled pages say
+`Log in`; closed login remains explicitly closed with no header sign-in link.
+No authentication, registration policy or public redirect behavior is changed.
+Seven isolated server configuration modes passed: local-only, SSO-only,
+registration-enabled, mail-disabled, combined local/SSO, completely closed and
+local-form-hidden registration settings. Existing JSON feature-denial status and
+messages remain unchanged; public redirects work in each mode. Fresh rendered
+1440/390/320px checks passed for the four primary modes, including title/header
+copy, keyboard entry, expected controls and no overflow or browser errors.
+Inspected SSO compact and registration desktop captures are outside Git. Initial
+test setup mistakes (expecting 403 instead of legacy JSON 400/HTML 200, an
+unbootstrapped browser fixture, and a mismatched synthetic default-domain port)
+were corrected without changing production behavior. Publication and exact-image
+deployment/recovery gates remain open.
 
 Production offers only `Sign in with Authentik`, but the header says `Log in /
 Sign up` and the page title mentions signing up. Self-registration is disabled.

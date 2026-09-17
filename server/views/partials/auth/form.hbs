@@ -26,14 +26,13 @@
     <div class="buttons-wrapper">
       <button 
         type="submit" 
-        class="primary login {{#if disallow_registration}}full{{else}}{{#unless mail_enabled}}full{{/unless}}{{/if}}"
+        class="primary login {{#unless registration_enabled}}full{{/unless}}"
       >
         <span>{{> icons/login}}</span>
         <span>{{> icons/spinner}}</span>
         Log in
       </button>
-      {{#unless disallow_registration}}
-        {{#if mail_enabled}}
+      {{#if registration_enabled}}
           <button 
             type="button"
             class="secondary signup" 
@@ -50,8 +49,7 @@
               <span>{{> icons/spinner}}</span>
               Sign up
           </button>
-        {{/if}}
-      {{/unless}}
+      {{/if}}
     </div>
   {{/unless}}
   {{#if oidc_enabled}}

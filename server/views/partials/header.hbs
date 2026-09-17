@@ -24,8 +24,8 @@
       {{#unless user}}
         {{#unless login_disabled}}
           <li>
-            <a class="button primary" href="/login" title="Log in or sign up">
-              Log in / Sign up
+            <a class="button primary" href="/login" title="{{login_title}}">
+              {{login_label}}
             </a>
           </li>
         {{/unless}}

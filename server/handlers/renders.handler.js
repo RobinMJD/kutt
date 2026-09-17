@@ -25,7 +25,7 @@ async function login(req, res) {
   }
   
   res.render("login", {
-    title: "Log in or sign up"
+    title: res.locals.login_title
   });
 }
 
