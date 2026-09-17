@@ -9,6 +9,7 @@ module.exports = async ({ request, session, database, env }) => {
   const origin = new URL(response.url).origin;
   const owner = db.prepare("SELECT id FROM users WHERE role='ADMIN' ORDER BY id LIMIT 1").get();
   const ids = {}, now = Date.now();
+  let workspaceId;
   try {
     for (const state of ["Active", "Paused", "Scheduled", "Expired", "Visit limit reached", "In trash"]) {
       const row = await request("POST", "/api/links", { target: "https://example.invalid/", customurl: prefix + "-" + Object.keys(ids).length }, session);
@@ -34,6 +35,7 @@ module.exports = async ({ request, session, database, env }) => {
     const workspaceResponse = await request("POST", "/api/workspaces", { name: prefix }, session);
     assert.equal(workspaceResponse.status, 201);
     const workspace = await workspaceResponse.json();
+    workspaceId = workspace.id;
     assert.equal((await request("POST", "/api/workspaces/" + workspace.id + "/shares", { link_id: ids.Paused }, session)).status, 204);
     const workspaceHTML = await (await request("GET", "/settings/workspaces/" + workspace.id + "?state=active", undefined, session, headers)).text();
     assert(workspaceHTML.includes('value="active" selected>Not in trash</option>'));
@@ -73,5 +75,9 @@ module.exports = async ({ request, session, database, env }) => {
     assert(other);
     assert(!(await (await withCookie(noticeCookie, other)).text()).includes("Pause applied to"));
     console.log("PASS: lifecycle labels preserve active/paused/unpaused/trash and saved filters; committed counts, PRG, bounded user-bound receipts, tamper/expiry/failure privacy");
-  } finally { db.close(); }
+  } finally {
+    try {
+      if (workspaceId) assert.equal((await request("DELETE", "/api/workspaces/" + workspaceId, { confirm: workspaceId }, session)).status, 204);
+    } finally { db.close(); }
+  }
 };

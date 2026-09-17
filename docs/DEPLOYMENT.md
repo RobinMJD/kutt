@@ -77,8 +77,10 @@ browser zoom and role boundaries are covered; exact-image regression, deployment
 live WAF/OIDC checks, monitoring and post-backup restore passed. Evidence is in
 the UI/UX ledger.
 
-### Library lifecycle labels and bulk feedback (3.2.6-sr94.26 candidate)
+### Library lifecycle labels and bulk feedback (3.2.6-sr94.26.1 candidate)
 
+The `.26` artifact did not publish an image: CI caught synthetic Workspace
+fixture leakage. `.26.1` adds cleanup without changing runtime behavior.
 UI filter labels now distinguish not-in-trash from actual redirect availability;
 legacy API/saved-filter values remain unchanged. Bulk changes retain native
 POST/303/GET navigation and show a server-confirmed action/count with focused

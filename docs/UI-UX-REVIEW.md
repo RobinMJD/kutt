@@ -992,7 +992,7 @@ include browser zoom as well as narrow viewport tests.
 
 ### UX-004: Use Accurate Lifecycle Filter Names
 
-Implemented for candidate `.26`, not released: Library and Workspace labels now say
+Implemented for candidate `.26.1`, not deployed: Library and Workspace labels now say
 `Not in trash` / `In trash`; Library also says `Not paused`. Existing API values
 and saved filters are unchanged. Bulk POST/303/GET returns a bounded, signed,
 user-bound action/count receipt; the page focuses the result and clears selection.
@@ -1006,7 +1006,11 @@ recover on pageshow; normal browser submissions then succeed. A held-native-
 navigation test stalled the browser harness and is not counted as network-delay
 evidence. Full isolated source regression passed; Workspace rendered HTML/API
 checks also confirm that a paused row remains under the preserved `active` value
-with the new label. Release/deployment gates remain open. No schema, authorization or
+with the new label. `.26` CI caught a fixture cleanup omission: the new Workspace
+check left its share behind for a later suite's zero-share assertion. `.26` did
+not publish an image. `.26.1` removes only its synthetic workspace in `finally`;
+the failing assertion is preserved and the full suite must rerun. This is test
+isolation, not a production data mutation. Release/deployment gates remain open. No schema, authorization or
 public redirect changes.
 
 After selecting the synthetic link, choosing Pause and applying it, the row
