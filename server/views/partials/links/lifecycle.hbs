@@ -1,5 +1,5 @@
-<form id="lifecycle-{{id}}" class="link-lifecycle"
-  hx-patch="/api/links/{{id}}/lifecycle" hx-select="#lifecycle-{{id}}" hx-swap="outerHTML">
+<form id="lifecycle-{{id}}" class="link-lifecycle" method="post" action="/api/links/{{id}}/lifecycle"
+  hx-patch="/api/links/{{id}}/lifecycle" hx-select="#lifecycle-{{id}}" hx-swap="outerHTML settle:0ms">
   <fieldset>
     <legend>Availability</legend>
     <label><input type="checkbox" name="paused" {{#if paused}}checked{{/if}} /> Paused</label>
@@ -10,7 +10,7 @@
     <input type="hidden" name="expiry_snapshot" value="{{expiry_snapshot}}" />
     {{#if error}}<small>Current expiry: {{#if expire_in}}{{expire_in}}{{else}}none{{/if}}</small>{{/if}}
     <p>{{lifecycle_status}} &middot; {{redirect_count}} redirects</p>
-    <button type="submit" class="primary">Save availability</button>
+    <button type="submit" class="primary" id="availability-submit-{{id}}">Save availability</button>
   </fieldset>
   <div class="response" role="status">
     {{#if error}}<p class="error">{{error}}</p>{{else if success}}<p class="success">{{success}}</p>{{/if}}

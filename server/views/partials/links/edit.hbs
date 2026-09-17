@@ -2,11 +2,12 @@
   {{#if id}}
     <form 
       id="edit-form-{{id}}"
+      method="post" action="/api/links/{{id}}"
       hx-patch="/api/links/{id}"
       hx-ext="path-params"
       hx-vals='{"id":"{{id}}"}' 
       hx-select="#edit-form-{{id}}"
-      hx-swap="outerHTML"
+      hx-swap="outerHTML settle:0ms"
       hx-sync="this:replace"
       class="{{class}}"
     >
@@ -86,11 +87,12 @@
             if (!tr) return;
             tr.classList.remove('show');
             tr.removeChild(tr.querySelector('.content'));
+            document.getElementById('edit-opener-{{id}}')?.focus();
           "
         >
           Close
         </button>
-        <button type="submit" class="primary">
+        <button type="submit" class="primary" id="edit-submit-{{id}}">
           <span class="reload">
             {{> icons/reload}}
           </span>

@@ -23,20 +23,22 @@
   }
   async function load() {
     if (busy) return;
+    const focus = window.KuttFocus.capture();
     lock(true); message("Loading...");
     try {
       const data = await request("GET"); revision = data.revision;
       for (const key of ["query_keys", "path_prefixes"]) form.elements[key].value = data[key].join("\n");
       output.textContent = ""; message("Saved allowlists loaded.");
     } catch (error) { message(error.message, true); }
-    finally { lock(false); }
+    finally { lock(false); window.KuttFocus.restore(focus); }
   }
   form.addEventListener("submit", async event => {
     event.preventDefault(); if (busy || revision === null) return;
+    const focus = window.KuttFocus.capture();
     const draft = policy(); lock(true); message("Saving...");
     try { const data = await request("PUT", "", { ...draft, revision }); revision = data.revision; message("Allowlists saved."); }
     catch (error) { message(error.message, true); }
-    finally { lock(false); }
+    finally { lock(false); window.KuttFocus.restore(focus); }
   });
   document.querySelector("#forwarding-reload").addEventListener("click", load);
   document.querySelector("#forwarding-clear").addEventListener("click", () => {
@@ -45,13 +47,14 @@
   });
   preview.addEventListener("submit", async event => {
     event.preventDefault(); if (busy || revision === null) return;
+    const focus = window.KuttFocus.capture();
     const values = Object.fromEntries(new FormData(preview)), suffix = values.path; delete values.path;
     const draft = policy(); lock(true); output.classList.remove("error"); output.textContent = "Checking...";
     try {
       const result = await request("POST", "/preview", { policy: draft, context: values, path: suffix });
       output.textContent = (result.rule_name ? result.rule_name : "Default destination") + ": " + result.target;
     } catch (error) { output.classList.add("error"); output.textContent = error.message; }
-    finally { lock(false); }
+    finally { lock(false); window.KuttFocus.restore(focus); }
   });
   load();
 })();

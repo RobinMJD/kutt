@@ -148,9 +148,10 @@ function setLinksLimit(event) {
   const buttons = Array.from(document.querySelectorAll("table .nav .limit button"));
   const limitInput = document.querySelector("#limit");
   if (!limitInput || !buttons || !buttons.length) return;
-  limitInput.value = event.target.textContent;
+  limitInput.value = event.currentTarget.textContent.trim();
+  document.querySelector("#skip").value = 0;
   buttons.forEach(b => {
-    b.disabled = b.textContent === event.target.textContent;
+    b.setAttribute("aria-pressed", b.textContent.trim() === limitInput.value ? "true" : "false");
   });
 }
 
@@ -163,13 +164,8 @@ function setLinksSkip(event, action) {
   const skip = parseInt(skipElm.value);
   const limit = parseInt(limitElm.value);
   const total = parseInt(totalElm.value);
-  skipElm.value = action === "next" ? skip + limit : Math.max(skip - limit, 0);
-  document.querySelectorAll(".pagination .next").forEach(elm => {
-    elm.disabled = total <= parseInt(skipElm.value) + limit;
-  });
-  document.querySelectorAll(".pagination .prev").forEach(elm => {
-    elm.disabled = parseInt(skipElm.value) <= 0;
-  });
+  const lastPage = Math.max(0, Math.ceil(total / limit) - 1) * limit;
+  skipElm.value = Math.max(0, Math.min(lastPage, action === "next" ? skip + limit : skip - limit));
 }
 
 function updateLinksNav() {
@@ -180,12 +176,15 @@ function updateLinksNav() {
   const total = parseInt(totalElm.value);
   const skip = parseInt(skipElm.value);
   const limit = parseInt(limitElm.value);
+  const active = document.activeElement;
+  const navigation = active.closest?.(".pagination");
   document.querySelectorAll(".pagination .next").forEach(elm => {
     elm.disabled = total <= skip + limit;
   });
   document.querySelectorAll(".pagination .prev").forEach(elm => {
     elm.disabled = skip <= 0;
   });
+  if (navigation && active.disabled) navigation.querySelector("button:not(:disabled)")?.focus();
 }
 
 function resetTableNav() {
@@ -205,22 +204,12 @@ function resetTableNav() {
     elm.disabled = skip <= 0;
   });
   document.querySelectorAll("table .nav .limit button").forEach(b => {
-    b.disabled = b.textContent === limit.toString();
+    b.setAttribute("aria-pressed", b.textContent.trim() === limit.toString() ? "true" : "false");
   });
 }
 
-// tab click
-function setTab(event, targetId) {
-  const tabs = Array.from(closest("nav", event.target).children);
-  tabs.forEach(function (tab) {
-    tab.classList.remove("active");
-  });
-  if (targetId) {
-    document.getElementById(targetId).classList.add("active");
-  } else {
-    event.target.classList.add("active");
-  }
-}
+// A tab replaces its table, including the old table's event listeners.
+document.body.addEventListener("htmx:afterSettle", updateLinksNav);
 
 // show clear search button
 function onSearchChange(event) {

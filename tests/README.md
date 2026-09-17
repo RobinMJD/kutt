@@ -46,6 +46,14 @@ Coverage:
   collision denial, absolute session expiry, logout/replay, private diagnostics,
   session revocation, bans, provider outage recovery and guarded identity migration.
 
+`KUTT_TEST_ONLY=accessibility` validates named controls, selected native tabs,
+unique IDs and isolated focus-helper recovery/cleanup without network access.
+`tests/browser-accessibility.cjs` uses the same fresh loopback settings and
+`KUTT_EVIDENCE_DIR` described below, at 1440/390/320px. It exercises native
+keyboard controls, focus after HTMX/native/async updates, concurrent draft focus,
+visible outlines/reduced motion, restore confirmation and admin tab pagination.
+It does not replace a full assistive-technology or physical-device audit.
+
 For rendered lifecycle UI, install Playwright in your test runtime and run
 `tests/browser-lifecycle.cjs` with `KUTT_BROWSER_DISPOSABLE=1` and a loopback
 `KUTT_TEST_URL` for a fresh disposable instance. `PLAYWRIGHT_MODULE` can point to

@@ -8,7 +8,7 @@
             id="search" 
             name="search" 
             type="text" 
-            placeholder="Search link..." 
+            placeholder="Search link..." aria-label="Search links"
             class="table-input search admin" 
             hx-on:input="onSearchChange(event)" 
             hx-on:keyup="resetTableNav()"
@@ -28,7 +28,7 @@
             id="search_domain" 
             name="domain" 
             type="text" 
-            placeholder="Search domain..." 
+            placeholder="Search domain..." aria-label="Search domains"
             class="table-input search admin" 
             hx-on:input="onSearchChange(event)" 
             hx-on:keyup="resetTableNav()"
@@ -36,7 +36,7 @@
           />
           <button 
             type="button" 
-            aria-label="Clear user search" 
+            aria-label="Clear domain search"
             class="clear" 
             onclick="clearSeachInput(event)"
           >
@@ -48,7 +48,7 @@
             id="search_user" 
             name="user" 
             type="text" 
-            placeholder="Search user..." 
+            placeholder="Search user..." aria-label="Search users"
             class="table-input search admin" 
             hx-on:input="onSearchChange(event)" 
             hx-on:keyup="resetTableNav()"
@@ -70,7 +70,7 @@
           name="banned"
           class="table-input ban"
           hx-on:change="resetTableNav()"
-        >
+         aria-label="Banned status">
           <option value="" selected>Banned...</option>
           <option value="true">Banned</option>
           <option value="false">Not banned</option>
@@ -80,17 +80,17 @@
           name="anonymous"
           class="table-input anonymous"
           hx-on:change="resetTableNav()"
-        >
+         aria-label="Link owner type">
           <option value="">Anonymous...</option>
           <option value="true" {{#ifEquals query.anonymous 'true'}}selected{{/ifEquals}}>Anonymous</option>
           <option value="false" {{#ifEquals query.anonymous 'false'}}selected{{/ifEquals}}>User</option>
         </select>
         <select 
-          id="links-select-anonymous"
+          id="links-select-domain"
           name="has_domain"
           class="table-input has_domain"
           hx-on:change="resetTableNav()"
-        >
+         aria-label="Custom domain">
           <option value="">Domain...</option>
           <option value="true" {{#ifEquals query.has_domain 'true'}}selected{{/ifEquals}}>With domain</option>
           <option value="false" {{#ifEquals query.has_domain 'false'}}selected{{/ifEquals}}>No domain</option>

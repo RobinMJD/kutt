@@ -8,7 +8,7 @@
             id="search" 
             name="search" 
             type="text" 
-            placeholder="Search domain..." 
+            placeholder="Search domain..." aria-label="Search domains"
             class="table-input search admin" 
             hx-on:input="onSearchChange(event)" 
             hx-on:keyup="resetTableNav()"
@@ -28,7 +28,7 @@
             id="search_user" 
             name="user" 
             type="text" 
-            placeholder="Search user..." 
+            placeholder="Search user..." aria-label="Search users"
             class="table-input search admin" 
             hx-on:input="onSearchChange(event)" 
             hx-on:keyup="resetTableNav()"
@@ -43,19 +43,19 @@
             {{> icons/x}}
           </button>
         </div>
-        <select id="domains-select-banned" name="banned" class="table-input ban" hx-on:change="resetTableNav()">
+        <select id="domains-select-banned" name="banned" class="table-input ban" hx-on:change="resetTableNav()" aria-label="Banned status">
           <option value="" selected>Banned...</option>
           <option value="true">Banned</option>
           <option value="false">Not banned</option>
         </select>
       </div>
       <div>
-        <select id="domains-select-links" name="links" class="table-input links" hx-on:change="resetTableNav()">
+        <select id="domains-select-links" name="links" class="table-input links" hx-on:change="resetTableNav()" aria-label="Link ownership">
           <option value="" selected>Links...</option>
           <option value="true" {{#ifEquals query.links 'true'}}selected{{/ifEquals}}>With links</option>
           <option value="false" {{#ifEquals query.links 'true'}}selected{{/ifEquals}}>No links</option>
         </select>
-        <select id="domains-select-owner" name="owner" class="table-input owner" hx-on:change="resetTableNav()">
+        <select id="domains-select-owner" name="owner" class="table-input owner" hx-on:change="resetTableNav()" aria-label="Domain owner type">
           <option value="" selected>Owner...</option>
           <option value="true" {{#ifEquals query.owner 'true'}}selected{{/ifEquals}}>With owner</option>
           <option value="false" {{#ifEquals query.owner 'true'}}selected{{/ifEquals}}>No owner</option>

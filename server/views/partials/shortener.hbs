@@ -12,13 +12,12 @@
         </button>
         {{> icons/check}}
       </div>
-      <h1 
-        class="link" 
+      <h1 class="link"><button type="button" class="link-button" aria-label="Copy {{link}}" title="Copy short link"
         hx-on:click="handleShortURLCopyLink(this);" 
         data-url="{{url}}"
       >
         {{link}}
-      </h1>
+      </button></h1>
     {{/if}}
     {{#unless link}}
         <h1>Cut your links <span>shorter</span>.</h1>
@@ -38,12 +37,12 @@
         name="target"
         type="text"
         placeholder="Paste your long URL"
-        aria-label="target"
+        aria-label="Destination URL"
         autofocus="true"
         data-lpignore="true"
         hx-preserve="true"
       />
-      <button class="submit">
+      <button class="submit" type="submit" id="shortener-submit" aria-label="Shorten link" title="Shorten link">
         {{> icons/send}}
         {{> icons/spinner}}
       </button>
@@ -89,7 +88,8 @@
           <input
             type="text" 
             id="customurl" 
-            name="customurl" 
+            name="customurl"
+            aria-label="Custom address"
             maxlength="64"
             placeholder="Custom address..." 
             hx-preserve="true"

@@ -5,58 +5,64 @@
     </p>
   </th>
   <th class="category-tab">
-    <nav class="tab" role="tablist">
-      <a 
+    <nav class="tab" role="tablist" aria-label="Administration">
+      <button type="button"
         id="tab-links" 
         role="tab" 
         hx-get="/api/links/admin"
         hx-target="closest table"
-        hx-swap="outerHTML" 
+        hx-swap="outerHTML settle:0ms"
+        aria-controls="admin-table-results"
         hx-disinherit="*"
         hx-sync="this:replace"
         hx-indicator="closest table"
-        onclick="setTab(event)"
         {{#ifEquals title 'links'}}
-          class="active"
+          class="active" aria-selected="true" tabindex="0"
           hx-on:htmx:before-request="event.preventDefault()"
+        {{else}}
+          aria-selected="false" tabindex="-1"
         {{/ifEquals}}
       >
         Links
-      </a>
-      <a 
+      </button>
+      <button type="button"
         id="tab-users" 
         role="tab" 
         hx-get="/api/users/admin"
         hx-target="closest table"
-        hx-swap="outerHTML" 
+        hx-swap="outerHTML settle:0ms"
+        aria-controls="admin-table-results"
         hx-disinherit="*"
         hx-sync="this:replace"
         hx-indicator="closest table"
-        onclick="setTab(event)"
         {{#ifEquals title 'users'}}
-          class="active"
+          class="active" aria-selected="true" tabindex="0"
           hx-on:htmx:before-request="event.preventDefault()"
+        {{else}}
+          aria-selected="false" tabindex="-1"
         {{/ifEquals}}
       >
         Users
-      </a>
-       <a 
+      </button>
+       <button type="button"
         id="tab-domains" 
         role="tab" 
         hx-get="/api/domains/admin"
         hx-target="closest table"
-        hx-swap="outerHTML" 
+        hx-swap="outerHTML settle:0ms"
+        aria-controls="admin-table-results"
         hx-disinherit="*"
         hx-sync="this:replace"
         hx-indicator="closest table"
-        onclick="setTab(event)"
         {{#ifEquals title 'domains'}}
-          class="active"
+          class="active" aria-selected="true" tabindex="0"
           hx-on:htmx:before-request="event.preventDefault()"
+        {{else}}
+          aria-selected="false" tabindex="-1"
         {{/ifEquals}}
       >
         Domains
-      </a>
+      </button>
     </nav>
   </th>
 </tr>

@@ -28,15 +28,30 @@ current database on image rollback; the prior image restores the lost-update
 risk. No WAF/SSO or public redirect change is needed. Exact-image, backup/restore,
 regression and post-deployment gates passed; evidence is in the UI/UX ledger.
 
-### Admin editor upgrade (3.2.6-sr94.21 candidate)
+### Admin editor upgrade (3.2.6-sr94.21)
 
 No schema, dependency, secret or access-policy changes. The admin editor now
 renders fresh joined owner/domain context after save and validation, retains
 non-secret drafts, and keeps the admin endpoint. Missing records do not produce
 an actionable editor. Ordinary API projections remain unchanged. Image-only
 rollback is schema-compatible but restores the misleading owner/error display;
-keep the current database and secrets. Deployment acceptance remains in the
-UI/UX ledger until the exact-image and post-change gates pass.
+keep the current database and secrets. Exact-image and post-change gates passed;
+deployment and recoverability evidence is recorded in the UI/UX ledger.
+
+### Keyboard and pagination upgrade (3.2.6-sr94.22 candidate)
+
+Named controls, native admin tab/filter buttons, immediate visible focus and
+post-action focus recovery do not change data, APIs or access policy. Reload
+open management pages after deployment. Inline editors and table replacements
+initialize without a settle delay so fast keyboard input cannot act on an
+uninitialized form. Editor forms use POST rather than GET as their non-JavaScript
+fallback, preventing fields from entering the URL; saving still requires the
+existing authorized PATCH path. Pagination is bounded and server-rendered empty
+and one-page results disable Next immediately. Focus intent across native
+management POSTs stores only an expiring local path/time marker, never drafts.
+No schema or secret change. Image-only rollback to `.21` preserves current data
+but restores the accessibility/navigation defects. Exact-image and deployment
+acceptance remain pending in the UI/UX ledger.
 
 ## Initial setup
 

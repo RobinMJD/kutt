@@ -8,6 +8,7 @@
     if (!rows.length) { container.append(element("p", "No visits")); return; }
     let page = 0;
     const render = () => {
+      const focus = window.KuttFocus.capture();
       container.replaceChildren();
       const table = element("table"), head = element("thead"), header = element("tr"), body = element("tbody");
       for (const title of [heading, "Visits"]) { const cell = element("th", title); cell.scope = "col"; header.append(cell); }
@@ -20,8 +21,12 @@
         const nav = element("nav"), prev = element("button", "Previous"), next = element("button", "Next");
         nav.className = "analytics-pagination"; nav.setAttribute("aria-label", heading + " pages");
         prev.type = next.type = "button"; prev.disabled = !page; next.disabled = (page + 1) * 20 >= rows.length;
+        prev.id = "analytics-" + kind + "-previous"; next.id = "analytics-" + kind + "-next";
         prev.onclick = () => { page--; render(); }; next.onclick = () => { page++; render(); };
         nav.append(prev, element("span", (page + 1) + " / " + Math.ceil(rows.length / 20)), next); container.append(nav);
+        window.KuttFocus.restore(focus, prev.disabled ? next : prev);
+      } else {
+        window.KuttFocus.restore(focus);
       }
     };
     render();
@@ -32,6 +37,7 @@
     select.value = selected;
   }
   async function load() {
+    const focus = window.KuttFocus.capture();
     const current = ++serial;
     if (controller) controller.abort(); controller = new AbortController();
     const params = new URLSearchParams(new FormData(form));
@@ -64,7 +70,10 @@
       history.replaceState(null, "", "/settings/analytics?" + params);
     } catch (error) {
       if (error.name !== "AbortError" && current === serial) { status.textContent = error.message; status.classList.add("error"); }
-    } finally { if (current === serial) form.querySelector('button[type="submit"]').disabled = false; }
+    } finally {
+      if (current === serial) form.querySelector('button[type="submit"]').disabled = false;
+      window.KuttFocus.restore(focus);
+    }
   }
   form.addEventListener("submit", event => { event.preventDefault(); load(); });
   load();

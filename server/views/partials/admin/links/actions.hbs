@@ -1,24 +1,27 @@
 <td class="actions">
   {{#if password}}
-    <button class="action password" disabled="true" data-tooltip="Password protected">
+    <button class="action password" disabled="true" aria-label="Password protected" data-tooltip="Password protected">
       {{> icons/key}}
     </button>
   {{/if}}
   {{#if banned}}
-    <button class="action banned" disabled="true" data-tooltip="Banned">
+    <button class="action banned" disabled="true" aria-label="Banned" data-tooltip="Banned">
       {{> icons/stop}}
     </button>
   {{/if}}
   <a
     class="button action stats"
     href="/stats?id={{id}}"
-    title="Stats"
-    class="action stats"
+    title="Statistics"
+    aria-label="Statistics for {{link.address}}"
   >
     {{> icons/chart}}
   </a>
   <button
     class="action qrcode"
+    type="button"
+    aria-label="QR code for {{link.address}}"
+    title="QR code"
     hx-on:click="handleQRCode(this, 'admin-table-dialog')"
     data-url="{{link.url}}"
   >
@@ -26,11 +29,15 @@
   </button>
   <button 
     class="action edit"
+    id="edit-opener-{{id}}"
+    type="button"
+    aria-label="Edit {{link.address}}"
+    title="Edit link"
     hx-trigger="click queue:none"
     hx-ext="path-params"
     hx-get="/admin/link/edit/{id}" 
     hx-vals='{"id":"{{id}}"}'
-    hx-swap="beforeend"
+    hx-swap="beforeend settle:0ms"
     hx-target="next tr.edit"
     hx-indicator="next tr.edit"
     hx-sync="this:drop"
@@ -48,7 +55,10 @@
   </button>
   {{#unless banned}}
     <button 
-      class="action ban" 
+      class="action ban"
+      type="button"
+      aria-label="Ban {{link.address}}"
+      title="Ban link"
       hx-on:click='openDialog("admin-table-dialog")' 
       hx-get="/confirm-link-ban" 
       hx-target="#admin-table-dialog .content-wrapper" 
@@ -59,7 +69,10 @@
     </button>
   {{/unless}}
   <button 
-    class="action delete" 
+    class="action delete"
+    type="button"
+    aria-label="Move {{link.address}} to trash"
+    title="Move to trash"
     hx-on:click='openDialog("admin-table-dialog")' 
     hx-get="/confirm-link-delete" 
     hx-target="#admin-table-dialog .content-wrapper" 

@@ -1,6 +1,6 @@
 {{> header}}
 <main class="link-archive library workspaces">
-  <header class="archive-heading"><h1>Workspaces</h1><a href="/settings/library">Personal library</a><a href="/">Links</a></header>
+  <header class="archive-heading"><h1 data-page-focus tabindex="-1">Workspaces</h1><a href="/settings/library">Personal library</a><a href="/">Links</a></header>
   {{#if error}}<p class="library-error" role="alert">{{error}}</p>{{/if}}
   <nav class="workspace-tabs" aria-label="Workspaces"><a href="/settings/workspaces">All workspaces</a>{{#each all.data}}<a href="/settings/workspaces/{{id}}">{{name}}</a>{{/each}}</nav>
   {{#unless selected}}

@@ -7,48 +7,44 @@
     <p class="description">
       by&nbsp;
       {{~#if user_id~}}
-        <a 
-          aria-label="View user" 
+        <button type="button" class="link-button" data-focus-after="#tab-users" aria-label="View user"
           data-tooltip="View user" 
           hx-get="/api/users/admin"
           hx-target="closest table"
-          hx-swap="outerHTML" 
+          hx-swap="outerHTML settle:0ms"
           hx-sync="this:replace"
           hx-indicator="closest table"
           hx-vals='{"search":"{{email}}"}'
-          onclick="setTab(event, 'tab-links')"
         >
           {{email}}
-        </a>
+        </button>
         {{#ifEquals @root.query.user email}}
         {{else}}
           &nbsp;(
-          <a 
-            aria-label="View domains" 
+          <button type="button" class="link-button" data-focus-after="#tab-domains" aria-label="View domains"
             data-tooltip="View domains" 
             hx-get="/api/domains/admin"
             hx-target="closest table"
-            hx-swap="outerHTML" 
+            hx-swap="outerHTML settle:0ms"
             hx-sync="this:replace"
             hx-indicator="closest table"
             hx-vals='{"user":"{{email}}"}'
           >
             view domains
-          </a>)
+          </button>)
         {{/ifEquals}}
       {{~else~}}
-        <a 
-          aria-label="View system domains" 
+        <button type="button" class="link-button" data-focus-after="#tab-domains" aria-label="View system domains"
           data-tooltip="View system domains" 
           hx-get="/api/domains/admin"
           hx-target="closest table"
-          hx-swap="outerHTML" 
+          hx-swap="outerHTML settle:0ms"
           hx-sync="this:replace"
           hx-indicator="closest table"
           hx-vals='{"owner":"false"}'
         >
           System
-        </a>
+        </button>
       {{~/if~}}
       &nbsp;{{~#if description~}}· {{description}}{{~/if}}
     </p>
@@ -69,19 +65,17 @@
     {{#ifEquals links_count '0'}}
       {{links_count}}
     {{else}}
-      <a
-        data-tooltip="View links"
+      <button type="button" class="link-button" data-focus-after="#tab-links" data-tooltip="View links"
         aria-label="View links"
         hx-get="/api/links/admin"
         hx-target="closest table"
-        hx-swap="outerHTML" 
+        hx-swap="outerHTML settle:0ms"
         hx-sync="this:replace"
         hx-vals='{"domain":"{{address}}"}'
         hx-indicator="closest table"
-        onclick="setTab(event, 'tab-links')"
       >
         {{links_count}}
-      </a>
+      </button>
     {{/ifEquals}}
   </td>
   {{> admin/domains/actions}}

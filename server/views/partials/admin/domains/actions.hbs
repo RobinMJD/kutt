@@ -1,12 +1,15 @@
 <td class="actions domains-actions">
   {{#if banned}}
-    <button class="action banned" disabled="true" data-tooltip="Banned">
+    <button class="action banned" disabled="true" aria-label="Banned" data-tooltip="Banned">
       {{> icons/stop}}
     </button>
   {{/if}}
   {{#unless banned}}
     <button 
-      class="action ban" 
+      class="action ban"
+      type="button"
+      aria-label="Ban domain {{address}}"
+      title="Ban domain"
       hx-on:click='openDialog("admin-table-dialog")' 
       hx-get="/confirm-domain-ban" 
       hx-target="#admin-table-dialog .content-wrapper" 
@@ -17,7 +20,10 @@
     </button>
   {{/unless}}
   <button 
-    class="action delete" 
+    class="action delete"
+    type="button"
+    aria-label="Delete domain {{address}}"
+    title="Delete domain"
     hx-on:click='openDialog("admin-table-dialog")' 
     hx-get="/confirm-domain-delete-admin" 
     hx-target="#admin-table-dialog .content-wrapper" 

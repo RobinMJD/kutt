@@ -15,7 +15,9 @@
     const list = document.querySelector("#health-links"), refresh = document.querySelector("#health-refresh"), more = document.querySelector("#health-more");
     let cursor = null, busy = false;
     async function load(reset) {
-      if (busy) return; busy = true; refresh.disabled = more.disabled = true; show("Loading...");
+      if (busy) return;
+      const focus = window.KuttFocus.capture();
+      busy = true; refresh.disabled = more.disabled = true; show("Loading...");
       try {
         const result = await request("/api/v2/links/health" + (!reset && cursor ? "?before=" + encodeURIComponent(cursor) : ""));
         if (reset) list.replaceChildren();
@@ -28,7 +30,7 @@
         cursor = result.next; more.hidden = !cursor;
         show(list.children.length ? "Monitoring refreshed." : "No monitored links. Open a link in Library to configure monitoring.");
       } catch (error) { show(error.message, true); }
-      finally { busy = false; refresh.disabled = more.disabled = false; }
+      finally { busy = false; refresh.disabled = more.disabled = false; window.KuttFocus.restore(focus, refresh); }
     }
     refresh.addEventListener("click", () => load(true)); more.addEventListener("click", () => load(false)); void load(true); return;
   }
@@ -55,21 +57,26 @@
     if (!data.results.length) node("li", data.source_changed ? "Destinations changed. Previous results no longer apply." : "No current results.", results);
   }
   async function load() {
-    if (busy) return; lock(true); show("Loading...");
+    if (busy) return;
+    const focus = window.KuttFocus.capture();
+    lock(true); show("Loading...");
     try { render(await request(api), true); show("Saved monitoring loaded."); }
-    catch (error) { show(error.message, true); } finally { lock(false); }
+    catch (error) { show(error.message, true); } finally { lock(false); window.KuttFocus.restore(focus); }
   }
   form.addEventListener("submit", async event => {
     event.preventDefault(); if (busy || revision === null) return;
+    const focus = window.KuttFocus.capture();
     const body = { revision, enabled: form.elements.enabled.checked, interval_hours: Number(form.elements.interval_hours.value) };
     lock(true); show("Saving...");
     try { render(await request(api, "PUT", body), false); show("Monitoring saved."); }
-    catch (error) { show(error.message, true); } finally { lock(false); }
+    catch (error) { show(error.message, true); } finally { lock(false); window.KuttFocus.restore(focus); }
   });
   check.addEventListener("click", async () => {
-    if (busy || revision === null || !enabled) return; lock(true); show("Queueing...");
+    if (busy || revision === null || !enabled) return;
+    const focus = window.KuttFocus.capture();
+    lock(true); show("Queueing...");
     try { render(await request(api + "/check", "POST", { revision }), false); show("Check queued. Refresh to view results."); }
-    catch (error) { show(error.message, true); } finally { lock(false); }
+    catch (error) { show(error.message, true); } finally { lock(false); window.KuttFocus.restore(focus, document.querySelector("#health-reload")); }
   });
   document.querySelector("#health-reload").addEventListener("click", load); void load();
 })();

@@ -786,10 +786,19 @@ POST focus intent with no stored draft values; focus preservation for async
 forwarding/routing/monitoring and analytics pages. Completion must not steal focus
 from another field. Visible focus has an immediate dark outline and respects
 reduced motion. Duplicate pagination IDs and the distinct admin domain-filter
-ID are corrected. Server/isolated focus-helper tests pass. Browser tests are in
-progress; initial harness corrections distinguish HTML's 200 creation response
-from JSON's 201 and wait for HTMX initialization/async completion. No release or
-closure yet.
+ID are corrected. Server/isolated focus-helper tests pass. Browser tests pass at
+1440/390/320px for named controls, keyboard activation, edit/close, bulk
+pause/trash/restore, workspace creation, async saves/concurrent draft focus,
+analytics and admin navigation. Initial harness corrections distinguish HTML's
+200 creation response from JSON's 201 and wait for async completion. A redacted
+event trace also proved a genuine fast-input gap between editor insertion and
+HTMX initialization. Editor/table swaps now settle immediately (the
+[documented default](https://htmx.org/attributes/hx-swap/) is 20ms); fallback
+editor forms use POST so fields cannot enter the URL. Server tests cover 0/1/10/11
+results and last-page states. The first full-suite attempt revealed a missing
+fixture-database argument in the new test invocation; it is corrected, not waived.
+Release `.22` is a candidate, not deployed or closed yet. Visual mobile table
+clipping remains UX-002, separate from the passing keyboard checks.
 
 UX-013 is being addressed in the same tab-update path: navigation is recalculated
 after the new table settles instead of relying on a removed table's listener.

@@ -6,48 +6,44 @@
     <p class="description">
       by&nbsp;
       {{~#if user_id~}}
-        <a 
-          aria-label="View user" 
+        <button type="button" class="link-button" data-focus-after="#tab-users" aria-label="View user"
           data-tooltip="View user" 
           hx-get="/api/users/admin"
           hx-target="closest table"
-          hx-swap="outerHTML" 
+          hx-swap="outerHTML settle:0ms"
           hx-sync="this:replace"
           hx-indicator="closest table"
           hx-vals='{"search":"{{email}}"}'
-          onclick="setTab(event, 'tab-links')"
         >
           {{email}}
-        </a>
+        </button>
         {{#ifEquals @root.query.user email}}
         {{else}}
           &nbsp;(
-          <a 
-            aria-label="View links by this user" 
+          <button type="button" class="link-button" data-focus-after="#tab-links" aria-label="View links by this user"
             data-tooltip="View links by this user" 
             hx-get="/api/links/admin"
             hx-target="closest table"
-            hx-swap="outerHTML" 
+            hx-swap="outerHTML settle:0ms"
             hx-sync="this:replace"
             hx-indicator="closest table"
             hx-vals='{"user":"{{email}}"}'
           >
             view links
-          </a>)
+          </button>)
         {{/ifEquals}}
       {{~else~}}
-        <a 
-          aria-label="View anonymous links" 
+        <button type="button" class="link-button" data-focus-after="#tab-links" aria-label="View anonymous links"
           data-tooltip="View anonymous links" 
           hx-get="/api/links/admin"
           hx-target="closest table"
-          hx-swap="outerHTML" 
+          hx-swap="outerHTML settle:0ms"
           hx-sync="this:replace"
           hx-indicator="closest table"
           hx-vals='{"anonymous":"true"}'
         >
           Anonymous
-        </a>
+        </button>
       {{~/if~}}
       &nbsp;{{~#if description~}}· {{description}}{{~/if}}
     </p>
@@ -75,16 +71,15 @@
       <a href="{{link.url}}">/{{link.address}}</a>
     </div>
     <p class="description">
-      <a 
-        aria-label="View links by this domain" 
+      <button type="button" class="link-button" data-focus-after="#tab-links" aria-label="View links by this domain"
         data-tooltip="View links by this domain" 
         hx-get="/api/links/admin"
         hx-target="closest table"
-        hx-swap="outerHTML" 
+        hx-swap="outerHTML settle:0ms"
         hx-sync="this:replace"
         hx-vals='{"domain":"{{domain}}"}'
         hx-indicator="closest table"
-      >{{domain}}</a>
+      >{{domain}}</button>
     </p>
   </td>
   <td class="views">

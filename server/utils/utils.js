@@ -405,6 +405,9 @@ function getUseragentOS(agent) {
 }
 
 function registerHandlebarsHelpers() {
+  hbs.registerHelper("hasNextPage", function(total, limit, skip) {
+    return Number(total) > Number(skip || 0) + Number(limit || 10);
+  });
   hbs.registerHelper("ifEquals", function(arg1, arg2, options) {
     return (arg1 === arg2) ? options.fn(this) : options.inverse(this);
   });
