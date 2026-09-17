@@ -2,8 +2,8 @@
 
 Last updated: 2026-09-17 (Europe/Paris).
 
-**Status: initial findings recorded; the full rendered audit is not yet complete.**
-Twenty-two findings are confirmed; UX-001 through UX-020 are verified/closed. Remaining concerns and workflow
+**Status: all 22 confirmed findings are fixed, released, deployed and recovery-verified; user-assisted audit acceptance remains open.**
+UX-001 through UX-022 are verified/closed. Remaining concerns and workflow
 coverage are tracked below. Do not describe this as a completed accessibility audit.
 The ordinary rendered workflows now have bounded coverage. The explicit
 AUDIT-00 remainder below separates external acceptance gates from regression
@@ -33,7 +33,7 @@ UX-014 response validation passed every release/deployment/recovery gate in `.33
 UX-016 single-navigation login and UX-012 unavailable-recipient pages passed all
 release, exact-image, deployment and clean post-backup recovery gates in `.35.1`.
 Compact-header crowding and the newly confirmed Account security heading issue
-are implemented for `.36.1` as UX-021/022; rendered checks pass, release gates remain.
+passed all release, exact-image, live and clean recovery gates in `.36.1` as UX-021/022.
 A-01..A-04 remain
 open alongside the fixes; earlier zoom/PDF evidence does not waive those checks.
 
@@ -793,12 +793,12 @@ P3: polish with no blocked task. These are product priorities, not CVSS scores.
 | UX-018 | P1 | Stale workspace edits silently overwrite another client's availability | Two real clients, description-only rendered save and API before/after | Verified/closed in .20 |
 | UX-019 | P2 | Workspace validation errors discard the unsaved edit draft | Invalid-alias response, collapsed editor and fresh field inspection | Verified/closed in .20 |
 | UX-020 | P1 | Checked workspace checkbox decoration covers editor fields | Fresh validation screenshot and inherited pseudo-element source | Verified/closed in .20 |
-| UX-021 | P3 | Compact authenticated header crowds the brand and wraps Log out mid-label | Fresh 320px desktop-browser captures during UX-011 verification | Implemented for .36; rendered checks passed, release/deployment pending |
-| UX-022 | P2 | Account security page heading crowds Connected identity and splits Settings mid-word | Fresh 320px UX-021 source captures and obsolete header class | Implemented for .36; rendered checks passed, release/deployment pending |
+| UX-021 | P3 | Compact authenticated header crowds the brand and wraps Log out mid-label | Fresh 320px desktop-browser captures during UX-011 verification | Verified/closed in .36.1 |
+| UX-022 | P2 | Account security page heading crowds Connected identity and splits Settings mid-word | Fresh 320px UX-021 source captures and obsolete header class | Verified/closed in .36.1 |
 
 ### UX-021: Let The Compact Header Wrap Deliberately
 
-Implemented for `.36`, not closed. A dedicated `site-header` class scopes changes
+Verified/closed in `.36.1`, alongside UX-022 below. A dedicated `site-header` class scopes changes
 away from nested page/section headers. Natural height, deliberate gaps and flex
 wrapping keep the brand and account actions separate; account labels do not
 split. A bounded brand span wraps even unbroken long names, and the decorative
@@ -812,8 +812,8 @@ It checks control/brand geometry rather than relying only on document overflow,
 single-line action labels, keyboard settings navigation/logout and management
 denial. Captures exposed UX-022 below; the corrected full run includes H1/next
 section separation and the Settings label. Compact and desktop fixed captures
-were inspected in `ux021-fixed-captures`; no console errors. Publication, exact
-wrapper tests, backup/deployment and verified recovery remain open.
+were inspected in `ux021-fixed-captures`; no console errors. Exact-image,
+publication, backup/deployment and verified recovery passed as recorded below.
 
 Fresh 320px captures (`ux011-source/copy-top-compact.png` and
 `copy-row-compact.png`, outside Git in the private audit directory) show the
@@ -843,7 +843,7 @@ The `.36` full CI caught an obsolete `<header>`-only selector in the login-copy
 regression after the new header class was added. The selector now accepts header
 attributes and explicitly asserts its presence; all seven configuration-policy
 checks remain. No `.36` image was published or deployed. `.36.1` retains the same
-runtime changes. Publication/deployment/recovery gates remain open.
+runtime changes. Publication/deployment/recovery gates passed below.
 
 The `.36.1` exact hardened image passed the full runtime suite and a valid
 Grype scan with zero critical/high matches. All 36 header layouts passed again,
@@ -855,7 +855,37 @@ settling from about 116px to exactly 72px on both compared pages. The test now
 waits for fonts and actual header animations to finish; its strict equality,
 hit-region and no-overlap assertions are unchanged. No runtime fix or timing
 tolerance was added. The failed trace remains alongside the passing settled
-trace in the private work directory. Backup/deployment/recovery still gate closure.
+trace in the private work directory.
+
+Release commit `b29b68f3c255ce64b7635ee4deb9a0956557e608` passed Fork CI
+`35189217699` and Shortcut CI `35189217711`; the test/documentation follow-up
+`372fb23` passed Fork CI `35190804012`. Registry image:
+`sha256:ab261ea93c693bfd8c5f1defc0a27582926cf176ebfa7932c779da5737e39830`;
+exact deployed wrapper:
+`sha256:1cdfaac0580be037d536f84616770a814714fa65f832a5db5762c77694aa81f0`.
+The scan has three medium BusyBox-family matches for CVE-2025-60876 with no
+fixed version listed, not zero vulnerabilities.
+
+Pre-backup 2026-09-17 06:38:58 UTC: local
+`510f2fed3d827eb082635fb850471adaaeca681ffc7f6a28cd613e01b447593a`, NAS
+`2d7329ee8ef026d32903b5680a8f2eb6cedfccbd925db07483e54756231eb918`.
+All 62 files matched and writable exact-image recovery passed before cutover at
+06:40:14 UTC. Full public WAF/feature smoke, real HTTPS webhook delivery,
+Authentik-signed logout/replay, original fingerprints, two separated health
+samples and whole-lab validation passed. Both samples recorded three required
+probes, zero alerts/failed units/unhealthy containers and zero Kutt restarts.
+Whole-lab validation retained the pre-existing Mail Bridge and Passkey Readiness
+environment-template warnings; they were not changed by this release.
+
+After complete test cleanup, post-backup 06:50:49 UTC: local
+`9c0caa16a94c1db0fce7d4652c1ee3e3f3c5a6bbd60e78fd3e398248ec80ac30`, NAS
+`bcecab4080922f0dfa3a40f70b8ffc920cfd74719cceefb805033454cdb30392`.
+All 62 files matched; writable recovery preserved the original one user/one
+link, with integrity and foreign-key checks passing. Private evidence is under
+`/srv/homelab/security-reports/2026-09-17-kutt-ux021/` (includes UX-022).
+The 16 remaining isolated browser containers, their tunnels and TLS proxy were
+removed by exact identity after testing; production, backups and captures remain.
+No local fixture listener remains. User-assisted A-01..A-04 are not waived.
 
 ### Final Security Review Limitation
 
