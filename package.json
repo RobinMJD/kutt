@@ -1,6 +1,6 @@
 {
   "name": "kutt",
-  "version": "3.2.6-sr94.25",
+  "version": "3.2.6-sr94.26",
   "description": "Modern URL shortener.",
   "main": "./server/server.js",
   "scripts": {
@@ -68,7 +68,9 @@
     "ip-address": "10.3.1",
     "qs": "6.16.0",
     "body-parser": "1.20.8",
-    "bull": { "uuid": "11.1.1" }
+    "bull": {
+      "uuid": "11.1.1"
+    }
   },
   "devDependencies": {
     "@types/bcryptjs": "2.4.2",

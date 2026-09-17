@@ -19,8 +19,11 @@ and post-release restore passed. UX-018/019/020 passed the same gates in `.20`.
 UX-017 passed publication, exact deployment, live validation and post-backup restore in `.21`.
 UX-001/013 passed publication, exact deployment, live validation and post-backup restore in `.22`. UX-003
 passed publication, exact deployment, live validation and post-backup restore in `.23`. UX-002
-passed those gates in `.24`. UX-008 native-modal implementation and rendered tests
-are in progress for `.25`, not deployed. A-01..A-04 remain
+passed those gates in `.24`. UX-008 native-modal implementation, source regression,
+rendered tests and publication CI passed for `.25`; exact-image/deployment gates
+remain open. UX-004 accurate lifecycle labels and bulk-result feedback are
+implemented locally with initial API and browser checks passing, not released.
+A-01..A-04 remain
 open alongside the fixes; earlier zoom/PDF evidence does not waive those checks.
 
 ## Feature And Deployment Gate
@@ -762,11 +765,11 @@ P3: polish with no blocked task. These are product priorities, not CVSS scores.
 | UX-001 | P1 | Core icon controls lack accessible names | Rendered DOM and source | Verified/closed in .22 |
 | UX-002 | P1 | Mobile recent-links table hides essential actions and the empty state | Mobile screenshots, source | Verified/closed in .24 |
 | UX-003 | P1 | Library heading links overlap mobile filter controls | Screenshot and measured DOM | Verified/closed in .23 |
-| UX-004 | P2 | `active` filter includes visibly paused links | Successful bulk pause, source | Open |
+| UX-004 | P2 | `active` filter includes visibly paused links | Successful bulk pause, source | Implemented locally; validation/publication/deployment gates pending |
 | UX-005 | P2 | Legacy URL validation lacks programmatic field/error association | Invalid-submit DOM, source | Open |
 | UX-006 | P2 | Import schema errors do not give a usable correction path | Error/preview/commit exercise | Open |
 | UX-007 | P2 | SSO-only login advertises sign-up even when registration is disabled | Production screenshot, source | Open |
-| UX-008 | P1 | Custom confirmation dialogs leave keyboard focus behind the overlay | Fresh keyboard/DOM checks, screenshot | Implemented; .25 validation/publication/deployment gates pending |
+| UX-008 | P1 | Custom confirmation dialogs leave keyboard focus behind the overlay | Fresh keyboard/DOM checks, screenshot | Published .25; exact-image/deployment gates pending |
 | UX-009 | P2 | Mobile webhook save errors are outside the visible viewport | Rejected private target, preserved draft and measured status geometry | Open |
 | UX-010 | P2 | Navigation links and routing errors fail minimum text contrast | Rendered computed colors and calculated ratios | Open |
 | UX-011 | P2 | Legacy Copy shows success even when the clipboard rejects the write | Controlled rejection, copied CSS state and unhandled error | Open |
@@ -988,6 +991,23 @@ include browser zoom as well as narrow viewport tests.
 ![Wrapped Library navigation covered by filters](ui-ux-review/2026-09-15/09-library-mobile.png)
 
 ### UX-004: Use Accurate Lifecycle Filter Names
+
+Implemented for candidate `.26`, not released: Library and Workspace labels now say
+`Not in trash` / `In trash`; Library also says `Not paused`. Existing API values
+and saved filters are unchanged. Bulk POST/303/GET returns a bounded, signed,
+user-bound action/count receipt; the page focuses the result and clears selection.
+Counts describe matched selected links, including already-applied operations,
+not newly changed rows or guaranteed redirect availability. Pending Apply
+prevents duplicate submissions without disabling fields needed by the request.
+Initial API tests cover all six lifecycle states, old saved-filter values,
+tamper/expiry/cross-user/failure handling; desktop/390/320px browser CRUD and
+result focus passed. The real DOM submit handlers reject repeat submits and
+recover on pageshow; normal browser submissions then succeed. A held-native-
+navigation test stalled the browser harness and is not counted as network-delay
+evidence. Full isolated source regression passed; Workspace rendered HTML/API
+checks also confirm that a paused row remains under the preserved `active` value
+with the new label. Release/deployment gates remain open. No schema, authorization or
+public redirect changes.
 
 After selecting the synthetic link, choosing Pause and applying it, the row
 correctly says `Paused` but remains under the selected `active` filter. The query

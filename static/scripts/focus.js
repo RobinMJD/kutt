@@ -55,7 +55,8 @@
     if (intent && Date.now() - intent.time < 60000 &&
         (location.pathname === intent.path || location.pathname.startsWith(intent.path + "/")) &&
         document.activeElement === document.body) {
-      const target = document.querySelector(".workspace-edit-error, .library [role='alert'], .workspaces [role='alert'], [data-page-focus]");
+      const target = document.querySelector(".workspace-edit-error, .library [role='alert'], .workspaces [role='alert'], .library-notice") ||
+        document.querySelector("[data-page-focus]");
       if (target) { target.tabIndex = -1; target.focus(); }
     }
   } catch {}

@@ -9,7 +9,7 @@ const net = require("node:net");
 const { setTimeout: delay } = require("node:timers/promises");
 
 async function main() {
-  assert([undefined, "workspaces", "workspace-edit", "routing", "analytics", "privacy", "webhooks", "forwarding", "link-health", "shortcuts", "security-regressions", "admin-user-filter", "admin-edit", "accessibility", "dialogs", "campaign", "expiry-edit"].includes(process.env.KUTT_TEST_ONLY), "Unknown focused test selection");
+  assert([undefined, "workspaces", "workspace-edit", "routing", "analytics", "privacy", "webhooks", "forwarding", "link-health", "shortcuts", "security-regressions", "admin-user-filter", "admin-edit", "accessibility", "dialogs", "library-ux", "campaign", "expiry-edit"].includes(process.env.KUTT_TEST_ONLY), "Unknown focused test selection");
   const root = path.resolve(__dirname, "..");
   assert(!existsSync(path.join(root, ".env")), "Run in a clean checkout without a .env file");
   const directory = mkdtempSync(path.join(tmpdir(), "kutt-smoke-"));
@@ -155,6 +155,7 @@ async function main() {
     await require("./expiry-edit.cjs")({ request, session: token, database: env.DB_FILENAME, restart });
     await require("./link-history.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart });
     await require("./library.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, root, directory, env });
+    await require("./library-ux.cjs")({ request, session: token, database: env.DB_FILENAME, env });
     await require("./transfer.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, root, directory, env });
     await require("./qr.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, env });
     await require("./admin-user-filter.cjs")({ request, session: token, database: env.DB_FILENAME, account, env });

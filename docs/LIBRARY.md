@@ -7,10 +7,11 @@ Release `3.2.6-sr94.6.1`, deployed and verified on 2026-09-14. See the
 
 Open **Library** above the recent-links table. Tags and collections are private
 named labels; a link can belong to multiple collections and have multiple tags.
-They do not grant access or transfer ownership. Shared workspaces are separate
-roadmap work. Search matches literal substrings in alias, target and description.
-Tag and collection filters combine with AND. State distinguishes active (not
-trashed), paused, unpaused and trash; unpaused does not imply an unexpired link.
+They do not grant access or transfer ownership. See [Workspaces](WORKSPACES.md)
+for shared links. Search matches literal substrings in alias, target and description.
+Tag and collection filters combine with AND. State distinguishes **Not in trash**,
+**Paused**, **Not paused** and **In trash**. Not paused does not imply an available
+redirect: a link may be scheduled, expired or at its visit limit.
 The current lifecycle status remains visible on each result. Trashed links from
 removed custom domains keep their original hostname; they are never presented
 as links on the default domain. The initial `.6` artifact was superseded before
@@ -27,6 +28,16 @@ Select individual links or the current page, then add/remove a label, pause,
 resume, or move to trash. Selection never implicitly includes other pages. Trash
 requires browser confirmation and preserves history, aliases, policies and
 organization for restore. Removing a label or collection never deletes links.
+
+After a successful bulk action, the page shows the server-confirmed action and
+selected-link count, focuses that result and clears selection. Counts include
+already-applied operations, so the result does not claim every row changed or
+became available. Pending Apply prevents a second submission. Native POST/303/GET
+navigation prevents refresh from repeating the action. The short-lived result
+cookie is signed, user-bound, HttpOnly and SameSite Strict (Secure on HTTPS),
+cleared after display, and contains no link content. Invalid/expired receipts or
+failed mutations never show a success message. This feedback is not an access
+credential. These UX-004 changes are under release validation, not yet deployed.
 
 ## API
 
@@ -49,6 +60,11 @@ two require `label_id`. Accepts 1-100 distinct UUIDs. A successful response coun
 matched links, including already-applied operations; retries do not duplicate
 relations or unchanged audit events. No permanent deletion or bulk restore API
 is added. Existing single-link restore remains supported.
+
+State query values and existing saved filters remain backward-compatible:
+`active` means not in trash, `paused` means paused and not trashed, `unpaused`
+means not paused and not trashed, and `trash` means in trash. Only the displayed
+filter labels change; lifecycle status is evaluated independently.
 
 Pages contain at most 50 links, newest first. A saved-filter ID resolves only
 within the authenticated account. Domain-restricted tokens see only their own

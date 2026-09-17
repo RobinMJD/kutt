@@ -64,7 +64,7 @@
     </details>{{/if}}
     <form class="workspace-form" method="get" action="{{@root.action_url}}" aria-label="Filter shared links">
       <label>Search<input type="search" name="q" value="{{q}}" maxlength="200" /></label>
-      <label>State<select name="state" aria-label="State"><option value="active" {{#unless trash}}selected{{/unless}}>Active</option><option value="trash" {{#if trash}}selected{{/if}}>Trash</option></select></label><button type="submit">Filter</button>
+      <label>State<select name="state" aria-label="State"><option value="active" {{#unless trash}}selected{{/unless}}>Not in trash</option><option value="trash" {{#if trash}}selected{{/if}}>In trash</option></select></label><button type="submit">Filter</button>
     </form>
     <p>{{total}} links</p><ul class="workspace-links">
       {{#each data}}<li>

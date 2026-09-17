@@ -1,6 +1,29 @@
 const library = require("../library");
 const { sameOrigin } = require("./link-history.handler");
 const { CustomError } = require("../utils");
+const { createHmac, timingSafeEqual } = require("node:crypto");
+const env = require("../env");
+
+const noticeCookie = "kutt_library_notice";
+const noticeOptions = req => ({ httpOnly: true, sameSite: "strict", secure: req.secure, path: "/settings/library" });
+const noticeSignature = data => createHmac("sha256", env.JWT_SECRET).update("library-notice-v1\0" + data).digest("hex");
+const actionNames = { add_label: "Label assignment", remove_label: "Label removal", pause: "Pause", resume: "Resume", trash: "Move to trash" };
+function readNotice(req, res) {
+  const value = req.cookies?.[noticeCookie];
+  if (!value) return;
+  res.clearCookie(noticeCookie, noticeOptions(req));
+  if (typeof value !== "string" || value.length > 1000) return;
+  const [data, signature, extra] = value.split(".");
+  if (extra || !/^[a-f0-9]{64}$/.test(signature || "") ||
+      !timingSafeEqual(Buffer.from(signature), Buffer.from(noticeSignature(data)))) return;
+  try {
+    const result = JSON.parse(Buffer.from(data, "base64url").toString("utf8"));
+    if (result.user !== req.user.id || !Object.hasOwn(actionNames, result.action) ||
+        !Number.isInteger(result.affected) || result.affected < 1 || result.affected > 100 ||
+        !Number.isFinite(result.expires) || result.expires < Date.now() || result.expires > Date.now() + 60000) return;
+    return `${actionNames[result.action]} applied to ${result.affected} selected ${result.affected === 1 ? "link" : "links"}.`;
+  } catch {}
+}
 
 function metadataAccess(req) {
   if (req.apiTokenDomain !== undefined) throw new CustomError("Account labels and filters require an unrestricted domain scope.", 403);
@@ -40,16 +63,18 @@ function viewURL(filters, page = 1) {
   return "/settings/library?" + new URLSearchParams({ ...filters, page }).toString();
 }
 
-async function page(req, res, error, notice) {
+async function page(req, res, error) {
   res.set("Cache-Control", "no-store");
   // Native forms need their same-origin Origin; never accept the opaque null origin.
   res.set("Referrer-Policy", "same-origin");
+  const notice = readNotice(req, res);
   const result = await library.list(req.user.id, error ? {} : req.query);
   const tags = result.labels.filter(row => row.kind === "tag").map(row => ({ ...row, selected: row.id === result.filters.tag }));
   const collections = result.labels.filter(row => row.kind === "collection").map(row => ({ ...row, selected: row.id === result.filters.collection }));
   return res.render("library", {
-    title: "Library", ...result, tags, collections, error, notice,
-    states: ["active", "paused", "unpaused", "trash"].map(value => ({ value, selected: value === result.filters.state })),
+    title: "Library", ...result, tags, collections, error, notice: error ? undefined : notice,
+    states: Object.entries({ active: "Not in trash", paused: "Paused", unpaused: "Not paused", trash: "In trash" })
+      .map(([value, label]) => ({ value, label, selected: value === result.filters.state })),
     view_url: viewURL(result.filters, result.page),
     previous: result.page > 1 ? viewURL(result.filters, result.page - 1) : null,
     next: result.page * result.limit < result.total ? viewURL(result.filters, result.page + 1) : null,
@@ -60,7 +85,7 @@ async function page(req, res, error, notice) {
 
 async function submit(req, res) {
   try {
-    await mutate(req, req.body.operation);
+    const result = await mutate(req, req.body.operation);
     let target = "/settings/library";
     if (typeof req.body.return_to === "string") {
       let url;
@@ -72,6 +97,11 @@ async function submit(req, res) {
         target += url.search;
       }
     }
+    if (req.body.operation === "bulk") {
+      // A short-lived, user-bound receipt carries only the committed action/count, not link data.
+      const data = Buffer.from(JSON.stringify({ user: req.user.id, ...result, expires: Date.now() + 60000 })).toString("base64url");
+      res.cookie(noticeCookie, data + "." + noticeSignature(data), { ...noticeOptions(req), maxAge: 60000 });
+    } else res.clearCookie(noticeCookie, noticeOptions(req));
     return res.redirect(303, target);
   } catch (error) {
     if (!(error instanceof CustomError)) throw error;

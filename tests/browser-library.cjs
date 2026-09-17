@@ -1,6 +1,6 @@
 const assert = require("node:assert/strict");
 const { randomBytes } = require("node:crypto");
-const { mkdtempSync } = require("node:fs");
+const { mkdtempSync, mkdirSync } = require("node:fs");
 const { tmpdir } = require("node:os");
 const path = require("node:path");
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
@@ -10,6 +10,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
   const origin = process.env.KUTT_TEST_URL;
   assert(origin && new URL(origin).hostname === "127.0.0.1", "Use a fresh loopback-only instance");
   const evidence = process.env.KUTT_EVIDENCE_DIR || mkdtempSync(path.join(tmpdir(), "kutt-library-ui-"));
+  mkdirSync(evidence, { recursive: true });
   const browser = await chromium.launch({ headless: true });
   let page;
   try {
@@ -30,6 +31,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
     page.on("dialog", dialog => dialog.accept());
     const submit = async button => {
       const response = page.waitForResponse(row => row.url().endsWith("/settings/library") && row.request().method() === "POST");
+      response.catch(() => {});
       await button.click();
       const result = await response;
       if (result.status() !== 303) {
@@ -42,11 +44,17 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
     const manage = async () => { await page.locator(".library-manage").evaluate(element => { element.open = true; }); };
     const select = async address => { await page.getByRole("checkbox", { name: "Select " + address, exact: true }).check(); };
     const action = async (value, label) => {
+      const count = await page.locator('input[name="ids"]:checked').count();
       await page.locator("#library-action").selectOption(value);
       if (label) await page.locator('#library-label-field select').selectOption({ label });
       await submit(page.getByRole("button", { name: "Apply", exact: true }));
+      const names = { add_label: "Label assignment", remove_label: "Label removal", pause: "Pause", resume: "Resume", trash: "Move to trash" };
+      assert.equal(await page.locator(".library-notice").textContent(), `${names[value]} applied to ${count} selected ${count === 1 ? "link" : "links"}.`);
+      assert(await page.locator(".library-notice").evaluate(node => node === document.activeElement), "Bulk result gets intentional focus");
+      assert.equal(await page.locator("#library-selection").textContent(), "0 selected");
+      assert(await page.getByRole("button", { name: "Apply", exact: true }).isDisabled());
     };
-    for (const [mode, width, height] of [["desktop", 1440, 1000], ["mobile", 390, 844]]) {
+    for (const [mode, width, height] of [["desktop", 1440, 1000], ["mobile", 390, 844], ["compact", 320, 844]]) {
       await page.setViewportSize({ width, height });
       const address = "library-ui-" + mode;
       const link = await context.request.post(origin + "/api/links", { headers, data: {
@@ -86,7 +94,27 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
       assert.equal(await page.locator("#library-selection").textContent(), "1 selected");
       assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), mode + " library overflow");
       await page.screenshot({ path: path.join(evidence, `library-${mode}.png`), fullPage: true });
+      if (mode === "desktop") {
+        await page.locator("#library-action").selectOption("pause");
+        const guard = await page.evaluate(() => {
+          const form = document.getElementById("library-bulk"), prevented = [];
+          // Prevent only navigation in the synthetic test; exercise the real submit handlers.
+          const observe = event => { prevented.push(event.defaultPrevented); event.preventDefault(); };
+          form.addEventListener("submit", observe);
+          form.requestSubmit(); form.requestSubmit(); form.requestSubmit();
+          const pending = document.getElementById("library-apply").disabled && form.getAttribute("aria-busy") === "true";
+          form.removeEventListener("submit", observe);
+          window.dispatchEvent(new PageTransitionEvent("pageshow", { persisted: true }));
+          const recovered = !document.getElementById("library-apply").disabled && !form.hasAttribute("aria-busy");
+          return { prevented, pending, recovered };
+        });
+        assert.deepEqual(guard, { prevented: [false, true, true], pending: true, recovered: true });
+      }
       await action("pause");
+      assert.equal(await filter.getByLabel("State", { exact: true }).inputValue(), "active");
+      assert.equal(await filter.getByLabel("State", { exact: true }).locator("option:checked").textContent(), "Not in trash");
+      assert.equal(await page.locator('.library-links input[name="ids"]').count(), 1);
+      await page.screenshot({ path: path.join(evidence, `library-result-${mode}.png`), fullPage: true });
       assert.equal((await context.request.get(origin + "/" + address, { maxRedirects: 0 })).status(), 410);
       await select(address);
       await action("resume");

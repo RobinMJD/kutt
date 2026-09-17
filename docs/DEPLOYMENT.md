@@ -77,6 +77,18 @@ browser zoom and role boundaries are covered; exact-image regression, deployment
 live WAF/OIDC checks, monitoring and post-backup restore passed. Evidence is in
 the UI/UX ledger.
 
+### Library lifecycle labels and bulk feedback (3.2.6-sr94.26 candidate)
+
+UI filter labels now distinguish not-in-trash from actual redirect availability;
+legacy API/saved-filter values remain unchanged. Bulk changes retain native
+POST/303/GET navigation and show a server-confirmed action/count with focused
+feedback. The count includes already-applied operations. The short-lived signed
+receipt cookie is user-bound and contains no link data; it is not an access
+credential. No schema, API, dependency, secret or WAF/SSO changes are needed.
+Reload management pages after deployment. Image-only rollback to `.25` retains
+data but restores ambiguous labels and missing feedback. Publication, exact-image
+and deployment acceptance remain open in the UI/UX ledger.
+
 ### Native modal dialogs (3.2.6-sr94.25 candidate)
 
 Shared native dialogs isolate the background and retain keyboard focus. Close
