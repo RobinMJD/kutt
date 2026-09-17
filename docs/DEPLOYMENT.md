@@ -38,7 +38,7 @@ rollback is schema-compatible but restores the misleading owner/error display;
 keep the current database and secrets. Exact-image and post-change gates passed;
 deployment and recoverability evidence is recorded in the UI/UX ledger.
 
-### Keyboard and pagination upgrade (3.2.6-sr94.22 candidate)
+### Keyboard and pagination upgrade (3.2.6-sr94.22)
 
 Named controls, native admin tab/filter buttons, immediate visible focus and
 post-action focus recovery do not change data, APIs or access policy. Reload
@@ -50,8 +50,17 @@ existing authorized PATCH path. Pagination is bounded and server-rendered empty
 and one-page results disable Next immediately. Focus intent across native
 management POSTs stores only an expiring local path/time marker, never drafts.
 No schema or secret change. Image-only rollback to `.21` preserves current data
-but restores the accessibility/navigation defects. Exact-image and deployment
-acceptance remain pending in the UI/UX ledger.
+but restores the accessibility/navigation defects. Exact-image validation and
+deployment passed; post-change acceptance is tracked in the UI/UX ledger.
+
+### Content-heading layout upgrade (3.2.6-sr94.23 candidate)
+
+Shared page headings reserve their full wrapped height and constrain long titles,
+without changing the site masthead. No migration, API or access-policy change.
+Refresh open pages to load the updated stylesheet. An image-only rollback to `.22`
+preserves current data but restores the mobile heading overlap. Rendered acceptance
+covers every shared-heading route, hit regions and actual browser zoom; deployment
+and backup/restore gates remain pending in the UI/UX ledger.
 
 ## Initial setup
 

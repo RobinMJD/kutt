@@ -2420,8 +2420,6 @@ svg.map path.active { stroke: hsl(261, 46%, 50%); stroke-width: 1.5; }
   .library button { min-height: 44px; height: auto; }
 }
 .transfer, .transfer * { letter-spacing: 0; }
-.transfer .archive-heading { padding: 0; height: auto; width: 100%; margin-bottom: 1rem; }
-.transfer .archive-heading h1 { margin: 0 auto 0 0; }
 .transfer section { padding: 1.4rem 0; border-bottom: 1px solid #c4d0d4; }
 .transfer form { gap: 1rem; }
 .transfer #transfer-export, .transfer-options, .transfer-preview-heading { display: flex; flex-direction: row; flex-wrap: wrap; align-items: end; gap: 1rem; }
@@ -2460,7 +2458,7 @@ svg.map path.active { stroke: hsl(261, 46%, 50%); stroke-width: 1.5; }
 }
 .account-security { overflow-wrap: anywhere; }
 .workspaces { overflow-wrap: anywhere; }
-.workspaces .archive-heading { position: static; height: auto; min-height: 0; margin: 1rem 0; }
+.workspaces .archive-heading { margin: 1rem 0; }
 .workspace-tabs, .workspaces .workspace-actions, .workspaces .workspace-form { display: flex; flex-direction: row; flex-wrap: wrap; align-items: end; justify-content: flex-start; gap: 0.75rem; text-align: left; }
 .workspace-tabs { align-items: center; padding-bottom: 1rem; border-bottom: 1px solid #b8c2cc; }
 .workspaces label { display: grid; gap: 0.4rem; min-width: 0; font-size: 14px; }
@@ -2490,7 +2488,7 @@ svg.map path.active { stroke: hsl(261, 46%, 50%); stroke-width: 1.5; }
 .workspaces p { margin: 0.5rem 0; }
 #workspace-notice { display: block; min-height: 24px; }
 @media (max-width: 480px) { .workspace-form > label { flex-basis: 100%; } .workspace-actions { width: 100%; } }
-.qr-page .archive-heading { position: static; height: auto; min-height: 0; margin-bottom: 1.5rem; }
+.qr-page .archive-heading { margin-bottom: 1.5rem; }
 .qr-controls form, .qr-actions { display: flex; flex-direction: row; flex-wrap: wrap; align-items: end; justify-content: flex-start; gap: 0.75rem; text-align: left; }
 .qr-controls label { display: grid; gap: 0.4rem; width: 150px; max-width: 100%; font-size: 14px; }
 .qr-controls input, .qr-controls select { box-sizing: border-box; width: 100%; height: 42px; padding: 0.5rem; background: #fff; color: #243f49; border: 1px solid #a8b8bf; border-radius: 4px; }
@@ -2523,7 +2521,11 @@ svg.map path.active { stroke: hsl(261, 46%, 50%); stroke-width: 1.5; }
   .account-security dd { margin-bottom: 0.65rem; }
 }
 .archive-heading, .archive-actions, .archive-nav { display: flex; align-items: center; flex-wrap: wrap; gap: 1rem; }
-.archive-heading h1 { font-size: 26px; margin-right: auto; }
+/* Content headings must grow when navigation wraps, independently of the masthead. */
+.archive-heading { box-sizing: border-box; position: static; width: 100%; max-width: 100%; height: auto; min-height: 0; padding: 0; margin: 0 0 1rem; justify-content: flex-start; }
+.archive-heading > * { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+.archive-heading h1 { font-size: 26px; margin: 0 auto 0 0; }
+.archive-heading h2 { margin: 0 auto 0 0; }
 .link-archive h2 { font-size: 17px; margin: 0 0 0.5rem; }
 .archive-list { list-style: none; padding: 0; }
 .archive-item { padding: 1.25rem 0; border-bottom: 1px solid #b8c2cc; overflow-wrap: anywhere; }

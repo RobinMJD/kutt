@@ -17,7 +17,8 @@ Release `.19.2` and its CI passed; exact-image browser/restore/scan checks passe
 Full wrapper regression, deployment, public WAF/OIDC checks, post-change health
 and post-release restore passed. UX-018/019/020 passed the same gates in `.20`.
 UX-017 passed publication, exact deployment, live validation and post-backup restore in `.21`.
-UX-001 accessibility implementation is underway. A-01..A-04 remain
+UX-001/013 are deployed in `.22`; post-change acceptance is running. UX-003
+passed source-fixture rendered heading checks and is being prepared as `.23`. A-01..A-04 remain
 open alongside the fixes; earlier zoom/PDF evidence does not waive those checks.
 
 ## Feature And Deployment Gate
@@ -756,9 +757,9 @@ P3: polish with no blocked task. These are product priorities, not CVSS scores.
 
 | ID | Priority | Finding | Evidence | Status |
 | --- | --- | --- | --- | --- |
-| UX-001 | P1 | Core icon controls lack accessible names | Rendered DOM and source | Implemented; rendered validation in progress |
+| UX-001 | P1 | Core icon controls lack accessible names | Rendered DOM and source | Deployed in .22; post-change gates pending |
 | UX-002 | P1 | Mobile recent-links table hides essential actions and the empty state | Mobile screenshots, source | Open |
-| UX-003 | P1 | Library heading links overlap mobile filter controls | Screenshot and measured DOM | Open |
+| UX-003 | P1 | Library heading links overlap mobile filter controls | Screenshot and measured DOM | Implemented; release/deployment gates pending |
 | UX-004 | P2 | `active` filter includes visibly paused links | Successful bulk pause, source | Open |
 | UX-005 | P2 | Legacy URL validation lacks programmatic field/error association | Invalid-submit DOM, source | Open |
 | UX-006 | P2 | Import schema errors do not give a usable correction path | Error/preview/commit exercise | Open |
@@ -768,7 +769,7 @@ P3: polish with no blocked task. These are product priorities, not CVSS scores.
 | UX-010 | P2 | Navigation links and routing errors fail minimum text contrast | Rendered computed colors and calculated ratios | Open |
 | UX-011 | P2 | Legacy Copy shows success even when the clipboard rejects the write | Controlled rejection, copied CSS state and unhandled error | Open |
 | UX-012 | P3 | Unavailable recipient pages are bare messages without a named page or next step | Fresh expired/paused pages and source | Open |
-| UX-013 | P2 | Admin tab switches leave Next enabled beyond the last result | Four-user and zero-domain initial tab states; empty-page navigation and recovery | Open |
+| UX-013 | P2 | Admin tab switches leave Next enabled beyond the last result | Four-user and zero-domain initial tab states; empty-page navigation and recovery | Deployed in .22; post-change gates pending |
 | UX-014 | P2 | Editors accept unexpected successful-response shapes | Forwarding false success; monitoring state loss after HTML 200; analytics stale report/raw error after malformed JSON 200 | Open |
 | UX-015 | P1 | Saving an unrelated field silently restores an expiry cleared in the sibling form | Rendered sequential saves, screenshot and read-only fixture database checks | Verified/closed in .19.2 |
 | UX-016 | P2 | Local sign-in can initialize the link table twice and throw during replacement | Fresh redacted HTMX event timeline, console stack and source review | Open |
@@ -797,7 +798,18 @@ HTMX initialization. Editor/table swaps now settle immediately (the
 editor forms use POST so fields cannot enter the URL. Server tests cover 0/1/10/11
 results and last-page states. The first full-suite attempt revealed a missing
 fixture-database argument in the new test invocation; it is corrected, not waived.
-Release `.22` is a candidate, not deployed or closed yet. Visual mobile table
+Release `.22` passed tag CI `35169506662` and full hardened-wrapper regression,
+restore and zero-critical/high scan gates (valid September 15 database). Exact
+desktop/390/320 browser suites passed keyboard, admin editor, expiry-conflict and
+campaign workflows. Deployed at 2026-09-17 01:26:39 UTC, healthy with zero restarts.
+Source `bd7065ee3bba842691778f25b59f005f86013c77`; registry digest
+`sha256:5c0c1dca61b0990cd0c007fbdef369de0609ab81f2afbc678e171c88a03fe6f1`;
+wrapper `sha256:42c80f119cb1239821d2a4313608bfe20a950e59aece0cde983469a855c822bb`.
+Pre-backup 01:11:39 UTC: local `1a7fd759...`, NAS `f75064ee...`, 59 files
+byte-restored and exact-image writable SQLite recovery passed. Original-record
+fingerprints, integrity and foreign keys passed immediately before cutover.
+Post-change public/OIDC/health/backup gates are pending, so neither finding is
+closed yet. Visual mobile table
 clipping remains UX-002, separate from the passing keyboard checks.
 
 UX-013 is being addressed in the same tab-update path: navigation is recalculated
@@ -884,6 +896,19 @@ of reflow. See the [zoom measurements](ui-ux-review/2026-09-16/zoom-print-result
 ![Empty mobile table hides its empty-state text](ui-ux-review/2026-09-15/03-home-empty-mobile.png)
 
 ### UX-003: Prevent Mobile Heading/Filter Overlap
+
+Implemented in candidate `.23`: scope content-sized dimensions, wrapping and long-word
+handling to `.archive-heading`, keeping the site masthead unchanged. Consolidate
+the transfer/workspace/QR height workarounds into that shared rule.
+`tests/browser-headings.cjs` checks all 15 routes at 320/390/768/1440px and actual
+200/400% Chromium zoom, heading-child containment, following-content geometry,
+every heading-link hit region, actual desktop/mobile link navigation, a long
+workspace name, and unchanged masthead dimensions. Source-fixture checks passed;
+captures were inspected outside Git. The harness reapplies real browser zoom
+after navigation and compares its floating-point value with a tight tolerance;
+earlier harness-only failures are not counted as application fixes. Exact-image
+console/error validation, CI, publication, deployment and recovery gates remain
+pending. No schema, API or access-policy change; image-only rollback is sufficient.
 
 Library shows only `Links` and `Analytics` beside the title. `Import and export`
 and `Trash` wrap underneath and are covered by the search/tag controls. At 390px,
