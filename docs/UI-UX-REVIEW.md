@@ -3,7 +3,7 @@
 Last updated: 2026-09-17 (Europe/Paris).
 
 **Status: initial findings recorded; the full rendered audit is not yet complete.**
-Twenty findings are confirmed; UX-015/018/019/020 are verified/closed. Remaining concerns and workflow
+Twenty findings are confirmed; UX-015/017/018/019/020 are verified/closed. Remaining concerns and workflow
 coverage are tracked below. Do not describe this as a completed accessibility audit.
 The ordinary rendered workflows now have bounded coverage. The explicit
 AUDIT-00 remainder below separates external acceptance gates from regression
@@ -16,7 +16,7 @@ transactionally, retains the draft and supports deliberate conflict review/retry
 Release `.19.2` and its CI passed; exact-image browser/restore/scan checks passed.
 Full wrapper regression, deployment, public WAF/OIDC checks, post-change health
 and post-release restore passed. UX-018/019/020 passed the same gates in `.20`.
-UX-017 has passed source tests and release CI; deployment validation is next.
+UX-017 passed publication, exact deployment, live validation and post-backup restore in `.21`.
 UX-001 accessibility implementation is underway. A-01..A-04 remain
 open alongside the fixes; earlier zoom/PDF evidence does not waive those checks.
 
@@ -756,7 +756,7 @@ P3: polish with no blocked task. These are product priorities, not CVSS scores.
 
 | ID | Priority | Finding | Evidence | Status |
 | --- | --- | --- | --- | --- |
-| UX-001 | P1 | Core icon controls lack accessible names | Rendered DOM and source | Open |
+| UX-001 | P1 | Core icon controls lack accessible names | Rendered DOM and source | Implemented; rendered validation in progress |
 | UX-002 | P1 | Mobile recent-links table hides essential actions and the empty state | Mobile screenshots, source | Open |
 | UX-003 | P1 | Library heading links overlap mobile filter controls | Screenshot and measured DOM | Open |
 | UX-004 | P2 | `active` filter includes visibly paused links | Successful bulk pause, source | Open |
@@ -772,12 +772,28 @@ P3: polish with no blocked task. These are product priorities, not CVSS scores.
 | UX-014 | P2 | Editors accept unexpected successful-response shapes | Forwarding false success; monitoring state loss after HTML 200; analytics stale report/raw error after malformed JSON 200 | Open |
 | UX-015 | P1 | Saving an unrelated field silently restores an expiry cleared in the sibling form | Rendered sequential saves, screenshot and read-only fixture database checks | Verified/closed in .19.2 |
 | UX-016 | P2 | Local sign-in can initialize the link table twice and throw during replacement | Fresh redacted HTMX event timeline, console stack and source review | Open |
-| UX-017 | P1 | Admin edit responses lose owner context; validation returns a personal form with blank availability | Actual admin save/error response, rendered DOM, screenshot and unchanged API state | Implemented; validation/release pending |
+| UX-017 | P1 | Admin edit responses lose owner context; validation returns a personal form with blank availability | Actual admin save/error response, rendered DOM, screenshot and unchanged API state | Verified/closed in .21 |
 | UX-018 | P1 | Stale workspace edits silently overwrite another client's availability | Two real clients, description-only rendered save and API before/after | Verified/closed in .20 |
 | UX-019 | P2 | Workspace validation errors discard the unsaved edit draft | Invalid-alias response, collapsed editor and fresh field inspection | Verified/closed in .20 |
 | UX-020 | P1 | Checked workspace checkbox decoration covers editor fields | Fresh validation screenshot and inherited pseudo-element source | Verified/closed in .20 |
 
 ### UX-001: Name Core Actions
+
+2026-09-17 implementation: named shortener, personal/admin icon actions,
+filters and pagination; native keyboard-operated admin tabs and row-filter
+buttons; stable focus targets after HTMX saves/close/restore; native management
+POST focus intent with no stored draft values; focus preservation for async
+forwarding/routing/monitoring and analytics pages. Completion must not steal focus
+from another field. Visible focus has an immediate dark outline and respects
+reduced motion. Duplicate pagination IDs and the distinct admin domain-filter
+ID are corrected. Server/isolated focus-helper tests pass. Browser tests are in
+progress; initial harness corrections distinguish HTML's 200 creation response
+from JSON's 201 and wait for HTMX initialization/async completion. No release or
+closure yet.
+
+UX-013 is being addressed in the same tab-update path: navigation is recalculated
+after the new table settles instead of relying on a removed table's listener.
+Both small/empty and paginated datasets must pass before either finding closes.
 
 The create-link submit button, row edit/delete buttons and pagination arrows
 appear as unnamed `button` nodes. A screen-reader or voice-control user cannot
@@ -1357,7 +1373,26 @@ open/close and independently unchanged pause/cap. The first browser attempt
 used an exact accessible label that changes when its inline error appears;
 the harness now selects the stable named input. The label/error association
 and mobile table clipping remain separate UX-001/005 and UX-002 findings.
-Exact release, restore, deployment and post-change acceptance are still pending.
+2026-09-17 verified/closed in [release .21](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.21),
+source `b3defdfd0516b805d013bfa0138bd68205e62149`,
+[CI 35166416949](https://github.com/RobinMJD/kutt/actions/runs/35166416949).
+Registry `sha256:d099ce08efddf872da6fd9b8de2aa080a7919281302236ce723397efb2317d6a`;
+exact wrapper `sha256:da3ddc46919fbbb68d3354c0effe36aa566cd68c606b1b4ebd74c35aa6bfa2d6`.
+Full wrapper regression, exact-image browsers at all three widths, restored
+migration/integrity/foreign-key/write checks and valid-DB Grype passed with
+zero critical/high findings. Cutover: 00:44:41 UTC. Pre-change local/NAS backups
+`ba886865`/`ebea895a` and post-change `93226596`/`0c4c10b3` (01:01:43 UTC)
+each passed 59-file byte verification, secret/config comparisons without
+disclosure and exact-image writable database restoration.
+
+The first public run stopped at a disposable external webhook creation HTTP 400,
+after admin checks had passed. Its cause was not proven. Five subsequent safe-DNS
+validations passed, and the entire public suite then passed, including real
+asynchronous webhook delivery. No validation, WAF or outbound controls were relaxed.
+Both logs are retained. Real Authentik-signed logout, original-record fingerprints,
+two health samples 65 seconds apart and whole-lab validation passed with zero
+restarts, failed units, unhealthy containers or Kutt alerts. Root-only evidence:
+`/srv/homelab/security-reports/2026-09-17-kutt-ux017/`.
 
 After a successful admin description update, the row still shows the destination
 and description but loses its owner email and View links by this user control.
