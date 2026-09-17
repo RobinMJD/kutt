@@ -147,6 +147,16 @@ fixtures cover WAF-like failures, retry, draft retention, keyboard/error focus,
 owner/admin/recipient forms and 1440/390/320px reflow. Synthetic provider tests do
 not replace real Authentik session-expiry acceptance.
 
+### Import correction (3.2.6-sr94.28 candidate)
+
+Authenticated generic JSON/CSV templates and actionable format errors add no
+schema or dependency. The new GET `/api[/v2]/transfer/template` requires
+`links:create` for scoped keys; it does not reveal account data or mutate links.
+Existing preview/commit authorization, limits and retry receipts are unchanged.
+Refresh the transfer page after deployment. An image-only rollback to `.27`
+preserves current data but removes the template route and correction improvements.
+Exact release/deployment gates are tracked in the UI/UX ledger.
+
 ## Initial setup
 
 Start with the SQLite Compose example and a private `.env` based on

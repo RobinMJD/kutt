@@ -1,6 +1,6 @@
 const assert = require("node:assert/strict");
 const { randomBytes } = require("node:crypto");
-const { mkdtempSync, readFileSync } = require("node:fs");
+const { mkdirSync, mkdtempSync, readFileSync } = require("node:fs");
 const { tmpdir } = require("node:os");
 const path = require("node:path");
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
@@ -10,6 +10,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
   const origin = process.env.KUTT_TEST_URL;
   assert(origin && new URL(origin).hostname === "127.0.0.1", "Use a fresh loopback-only instance");
   const evidence = process.env.KUTT_EVIDENCE_DIR || mkdtempSync(path.join(tmpdir(), "kutt-transfer-ui-"));
+  mkdirSync(evidence, { recursive: true });
   const browser = await chromium.launch({ headless: true });
   let page;
   try {
@@ -24,8 +25,25 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
     const bootstrap = await context.request.post(origin + "/api/auth/create-admin", { data: account, headers: { Accept: "application/json" } });
     assert.equal(bootstrap.status(), 201, "Refuse initialized instances");
     await context.addCookies([{ name: "token", value: (await bootstrap.json()).token, url: origin }]);
-    page = await context.newPage(); const errors = [];
+    page = await context.newPage(); const errors = [], consoleErrors = [];
+    let injectedFailure = false;
     page.on("pageerror", error => errors.push(error.message));
+    page.on("console", message => {
+      if (message.type() !== "error") return;
+      if (/Failed to load resource:.*400 \(Bad Request\)/.test(message.text())) return;
+      if (injectedFailure && /Failed to load resource:.*503 \(Service Unavailable\)/.test(message.text())) return;
+      consoleErrors.push(message.text());
+    });
+    let releaseScript;
+    const held = new Promise(resolve => { releaseScript = resolve; });
+    const holdScript = async route => { await held; await route.continue(); };
+    await page.route("**/scripts/transfer.js", holdScript);
+    await page.goto(origin + "/settings/transfer", { waitUntil: "commit" });
+    await page.locator("#transfer-import").waitFor();
+    assert(await page.getByRole("button", { name: "Dry run", exact: true }).isDisabled(), "No submit before the script is ready");
+    assert.equal(await page.locator("#transfer-import").getAttribute("method"), "post", "Never send private import content in a URL");
+    releaseScript(); await page.waitForLoadState("load");
+    await page.unroute("**/scripts/transfer.js", holdScript);
     const dryRun = async () => {
       const response = page.waitForResponse(row => row.url().endsWith("/transfer/preview"));
       await page.getByRole("button", { name: "Dry run", exact: true }).click();
@@ -38,12 +56,63 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
       const result = await response; assert([200, 201].includes(result.status()), await result.text());
       await page.getByRole("status").getByText(/Import complete/).waitFor();
     };
-    for (const [mode, width, height] of [["desktop", 1440, 1000], ["mobile", 390, 844]]) {
+    for (const [mode, width, height] of [["desktop", 1440, 1000], ["mobile", 390, 844], ["compact", 320, 720]]) {
       await page.setViewportSize({ width, height });
       await page.goto(origin + "/settings/library");
       await page.getByRole("link", { name: "Import and export", exact: true }).click();
       await page.getByRole("heading", { name: "Import and export", exact: true }).waitFor();
       const form = page.getByRole("form", { name: "Import links", exact: true });
+      await page.waitForFunction(() => !document.querySelector('#transfer-import button[type="submit"]').disabled);
+      const contentField = form.getByLabel("Content", { exact: true });
+      await contentField.fill('{"bad":true}');
+      await page.getByRole("button", { name: "Dry run", exact: true }).click();
+      await page.getByRole("status").getByText(/Start with the JSON template/).waitFor();
+      assert.equal(await contentField.inputValue(), '{"bad":true}');
+      assert.equal(await contentField.getAttribute("aria-invalid"), "true");
+      assert(await page.locator("#transfer-status").evaluate(node => node === document.activeElement));
+      await page.screenshot({ path: path.join(evidence, `transfer-correction-${mode}.png`), fullPage: true });
+      for (const format of ["json", "csv"]) {
+        const download = page.waitForEvent("download");
+        const templateLink = page.getByRole("link", { name: format.toUpperCase() + " template", exact: true });
+        await templateLink.focus(); await templateLink.press("Enter");
+        const file = await download;
+        assert.equal(file.suggestedFilename(), "kutt-import-template." + format);
+        const bytes = readFileSync(await file.path());
+        await form.getByLabel("File", { exact: true }).setInputFiles({ name: file.suggestedFilename(), mimeType: format === "json" ? "application/json" : "text/csv", buffer: bytes });
+        await page.waitForFunction(value => document.querySelector('textarea[name="content"]').value === value, bytes.toString());
+        assert.equal(await contentField.getAttribute("aria-invalid"), null);
+        await dryRun();
+        assert.equal(await page.locator("#transfer-rows tr").count(), 1);
+        await contentField.fill(await contentField.inputValue() + "\n");
+        assert(await page.locator("#transfer-commit").isDisabled());
+        await page.getByRole("status").getByText("Draft changed. Run a new dry run before confirming.", { exact: true }).waitFor();
+      }
+      await form.getByLabel("Import format").selectOption("csv");
+      const invalidCSV = "address,target,paused\nexample-link,https://example.org/page,yes";
+      await contentField.fill(invalidCSV);
+      await page.getByRole("button", { name: "Dry run", exact: true }).click();
+      await page.getByRole("status").getByText(/Row 1, paused: Use true or false/).waitFor();
+      assert.equal(await contentField.inputValue(), invalidCSV);
+      await contentField.fill(invalidCSV.replace(",yes", ",true"));
+      await dryRun();
+      if (mode === "desktop") {
+        const kept = await contentField.inputValue();
+        const reject = route => route.fulfill({ status: 503, contentType: "text/html", body: "<h1>WAF unavailable</h1>" });
+        await page.route("**/api/v2/transfer/preview", reject); injectedFailure = true;
+        await page.getByRole("button", { name: "Dry run", exact: true }).click();
+        await page.getByRole("status").getByText("Request failed (503).", { exact: true }).waitFor();
+        assert.equal(await contentField.inputValue(), kept);
+        assert.equal(await contentField.getAttribute("aria-invalid"), null, "Network failure does not label valid content invalid");
+        assert(await page.locator("#transfer-preview").isHidden());
+        await page.waitForLoadState("networkidle"); injectedFailure = false;
+        await page.unroute("**/api/v2/transfer/preview", reject);
+        await dryRun();
+        await form.getByLabel("File", { exact: true }).setInputFiles({ name: "too-large.json", mimeType: "application/json", buffer: Buffer.alloc(900001, "x") });
+        await page.getByRole("status").getByText(/Current content was not replaced/).waitFor();
+        assert.equal(await contentField.inputValue(), kept);
+        assert.equal(await form.getByLabel("Import format").inputValue(), "csv");
+        assert(await page.locator("#transfer-commit").isDisabled());
+      }
       const address = "transfer-ui-" + mode;
       const content = JSON.stringify([{ address, target: "https://192.0.2.1/browser-transfer", description: 'Quoted, "value"\nDocument', tags: ["UI " + mode] }]);
       await form.getByLabel("File", { exact: true }).setInputFiles({ name: "links.json", mimeType: "application/json", buffer: Buffer.from(content) });
@@ -95,8 +164,12 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
       await page.screenshot({ path: path.join(evidence, `transfer-errors-${mode}.png`), fullPage: true });
     }
     assert.deepEqual(errors, []);
-    console.log(`PASS: desktop/mobile file import, dry run, commit, public redirect, CSV/JSON downloads, conflict correction, invalidation and protected-link error; ${evidence}`);
+    assert.deepEqual(consoleErrors, []);
+    console.log(`PASS: desktop/mobile/compact templates, schema correction and error focus, file import, dry run, commit, public redirect, CSV/JSON downloads, conflict correction, invalidation and protected-link error; ${evidence}`);
   } catch (error) {
+    if (page) console.error("Transfer failure state", await page.evaluate(() => ({ path: location.pathname,
+      queryFields: [...new URLSearchParams(location.search).keys()], status: document.querySelector("#transfer-status")?.textContent,
+      draftLength: document.querySelector('#transfer-import textarea')?.value.length })));
     if (page) await page.screenshot({ path: path.join(evidence, "transfer-failure.png"), fullPage: true });
     throw error;
   } finally { await browser.close(); }

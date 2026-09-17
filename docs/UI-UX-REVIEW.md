@@ -22,8 +22,9 @@ passed publication, exact deployment, live validation and post-backup restore in
 passed those gates in `.24`. UX-008 passed publication, exact-image regression,
 deployment, live checks and clean post-backup writable recovery in `.25`.
 UX-004 accurate lifecycle labels and bulk-result feedback passed the same gates in `.26.1`.
-UX-005 validation
-semantics, focus and draft recovery are being implemented and tested, not released.
+UX-005 validation semantics, focus and draft recovery are published in `.27`, with
+tag CI passing; exact-image/deployment gates remain open. UX-006 import templates
+and actionable format errors are implemented locally and being tested.
 A-01..A-04 remain
 open alongside the fixes; earlier zoom/PDF evidence does not waive those checks.
 
@@ -767,8 +768,8 @@ P3: polish with no blocked task. These are product priorities, not CVSS scores.
 | UX-002 | P1 | Mobile recent-links table hides essential actions and the empty state | Mobile screenshots, source | Verified/closed in .24 |
 | UX-003 | P1 | Library heading links overlap mobile filter controls | Screenshot and measured DOM | Verified/closed in .23 |
 | UX-004 | P2 | `active` filter includes visibly paused links | Successful bulk pause, source | Verified/closed in .26.1; intermittent webhook acceptance failure separately retained |
-| UX-005 | P2 | Legacy URL validation lacks programmatic field/error association | Invalid-submit DOM, source | Implementation and browser validation in progress; not released |
-| UX-006 | P2 | Import schema errors do not give a usable correction path | Error/preview/commit exercise | Open |
+| UX-005 | P2 | Legacy URL validation lacks programmatic field/error association | Invalid-submit DOM, source | Published .27, CI passed; exact-image/deployment gates pending |
+| UX-006 | P2 | Import schema errors do not give a usable correction path | Error/preview/commit exercise | Implemented locally; API/full regression and release/deployment gates pending |
 | UX-007 | P2 | SSO-only login advertises sign-up even when registration is disabled | Production screenshot, source | Open |
 | UX-008 | P1 | Custom confirmation dialogs leave keyboard focus behind the overlay | Fresh keyboard/DOM checks, screenshot | Verified/closed in .25, including exact-image deployment and clean post-backup restore |
 | UX-009 | P2 | Mobile webhook save errors are outside the visible viewport | Rejected private target, preserved draft and measured status geometry | Open |
@@ -1059,7 +1060,7 @@ alone does not explain whether the requested action succeeded.
 
 ### UX-005: Associate Validation Errors With Fields
 
-Implemented for candidate `.27`, not published/deployed: shared HTMX validation associates field messages, removes stale
+Published in `.27`, not yet deployed: shared HTMX validation associates field messages, removes stale
 errors when edited, preserves drafts on transport errors and focuses errors only
 when the user has not moved to another form. `hx-preserve` attributes are refreshed
 after replacement. Native login autofocus must settle before error focus; this
@@ -1075,7 +1076,10 @@ cookie or expose a password fallback. Captures were inspected outside Git.
 Focused server contracts pass, retaining existing JSON/HTML status and authorization
 boundaries with no credential echo. Full source regression passed; the final
 minor form-loading/general-error changes also passed fresh rendered tests.
-Immutable tag/exact-image regression and release/deployment gates remain open.
+Immutable tag `44162194eafd9782bd51108d57c7cdc18313631d` passed Fork CI
+`35178705993` and Shortcut CI `35178705995`; published registry digest
+`ed3fd0ff76b89dd54829e2ded283df319b621cc3db2abd222fe63bb41951104b`.
+Exact-wrapper and deployment/recovery gates remain open.
 No production deployment or finding closure is claimed yet.
 
 Submitting `not a url` renders `URL is not valid.` and a red decoration, but the
@@ -1126,6 +1130,26 @@ together after draft edits and Reload; do not apply deletion during this check.
 ![Invalid URL response](ui-ux-review/2026-09-15/04-home-invalid-desktop.png)
 
 ### UX-006: Make Import Errors Actionable
+
+Implemented locally, not released: authenticated JSON/CSV template downloads
+contain one generic paused sample and no account data. Both API aliases require
+the same account authentication; scoped keys require `links:create` and cannot
+inherit a cookie's authority. Schema/CSV failures identify the accepted structure
+or safe row/field/line context, never parser input or secret values. Invalid
+input stays in the form, error status receives focus unless the user moved
+elsewhere, and editing clears obsolete invalid state/readiness. Preview expiry,
+explicit confirmation, conflict rules and protected-link validation remain.
+Fresh 1440/390/320px template downloads, correction, preview/commit, export,
+conflicts and protected-row errors passed; the compact correction capture was
+inspected. Focused API and full isolated source regression passed. Expanded
+rendered tests caught a bubbling file-change event erasing an oversized-file
+error; the reader now owns that status and preserves the existing draft/format.
+Import submission is disabled until handlers are installed and its fallback
+method is POST, preventing private draft content from entering the URL if the
+script is delayed. A fresh browser run passed those checks, keyboard template
+downloads, HTML 503/retry, oversized-file preservation and normal import/export
+at 1440/390/320px with no unexpected console or page errors. No production change;
+immutable-release and exact deployment/recovery gates remain pending.
 
 The import form provides File, Format and Content but no reachable schema/sample
 or template. Pasting `{"bad":true}` yields `Unsupported export schema.` in the

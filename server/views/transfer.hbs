@@ -3,7 +3,7 @@
   <header class="archive-heading"><h1>Import and export</h1><a href="/settings/library">Library</a><a href="/">Links</a></header>
   <section class="transfer-export">
     <h2>Export links</h2>
-    <form id="transfer-export" aria-label="Export links">
+    <form id="transfer-export" aria-label="Export links" method="get" action="/api/v2/transfer/export">
       <label>Format<select name="format" aria-label="Export format"><option value="json">JSON</option><option value="csv">CSV</option></select></label>
       <label>State<select name="state" aria-label="Export state"><option value="active">Not trashed</option><option value="trash">Trash</option><option value="all">All links</option></select></label>
       <label>Alias or target<input type="search" name="q" maxlength="200" /></label><button type="submit" class="primary">Download</button>
@@ -11,16 +11,20 @@
   </section>
   <section class="transfer-import">
     <h2>Import links</h2>
-    <form id="transfer-import" aria-label="Import links">
+    <nav class="transfer-templates" aria-label="Import templates">
+      <a href="/api/v2/transfer/template?format=json" download>{{> icons/arrow_left}} JSON template</a>
+      <a href="/api/v2/transfer/template?format=csv" download>{{> icons/arrow_left}} CSV template</a>
+    </nav>
+    <form id="transfer-import" aria-label="Import links" method="post" action="/api/v2/transfer/preview">
       <label>File<input type="file" id="transfer-file" accept=".csv,.json,text/csv,application/json" /></label>
       <div class="transfer-options">
         <label>Format<select name="format" aria-label="Import format"><option value="json">JSON</option><option value="csv">CSV</option></select></label>
         <label>Alias conflicts<select name="conflict" aria-label="Alias conflicts"><option value="abort">Abort batch</option><option value="skip">Skip conflicting rows</option><option value="rename">Generate new aliases</option></select></label>
       </div>
-      <label>Content<textarea name="content" rows="9" required spellcheck="false" maxlength="900000"></textarea></label>
-      <button class="primary" type="submit">Dry run</button>
+      <label>Content<textarea name="content" rows="9" required spellcheck="false" maxlength="900000" aria-describedby="transfer-status"></textarea></label>
+      <button class="primary" type="submit" disabled>Dry run</button>
     </form>
-    <p id="transfer-status" role="status" aria-live="polite"></p>
+    <p id="transfer-status" role="status" aria-live="polite" tabindex="-1"></p>
     <div id="transfer-preview" hidden>
       <div class="transfer-preview-heading"><h3>Preview</h3><output id="transfer-counts"></output><button id="transfer-commit" class="primary" disabled>Confirm import</button></div>
       <div class="transfer-table"><table><thead><tr><th>Row</th><th>Alias</th><th>Domain</th><th>Action</th><th>Issue</th></tr></thead><tbody id="transfer-rows"></tbody></table></div>

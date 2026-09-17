@@ -4,12 +4,18 @@
   let pending = null, busy = false;
   const message = (text, error = false) => { status.textContent = text; status.classList.toggle("transfer-error", error); };
   const invalidate = () => { pending = null; commit.disabled = true; preview.hidden = true; };
-  form.addEventListener("input", invalidate); form.addEventListener("change", invalidate);
+  const edited = event => {
+    // The file reader owns its status; the bubbling change must not erase a load error.
+    if (event.target.id === "transfer-file") return;
+    invalidate(); form.elements.content.removeAttribute("aria-invalid");
+    message("Draft changed. Run a new dry run before confirming.");
+  };
+  form.addEventListener("input", edited); form.addEventListener("change", edited);
   const lock = value => { busy = value; for (const control of form.elements) control.disabled = value; commit.disabled = value || !pending; };
   const api = async (path, payload) => {
     const response = await fetch("/api/v2/transfer/" + path, { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(payload) });
     const result = await response.json().catch(() => null);
-    if (!response.ok) throw new Error(result?.error || `Request failed (${response.status}).`);
+    if (!response.ok) throw Object.assign(new Error(result?.error || `Request failed (${response.status}).`), { status: response.status });
     return result;
   };
   document.querySelector("#transfer-file").addEventListener("change", async event => {
@@ -17,12 +23,16 @@
     invalidate();
     try {
       if (file.size > 900000) throw new Error("File exceeds 900 KB. Split it into smaller batches.");
+      const content = await file.text();
       form.elements.format.value = file.name.toLowerCase().endsWith(".csv") ? "csv" : "json";
-      form.elements.content.value = await file.text(); message("");
-    } catch (error) { message(error.message, true); }
+      form.elements.content.value = content; form.elements.content.removeAttribute("aria-invalid"); message("");
+    } catch (error) { message(error.message + " Current content was not replaced.", true); }
   });
   form.addEventListener("submit", async event => {
     event.preventDefault(); if (busy) return;
+    let error = false, invalidContent = false, moved = false;
+    const observe = event => { if (event.target !== document.body && !form.contains(event.target)) moved = true; };
+    document.addEventListener("focusin", observe);
     const payload = Object.fromEntries(new FormData(form));
     invalidate(); lock(true); message("Validating import...");
     try {
@@ -36,9 +46,15 @@
       }
       document.querySelector("#transfer-counts").textContent = `${result.rows.filter(row => row.action === "create").length} new, ${result.rows.filter(row => row.action === "skip").length} skipped, ${result.rows.filter(row => row.action === "error").length} errors`;
       preview.hidden = false; pending = result.valid ? { ...payload, preview_token: result.preview_token } : null;
+      error = invalidContent = !result.valid;
       message(result.valid ? "Dry run complete. No links were changed. Confirmation expires in 20 minutes." : "Correct the reported errors and run a new dry run.", !result.valid);
-    } catch (error) { message(error.message, true); }
-    finally { lock(false); }
+    } catch (failure) { error = true; invalidContent = failure.status === 400; message(failure.message, true); }
+    finally {
+      lock(false); document.removeEventListener("focusin", observe);
+      if (invalidContent) form.elements.content.setAttribute("aria-invalid", "true");
+      else form.elements.content.removeAttribute("aria-invalid");
+      if (error && !moved) status.focus();
+    }
   });
   commit.addEventListener("click", async () => {
     if (busy || !pending) return;
@@ -61,4 +77,5 @@
     } catch (error) { message(error.message, true); }
     finally { button.disabled = false; }
   });
+  form.querySelector("button[type=submit]").disabled = false;
 })();

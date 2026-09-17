@@ -28,6 +28,7 @@ const routes = [
   ["PATCH", /^\/workspaces\/[a-f0-9-]{36}\/links\/[a-f0-9-]{36}\/?$/i, "workspaces:write"],
   ["DELETE", /^\/workspaces\/[a-f0-9-]{36}\/links\/[a-f0-9-]{36}\/?$/i, "workspaces:write"],
   ["GET", /^\/transfer\/export\/?$/i, "links:read"],
+  ["GET", /^\/transfer\/template\/?$/i, "links:create"],
   ["POST", /^\/transfer\/(?:preview|commit)\/?$/i, "links:create"],
   ["GET", /^\/library\/?$/i, "links:read"],
   ["POST", /^\/library\/bulk\/?$/i, "links:update"],

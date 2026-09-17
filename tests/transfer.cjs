@@ -23,6 +23,44 @@ module.exports = async function ({ request, session, database, account, restart,
     };
     const commit = (body, headers, status = 201) => checked(call("POST", "/commit", body, headers), status);
     const counts = () => Object.fromEntries(["links", "library_labels", "link_alias_claims", "link_history", "link_imports"].map(table => [table, db.prepare(`SELECT count(*) n FROM ${table}`).get().n]));
+    const page = await request("GET", "/settings/transfer", undefined, session, { Accept: "text/html" });
+    assert.equal(page.status, 200);
+    const html = await page.text();
+    assert.match(html, /<form[^>]*id="transfer-import"[^>]*method="post"/);
+    assert.match(html, /<button[^>]*type="submit"[^>]*disabled[^>]*>Dry run<\/button>/);
+    const templateBefore = counts();
+    for (const prefix of ["/api/transfer", "/api/v2/transfer"]) {
+      assert.equal((await request("GET", prefix + "/template")).status, 401);
+      for (const format of ["json", "csv"]) {
+        const response = await request("GET", prefix + "/template?format=" + format, undefined, session);
+        assert.equal(response.status, 200);
+        assert.equal(response.headers.get("cache-control"), "no-store");
+        assert.equal(response.headers.get("x-content-type-options"), "nosniff");
+        assert.equal(response.headers.get("content-disposition"), `attachment; filename="kutt-import-template.${format}"`);
+        assert(response.headers.get("content-type").includes(format === "json" ? "application/json" : "text/csv"));
+        const content = await response.text();
+        const result = await preview({ format, conflict: "abort", content });
+        assert(result.valid && result.rows.length === 1 && result.rows[0].action === "create");
+        const sample = format === "json" ? JSON.parse(content).links[0] : parse(content, { columns: true })[0];
+        assert.equal(String(sample.paused), "true", "Sample never starts as an active redirect");
+        assert(!content.includes(account.email) && !content.includes(session));
+      }
+    }
+    assert.deepEqual(counts(), templateBefore, "Template downloads and previews cannot write data");
+    for (const query of ["format=xml", "format[x]=json", "format=json&format=csv"]) await checked(call("GET", "/template?" + query), 400);
+    for (const [format, content, message] of [
+      ["json", '{"bad":true}', "Start with the JSON template"],
+      ["json", '{"target":"PRIVATE_VALUE",}', "Check commas"],
+      ["csv", 'alias,url\nsecret,https://example.org', "address and target"],
+      ["csv", 'address,target,paused\na,https://example.org,PRIVATE_VALUE', "Row 1, paused"],
+      ["csv", 'address,target,max_visits\na,https://example.org,PRIVATE_VALUE', "Row 1, max_visits"],
+      ["csv", 'address,target,tags\na,https://example.org,PRIVATE_VALUE', "Row 1, tags"],
+      ["csv", 'address,target\n"PRIVATE_VALUE', "Malformed CSV near line 2"],
+    ]) {
+      const result = await checked(call("POST", "/preview", { format, conflict: "abort", content }), 400);
+      assert(result.error.includes(message), result.error);
+      assert(!result.error.includes("PRIVATE_VALUE"), "Never reflect parser input or credentials in errors");
+    }
     for (const suffix of ["/export", "/preview", "/commit"]) assert.equal((await request(suffix === "/export" ? "GET" : "POST", "/api/transfer" + suffix, suffix === "/export" ? undefined : {})).status, 401);
     await checked(call("POST", "/preview", input([row()]), { Origin: "https://evil.example" }), 403);
     await checked(call("POST", "/commit", {}, { Origin: "null" }), 403);
@@ -101,6 +139,8 @@ module.exports = async function ({ request, session, database, account, restart,
     assert.equal((await checked(call("GET", "/export?q=" + protectedRow.address))).links.length, 0, "Admin exports only own links");
     const token = async (scopes, domain_scope = "all") => (await checked(request("POST", "/api/tokens", { name: "Transfer test", scopes, domain_scope }, session), 201)).token;
     const reader = { "X-API-Key": await token(["links:read"]) }, creator = { "X-API-Key": await token(["links:create"]) };
+    await checked(call("GET", "/template", undefined, reader), 403);
+    assert.equal((await call("GET", "/template", undefined, creator)).status, 200, "Create-only key may get a generic import template");
     await checked(call("POST", "/preview", input([row()]), reader), 403); await checked(call("GET", "/export", undefined, creator), 403);
     assert.equal((await request("GET", "/settings/transfer", undefined, session, reader)).status, 403);
     assert.equal((await preview(input([row({ tags: ["Tag, quoted"] })]), creator)).valid, false);

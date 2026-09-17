@@ -1,7 +1,7 @@
 # CSV and JSON transfer
 
 Open **Library > Import and export**. Download your own links as JSON or CSV,
-optionally searching an alias/target and selecting active, trashed or all links.
+optionally searching an alias/target and selecting not-trashed, trashed or all links.
 Exports include lifecycle restrictions, spent redirect counts and private tags
 and collections, ordered routing rules and explicit forwarding allowlists. They never contain password hashes, credentials or ownership
 identifiers. Downloads are private, uncached attachments.
@@ -35,6 +35,18 @@ may contain sensitive information. Do not commit them or paste passwords into
 issue reports.
 
 ## Limits and formats
+
+The import page has JSON and CSV template downloads. Each contains one generic,
+paused sample link and no account data; edit its alias/destination before preview.
+The sample does not create anything until explicit confirmation. Missing/unsupported
+JSON structure and malformed CSV report an actionable format message. CSV cell
+conversion errors identify the data-row number and field; parser line numbers,
+when available, are physical lines (including the header and quoted newlines).
+Error messages never echo cell contents or parser exception details.
+Invalid input remains available for correction; choosing an oversized or unreadable
+file does not replace the existing content or format. Import submission stays
+disabled until its script is ready, and the form never submits private content
+as a URL query string.
 
 An export contains at most 1,000 links; narrow the search if it exceeds that.
 Import batches contain 1-100 links, UTF-8 content at most 900,000 bytes, and CSV
@@ -71,6 +83,10 @@ round trips. Duplicate headers, malformed records and unknown encodings fail.
 Both `/api/transfer` and `/api/v2/transfer` are supported:
 
 - `GET /export?format=json&state=all&q=example`: `links:read`.
+- `GET /template?format=json` (or `csv`): `links:create`; private, uncached
+  attachment with a generic paused sample. No data mutation. Both API aliases
+  require authentication; anonymous requests fail, and a read-only scoped key
+  cannot borrow authority from a browser cookie. Unknown/array formats fail.
 - `POST /preview`: `links:create`; JSON body `{format, conflict, content}`.
   Returns `{valid, rows, expires_in, preview_token}` without changing link data.
 - `POST /commit`: same body plus the returned `preview_token`; `links:create`.
@@ -121,6 +137,7 @@ Restoring a pre-import backup loses later writes and therefore requires an
 explicit recovery decision. CSV/JSON exports are not a substitute for that backup.
 
 Automated regression: `tests/transfer.cjs` via `tests/container-smoke.cjs`.
+`KUTT_TEST_ONLY=transfer` selects this suite inside a clean disposable test image.
 Rendered desktop/mobile workflows: `tests/browser-transfer.cjs` against a fresh
 loopback-only disposable instance. Deployment completion and published versions
 are recorded separately in [the roadmap](FEATURE-ROADMAP.md).

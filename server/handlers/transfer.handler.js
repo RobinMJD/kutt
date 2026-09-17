@@ -18,4 +18,9 @@ function page(req, res) {
   res.set("Cache-Control", "no-store");
   res.render("transfer", { title: "Import and export" });
 }
-module.exports = { preview, commit, download, page };
+function template(req, res) {
+  const { format, body } = transfer.template(req.query.format);
+  res.set({ "Cache-Control": "no-store", "Content-Disposition": `attachment; filename="kutt-import-template.${format}"`, "X-Content-Type-Options": "nosniff" });
+  res.type(format === "json" ? "application/json" : "text/csv").send(body);
+}
+module.exports = { preview, commit, download, template, page };

@@ -28,36 +28,45 @@ function read(input) {
   try {
     if (input.format === "json") {
       const parsed = JSON.parse(input.content);
-      if (!Array.isArray(parsed) && parsed.schema_version !== 1) fail("Unsupported export schema.");
+      if (!Array.isArray(parsed) && (!parsed || typeof parsed !== "object" || parsed.schema_version !== 1))
+        fail('Unsupported JSON schema. Use {"schema_version":1,"links":[...]} or an array of link objects. Start with the JSON template.');
       rows = Array.isArray(parsed) ? parsed : parsed.links;
     } else {
       rows = parse(input.content, { bom: true, skip_empty_lines: true, max_record_size: 100000,
         columns: header => {
           if (new Set(header).size !== header.length) fail("Duplicate CSV headers.");
+          if (!["address", "target"].every(field => header.includes(field))) fail("CSV needs address and target column headers. Start with the CSV template.");
           return header;
         } });
-      for (const row of rows) {
-        if (row.cell_encoding && row.cell_encoding !== "apostrophe-v1") fail("Unsupported CSV cell encoding.");
+      for (const [index, row] of rows.entries()) {
+        const fieldError = (field, message) => fail(`Row ${index + 1}, ${field}: ${message}`);
+        if (row.cell_encoding && row.cell_encoding !== "apostrophe-v1") fieldError("cell_encoding", "Unsupported CSV cell encoding.");
         if (row.cell_encoding) for (const key of Object.keys(row)) row[key] = decodeCell(row[key]);
         delete row.cell_encoding;
         for (const key of ["paused", "password_required", "banned", "tracking_enabled"]) {
           if (row[key] === undefined || row[key] === "") delete row[key];
           else if (["true", "false"].includes(row[key])) row[key] = row[key] === "true";
-          else fail("CSV booleans must be true or false.");
+          else fieldError(key, "Use true or false, or leave the cell empty.");
         }
         for (const key of ["max_visits", "redirect_count"]) {
           if (row[key] === undefined || row[key] === "") row[key] = null;
           else if (/^\d+$/.test(row[key])) row[key] = Number(row[key]);
-          else fail("CSV counters must be nonnegative integers.");
+          else fieldError(key, "Use a nonnegative integer, or leave the cell empty.");
         }
-        for (const key of ["tags", "collections", "routing_rules"]) if (row[key]) row[key] = JSON.parse(row[key]); else row[key] = [];
-        if (row.forwarding) row.forwarding = JSON.parse(row.forwarding); else row.forwarding = {};
+        for (const key of ["tags", "collections", "routing_rules", "forwarding"]) {
+          try { row[key] = row[key] ? JSON.parse(row[key]) : key === "forwarding" ? {} : []; }
+          catch { fieldError(key, "Invalid JSON in this CSV cell. Quote the cell and double any embedded quotation marks."); }
+        }
         for (const key of ["starts_at", "ends_at", "expires_at", "deleted_at"]) if (row[key] === "") row[key] = null;
       }
     }
   } catch (error) {
     if (error instanceof utils.CustomError) throw error;
-    fail("Malformed " + input.format.toUpperCase() + " file.");
+    if (input.format === "csv") {
+      const line = Number.isSafeInteger(error.lines) && error.lines > 0 ? ` near line ${error.lines}` : "";
+      fail(`Malformed CSV${line}. Check quotation marks and that every row matches the header columns. Start with the CSV template.`);
+    }
+    fail("Malformed JSON. Check commas and double quotation marks. Start with the JSON template.");
   }
   if (!Array.isArray(rows) || !rows.length || rows.length > MAX_ROWS) fail("Import 1 to 100 links per batch.");
   return rows;
@@ -304,4 +313,11 @@ async function exportLinks(req) {
   return { format, body: stringify(rows.map(row => Object.fromEntries(columns.map(key => [key, key === "cell_encoding" ? "apostrophe-v1" : encodeCell(row[key] !== null && typeof row[key] === "object" ? JSON.stringify(row[key]) : row[key] == null ? "" : String(row[key]))]))), { header: true, columns }) };
 }
 
-module.exports = { preview, commit, exportLinks, read, normalized, MAX_BYTES };
+function template(format = "json") {
+  if (!["json", "csv"].includes(format)) fail("Choose JSON or CSV for the template.");
+  const rows = [{ address: "example-link", target: "https://example.org/page", description: "Example link", paused: true }];
+  return { format, body: format === "json" ? JSON.stringify({ schema_version: 1, links: rows }, null, 2) :
+    stringify(rows.map(row => ({ ...row, paused: "true" })), { header: true, columns: ["address", "target", "description", "paused"] }) };
+}
+
+module.exports = { preview, commit, exportLinks, template, read, normalized, MAX_BYTES };
