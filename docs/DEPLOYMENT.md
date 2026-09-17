@@ -205,7 +205,7 @@ not commit: reload current state before retrying, rather than bypassing revision
 conflicts. No automatic mutation retry is introduced.
 
 Reload open pages after upgrading. Both releases passed exact-image, live and
-recovery gates recorded in [the ledger](UI-UX-REVIEW.md). They change no schema,
+recovery gates recorded in [the fork operator ledger](https://github.com/RobinMJD/kutt/blob/main/docs/UI-UX-REVIEW.md). They change no schema,
 dependencies, secrets, authorization or WAF policy. Image-only rollback preserves
 data but restores the relevant UI defects.
 

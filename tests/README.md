@@ -80,10 +80,44 @@ review/retry, sibling draft preservation and paused public redirects at
 success and errors, non-secret draft retention, anonymous/custom-domain cases,
 API privacy, authorization and restart. `tests/browser-admin-edit.cjs` uses the
 same disposable loopback settings and evidence path for native admin
-save/error/retry/filter/open/close at 1440/390/320px. Known table clipping and
-error accessibility findings are separate; programmatic access to an off-screen
-row action is not acceptance of the mobile table layout.
+save/error/retry/filter/open/close at 1440/390/320px. Table geometry and error
+accessibility have separate browser regressions below; programmatic access to
+an off-screen row action is not acceptance of the mobile table layout.
 No production credentials or records are used.
+
+## UI/UX regression
+
+All focused selectors below also run in the full container suite. They do not
+replace that suite or the separate Redis worker test when releasing.
+
+| Focused selector | Contract | Rendered companion |
+| --- | --- | --- |
+| `library-ux` | Accurate availability and signed bulk-result notices | `browser-library.cjs` |
+| `validation` | Named errors, independent drafts and error focus | `browser-validation.cjs`, `browser-oidc-validation.cjs` |
+| `login-copy` | Registration/login labels match enabled policies | `browser-login-copy.cjs` |
+| `contrast` | Text and control palette assertions | `browser-contrast.cjs` |
+| `copy` | Feedback only after clipboard success; usable fallback | `browser-copy.cjs` |
+| `responses` | Typed response validation; malformed success must not replace saved state | `browser-responses.cjs` |
+| `login-navigation` | One full-document sign-in transition; unchanged JSON/auth boundaries | `browser-login-navigation.cjs` |
+| `unavailable` | Branded private-by-default 410 page; unchanged HEAD/API/lifecycle | `browser-unavailable.cjs` |
+| `header` | Scoped site header and content-sized account-security heading | `browser-header.cjs` |
+
+Use fresh loopback-only disposable instances and a separate evidence directory
+for each rendered suite. `browser-login-navigation.cjs` requires HTTPS loopback
+with a test-only certificate. `browser-header.cjs` takes `KUTT_HEADER_FIXTURES`
+as a JSON array of `{ "origin": "http://127.0.0.1:PORT", "name": "Site name" }`
+entries matching each fresh instance's configured brand. Never point these
+tests at production or reuse a real user's browser profile.
+
+`browser-tables.cjs` covers responsive personal/admin table controls;
+`browser-table-zoom.cjs` adds actual 200/400% Chromium zoom and action hit regions.
+`browser-headings.cjs` checks 15 content-heading routes, long names, actual zoom,
+navigation and unchanged site-header geometry. These zoom tests install a
+temporary loopback-scoped extension into a disposable Chromium profile to call
+the native tab zoom API. They do not simulate zoom with CSS or pinch scaling.
+The heading test waits for fonts and responsive size transitions before strict
+layout comparisons, and logs any in-flight height change. Native print preview,
+screen-reader behavior and physical QR scanning remain separate acceptance.
 
 `tests/browser-history.cjs` uses the same isolation settings and a separately
 fresh instance. It exercises delete confirmation, trash, history, restore and
