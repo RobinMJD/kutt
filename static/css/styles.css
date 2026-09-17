@@ -1243,6 +1243,7 @@ main #shorturl h1.link:hover {
 }
 
 .clipboard {
+  position: relative;
   width: 35px;
   height: 35px;
   display: flex;
@@ -1304,8 +1305,29 @@ main #shorturl h1.link:hover {
 }
 
 
-.clipboard.copied button { display: none; }
-.clipboard.copied svg.check { display: block; }
+.clipboard.copied svg.copy { visibility: hidden; }
+.clipboard.copied svg.check {
+  display: block;
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+[data-copy-container] { flex-wrap: wrap; }
+.copy-feedback {
+  flex: 0 0 100%;
+  min-width: 0;
+  max-width: 100%;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.copy-feedback .copy-error { color: var(--error-text-color); }
+.copy-feedback label { font-size: inherit; margin-top: 0.5rem; }
+.copy-feedback label[hidden] { display: none; }
+.copy-feedback input { width: 100%; min-width: 0; font-family: monospace; }
 
 main #shorturl h1 span {
   border-bottom: 1px dotted #999;

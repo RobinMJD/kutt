@@ -3,7 +3,7 @@
 Last updated: 2026-09-17 (Europe/Paris).
 
 **Status: initial findings recorded; the full rendered audit is not yet complete.**
-Twenty findings are confirmed; UX-001/002/003/004/005/006/008/013/015/017/018/019/020 are verified/closed. Remaining concerns and workflow
+Twenty-one findings are confirmed; UX-001/002/003/004/005/006/007/008/013/015/017/018/019/020 are verified/closed. Remaining concerns and workflow
 coverage are tracked below. Do not describe this as a completed accessibility audit.
 The ordinary rendered workflows now have bounded coverage. The explicit
 AUDIT-00 remainder below separates external acceptance gates from regression
@@ -24,12 +24,12 @@ deployment, live checks and clean post-backup writable recovery in `.25`.
 UX-004 accurate lifecycle labels and bulk-result feedback passed the same gates in `.26.1`.
 UX-005 validation semantics, focus and draft recovery passed every release and
 deployment/recovery gate in `.27`. UX-006 import templates and actionable
-format errors passed all deployment/recovery gates in `.28`. UX-007 configuration-aware login copy is published in `.29`
-with passing CI and source checks; exact-image/deployment gates remain open.
+format errors passed all deployment/recovery gates in `.28`. UX-007 configuration-aware login copy passed all gates in `.29`.
 UX-009 now has local, focused webhook errors with passing rendered draft/retry
 checks, published as `.30` with passing CI; exact deployment gates remain open.
-UX-010 readable palette changes pass 96 rendered contrast checks; publication
-and deployment remain open.
+UX-010 readable palette changes pass 96 rendered contrast checks and `.31` release CI;
+exact deployment remains open. UX-011 clipboard remediation passes focused and
+rendered tests; release/deployment remain open. Compact-header crowding is UX-021.
 A-01..A-04 remain
 open alongside the fixes; earlier zoom/PDF evidence does not waive those checks.
 
@@ -775,11 +775,11 @@ P3: polish with no blocked task. These are product priorities, not CVSS scores.
 | UX-004 | P2 | `active` filter includes visibly paused links | Successful bulk pause, source | Verified/closed in .26.1; intermittent webhook acceptance failure separately retained |
 | UX-005 | P2 | Legacy URL validation lacks programmatic field/error association | Invalid-submit DOM, source | Verified/closed in .27 |
 | UX-006 | P2 | Import schema errors do not give a usable correction path | Error/preview/commit exercise | Verified and closed in .28 |
-| UX-007 | P2 | SSO-only login advertises sign-up even when registration is disabled | Production screenshot, source | Published .29, CI and source checks passed; exact-image/deployment gates open |
+| UX-007 | P2 | SSO-only login advertises sign-up even when registration is disabled | Production screenshot, source | Verified/closed in .29, including live validation and NAS writable restore |
 | UX-008 | P1 | Custom confirmation dialogs leave keyboard focus behind the overlay | Fresh keyboard/DOM checks, screenshot | Verified/closed in .25, including exact-image deployment and clean post-backup restore |
-| UX-009 | P2 | Mobile webhook save errors are outside the visible viewport | Rejected private target, preserved draft and measured status geometry | Published .30 with passing CI; exact deployment gates open |
-| UX-010 | P2 | Navigation links and routing errors fail minimum text contrast | Rendered computed colors and calculated ratios | Implemented; source browser/palette tests passed, release/deployment gates open |
-| UX-011 | P2 | Legacy Copy shows success even when the clipboard rejects the write | Controlled rejection, copied CSS state and unhandled error | Open |
+| UX-009 | P2 | Mobile webhook save errors are outside the visible viewport | Rejected private target, preserved draft and measured status geometry | .30 exact checks/pre-restore passed; deployed, post-validation open |
+| UX-010 | P2 | Navigation links and routing errors fail minimum text contrast | Rendered computed colors and calculated ratios | .31 CI and exact browser passed; wrapper/deployment gates open |
+| UX-011 | P2 | Legacy Copy shows success even when the clipboard rejects the write | Controlled rejection, copied CSS state and unhandled error | Implemented for .32; focused/rendered checks passed, publication/deployment open |
 | UX-012 | P3 | Unavailable recipient pages are bare messages without a named page or next step | Fresh expired/paused pages and source | Open |
 | UX-013 | P2 | Admin tab switches leave Next enabled beyond the last result | Four-user and zero-domain initial tab states; empty-page navigation and recovery | Verified/closed in .22 |
 | UX-014 | P2 | Editors accept unexpected successful-response shapes | Forwarding false success; monitoring state loss after HTML 200; analytics stale report/raw error after malformed JSON 200 | Open |
@@ -789,6 +789,19 @@ P3: polish with no blocked task. These are product priorities, not CVSS scores.
 | UX-018 | P1 | Stale workspace edits silently overwrite another client's availability | Two real clients, description-only rendered save and API before/after | Verified/closed in .20 |
 | UX-019 | P2 | Workspace validation errors discard the unsaved edit draft | Invalid-alias response, collapsed editor and fresh field inspection | Verified/closed in .20 |
 | UX-020 | P1 | Checked workspace checkbox decoration covers editor fields | Fresh validation screenshot and inherited pseudo-element source | Verified/closed in .20 |
+| UX-021 | P3 | Compact authenticated header crowds the brand and wraps Log out mid-label | Fresh 320px desktop-browser captures during UX-011 verification | Open |
+
+### UX-021: Let The Compact Header Wrap Deliberately
+
+Fresh 320px captures (`ux011-source/copy-top-compact.png` and
+`copy-row-compact.png`, outside Git in the private audit directory) show the
+authenticated admin header crowding `Kutt` against `Log out`, with the latter
+breaking into two lines while adjacent button labels remain single-line. It is
+not horizontal document overflow; that check passed and is insufficient here.
+Keep account actions distinct from the brand and permit a deliberate navigation
+wrap with a stable gap. Verify signed-out, ordinary user and admin states at
+320/390/768/1440px, including the longer configured site name and keyboard focus.
+No account action or authorization behavior should change.
 
 ### UX-001: Name Core Actions
 
@@ -1221,7 +1234,16 @@ test setup mistakes (expecting 403 instead of legacy JSON 400/HTML 200, an
 unbootstrapped browser fixture, and a mismatched synthetic default-domain port)
 were corrected without changing production behavior. Fresh exact-wrapper browser
 checks also passed all four modes at 1440/390/320px, with the SSO compact capture
-visually inspected. Full wrapper regression and deployment/recovery remain open.
+visually inspected. Exact wrapper `aacde14195914fa1de03ec610bd7c382f1f3f10a1489b84a125a643dc78aa7fc`
+passed full isolated regression and a valid zero-critical/high scan. Deployed
+2026-09-17 04:44:12 UTC, healthy with zero restarts. Full public WAF regression
+including login wording, real HTTPS webhook delivery, Authentik-signed logout/replay,
+unchanged original data, two health samples 65 seconds apart and whole-lab
+validation passed (existing environment-template warnings remain). Clean
+post-backup at 04:55:30 UTC: local `b2278ea3...`, NAS `e78be5d9...`, all 61 files
+verified. Exact-image writable restore retained the original one user/link with
+matching database/config/secrets. Root-only evidence:
+`/srv/homelab/security-reports/2026-09-17-kutt-ux007/`. UX-007 is closed.
 
 Production offers only `Sign in with Authentik`, but the header says `Log in /
 Sign up` and the page title mentions signing up. Self-registration is disabled.
@@ -1396,6 +1418,27 @@ one fixed token. Keyboard focus, reduced motion and zoom remain separate checks.
 Basis: [W3C Contrast (Minimum)](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html).
 
 ### UX-011: Report Clipboard Failure Honestly
+
+Implemented for `.32`; not yet closed. A shared handler awaits the browser's
+write promise before success feedback. Missing, denied and synchronous failures
+are caught, retain a labelled read-only selectable fallback and never put the
+value or exception into announcements/logs. Repeated activation while pending is
+ignored. Retry clears stale success/error state and no delayed result steals focus
+or updates a removed row. The copy button stays focusable when its checkmark is
+visible. No browser permission request, endpoint, schema or auth change.
+`tests/copy.cjs` passes confirmed/missing/rejected/synchronous/pending/detached
+states. Fresh `tests/browser-copy.cjs` passes 1440/390/320px top-level icon and
+text, personal/admin row, legacy key and one-time token controls with genuine
+keyboard activation, selected fallback, pending duplicate prevention, deliberate
+external-focus preservation and retry. Workspace and QR failure/retry/download
+fallbacks remain working; no extra clipboard permissions were granted. Browser
+console and document overflow checks pass. Copy writes were document-local
+resolved/rejected/missing/pending test implementations, not a claim of physical
+clipboard or screen-reader acceptance. Compact top/row captures were inspected
+in the private `ux011-source` evidence directory. Early test setup raced HTMX
+settlement and used the wrong workspace address field; corrected tests passed
+without relaxing product behavior. Publication, exact-image tests, deployment
+and verified recovery remain required.
 
 Promoted from C-02. In the disposable document, `clipboard.writeText` was replaced
 temporarily with a rejected `NotAllowedError` promise. The workspace Copy action

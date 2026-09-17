@@ -101,22 +101,6 @@ function handleQRCode(element, id) {
   });   
 }
 
-// copy the link to clipboard
-function handleCopyLink(element) {
-  navigator.clipboard.writeText(element.dataset.url);
-}
-
-// copy the link and toggle copy button style
-function handleShortURLCopyLink(element) {
-  handleCopyLink(element);
-  const clipboard = element.parentNode.querySelector(".clipboard") || closest(".clipboard", element);
-  if (!clipboard || clipboard.classList.contains("copied")) return;
-  clipboard.classList.add("copied");
-  setTimeout(function() {
-    clipboard.classList.remove("copied");
-  }, 1000);
-}
-
 // handle navigation in the table of links
 function setLinksLimit(event) {
   const buttons = Array.from(document.querySelectorAll("table .nav .limit button"));
