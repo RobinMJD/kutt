@@ -148,7 +148,7 @@ fixtures cover WAF-like failures, retry, draft retention, keyboard/error focus,
 owner/admin/recipient forms and 1440/390/320px reflow. Synthetic provider tests do
 not replace real Authentik session-expiry acceptance.
 
-### Readable UI colors (3.2.6-sr94.31 candidate)
+### Readable UI colors (3.2.6-sr94.31)
 
 Darker existing link/error colors and button gradients improve text contrast,
 including placeholders and secondary descriptions. No schema, dependency, API,
@@ -159,7 +159,7 @@ synthetic loopback fixture. Custom CSS overrides need their own measurements.
 Image-only rollback preserves data but restores low-contrast colors. Publication,
 deployment and recovery acceptance remains in the UI/UX ledger.
 
-### Visible webhook errors (3.2.6-sr94.30 candidate)
+### Visible webhook errors (3.2.6-sr94.30)
 
 Webhook save failures now remain beside the editor's Save action with an alert
 and recoverable focus. Drafts survive errors; validation correction and Cancel
@@ -170,7 +170,7 @@ API and `tests/browser-webhook-errors.cjs` disposable browser tests cover reject
 retry, concurrency, keyboard focus and mobile visibility. Release/deployment and
 backup/restore evidence belongs in the UI/UX ledger before closing the finding.
 
-### Configuration-aware login copy (3.2.6-sr94.29 candidate)
+### Configuration-aware login copy (3.2.6-sr94.29)
 
 The login header/title and verification-return links advertise sign-up only when
 the local form, registration and mail are all enabled. SSO-only and local-only
@@ -183,7 +183,7 @@ data but restores misleading copy. Seven API modes and desktop/mobile workflows
 are covered by `tests/login-copy.cjs` and `tests/browser-login-copy.cjs`; exact
 release/deployment/recovery status is tracked in the UI/UX ledger.
 
-### Import correction (3.2.6-sr94.28 candidate)
+### Import correction (3.2.6-sr94.28)
 
 Authenticated generic JSON/CSV templates and actionable format errors add no
 schema or dependency. The new GET `/api[/v2]/transfer/template` requires
@@ -192,6 +192,50 @@ Existing preview/commit authorization, limits and retry receipts are unchanged.
 Refresh the transfer page after deployment. An image-only rollback to `.27`
 preserves current data but removes the template route and correction improvements.
 Exact release/deployment gates are tracked in the UI/UX ledger.
+
+### Clipboard and management responses (.32/.33)
+
+Clipboard actions only report success after the browser confirms a write. Denied
+or missing APIs expose a selectable fallback; no browser permission changes are
+required. A shared management-response reader validates status, media type and
+the consumed JSON fields before replacing trusted state or acknowledging a save.
+HTML sign-in responses and malformed JSON retain drafts. Analytics removes stale
+exports until fresh results validate. A bad response does not prove a write did
+not commit: reload current state before retrying, rather than bypassing revision
+conflicts. No automatic mutation retry is introduced.
+
+Reload open pages after upgrading. Both releases passed exact-image, live and
+recovery gates recorded in [the ledger](UI-UX-REVIEW.md). They change no schema,
+dependencies, secrets, authorization or WAF policy. Image-only rollback preserves
+data but restores the relevant UI defects.
+
+### Single-document login and unavailable recipients (.35.1)
+
+Successful HTMX sign-in returns 204 with fixed `HX-Redirect: /`; native HTML
+sign-in, including the OIDC callback, returns 303 to `/`. This avoids reinjecting
+the application into an already initialized document. JSON clients, failed-login
+rendering, state/PKCE, CSRF, cookies, identity and session policies are unchanged.
+Do not enable local password login as an SSO workaround.
+
+Unavailable HTML GET/HEAD requests return a titled neutral 410 page with a
+homepage action. Non-HTML responses and protected POST behavior remain unchanged;
+the page does not disclose a destination or availability reason. Active short
+links remain public. The `.34` and `.35` candidates were superseded before any
+deployment because CI caught obsolete OIDC callback assertions; `.35.1` updates
+those expectations while retaining the security assertions.
+
+### Responsive account headings (.36.1)
+
+The site header can wrap its account controls below the brand without splitting
+action labels. Long configured names remain bounded. Account security reuses the
+existing responsive page heading. Scoped selectors do not restyle unrelated nested
+headers; permissions and routes are unchanged. `.36` was superseded before image
+publication because its CI found an attribute-sensitive login test selector.
+
+The `.35.1` and `.36.1` changes require only a page reload, no migration or secret
+rotation. Image-only rollback to `.33` preserves data. Consult the ledger for the
+actual deployed version and completed gates rather than treating a published tag
+or these upgrade notes as deployment acceptance.
 
 ## Initial setup
 
@@ -267,8 +311,15 @@ Primary references: [PostgreSQL image](https://hub.docker.com/_/postgres),
    public redirects, protected management, real OIDC login/logout, existing
    links and enabled integrations. Recheck monitored routes and application
    counters through at least one post-restart monitoring interval.
-6. Record release/CI, backup/restore evidence, deployed digest and acceptance
-   results. Mark roadmap completion only after all gates pass.
+6. Wait for the entire post-deployment test process to exit successfully, including
+   removal of its disposable accounts and links. Then take another consistent
+   local/off-host backup and repeat the exact-image writable restore. Compare
+   account/link counts and original record fingerprints against the pre-test
+   baseline; reject snapshots containing temporary test records.
+7. Record release/CI, backup/restore evidence, deployed digest and acceptance
+   results. Keep unsuccessful test evidence, document the cause or uncertainty,
+   and do not silently remove failing assertions. Mark roadmap completion only
+   after all gates pass.
 
 ## Recovery
 
