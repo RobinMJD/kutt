@@ -1,0 +1,10 @@
+{
+  "screenshot": "native-qr-print-preview.png",
+  "width": 2000,
+  "height": 1320,
+  "expected": "https://127.0.0.1:31096/native-print-check",
+  "decoded": "https://127.0.0.1:31096/native-print-check",
+  "previewReady": true,
+  "cancelled": true,
+  "errors": []
+}

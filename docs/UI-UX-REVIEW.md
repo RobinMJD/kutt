@@ -34,8 +34,8 @@ UX-016 single-navigation login and UX-012 unavailable-recipient pages passed all
 release, exact-image, deployment and clean post-backup recovery gates in `.35.1`.
 Compact-header crowding and the newly confirmed Account security heading issue
 passed all release, exact-image, live and clean recovery gates in `.36.1` as UX-021/022.
-A-01..A-04 remain
-open alongside the fixes; earlier zoom/PDF evidence does not waive those checks.
+A-01 native preview subsequently passed with fresh rendered evidence on
+2026-09-17. A-02..A-04 remain open; automated evidence does not waive those checks.
 
 ## Feature And Deployment Gate
 
@@ -590,7 +590,7 @@ healthy on the same exact `3.2.6-sr94.18` image with zero restarts.
 
 The following matrix preserves the **pre-remediation audit observations** from
 2026-09-15/16. It is not the current defect status: the later finding sections
-record the fixes and release acceptance. Only A-01..A-04 below remain open from
+record the fixes and release acceptance. Only A-02..A-04 below remain open from
 this matrix; do not reopen a closed UX finding from its historical observation.
 
 | Step | Workflow | Pre-remediation result | Acceptance identified at that time |
@@ -615,22 +615,50 @@ this matrix; do not reopen a closed UX finding from its historical observation.
 Candidate C-01 through C-06 are triaged below, and C-07 is UX-016. No additional
 unspecified editor/dialog variants are a preliminary-audit requirement. The
 confirmed findings already define their regression and fix acceptance matrices.
-The following gates remain **unverified**, not passed, waived or silently deferred:
+The following table separates the completed preview check from the still
+**unverified** human acceptance gates. No gate is waived or silently deferred:
 
 | Gate | Exact outstanding work | Required prerequisite |
 | --- | --- | --- |
-| A-01 | Zoom and programmatic PDF complete; native preview rendering still unverified | Approved standalone fixture-only browser exercised real zoom, native Print/open/Cancel and independently decoded PDF. Browser preview fails on a plain-page control too; validate that UI in a working browser, not by substituting the headless PDF result |
+| A-01 | Verified native preview rendering on 2026-09-17, in addition to prior zoom/PDF coverage | Fresh exact-image QR preview shows one page, complete QR/caption and enabled Save; Cancel works and captured pixels independently decode. See the fresh acceptance below; physical printing and native file save are not claimed |
 | A-02 | Token create/copy/revoke UI and credential-bearing setup/rotation variants | User performs credential entry/creation steps; do not generate or type new credentials through UI on the user's behalf |
 | A-03 | Saved-filter/label deletion and irreversible retention Apply UI | Present each exact disposable-fixture action and request action-time confirmation; no production deletion |
 | A-04 | Real Authentik expired/revoked-session recovery and physical QR scan | User-present authenticated session test and user confirmation of actual device scan; synthetic OIDC/decoded pixels are narrower evidence |
 
 The optional mail-enabled report mode is not configured on the deployed service.
 It remains an explicitly untested optional mode, not evidence of a production
-failure. Test it before enabling that mode. AUDIT-00 remains open for A-01..A-04.
+failure. Test it before enabling that mode. AUDIT-00 remains open for A-02..A-04.
 On 2026-09-17 the user explicitly requested "Start with all fixes": begin the
 confirmed remediations now, retaining these user-assisted acceptance checks as
 pending rather than prerequisites for starting fixes. Do not claim exhaustive
 accessibility conformance or silently waive the outstanding checks.
+
+### 2026-09-17 Native Preview Acceptance
+
+The earlier plain-page failure no longer reproduced in a fresh, temporary
+Chromium 151.0.7922.34 profile. Both the earlier launch configuration and a control
+with component extensions enabled rendered correctly; this does not establish
+the earlier failure's root cause or justify changing application code.
+
+A new non-root, read-only, capability-dropped, loopback-only fixture used the
+exact deployed `.36.1` image with a fresh SQLite database and synthetic records,
+not production mounts or credentials. The real QR-page Print button opened
+`chrome://print/`. The [native preview capture](ui-ux-review/2026-09-17/native-qr-print-preview.png)
+was visually inspected: one page, complete QR and caption, no management controls,
+Save enabled and no preview error. Cancel closed the preview. Playwright's click
+completion wait timed out while the modal was open; preview rendering and Cancel
+were observed separately, not inferred from that timed-out wait.
+
+Independent `jsqr` decoding of the native screenshot recovered exactly the
+synthetic short URL; [the decode receipt](ui-ux-review/2026-09-17/native-qr-print-decode.json)
+records dimensions and expected/actual values. No application console errors or
+blocked page requests were recorded. This is native browser preview evidence,
+not a substituted programmatic PDF. The loopback URL is decoding-only, not a
+public-device scan. No OS save dialog, physical print or physical scan is claimed.
+
+The exact fixture, SSH tunnel and temporary browser profiles were removed.
+Production runtime/configuration stayed unchanged. A-01 is verified; A-02..A-04
+and the security report tooling limitation still prevent full goal completion.
 
 ### 2026-09-16 Zoom And Print Follow-Up
 
@@ -890,7 +918,8 @@ link, with integrity and foreign-key checks passing. Private evidence is under
 `/srv/homelab/security-reports/2026-09-17-kutt-ux021/` (includes UX-022).
 The 16 remaining isolated browser containers, their tunnels and TLS proxy were
 removed by exact identity after testing; production, backups and captures remain.
-No local fixture listener remains. User-assisted A-01..A-04 are not waived.
+No local fixture listener remains. At this checkpoint A-01..A-04 were unverified;
+the later native preview acceptance above closes only A-01.
 
 ### Final Security Review Limitation
 
@@ -932,7 +961,7 @@ Verified on 2026-09-17 after the final deployment and fixture cleanup:
   isolated worktree published only the Kutt files and its probe target. Matching
   Kutt deployment files is not a claim that the whole homelab checkout is clean.
 
-This reconciliation does not close A-01..A-04 or repair the security report
+This reconciliation does not close A-02..A-04 or repair the security report
 tooling failure. Those prerequisites still prevent full goal completion.
 
 ### UX-001: Name Core Actions
@@ -2191,7 +2220,7 @@ screenshots and all release/deployment gates passed as recorded under UX-018.
 These were the source concerns requiring rendered validation at audit start.
 Their triage is complete: confirmed cases became UX findings; rejected or merged
 cases retain the evidence below. Historical acceptance notes refer to the later
-fix sections, not additional open defects. A-01..A-04 remain separate.
+fix sections, not additional open defects. A-02..A-04 remain separate.
 
 | ID | Concern and source | Required validation |
 | --- | --- | --- |
@@ -2208,10 +2237,11 @@ fix sections, not additional open defects. A-01..A-04 remain separate.
 1. **AUDIT-00: retain the outstanding user-assisted acceptance checks** using the approved browser mechanism;
    capture and inspect fresh desktop/mobile evidence, including ordinary-user and
    workspace roles. C-01 through C-06 are resolved. Status: **bounded automated
-   coverage recorded; explicit A-01..A-04 acceptance remainder above**. Approved
+   coverage recorded; explicit A-02..A-04 acceptance remainder above**. Approved
    standalone Playwright completed real zoom and PDF checks on 2026-09-16.
-   Browser permission is no longer pending. Do not confuse unresolved native
-   preview/user-assisted checks with missing permission or repeat passed coverage.
+   Native preview subsequently passed on 2026-09-17. Browser permission is no
+   longer pending. Do not confuse user-assisted checks with missing browser
+   permission or repeat passed coverage.
    The user's 2026-09-17 instruction authorizes starting all confirmed fixes now;
    these checks remain pending alongside remediation, not a sequencing blocker.
 2. Fix UX-015 first because it silently changes persisted availability, then
@@ -2254,8 +2284,8 @@ Passing fix regressions are not substituted for the unperformed human workflows.
 
 | Requirement | Evidence and current result | Remaining gate |
 | --- | --- | --- |
-| Finish workflow coverage and triage source concerns | C-01..C-07 triaged; ordinary rendered workflows and all confirmed fixes have recorded acceptance | AUDIT-00 remains open for A-01..A-04 |
-| Desktop/mobile, true zoom, keyboard, focus and reduced motion | UX-001/002/003/008/010/021/022 and their named browser suites record measured layouts, focus, motion and real 200/400% zoom | Native print preview and user-assisted workflows remain unverified; no all-workflows accessibility claim |
+| Finish workflow coverage and triage source concerns | C-01..C-07 triaged; ordinary rendered workflows, native print preview and all confirmed fixes have recorded acceptance | AUDIT-00 remains open for A-02..A-04 |
+| Desktop/mobile, true zoom, keyboard, focus and reduced motion | UX-001/002/003/008/010/021/022 and their named browser suites record measured layouts, focus, motion and real 200/400% zoom | User-assisted workflows remain unverified; no all-workflows accessibility claim |
 | Names, landmarks, errors, status and modal semantics | UX-001/005/008/009/011/014 include rendered semantics, error recovery, focus and dialog tests | Credential-bearing and permanent-deletion UI ceremonies remain A-02/03 |
 | Contrast and interactive target geometry | UX-002/003/010/021/022 record measured colors, bounds and hit regions rather than screenshots alone | Evidence is limited to the reviewed states, not exhaustive accessibility conformance |
 | Empty/populated/paginated/long-data, slow/offline/error and stale edits | Workflow matrix and UX-004/006/013/014/015/017/018/019 cover these states, including real independent-client conflicts | Real Authentik expired/revoked-session recovery remains A-04 |
