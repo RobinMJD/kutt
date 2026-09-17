@@ -59,7 +59,7 @@
       type="button"
       aria-label="Ban {{link.address}}"
       title="Ban link"
-      hx-on:click='openDialog("admin-table-dialog")' 
+      hx-on::before-request='openDialog("admin-table-dialog", null, this)'
       hx-get="/confirm-link-ban" 
       hx-target="#admin-table-dialog .content-wrapper" 
       hx-indicator="#admin-table-dialog" 
@@ -73,7 +73,7 @@
     type="button"
     aria-label="Move {{link.address}} to trash"
     title="Move to trash"
-    hx-on:click='openDialog("admin-table-dialog")' 
+    hx-on::before-request='openDialog("admin-table-dialog", null, this)'
     hx-get="/confirm-link-delete" 
     hx-target="#admin-table-dialog .content-wrapper" 
     hx-indicator="#admin-table-dialog" 

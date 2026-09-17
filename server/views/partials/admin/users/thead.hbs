@@ -55,7 +55,7 @@
         <input id="skip" name="skip" type="hidden" value="0" />
         <button 
           class="table primary"
-          hx-on:click='openDialog("admin-table-dialog")' 
+          hx-on::before-request='openDialog("admin-table-dialog", null, this)'
           hx-get="/create-user" 
           hx-target="#admin-table-dialog .content-wrapper" 
           hx-indicator="#admin-table-dialog"

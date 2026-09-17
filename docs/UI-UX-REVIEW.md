@@ -3,7 +3,7 @@
 Last updated: 2026-09-17 (Europe/Paris).
 
 **Status: initial findings recorded; the full rendered audit is not yet complete.**
-Twenty findings are confirmed; UX-001/013/015/017/018/019/020 are verified/closed. Remaining concerns and workflow
+Twenty findings are confirmed; UX-001/002/003/013/015/017/018/019/020 are verified/closed. Remaining concerns and workflow
 coverage are tracked below. Do not describe this as a completed accessibility audit.
 The ordinary rendered workflows now have bounded coverage. The explicit
 AUDIT-00 remainder below separates external acceptance gates from regression
@@ -18,8 +18,9 @@ Full wrapper regression, deployment, public WAF/OIDC checks, post-change health
 and post-release restore passed. UX-018/019/020 passed the same gates in `.20`.
 UX-017 passed publication, exact deployment, live validation and post-backup restore in `.21`.
 UX-001/013 passed publication, exact deployment, live validation and post-backup restore in `.22`. UX-003
-passed source and exact-image rendered checks; `.23` is published, awaiting deployment. UX-002
-has source-tested responsive rows and controls; it is not deployed. A-01..A-04 remain
+passed publication, exact deployment, live validation and post-backup restore in `.23`. UX-002
+passed those gates in `.24`. UX-008 native-modal implementation and rendered tests
+are in progress for `.25`, not deployed. A-01..A-04 remain
 open alongside the fixes; earlier zoom/PDF evidence does not waive those checks.
 
 ## Feature And Deployment Gate
@@ -759,13 +760,13 @@ P3: polish with no blocked task. These are product priorities, not CVSS scores.
 | ID | Priority | Finding | Evidence | Status |
 | --- | --- | --- | --- | --- |
 | UX-001 | P1 | Core icon controls lack accessible names | Rendered DOM and source | Verified/closed in .22 |
-| UX-002 | P1 | Mobile recent-links table hides essential actions and the empty state | Mobile screenshots, source | Implemented; .24 publication/deployment gates pending |
-| UX-003 | P1 | Library heading links overlap mobile filter controls | Screenshot and measured DOM | Implemented; release/deployment gates pending |
+| UX-002 | P1 | Mobile recent-links table hides essential actions and the empty state | Mobile screenshots, source | Verified/closed in .24 |
+| UX-003 | P1 | Library heading links overlap mobile filter controls | Screenshot and measured DOM | Verified/closed in .23 |
 | UX-004 | P2 | `active` filter includes visibly paused links | Successful bulk pause, source | Open |
 | UX-005 | P2 | Legacy URL validation lacks programmatic field/error association | Invalid-submit DOM, source | Open |
 | UX-006 | P2 | Import schema errors do not give a usable correction path | Error/preview/commit exercise | Open |
 | UX-007 | P2 | SSO-only login advertises sign-up even when registration is disabled | Production screenshot, source | Open |
-| UX-008 | P1 | Custom confirmation dialogs leave keyboard focus behind the overlay | Fresh keyboard/DOM checks, screenshot | Open |
+| UX-008 | P1 | Custom confirmation dialogs leave keyboard focus behind the overlay | Fresh keyboard/DOM checks, screenshot | Implemented; .25 validation/publication/deployment gates pending |
 | UX-009 | P2 | Mobile webhook save errors are outside the visible viewport | Rejected private target, preserved draft and measured status geometry | Open |
 | UX-010 | P2 | Navigation links and routing errors fail minimum text contrast | Rendered computed colors and calculated ratios | Open |
 | UX-011 | P2 | Legacy Copy shows success even when the clipboard rejects the write | Controlled rejection, copied CSS state and unhandled error | Open |
@@ -885,7 +886,20 @@ cropped Playwright captures were rejected and replaced by native Chromium
 viewport captures without CSS-pixel clip overrides. Final toolbar/long-content
 captures were inspected. Tests: `browser-tables.cjs`, `browser-table-zoom.cjs`;
 private evidence: `Work/kutt-ux-audit-20260916/ux002-{source,zoom-source}`.
-Not closed: publication, exact-image and deployment/recovery gates remain.
+Published `.24`, source `2df485d216dcd3af164244702da8cb6e1273237a`; tag CI
+`35172400753` and Shortcut CI `35172400767` passed. Registry digest
+`sha256:ed3ce0703978d08b690fe6da71671dc77139978d5c4a427efecee1a41f12fba4`;
+wrapper `sha256:31e886c2ba030ba2561e50364a37041f66a2c224633ddb1a48cbf50d3b8d6d7f`.
+Full exact-image regression, valid-database zero-critical/high scan and exact
+desktop/mobile/real-zoom browser suites passed. Pre-backup 02:03:50 UTC: local
+`51420e60...`, NAS `b247facb...`; all 61 files verified and exact-image writable
+SQLite recovery/config/secret byte matches passed. Deployed 2026-09-17 02:11:49 UTC,
+healthy with zero restarts. Public WAF suite, real signed Authentik logout/replay,
+original-record/integrity/FK checks, two health samples 65 seconds apart and
+whole-lab validation passed. Post-backup at 02:23:21 UTC: local `55c2a56c...`, NAS
+`79f150b4...`; all 61 files verified, exact-image writable restore and config/secret
+matches passed. UX-002 is closed. Evidence:
+`/srv/homelab/security-reports/2026-09-17-kutt-ux002/`.
 
 At 390px, the original URL consumes the visible row; the short link, views and
 actions are off-screen in the table. Even `No links.` is outside the visible empty
@@ -940,9 +954,13 @@ Full exact-image regression, zero-critical/high scan, every heading route and
 desktop/mobile Library CRUD regression passed with no page/console errors.
 Pre-backup at 01:49:47 UTC: local `1b08512a...`, NAS `df9b05a5...`; all 61 files
 verified, exact-image writable SQLite restore and secret/config matches passed.
-Deployed 2026-09-17 01:52:00 UTC, healthy with zero restarts. Post-change live
-regression and backup/restore gates remain pending. No schema, API or access-policy
-change; image-only rollback is sufficient.
+Deployed 2026-09-17 01:52:00 UTC, healthy with zero restarts. Full public WAF suite,
+real signed Authentik logout/replay, original-record fingerprints, integrity/FKs,
+two health samples 65 seconds apart and whole-lab validation passed. Post-backup
+02:01:33 UTC: local `448d16ce...`, NAS `cefa9294...`; all 61 files verified,
+exact-image writable SQLite recovery and secret/config matches passed. UX-003
+is closed. Evidence: `/srv/homelab/security-reports/2026-09-17-kutt-ux003/`.
+No schema, API or access-policy change; image-only rollback is sufficient.
 
 Library shows only `Links` and `Analytics` beside the title. `Import and export`
 and `Trash` wrap underneath and are covered by the search/tag controls. At 390px,
@@ -1079,6 +1097,27 @@ and login-disabled configurations. Short-link recipients must remain unauthentic
 ![Production SSO-only login](ui-ux-review/2026-09-15/01-production-login-desktop.png)
 
 ### UX-008: Make Custom Dialogs Keyboard Operable
+
+Implemented in candidate `.25`: use the [native HTML modal dialog](https://html.spec.whatwg.org/multipage/interactive-elements.html#the-dialog-element)
+for top-layer/background isolation, with a shared frame, explicit naming,
+initial/restored focus, cyclic keyboard navigation and a close action during
+loading. Cancelled GET responses cannot overwrite a later opening. An in-flight
+write is not presented as cancellable; failure feedback tells the user to check
+saved state before retry. No server authorization or confirmation endpoint is
+changed. Requests are bounded at 30 seconds and duplicate submissions are dropped.
+Testing caught and corrected HTMX camel/kebab pre-request ordering (which could
+miss tracking), 320px form overflow, and document-order rather than priority-order
+fallback focus. Anonymous HTML still returns the existing HX-Redirect logout
+response, while ordinary-user JSON access to admin confirmation forms is 401;
+denied HTML has no actionable form. No status or policy is weakened for tests.
+`tests/dialogs.cjs` covers deterministic request state and authorization in CI;
+`tests/browser-dialogs.cjs` covers native rendered workflows on fresh fixtures.
+Final rendered source tests passed at 1440/390/320px, including real synthetic
+write success, failed-write draft/retry, duplicate Enter, cancelled actions with
+unchanged data, actual trash success and removed-opener section focus. Captures
+were inspected outside Git. Full isolated source regression passed, including
+authorization, OIDC, workers, migrations and rollback. Release/exact-image and
+deployment/recovery gates remain pending; this is not yet a completed fix.
 
 Promoted from C-01. Pressing Enter on the row delete action opens the custom
 `Move link to trash?` confirmation, but focus remains on the trigger behind the

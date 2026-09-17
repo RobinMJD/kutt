@@ -54,6 +54,15 @@ keyboard controls, focus after HTMX/native/async updates, concurrent draft focus
 visible outlines/reduced motion, restore confirmation and admin tab pagination.
 It does not replace a full assistive-technology or physical-device audit.
 
+`KUTT_TEST_ONLY=dialogs` checks authenticated/admin-only confirmation endpoints,
+the shared modal frame and isolated request/focus state transitions. It is part
+of the full container suite. `tests/browser-dialogs.cjs` uses a fresh loopback
+instance and required evidence directory at 1440/390/320px: native background
+isolation, names, initial/restored focus, Tab/Shift+Tab, Escape/cancel, all
+personal/admin/domain dialogs, QR, repeated opening, cancelled slow requests,
+load/write errors, validation drafts, duplicate-submit prevention, real synthetic
+write/retry/trash success and removed-opener recovery. No production data is used.
+
 For rendered lifecycle UI, install Playwright in your test runtime and run
 `tests/browser-lifecycle.cjs` with `KUTT_BROWSER_DISPOSABLE=1` and a loopback
 `KUTT_TEST_URL` for a fresh disposable instance. `PLAYWRIGHT_MODULE` can point to

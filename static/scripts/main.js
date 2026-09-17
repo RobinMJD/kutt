@@ -89,7 +89,7 @@ function handleQRCode(element, id) {
   const dialog = document.getElementById(id);
   const dialogContent = dialog.querySelector(".content-wrapper");
   if (!dialogContent) return;
-  openDialog(id, "qrcode");
+  openDialog(id, "qrcode", element);
   dialogContent.textContent = "";
   const qrcode = new QRCode(dialogContent, {
     text: element.dataset.url,
@@ -116,32 +116,6 @@ function handleShortURLCopyLink(element) {
     clipboard.classList.remove("copied");
   }, 1000);
 }
-
-// open and close dialog
-function openDialog(id, name) {
-  const dialog = document.getElementById(id);
-  if (!dialog) return;
-  dialog.classList.add("open");
-  if (name) {
-    dialog.classList.add(name);
-  }
-}
-
-function closeDialog() {
-  const dialog = document.querySelector(".dialog");
-  if (!dialog) return;
-  while (dialog.classList.length > 0) {
-    dialog.classList.remove(dialog.classList[0]);
-  }
-  dialog.classList.add("dialog");
-}
-
-window.addEventListener("click", function(event) {
-  const dialog = document.querySelector(".dialog");
-  if (dialog && event.target === dialog) {
-    closeDialog();
-  }
-});
 
 // handle navigation in the table of links
 function setLinksLimit(event) {
