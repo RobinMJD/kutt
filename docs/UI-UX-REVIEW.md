@@ -62,11 +62,16 @@ The full runtime and exact deployed-image regressions passed for release
 `v3.2.6-sr94.36.1`. Deployment/recovery evidence belongs to the fork operator
 ledger and is not a substitute for validating a different installation.
 
+Fresh native Chromium print preview also rendered the actual QR page as one
+complete page with the QR/caption, enabled Save and working Cancel. Independent
+decoding of the captured preview recovered the expected synthetic short URL.
+The earlier plain-page preview failure did not reproduce in fresh profiles;
+no application change or root-cause claim was needed for this acceptance.
+
 ## Remaining Acceptance Limits
 
-- Native print preview failed on an unrelated plain-page control in the test
-  browser too. Programmatic PDF rendering/independent QR decoding is narrower
-  evidence, not native preview acceptance.
+- Native preview rendering passed separately from programmatic PDF checks.
+  Physical printing and native file-save dialog completion are not claimed.
 - Credential-creation/rotation and irreversible deletion UI ceremonies retain
   separate user-assisted acceptance. Synthetic API/security tests do not waive it.
 - Real Authentik MFA/session recovery and physical QR scanning are user-present
