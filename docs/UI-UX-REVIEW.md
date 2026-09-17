@@ -1799,7 +1799,15 @@ HTMX settlement; corrected tests passed without changing product behavior.
 Private comparison evidence: `ux016-comparison.json`; source rendered evidence:
 `ux016-source-captures` in the audit work directory. Tests are
 `tests/login-navigation.cjs` and `tests/browser-login-navigation.cjs`.
-Publication, CI, exact wrapper/browser, backup/deployment and recovery remain open.
+Published `.34`; release CI rejected the obsolete OIDC callback expectation
+(`200` rather than the new native `303`). No failed image was published or deployed.
+The same handler completes local and OIDC sign-in: OIDC protocol, state/PKCE,
+identity and session controls are unchanged, but its successful browser callback
+also navigates via `303` instead of the welcome-body swap. Four existing OIDC
+success assertions now require exactly `303` and `Location: /`; failure, logout,
+revocation and identity-boundary assertions remain intact. `.35` inherited that
+test mismatch. `.35.1` supersedes both pending releases and includes UX-012;
+full CI, exact wrapper/browser, backup/deployment and recovery remain open.
 
 A fresh native local sign-in succeeded, then emitted `htmx:swapError` and
 `Cannot read properties of null (reading 'insertBefore')` without intervening

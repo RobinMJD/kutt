@@ -111,7 +111,8 @@ module.exports = async function ({ root, directory, env }) {
     jar.set("token", (await adminResponse.json()).token);
     assert.equal((await request("GET", "/api/auth/security", undefined, new Map())).status, 401);
     const first = await login();
-    assert.equal(first.result.status, 200, await first.result.text());
+    assert.equal(first.result.status, 303, await first.result.text());
+    assert.equal(first.result.headers.get("location"), "/");
     assert.equal((await request("GET", "/api/links", undefined, first.cookies)).status, 200);
     assert.equal((await login(new Map(), callback => callback.searchParams.set("state", "wrong-state"))).result.status, 401);
     const account = db.prepare("SELECT * FROM users WHERE email = ?").get(profile.email);
@@ -121,7 +122,8 @@ module.exports = async function ({ root, directory, env }) {
     assert.equal(publicLink.status, 201);
     profile = { ...profile, email: "changed@example.com", sid: "session-b" };
     const second = await login();
-    assert.equal(second.result.status, 200, await second.result.text());
+    assert.equal(second.result.status, 303, await second.result.text());
+    assert.equal(second.result.headers.get("location"), "/");
     assert.equal(db.prepare("SELECT count(*) AS n FROM users").get().n, 2, "Email changes must not create another account");
     assert.equal(db.prepare("SELECT user_id FROM oidc_identities").get().user_id, originalId);
     assert.equal((await request("GET", "/api/auth/security", undefined, second.cookies)).status, 200);
@@ -185,7 +187,8 @@ module.exports = async function ({ root, directory, env }) {
     unavailable = false; await delay(10100);
     profile = { sub: "stable-subject", email: "changed@example.com", email_verified: true, sid: "session-c" };
     const recovered = await login();
-    assert.equal(recovered.result.status, 200);
+    assert.equal(recovered.result.status, 303);
+    assert.equal(recovered.result.headers.get("location"), "/");
     assert.equal((await request("GET", "/api/links", undefined, recovered.cookies)).status, 200);
     assert.equal((await logout({ sid: undefined })).status, 200);
     assert.equal((await request("GET", "/api/links", undefined, recovered.cookies)).status, 401, "Subject logout must revoke all current sessions");
@@ -203,7 +206,8 @@ module.exports = async function ({ root, directory, env }) {
     assert.equal((await request("GET", "/api/auth/security")).status, 401, "Binding revokes pre-migration cookies");
     profile = { sub: "admin-stable", email: "admin-oidc@example.com", email_verified: true, sid: "admin-session" };
     const boundAdmin = await login();
-    assert.equal(boundAdmin.result.status, 200);
+    assert.equal(boundAdmin.result.status, 303);
+    assert.equal(boundAdmin.result.headers.get("location"), "/");
     assert((await (await request("GET", "/api/auth/security", undefined, boundAdmin.cookies)).json()).provider);
     assert.notEqual(bind([{ ...mapping, subject: "another-admin" }]).status, 0);
     db.prepare("UPDATE users SET banned = 1 WHERE id = ?").run(adminId);
