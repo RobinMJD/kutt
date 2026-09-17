@@ -3,7 +3,7 @@
 Last updated: 2026-09-17 (Europe/Paris).
 
 **Status: initial findings recorded; the full rendered audit is not yet complete.**
-Twenty-two findings are confirmed; UX-001/002/003/004/005/006/007/008/009/010/011/013/014/015/017/018/019/020 are verified/closed. Remaining concerns and workflow
+Twenty-two findings are confirmed; UX-001 through UX-020 are verified/closed. Remaining concerns and workflow
 coverage are tracked below. Do not describe this as a completed accessibility audit.
 The ordinary rendered workflows now have bounded coverage. The explicit
 AUDIT-00 remainder below separates external acceptance gates from regression
@@ -29,9 +29,9 @@ UX-009 local webhook errors passed every release/deployment/recovery gate in `.3
 UX-010 readable palette changes passed all release/deployment/recovery gates in `.31`.
 UX-011 clipboard remediation passed release, exact rendered/runtime, deployment
 and clean recovery gates in `.32`.
-UX-014 response validation passed every release/deployment/recovery gate in `.33`. UX-016
-normal-navigation comparison removes duplicate script/table initialization;
-focused API and twelve native HTTPS keyboard sign-ins pass. Release gates remain open.
+UX-014 response validation passed every release/deployment/recovery gate in `.33`.
+UX-016 single-navigation login and UX-012 unavailable-recipient pages passed all
+release, exact-image, deployment and clean post-backup recovery gates in `.35.1`.
 Compact-header crowding and the newly confirmed Account security heading issue
 are implemented for `.36.1` as UX-021/022; rendered checks pass, release gates remain.
 A-01..A-04 remain
@@ -784,11 +784,11 @@ P3: polish with no blocked task. These are product priorities, not CVSS scores.
 | UX-009 | P2 | Mobile webhook save errors are outside the visible viewport | Rejected private target, preserved draft and measured status geometry | Closed: .30 published, exact tests, deployment and pre/post recovery passed |
 | UX-010 | P2 | Navigation links and routing errors fail minimum text contrast | Rendered computed colors and calculated ratios | Closed: .31 publication, exact tests, deployment and clean recovery passed |
 | UX-011 | P2 | Legacy Copy shows success even when the clipboard rejects the write | Controlled rejection, copied CSS state and unhandled error | Closed: .32 publication, exact tests, deployment and clean recovery passed |
-| UX-012 | P3 | Unavailable recipient pages are bare messages without a named page or next step | Fresh expired/paused pages and source | Implemented for .35; focused and rendered checks passed, release/deployment open |
+| UX-012 | P3 | Unavailable recipient pages are bare messages without a named page or next step | Fresh expired/paused pages and source | Verified/closed in .35.1 |
 | UX-013 | P2 | Admin tab switches leave Next enabled beyond the last result | Four-user and zero-domain initial tab states; empty-page navigation and recovery | Verified/closed in .22 |
 | UX-014 | P2 | Editors accept unexpected successful-response shapes | Forwarding false success; monitoring state loss after HTML 200; analytics stale report/raw error after malformed JSON 200 | Verified/closed in .33 |
 | UX-015 | P1 | Saving an unrelated field silently restores an expiry cleared in the sibling form | Rendered sequential saves, screenshot and read-only fixture database checks | Verified/closed in .19.2 |
-| UX-016 | P2 | Local sign-in can initialize the link table twice and throw during replacement | Controlled original/fixed comparison, fresh HTTPS sign-ins and API contracts | Implemented for .34; focused and rendered checks passed, release/deployment open |
+| UX-016 | P2 | Local sign-in can initialize the link table twice and throw during replacement | Controlled original/fixed comparison, fresh HTTPS sign-ins and API contracts | Verified/closed in .35.1 |
 | UX-017 | P1 | Admin edit responses lose owner context; validation returns a personal form with blank availability | Actual admin save/error response, rendered DOM, screenshot and unchanged API state | Verified/closed in .21 |
 | UX-018 | P1 | Stale workspace edits silently overwrite another client's availability | Two real clients, description-only rendered save and API before/after | Verified/closed in .20 |
 | UX-019 | P2 | Workspace validation errors discard the unsaved edit draft | Invalid-alias response, collapsed editor and fresh field inspection | Verified/closed in .20 |
@@ -844,6 +844,34 @@ regression after the new header class was added. The selector now accepts header
 attributes and explicitly asserts its presence; all seven configuration-policy
 checks remain. No `.36` image was published or deployed. `.36.1` retains the same
 runtime changes. Publication/deployment/recovery gates remain open.
+
+The `.36.1` exact hardened image passed the full runtime suite and a valid
+Grype scan with zero critical/high matches. All 36 header layouts passed again,
+as did personal/admin table actions at actual 200/400% browser zoom and all 15
+content-heading routes at 1440/768/390/320px plus 200/400% zoom. The initial final
+heading run measured an active breakpoint transition after only two animation
+frames. Instrumentation showed changing font/button dimensions and a header
+settling from about 116px to exactly 72px on both compared pages. The test now
+waits for fonts and actual header animations to finish; its strict equality,
+hit-region and no-overlap assertions are unchanged. No runtime fix or timing
+tolerance was added. The failed trace remains alongside the passing settled
+trace in the private work directory. Backup/deployment/recovery still gate closure.
+
+### Final Security Review Limitation
+
+A bounded source-diff review covered all 124 changed source/config/test files
+between `fcc0654d91c221c002e80c19787a97c6ca11e157` and
+`ff360f19a91553404ff98d88689e74b817666502`; 97 documentation/evidence paths were
+explicitly excluded. No actionable candidates emerged. The `.36.1` runtime is
+byte-identical to that reviewed runtime; its delta fixes the login-copy test
+selector and release metadata. The later heading change is test settlement only.
+This is not a completed Codex Security verdict: desktop scan creation failed
+with `Review changes requires a non-bare Git worktree with a resolvable HEAD`,
+so no scan identity was issued, and the terminal finalizer rejected the missing
+identity. Neither an identity nor a successful report was invented. Source
+coverage and control-level notes are preserved privately under
+`security-final/artifacts/03_coverage/` in the audit work directory. Runtime,
+Grype, release and deployment gates are separate; human acceptance is still open.
 
 ### UX-001: Name Core Actions
 
@@ -1547,13 +1575,14 @@ or QR fallback behavior. Do not request broader browser permissions to mask fail
 
 ### UX-012: Give Unavailable Links A Useful Recipient Page
 
-Implemented for `.35`, not closed. Browser GET/HEAD receives the normal branded
+Verified/closed in `.35.1`, alongside UX-016 below. Browser GET/HEAD receives the normal branded
 layout, meaningful title, main landmark/H1, neutral unavailable message, sender
 contact guidance and homepage link. It does not disclose the reason, destination,
 password, owner or schedule. HTTP 410 and no-store remain; HEAD stays bodyless,
 JSON/default requests and protected-link POST keep their prior response contract.
 Availability checks, counters, authentication and redirects are unchanged.
-No schema, secret or dependency change; image-only rollback to `.34` is compatible.
+No schema, secret or dependency change; image-only rollback to the previously
+deployed `.33` is compatible but restores the two defects.
 
 Focused tests passed paused/scheduled/ended/legacy-expired/capped states, protected
 and info paths, no destination/password leakage, no counter consumption, HEAD,
@@ -1564,8 +1593,9 @@ homepage deliberately redirects to login; the harness initially expected `/`
 and was corrected to validate the existing configured login behavior. Console,
 overflow and title/landmark checks passed; desktop and compact captures were
 inspected in `ux012-source-captures`. Tests: `tests/unavailable.cjs` and
-`tests/browser-unavailable.cjs`. Publication, exact-image tests, backups,
-deployment and recovery remain open.
+`tests/browser-unavailable.cjs`. Exact-image browser tests repeated all twelve
+cases successfully. Publication, backups, deployment and clean recovery passed
+with UX-016; the shared evidence is recorded there.
 
 Paused and expired synthetic links correctly return HTTP 410 and never redirect.
 However, the browser displays only `This short link is not currently available.`
@@ -1832,7 +1862,7 @@ editors; this is not just a sibling-fragment synchronization issue.
 
 ### UX-016: Initialize The Post-Login Table Once
 
-Implemented for `.34`, not closed. A controlled comparison on the same HTTPS
+Verified/closed in `.35.1`. A controlled comparison on the same HTTPS
 fixture showed two assignments to `window.htmx` in one document, two initial
 table requests, a repeated top-level declaration and detached-target exception
 with the original body swap. Adding only `HX-Redirect: /` to the real successful
@@ -1869,7 +1899,24 @@ test mismatch. `.35.1` supersedes both pending releases and includes UX-012;
 Fork CI `35187760107` and Shortcut CI `35187760017` passed. Exact `.35.1`
 browser sign-in and unavailable-recipient suites passed, with compact captures
 visually inspected. Fresh HTTPS cross-site form rejection and legitimate sign-in
-also passed. Full wrapper, backup/deployment and recovery remain open.
+also passed. Full wrapper regression passed; the valid Grype scan reported zero
+critical/high matches for the exact wrapper
+`sha256:8808d055aacb50a6c6c948d3942f5ff25657216aec5bc300c7fdb78a0b49162e`.
+Pre-backup 2026-09-17 06:18:48 UTC: local
+`2f64647fc4fc37b42354ba0fdd5d67a2610510be1a7660c4f8e765a8fa051f31`, NAS
+`80e93f4cacecc49186bd2814b51919d0daf061ffd718ad8db4325a41c492e939`;
+61 files restored and matched, with a successful writable exact-image recovery.
+Cutover at 06:20:16 UTC passed public WAF/OIDC and feature smoke, real HTTPS
+webhook delivery, Authentik-signed logout/replay, original-record fingerprints,
+two separated health samples and whole-lab configuration validation. No new
+failed units, unhealthy containers, alerts or Kutt restarts were observed.
+Only after all live tests exited and cleaned up, post-backup 06:31:07 UTC:
+local `f841c740feac125fb14e8b36484dc2b44341df53dd0e0429b4c85a35488f9951`,
+NAS `c41bc14465fc43ae2b4c859e7c12509213d1aa535725ebfb9b6bc4424b8343fb`.
+All 62 files matched; writable recovery preserved the baseline one user/one
+link and passed integrity/foreign-key checks. Private evidence:
+`/srv/homelab/security-reports/2026-09-17-kutt-ux016/` (includes UX-012).
+Real human SSO/MFA acceptance remains A-04, not implied by signed-logout tests.
 
 A fresh native local sign-in succeeded, then emitted `htmx:swapError` and
 `Cannot read properties of null (reading 'insertBefore')` without intervening

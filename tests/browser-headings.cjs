@@ -66,6 +66,18 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
       const applied = await worker.evaluate(args => globalThis.setFixtureZoom(args), { origin, factor: zoomFactor });
       assert(Math.abs(applied - zoomFactor) < 1e-9, "Browser applied requested zoom");
       await page.waitForFunction(factor => Math.abs(devicePixelRatio - factor) < 0.01, zoomFactor);
+      // Zoom changes the responsive breakpoint and starts size transitions.
+      // Compare settled layouts, not different frames of the same transition.
+      const settlement = await page.locator(".main-wrapper > header").evaluate(async node => {
+        await document.fonts.ready;
+        const before = getComputedStyle(node).height;
+        const animations = node.getAnimations({ subtree: true });
+        const properties = animations.map(animation => animation.transitionProperty || animation.animationName);
+        await Promise.all(animations.map(animation => animation.finished.catch(() => {})));
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        return { before, after: getComputedStyle(node).height, properties };
+      });
+      if (settlement.before !== settlement.after) console.log("ZOOM_SETTLEMENT", JSON.stringify({ route, zoom: zoomFactor, ...settlement }));
       await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
       assert.equal(await page.evaluate(() => visualViewport.scale), 1, "No pinch emulation");
     };
