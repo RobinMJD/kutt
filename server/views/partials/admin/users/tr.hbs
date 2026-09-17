@@ -1,8 +1,10 @@
 <tr id="tr-{{id}}" {{#if swap_oob}}hx-swap-oob="true"{{/if}}>
   <td class="users-id">
+    <span class="table-field-label" aria-hidden="true">ID</span>
     {{id}}
   </td>
   <td class="users-email">
+    <span class="table-field-label" aria-hidden="true">Email / domains</span>
     {{email}}
     <p class="description">
       {{#if domains}}
@@ -23,9 +25,11 @@
     </p>
   </td>
   <td class="users-created-at">
+    <span class="table-field-label" aria-hidden="true">Created at</span>
     {{relative_created_at}}
   </td>
   <td class="users-verified">
+    <span class="table-field-label" aria-hidden="true">Verified</span>
     {{#if verified}}
       <span class="status green">VERIFIED</span>
     {{else}}
@@ -33,6 +37,7 @@
     {{/if}}
   </td>
   <td class="users-role">
+    <span class="table-field-label" aria-hidden="true">Role</span>
     {{#ifEquals role "ADMIN"}}
     <span class="status red">ADMIN</span>
     {{else}}
@@ -40,6 +45,7 @@
     {{/ifEquals}}
   </td>
   <td class="users-links-count">
+    <span class="table-field-label" aria-hidden="true">Total links</span>
     {{#ifEquals links_count '0'}}
       {{links_count}}
     {{else}}

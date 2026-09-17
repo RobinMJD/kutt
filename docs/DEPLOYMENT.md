@@ -51,16 +51,29 @@ and one-page results disable Next immediately. Focus intent across native
 management POSTs stores only an expiring local path/time marker, never drafts.
 No schema or secret change. Image-only rollback to `.21` preserves current data
 but restores the accessibility/navigation defects. Exact-image validation and
-deployment passed; post-change acceptance is tracked in the UI/UX ledger.
+deployment, live regression and post-backup recovery passed; evidence is tracked
+in the UI/UX ledger. Live smoke checks use semantic heading text, not a literal
+attribute-free H1 string, so accessibility attributes do not cause false failures.
 
-### Content-heading layout upgrade (3.2.6-sr94.23 candidate)
+### Content-heading layout upgrade (3.2.6-sr94.23)
 
 Shared page headings reserve their full wrapped height and constrain long titles,
 without changing the site masthead. No migration, API or access-policy change.
 Refresh open pages to load the updated stylesheet. An image-only rollback to `.22`
 preserves current data but restores the mobile heading overlap. Rendered acceptance
-covers every shared-heading route, hit regions and actual browser zoom; deployment
-and backup/restore gates remain pending in the UI/UX ledger.
+covers every shared-heading route, hit regions and actual browser zoom. Pre-backup
+restore and exact-image deployment passed; post-change gates remain in the ledger.
+
+### Responsive management tables (3.2.6-sr94.24 candidate)
+
+Personal links and admin Links/Users/Domains become labeled stacked rows at narrow
+widths, preserving every action, filter and pagination control. Desktop columns
+remain. Long URLs wrap on mobile and use ellipsis on desktop. Reload open pages
+to obtain the stylesheet and row templates together. No migration, dependency,
+API, secret or access-policy change. Image-only rollback to `.23` preserves data
+but restores clipped mobile actions. Empty/one/many rows, long content, actual
+browser zoom and role boundaries are covered; exact-image/deployment/recovery
+acceptance remains tracked separately in the UI/UX ledger.
 
 ## Initial setup
 

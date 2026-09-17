@@ -3,7 +3,7 @@
 Last updated: 2026-09-17 (Europe/Paris).
 
 **Status: initial findings recorded; the full rendered audit is not yet complete.**
-Twenty findings are confirmed; UX-015/017/018/019/020 are verified/closed. Remaining concerns and workflow
+Twenty findings are confirmed; UX-001/013/015/017/018/019/020 are verified/closed. Remaining concerns and workflow
 coverage are tracked below. Do not describe this as a completed accessibility audit.
 The ordinary rendered workflows now have bounded coverage. The explicit
 AUDIT-00 remainder below separates external acceptance gates from regression
@@ -17,8 +17,9 @@ Release `.19.2` and its CI passed; exact-image browser/restore/scan checks passe
 Full wrapper regression, deployment, public WAF/OIDC checks, post-change health
 and post-release restore passed. UX-018/019/020 passed the same gates in `.20`.
 UX-017 passed publication, exact deployment, live validation and post-backup restore in `.21`.
-UX-001/013 are deployed in `.22`; post-change acceptance is running. UX-003
-passed source-fixture rendered heading checks and is being prepared as `.23`. A-01..A-04 remain
+UX-001/013 passed publication, exact deployment, live validation and post-backup restore in `.22`. UX-003
+passed source and exact-image rendered checks; `.23` is published, awaiting deployment. UX-002
+has source-tested responsive rows and controls; it is not deployed. A-01..A-04 remain
 open alongside the fixes; earlier zoom/PDF evidence does not waive those checks.
 
 ## Feature And Deployment Gate
@@ -757,8 +758,8 @@ P3: polish with no blocked task. These are product priorities, not CVSS scores.
 
 | ID | Priority | Finding | Evidence | Status |
 | --- | --- | --- | --- | --- |
-| UX-001 | P1 | Core icon controls lack accessible names | Rendered DOM and source | Deployed in .22; post-change gates pending |
-| UX-002 | P1 | Mobile recent-links table hides essential actions and the empty state | Mobile screenshots, source | Open |
+| UX-001 | P1 | Core icon controls lack accessible names | Rendered DOM and source | Verified/closed in .22 |
+| UX-002 | P1 | Mobile recent-links table hides essential actions and the empty state | Mobile screenshots, source | Implemented; .24 publication/deployment gates pending |
 | UX-003 | P1 | Library heading links overlap mobile filter controls | Screenshot and measured DOM | Implemented; release/deployment gates pending |
 | UX-004 | P2 | `active` filter includes visibly paused links | Successful bulk pause, source | Open |
 | UX-005 | P2 | Legacy URL validation lacks programmatic field/error association | Invalid-submit DOM, source | Open |
@@ -769,7 +770,7 @@ P3: polish with no blocked task. These are product priorities, not CVSS scores.
 | UX-010 | P2 | Navigation links and routing errors fail minimum text contrast | Rendered computed colors and calculated ratios | Open |
 | UX-011 | P2 | Legacy Copy shows success even when the clipboard rejects the write | Controlled rejection, copied CSS state and unhandled error | Open |
 | UX-012 | P3 | Unavailable recipient pages are bare messages without a named page or next step | Fresh expired/paused pages and source | Open |
-| UX-013 | P2 | Admin tab switches leave Next enabled beyond the last result | Four-user and zero-domain initial tab states; empty-page navigation and recovery | Deployed in .22; post-change gates pending |
+| UX-013 | P2 | Admin tab switches leave Next enabled beyond the last result | Four-user and zero-domain initial tab states; empty-page navigation and recovery | Verified/closed in .22 |
 | UX-014 | P2 | Editors accept unexpected successful-response shapes | Forwarding false success; monitoring state loss after HTML 200; analytics stale report/raw error after malformed JSON 200 | Open |
 | UX-015 | P1 | Saving an unrelated field silently restores an expiry cleared in the sibling form | Rendered sequential saves, screenshot and read-only fixture database checks | Verified/closed in .19.2 |
 | UX-016 | P2 | Local sign-in can initialize the link table twice and throw during replacement | Fresh redacted HTMX event timeline, console stack and source review | Open |
@@ -808,13 +809,22 @@ wrapper `sha256:42c80f119cb1239821d2a4313608bfe20a950e59aece0cde983469a855c822bb
 Pre-backup 01:11:39 UTC: local `1a7fd759...`, NAS `f75064ee...`, 59 files
 byte-restored and exact-image writable SQLite recovery passed. Original-record
 fingerprints, integrity and foreign keys passed immediately before cutover.
-Post-change public/OIDC/health/backup gates are pending, so neither finding is
-closed yet. Visual mobile table
-clipping remains UX-002, separate from the passing keyboard checks.
+Post-change public WAF regression, real signed Authentik logout/replay, original
+record/integrity checks, two health samples 65 seconds apart (three fresh probes,
+zero restarts/failed units/unhealthy containers/alerts), and whole-lab validation
+passed. Two earlier live smoke runs stopped on stale literal H1 assertions, not
+application errors. A bounded stdlib HTML parser now checks heading text while
+allowing accessibility attributes; the complete suite then passed. The private
+test changes are included in recovery backups. Post-backup at 01:48:26 UTC:
+local `588086ce...`, NAS `c5682c7f...`, all 61 files verified; exact-image writable
+SQLite recovery and secret/config byte matches passed. UX-001/013 are closed.
+Evidence: `/srv/homelab/security-reports/2026-09-17-kutt-ux001/` and private
+`Work/kutt-ux-audit-20260916/ux001-*-exact` captures. Mobile table clipping remains
+UX-002, separate from these passing checks.
 
-UX-013 is being addressed in the same tab-update path: navigation is recalculated
+UX-013 is addressed in the same tab-update path: navigation is recalculated
 after the new table settles instead of relying on a removed table's listener.
-Both small/empty and paginated datasets must pass before either finding closes.
+Both small/empty and paginated datasets passed.
 
 The create-link submit button, row edit/delete buttons and pagination arrows
 appear as unnamed `button` nodes. A screen-reader or voice-control user cannot
@@ -862,6 +872,21 @@ post-action focus deliberately rather than universally moving it to an alert.
 
 ### UX-002: Make Recent Links Usable On Phones
 
+Implemented in candidate `.24`: replace the narrow-screen minimum-width table with
+labeled rows; wrap search/filter/pagination/tab controls and action buttons in
+personal and all admin variants. Preserve desktop columns and HTMX/editor paths.
+Source checks passed for 0/1/many rows and long URLs/emails/domains at
+1440/768/390/320px, all personal/admin action hit regions, search/pagination,
+edit/confirmation cancellation without mutation, and unchanged ordinary-user
+admin denial (legacy 401). Full source regression passed. Desktop URL ellipsis
+prevents an oversized anchor from extending into adjacent cells; full URLs wrap
+on narrow screens. Real 200/400% zoom interactions passed; blank/incorrectly
+cropped Playwright captures were rejected and replaced by native Chromium
+viewport captures without CSS-pixel clip overrides. Final toolbar/long-content
+captures were inspected. Tests: `browser-tables.cjs`, `browser-table-zoom.cjs`;
+private evidence: `Work/kutt-ux-audit-20260916/ux002-{source,zoom-source}`.
+Not closed: publication, exact-image and deployment/recovery gates remain.
+
 At 390px, the original URL consumes the visible row; the short link, views and
 actions are off-screen in the table. Even `No links.` is outside the visible empty
 table area. A page-level no-overflow assertion can pass while the useful content
@@ -906,9 +931,18 @@ every heading-link hit region, actual desktop/mobile link navigation, a long
 workspace name, and unchanged masthead dimensions. Source-fixture checks passed;
 captures were inspected outside Git. The harness reapplies real browser zoom
 after navigation and compares its floating-point value with a tight tolerance;
-earlier harness-only failures are not counted as application fixes. Exact-image
-console/error validation, CI, publication, deployment and recovery gates remain
-pending. No schema, API or access-policy change; image-only rollback is sufficient.
+earlier harness-only failures are not counted as application fixes. Published
+`.23` source `c1e706c765c0db224047ca112a3a881435282a44`, tag CI `35170717627`
+and Shortcut CI `35170717628` passed. Registry digest
+`sha256:286cca37b543f01225ea110f15ff0b9b88edcefc1c129087f96d9d1fc7809cc5`;
+wrapper `sha256:1f95e82d9ffc1990e81af4ef0b096e40eef698ab4e3cdc272427dd3b55fddbfc`.
+Full exact-image regression, zero-critical/high scan, every heading route and
+desktop/mobile Library CRUD regression passed with no page/console errors.
+Pre-backup at 01:49:47 UTC: local `1b08512a...`, NAS `df9b05a5...`; all 61 files
+verified, exact-image writable SQLite restore and secret/config matches passed.
+Deployed 2026-09-17 01:52:00 UTC, healthy with zero restarts. Post-change live
+regression and backup/restore gates remain pending. No schema, API or access-policy
+change; image-only rollback is sufficient.
 
 Library shows only `Links` and `Analytics` beside the title. `Import and export`
 and `Trash` wrap underneath and are covered by the search/tag controls. At 390px,

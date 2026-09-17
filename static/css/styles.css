@@ -1437,7 +1437,11 @@ main form label#advanced input {
 
 #main-table-wrapper td {
   font-size: 1rem;
+  min-width: 0;
 }
+
+#main-table-wrapper td.original-url > a,
+#main-table-wrapper td.domains-homepage > a { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 
 
 #main-table-wrapper table .original-url { flex: 7 7 0; }
@@ -1446,6 +1450,8 @@ main form label#advanced input {
 #main-table-wrapper.admin-table-wrapper table .short-link { overflow: visible; }
 #main-table-wrapper table .views { flex: 1 1 0; justify-content: flex-end; }
 #main-table-wrapper table .actions { flex: 3 3 0; justify-content: flex-end; overflow: visible; }
+#main-table-wrapper table .actions { flex-wrap: wrap; gap: 0.35rem; }
+#main-table-wrapper .table-field-label { display: none; }
 #main-table-wrapper table .actions a.button,
 #main-table-wrapper table .actions button { margin-right: 0.5rem; }
 #main-table-wrapper table .actions a.button:last-child,
@@ -2585,6 +2591,54 @@ svg.map path.active { stroke: hsl(261, 46%, 50%); stroke-width: 1.5; }
   #apikey-wrapper { max-width: 100%; }
   #apikey p { font-size: 0.85rem; }
   #apikey .clipboard { width: 22px; height: 22px; }
+}
+
+/* Keep management controls and every row action in the narrow viewport. */
+@media (max-width: 1024px) {
+  #main-table-wrapper table,
+  #main-table-wrapper table thead,
+  #main-table-wrapper table tbody,
+  #main-table-wrapper table tfoot { width: 100%; min-width: 0; max-width: 100%; }
+  #main-table-wrapper table .table-columns {
+    position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden;
+    clip-path: inset(50%); white-space: nowrap;
+  }
+  #main-table-wrapper table tr { min-width: 0; padding: 0; }
+  #main-table-wrapper table tr.controls,
+  #main-table-wrapper table tr.category { flex-wrap: wrap; align-items: flex-start; justify-content: flex-start; }
+  #main-table-wrapper table tr.controls > th,
+  #main-table-wrapper table tr.category > th { box-sizing: border-box; flex: 1 1 100%; min-width: 0; max-width: 100%; padding: 0.75rem; overflow: visible; }
+  #main-table-wrapper table th.filters > div { width: 100%; min-width: 0; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem; }
+  #main-table-wrapper table .search-input-wrapper { flex: 1 1 150px; min-width: 0; max-width: 100%; }
+  #main-table-wrapper table th input.search,
+  #main-table-wrapper table th input.search.admin { box-sizing: border-box; width: 100%; max-width: 100%; height: 40px; font-size: 14px; }
+  #main-table-wrapper table th select.table-input { box-sizing: border-box; flex: 1 1 130px; min-width: 0; max-width: 100%; height: 40px; margin: 0; font-size: 14px; }
+  #main-table-wrapper table th button.table { height: 40px; }
+  #main-table-wrapper table th.nav { flex-direction: row; flex-wrap: wrap; justify-content: flex-start; gap: 1rem; align-items: center; }
+  #main-table-wrapper.admin-table-wrapper table th.nav { flex-direction: row; align-items: center; }
+  #main-table-wrapper table th.nav .limit { margin: 0; }
+  #main-table-wrapper.admin-table-wrapper table th.nav .limit { margin: 0; }
+  #main-table-wrapper table th.nav .nav-divider { display: none; }
+  #main-table-wrapper table button.nav { width: 36px; height: 36px; }
+  #main-table-wrapper table .tab { flex-wrap: wrap; gap: 0.5rem; }
+  #main-table-wrapper table .tab button { margin: 0; min-height: 40px; padding: 0.5rem 0.75rem; }
+  #main-table-wrapper table tbody tr:not(.edit) { box-sizing: border-box; flex-direction: column; padding: 0.75rem; }
+  #main-table-wrapper table tbody tr:not(.edit) > td { box-sizing: border-box; width: 100%; max-width: 100%; min-width: 0; flex: 0 0 auto; padding: 0.4rem 0; white-space: normal; overflow: visible; align-items: flex-start; justify-content: flex-start; flex-wrap: wrap; gap: 0.35rem; text-align: left; overflow-wrap: anywhere; }
+  #main-table-wrapper table tbody tr:not(.edit) > td:not(.actions):not(.short-link) { flex-direction: column; }
+  #main-table-wrapper table tbody .table-field-label { display: block; flex: 0 0 100%; width: 100%; font-size: 12px; font-weight: 600; color: var(--text-color); }
+  #main-table-wrapper table tbody td.right-fade:after { display: none; }
+  #main-table-wrapper table tbody td a,
+  #main-table-wrapper table tbody td .link-button { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+  #main-table-wrapper table tbody td .description { display: block; max-width: 100%; }
+  #main-table-wrapper table .short-link-wrapper { min-width: 0; width: 100%; align-items: flex-start; }
+  #main-table-wrapper table .clipboard { flex: 0 0 32px; }
+  #main-table-wrapper table tbody td.actions { gap: 0.5rem; }
+  #main-table-wrapper table .actions a.button,
+  #main-table-wrapper table .actions button { flex: 0 0 40px; width: 40px; height: 40px; margin: 0; }
+  #main-table-wrapper table tr.edit { max-width: 100%; position: static; }
+  #main-table-wrapper table tr.edit td { padding: 1rem 0.75rem; }
+  #main-table-wrapper table tr.no-data td,
+  #main-table-wrapper table tr.loading-placeholder td { align-items: center; text-align: center; }
 }
 /* Shared edit conflicts keep the saved state and draft readable at narrow widths. */
 .workspace-current { padding: 0.75rem 0; border-bottom: 1px solid #c8ced2; }

@@ -1,8 +1,10 @@
 <tr id="tr-{{id}}" {{#if swap_oob}}hx-swap-oob="true"{{/if}}>
   <td class="domains-id">
+    <span class="table-field-label" aria-hidden="true">ID</span>
     {{id}}
   </td>
   <td class="domains-address right-fade">
+    <span class="table-field-label" aria-hidden="true">Address / owner</span>
     {{address}}
     <p class="description">
       by&nbsp;
@@ -50,8 +52,9 @@
     </p>
   </td>
   <td class="domains-homepage right-fade">
+    <span class="table-field-label" aria-hidden="true">Homepage</span>
     {{#if homepage}}
-      <a href="{{homepage}}" target="_blank" rel="noopener noreferrer">
+      <a href="{{homepage}}" title="{{homepage}}" target="_blank" rel="noopener noreferrer">
         {{homepage}}
       </a>
     {{else}}
@@ -59,9 +62,11 @@
     {{/if}}
   </td>
   <td class="domains-created-at">
+    <span class="table-field-label" aria-hidden="true">Created at</span>
     {{relative_created_at}}
   </td>
   <td class="domains-links-count">
+    <span class="table-field-label" aria-hidden="true">Total links</span>
     {{#ifEquals links_count '0'}}
       {{links_count}}
     {{else}}

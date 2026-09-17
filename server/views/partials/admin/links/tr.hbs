@@ -1,6 +1,7 @@
 <tr id="tr-{{id}}" {{#if swap_oob}}hx-swap-oob="true"{{/if}}>
   <td class="original-url right-fade">
-    <a href="{{target}}" target="_blank" rel="noopener noreferrer">
+    <span class="table-field-label" aria-hidden="true">Original URL / owner</span>
+    <a href="{{target}}" title="{{target}}" target="_blank" rel="noopener noreferrer">
       {{target}}
     </a>
     <p class="description">
@@ -49,6 +50,7 @@
     </p>
   </td>
   <td class="created-at">
+    <span class="table-field-label" aria-hidden="true">Created at</span>
     {{relative_created_at}}
     {{#if relative_expire_in}}
       <p class="description">
@@ -57,6 +59,7 @@
     {{/if}}
   </td>
   <td class="short-link right-fade">
+    <span class="table-field-label" aria-hidden="true">Short link / domain</span>
     <div class="short-link-wrapper">
       <div class="clipboard small">
         <button 
@@ -83,6 +86,7 @@
     </p>
   </td>
   <td class="views">
+    <span class="table-field-label" aria-hidden="true">Views</span>
     {{visit_count}}
   </td>
     {{> admin/links/actions}}
