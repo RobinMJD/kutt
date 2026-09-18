@@ -36,6 +36,15 @@ Logout uses fixed-root full document navigation and clears the cookie with
 no-store caching; this changes no OIDC/session/scope enforcement. Test both
 native and HTMX responses, denied management and rendered session recovery.
 
+Release `.39.2` adds local webhook Copy confirmation with bounded error handling
+and stale-callback protection, plus release-versioned script/stylesheet URLs.
+No credentials, delivery rules, authorization, schema or cache/WAF policy change.
+The published source and exact wrapper retain zero critical/high and three medium
+BusyBox findings in the September 18 database. Full regression, existing-browser
+loaded-resource checks, public security/health and pre/post writable restore
+passed. A bounded review found no actionable regression in this change; neither
+that review nor image scanning is an exhaustive security certification.
+
 ## Roadmap release 3.2.6-sr94.16
 
 These changes accompany release `v3.2.6-sr94.16`. Publication and deployment

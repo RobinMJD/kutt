@@ -1,0 +1,21 @@
+{
+  "release": "3.2.6-sr94.39.2",
+  "url": "https://shorter-link.com/settings/integrations",
+  "method": "Ordinary reload of the same browser that retained old assets on .39; normal Authentik sign-in after session expiry; read-only loaded-resource inspection",
+  "cachePurged": false,
+  "browserSecurityChanged": false,
+  "status": "Integrations loaded.",
+  "liveActivity": "Connected",
+  "existingDisabledWebhookRetained": true,
+  "secretVisible": false,
+  "editorVisible": false,
+  "scriptVersion": "3.2.6-sr94.39.2",
+  "stylesheetVersion": "3.2.6-sr94.39.2",
+  "loadedScriptHasLocalFeedback": true,
+  "loadedScriptHasGenerationGuard": true,
+  "loadedStyleHasFixedCopyWidth": true,
+  "loadedStyleHasLocalStatus": true,
+  "consoleWarningsAndErrors": [],
+  "physicalClipboardOrCredentialRotationClaimed": false,
+  "interpretation": "Existing-browser asset consistency and page availability passed. Synthetic exact-image browser tests separately exercise copy success/failures and rotation races. No secret or session token was retained in this receipt."
+}

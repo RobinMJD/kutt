@@ -22,6 +22,10 @@ The initial `.39` deployment exposed old cached assets in an existing browser.
 ordinary reload uses matching HTML and assets without purging caches or changing
 cache/security policy. Preserve query strings in proxy/CDN cache keys. Verify
 loaded asset contents as well as the new HTML when accepting an upgrade.
+Release CI, exact-image desktop/mobile/runtime checks, existing-browser loaded
+resources, public WAF/SSO regression, two monitored health samples and pre/post
+NAS writable restore all passed. The original data and disabled test webhook
+were retained. Human credential-rotation acceptance remains separate.
 
 ### Expiry editor upgrade (3.2.6-sr94.19.2)
 

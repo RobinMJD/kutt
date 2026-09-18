@@ -2,9 +2,9 @@
 
 Last updated: 2026-09-19 (Europe/Paris).
 
-**Status: 24 findings are verified/closed through .38; UX-025 webhook copy feedback is in remediation. User-assisted audit acceptance remains open.**
-UX-001 through UX-024 are verified/closed. The live credential ceremony exposed
-UX-025 after that checkpoint. Remaining concerns and workflow
+**Status: 25 findings are verified/closed through .39.2. User-assisted audit acceptance remains open.**
+UX-001 through UX-025 are verified/closed. The live credential ceremony exposed
+UX-025 after the initial checkpoint; its copy/cache fix is deployed. Remaining workflow
 coverage are tracked below. Do not describe this as a completed accessibility audit.
 The ordinary rendered workflows now have bounded coverage. The explicit
 AUDIT-00 remainder below separates external acceptance gates from regression
@@ -872,7 +872,7 @@ P3: polish with no blocked task. These are product priorities, not CVSS scores.
 | UX-022 | P2 | Account security page heading crowds Connected identity and splits Settings mid-word | Fresh 320px UX-021 source captures and obsolete header class | Verified/closed in .36.1 |
 | UX-023 | P2 | Newly created API token is exposed by default in a cramped fixed-width field | User-reported live token ceremony, confirmed type=text and 240px width with internal overflow | Verified/closed in .37.1; all publication/deployment/recovery gates passed |
 | UX-024 | P2 | Logout and expired/revoked-session navigation re-execute layout scripts | Real expired Authentik session and isolated delayed logout both reproduce duplicate copyStates declaration | Verified/closed in .38; all publication/deployment/recovery gates passed |
-| UX-025 | P2 | Webhook Copy confirmation is distant from its control and easy to miss | User report; live DOM records `Signing secret copied.` only in top-of-page status while the secret panel has no feedback | Remediation in progress; release/deployment/recovery not yet complete |
+| UX-025 | P2 | Webhook Copy confirmation is distant from its control and easy to miss | User report; live DOM records `Signing secret copied.` only in top-of-page status while the secret panel has no feedback | Verified/closed in .39.2; exact-image tests, existing-browser cache verification, deployment and recovery passed |
 
 ### UX-025: Keep Webhook Copy Feedback Beside The Secret
 
@@ -935,6 +935,43 @@ The `.39.1` candidate passed rendered browser checks but was not published as an
 image or deployed: CI caught a raw-HTML assertion expecting an unescaped equals
 sign in the stylesheet URL. `.39.2` uses Handlebars' escaping for that assertion,
 retaining the exact release-version requirement and unchanged production markup.
+
+**Closure, September 19 (local):** `.39.2` from
+`ff4fb22cfbe60258bda66d2bc40d546c10fbc502` passed tag CI `35404903356`, main CI
+`35404902872`, both Shortcut checks and upstream Docker CI `35404982557`.
+Published source digest:
+`sha256:78a808ba30b19226a2d436e534496d5a30400f5a6121e493ba289104c05e278f`.
+Exact hardened image:
+`sha256:a336f977615cb2aa5eda8c1cc86ce50bbf6043c9f44e39e3e96c998d5670d908`.
+Full runtime and three rendered viewport regressions passed; screenshots mask
+synthetic secrets: [desktop](ui-ux-review/2026-09-19/cache-fix/webhook-copy-desktop.png),
+[mobile](ui-ux-review/2026-09-19/cache-fix/webhook-copy-mobile.png),
+[compact](ui-ux-review/2026-09-19/cache-fix/webhook-copy-compact.png),
+[results](ui-ux-review/2026-09-19/cache-fix/webhook-copy-results.json).
+Locally built source, published source and wrapper scans each found zero
+critical/high and three medium BusyBox matches using the valid September 18 DB.
+
+Pre-backup at 2026-09-18 23:14:54 UTC: local `a73f21ba...`, NAS `ebf509d4...`;
+62 files byte-verified and exact-image writable recovery passed. Cutover at
+23:34:55 UTC retained original data and the user's disabled webhook. An ordinary
+reload in the same existing browser required normal Authentik session recovery;
+the page then loaded versioned JS/CSS with all new code/style markers present,
+live events connected and no console errors/warnings. No cache purge or security
+change was used. [Loaded-resource receipt](ui-ux-review/2026-09-19/cache-fix/live-integrations-reload.json).
+
+Full public WAF/feature regression, synthetic HTTPS webhook delivery, provider-
+signed logout/replay and two health samples 65 seconds apart passed: healthy,
+zero restarts/alerts/failed units/unhealthy containers and three successful
+probes. Lab validation passed with existing unrelated template warnings.
+Original-record fingerprints, SQLite integrity and foreign keys were unchanged;
+disposable accounts, links, containers and tunnel were removed.
+Post-backup at 23:46:01 UTC: local `51a73942...`, NAS `507f37a1...`; all 62 files
+verified and the exact deployed image passed isolated writable restore with the
+original one user/one link. Private report: `2026-09-19-kutt-ux025-2`.
+The bounded clipboard/cache change review found no actionable security regression;
+it is not a completed repository-wide security scan. Physical clipboard/rotation
+acceptance is separate and was not inferred from injected browser tests. No
+configuration wipe, secret rotation, permission change or schema migration occurred.
 
 ### UX-024: Use Document Navigation On Logout
 
@@ -2539,7 +2576,7 @@ Passing fix regressions are not substituted for the unperformed human workflows.
 | Empty/populated/paginated/long-data, slow/offline/error and stale edits | Workflow matrix and UX-004/006/013/014/015/017/018/019 cover these states, including real independent-client conflicts; real expired Authentik session recovery passed on .38 | User-assisted real session revocation remains A-04 |
 | Admin, ordinary user, owner/editor/viewer and outsider boundaries | Recorded rendered role transitions plus full authorization regressions; stale edits cannot regain revoked access; user token create/copy/revoke passed | Browser webhook secret rotation remains A-02; protocol tests do not replace it |
 | Existing APIs, filters, public redirects and migrations | Full source/exact-wrapper/public WAF regressions passed; original data fingerprints, integrity and foreign keys preserved | SQLite verified; no new PostgreSQL/MariaDB parity claim |
-| Close fixes only after publication/deployment/recovery | UX-001..UX-024 each have versioned-release, test, live and recovery evidence | All 24 confirmed defects closed through .38; broader audit remains open |
+| Close fixes only after publication/deployment/recovery | UX-001..UX-025 each have versioned-release, test, live and recovery evidence | All 25 confirmed defects closed through .39.2; broader audit remains open |
 | Final regression and security review | Full final regression passed; bounded source-diff review covered 124 source/config/test files; image scan found zero critical/high and three medium BusyBox matches without a listed fix | Security report finalization blocked by missing tool-issued scan identity; no sealed security verdict |
 | Published source and accurate recovery/deployment docs | Final publication/reconciliation section verifies runtime equality, CI, 43 live declarative files and recoverable pre/post backups | Unrelated dirty homelab work preserved; not a global clean-checkout claim |
 
