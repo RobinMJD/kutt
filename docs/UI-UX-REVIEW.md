@@ -2,7 +2,7 @@
 
 Last updated: 2026-09-18 (Europe/Paris).
 
-**Status: 22 of 23 confirmed findings are verified/closed; UX-023 is implemented and being release-validated. User-assisted audit acceptance remains open.**
+**Status: 22 of 24 confirmed findings are verified/closed; UX-023 and UX-024 are implemented and being release-validated. User-assisted audit acceptance remains open.**
 UX-001 through UX-022 are verified/closed. Remaining concerns and workflow
 coverage are tracked below. Do not describe this as a completed accessibility audit.
 The ordinary rendered workflows now have bounded coverage. The explicit
@@ -863,6 +863,28 @@ P3: polish with no blocked task. These are product priorities, not CVSS scores.
 | UX-021 | P3 | Compact authenticated header crowds the brand and wraps Log out mid-label | Fresh 320px desktop-browser captures during UX-011 verification | Verified/closed in .36.1 |
 | UX-022 | P2 | Account security page heading crowds Connected identity and splits Settings mid-word | Fresh 320px UX-021 source captures and obsolete header class | Verified/closed in .36.1 |
 | UX-023 | P2 | Newly created API token is exposed by default in a cramped fixed-width field | User-reported live token ceremony, confirmed type=text and 240px width with internal overflow | Implemented; release/deployment gates open |
+| UX-024 | P2 | Logout and expired/revoked-session navigation re-execute layout scripts | Real expired Authentik session and isolated delayed logout both reproduce duplicate copyStates declaration | Implemented; regression/release/deployment gates open |
+
+### UX-024: Use Document Navigation On Logout
+
+At 11:20 UTC on September 18, a real expired session was correctly denied and
+Authentik restored access without a new credential ceremony, but the browser
+recorded `Identifier 'copyStates' has already been declared`. The logout page
+used a delayed HTMX body replacement with a complete layout. A fresh isolated
+browser reproduced the same error after waiting for the final login form.
+The earlier sign-in test waited for network idle on the intermediate logout
+page and could navigate away before its one-second delayed request occurred.
+
+Candidate `.38` clears the cookie and returns a fixed-root native 303 or HTMX
+204/HX-Redirect, with no-store caching. The unused delayed logout template is
+removed. No session lifetime, OIDC trust, API privilege or SSO policy changes.
+Tests wait for the final login form and cover explicit logout, revoked-page and
+revoked-HTMX recovery at desktop/mobile/compact sizes. Runtime API checks cover
+both response forms and cookie clearing. Focused runtime checks and all nine
+source-rendered flow/viewport combinations passed, including rendered recovery,
+no overflow and no browser errors. The compact result was visually inspected.
+Publication/deployment remain open;
+the real expiry check is evidence of the defect, not a clean acceptance pass.
 
 ### UX-023: Mask And Fit One-Time API Tokens
 

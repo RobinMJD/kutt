@@ -234,6 +234,15 @@ container against its deterministic action graph without importing or executing
 it. Native Shortcuts execution with dummy fixtures and physical iPhone acceptance
 are separate checks; neither is claimed by headless browser emulation. See
 `examples/IOS-SHORTCUT.md` for private first-import checks.
+## Logout recovery
+
+`tests/browser-logout-navigation.cjs` targets a fresh approved loopback fixture
+with `KUTT_BROWSER_DISPOSABLE=1`, `KUTT_TEST_URL` and `KUTT_EVIDENCE_DIR`.
+It waits for the final login form after explicit logout or server-side session
+revocation, checks denial and successful rendered recovery at 1440/390/320px,
+and rejects duplicate script/browser errors. Waiting for network idle on the
+intermediate delayed logout page would miss that regression.
+
 ## Image hardening
 
 `docker run --rm --network none --read-only --entrypoint node kutt-smoke tests/image-hardening.cjs`

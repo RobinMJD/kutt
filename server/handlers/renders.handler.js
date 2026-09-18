@@ -31,9 +31,10 @@ async function login(req, res) {
 
 function logout(req, res) {
   utils.deleteCurrentToken(res);
-  res.render("logout", {
-    title: "Logging out.."
-  });
+  res.set("Cache-Control", "no-store");
+  // Replacing the body with another complete layout re-executes its scripts.
+  if (req.get("HX-Request") === "true") return res.set("HX-Redirect", "/").status(204).end();
+  return res.redirect(303, "/");
 }
 
 async function createAdmin(req, res) {
