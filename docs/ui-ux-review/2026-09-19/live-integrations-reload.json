@@ -1,0 +1,31 @@
+{
+  "kind": "Transcribed read-only browser observation; not a network trace",
+  "version": "3.2.6-sr94.39",
+  "path": "/settings/integrations",
+  "title": "Shorter Link | Integrations",
+  "beforeReload": {
+    "secretVisible": false,
+    "editorVisible": false
+  },
+  "afterReload": {
+    "status": "Integrations loaded.",
+    "localFeedbackPresent": true,
+    "copyLabel": "Copy",
+    "existingUserTestWebhooks": 1,
+    "existingUserTestWebhookState": "Disabled",
+    "liveActivity": "Connected",
+    "consoleWarningsOrErrors": []
+  },
+  "laterLoadedAssetCheck": {
+    "method": "Read-only browser loaded-resource inspection",
+    "scriptHasLocalFeedback": false,
+    "scriptHasGenerationGuard": false,
+    "styleHasFixedWidth": false,
+    "styleHasLocalStatus": false,
+    "result": "New HTML with stale unversioned assets; UX-025 remains open"
+  },
+  "limits": [
+    "No credential was created, revealed or rotated during this observation.",
+    "This reload does not claim a new physical clipboard acceptance test."
+  ]
+}

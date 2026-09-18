@@ -28,5 +28,5 @@
   <section id="hook-deliveries" hidden><header><h2 id="deliveries-title">Deliveries</h2><button id="deliveries-reload" type="button" title="Reload deliveries">{{> icons/reload}}</button></header><p id="deliveries-status" role="status"></p><div id="deliveries-list"></div><button id="deliveries-older" type="button" hidden>Older deliveries</button></section>
   <section aria-labelledby="events-title"><header><h2 id="events-title">Live activity</h2><label class="integration-choice"><input id="events-live" type="checkbox" checked /> Live</label><span id="events-status" role="status">Connecting...</span></header><ol id="events-list"></ol></section>
 </main>
-<script src="/scripts/webhooks.js" defer></script>
+<script src="/scripts/webhooks.js?v={{asset_version}}" defer></script>
 {{> footer}}

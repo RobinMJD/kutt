@@ -16,6 +16,12 @@ Editing, disabling or rotating cancels older pending/failed deliveries. A reques
 already in flight may still arrive; receivers must enforce their current secret
 and idempotency policy. No credentials are put in short links or visitor requests.
 
+The one-time signing-secret panel reports clipboard progress and completion
+beside Copy. `Copied` means the browser accepted the write; a denied, unavailable
+or timed-out clipboard shows a local failure message instead. Dismiss clears
+the displayed value but does not revoke the credential or clear the clipboard.
+Store the secret before dismissing it; retrieving it later requires rotation.
+
 Supported events: `link.created`, `link.updated`, `link.trashed`, `link.restored`,
 `link.organized`, `link.imported`, `link.routing_updated`, `link.tracking_updated`,
 `link.forwarding_updated` (added in `.14`), and `link.health_configured` /

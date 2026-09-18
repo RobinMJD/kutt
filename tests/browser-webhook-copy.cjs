@@ -26,6 +26,14 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
     assert.equal(bootstrap.status(), 201, "Refuse initialized instances");
     await context.addCookies([{ name: "token", value: (await bootstrap.json()).token, url: origin }]);
     const page = await context.newPage(), errors = [];
+    const version = require("../package.json").version;
+    // Simulate stale unversioned assets without changing deployment cache policy.
+    await page.route("**/scripts/webhooks.js", route => route.fulfill({
+      contentType: "application/javascript", body: "window.staleWebhookScript = true;"
+    }));
+    await page.route("**/css/webhooks.css", route => route.fulfill({
+      contentType: "text/css", body: ".integrations-page { display: none; }"
+    }));
     page.on("pageerror", error => errors.push(error.message));
     page.on("dialog", dialog => dialog.accept());
     const copy = page.locator("#hook-secret-copy"), notice = page.locator("#hook-secret-status");
@@ -56,6 +64,12 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
     };
     for (const [mode, width, height] of [["desktop", 1440, 1000], ["mobile", 390, 844], ["compact", 320, 720]]) {
       await page.setViewportSize({ width, height }); await page.goto(origin + "/settings/integrations");
+      const assets = await page.evaluate(() => ({
+        script: [...document.scripts].find(s => new URL(s.src, location.href).pathname === "/scripts/webhooks.js")?.src,
+        style: [...document.querySelectorAll('link[rel="stylesheet"]')].find(s => new URL(s.href).pathname === "/css/webhooks.css")?.href
+      }));
+      assert.equal(new URL(assets.script).searchParams.get("v"), version, "Script must bypass a stale prior-release asset");
+      assert.equal(new URL(assets.style).searchParams.get("v"), version, "Styles must match the current release");
       await page.locator("#integration-status").getByText("Integrations loaded.", { exact: true }).waitFor();
       await page.getByRole("button", { name: "New webhook", exact: true }).click();
       await page.getByLabel("Name", { exact: true }).fill("Copy fixture " + mode);
@@ -110,6 +124,6 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
     }
     assert.deepEqual(errors, []);
     writeFileSync(path.join(evidence, "webhook-copy-results.json"), JSON.stringify(results, null, 2) + "\n");
-    console.log("PASS: webhook copy local feedback, keyboard success, stable desktop/mobile/compact layout, failure/missing/timeout recovery, duplicate prevention, dismissal/rotation races and disabled fixture cleanup");
+    console.log("PASS: webhook copy local feedback, versioned assets with stale-path interception, keyboard success, stable desktop/mobile/compact layout, failure/missing/timeout recovery, duplicate prevention, dismissal/rotation races and disabled fixture cleanup");
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

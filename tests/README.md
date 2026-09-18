@@ -236,6 +236,12 @@ are separate checks; neither is claimed by headless browser emulation. See
 `examples/IOS-SHORTCUT.md` for private first-import checks.
 ## Webhook secret copy feedback
 
+The suite intercepts unversioned webhook assets with stale fixture responses.
+It requires the script and stylesheet URLs to carry the installed release
+version, then runs the normal rendered interactions. This is a deterministic
+stale-path simulation, not a substitute for inspecting loaded assets in an
+existing live browser after a real deployment.
+
 `tests/browser-webhook-copy.cjs` uses a fresh approved loopback fixture with
 `KUTT_BROWSER_DISPOSABLE=1`, `KUTT_TEST_URL` and `KUTT_EVIDENCE_DIR`. Start the
 disposable app with `NODE_OPTIONS=--require=/kutt/tests/webhooks-offline.cjs`, a

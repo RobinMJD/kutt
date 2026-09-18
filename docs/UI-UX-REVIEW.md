@@ -626,7 +626,7 @@ The following table separates the completed preview check from the still
 | Gate | Exact outstanding work | Required prerequisite |
 | --- | --- | --- |
 | A-01 | Verified native preview rendering on 2026-09-17, in addition to prior zoom/PDF coverage | Fresh exact-image QR preview shows one page, complete QR/caption and enabled Save; Cancel works and captured pixels independently decode. See the fresh acceptance below; physical printing and native file save are not claimed |
-| A-02 | Scoped token create/copy/revoke passed on 2026-09-18; webhook creation/rotation retry remains after a WAF false-positive fix | User performs credential entry/creation steps; do not generate or type new credentials through UI on the user's behalf. The token ceremony exposed UX-023 |
+| A-02 | Scoped token create/copy/revoke passed on 2026-09-18; disabled live webhook creation and a successful clipboard status were observed on September 19 locally. Distant copy feedback became UX-025; user-assisted live rotation remains unverified | User performs credential entry/creation steps; do not generate or type new credentials through UI on the user's behalf. The token ceremony exposed UX-023. Permission to read test secrets is not acceptance of an unperformed rotation |
 | A-03 | Saved-filter/label deletion and irreversible retention Apply UI | Present each exact disposable-fixture action and request action-time confirmation; no production deletion |
 | A-04 | Physical QR scan and real expired-session recovery passed on 2026-09-18 UTC; user-assisted real session revocation remains | User confirmed Google opened without sign-in. The naturally expired live session recovered through normal Authentik SSO on .38 without new credential entry or browser errors; no real user session was forcibly revoked |
 
@@ -898,9 +898,39 @@ below the viewport; reserving its place above the action row fixed the layout
 without relaxing the visibility assertion. The rotation test now waits for its
 actual response and new rendered state, not a stale prior success message.
 Initial fixture permission/readiness failures are not application results.
-The inspected screenshots mask synthetic secrets. Publication, exact-wrapper
-regression, deployment and pre/post recovery remain pending for `.39`; do not
-close UX-025 before all gates pass.
+The inspected screenshots mask synthetic secrets. `.39` is published from
+`3616278ca9ff1fcf39b31489e2f12d52934e6ed3`: tag CI `35402109318`, main CI
+`35402109264`, both Shortcut runs and upstream Docker CI `35402243906` passed.
+Source digest: `sha256:1cedc3fa423f93cf10195eff15783d5c7d6a9dda66117bf5ecf53243c4909dfe`.
+The hardened wrapper `sha256:d84ab9b7769a34b1fd1bb959bb644a23f6d23aa074eb440136a2ffcf2baf5511`
+passes the same three rendered cases:
+[desktop](ui-ux-review/2026-09-19/webhook-copy-desktop.png),
+[mobile](ui-ux-review/2026-09-19/webhook-copy-mobile.png),
+[compact](ui-ux-review/2026-09-19/webhook-copy-compact.png) and
+[results](ui-ux-review/2026-09-19/webhook-copy-results.json).
+Source and wrapper scans use the valid September 18 vulnerability database:
+zero critical/high, three medium BusyBox matches without a listed fix.
+Pre-backup at 2026-09-18 22:35:00 UTC: local `ba65e7fd...`, NAS `c9438b9b...`;
+all 62 files verified and isolated writable restore passed. Existing data,
+including the user's disabled webhook, is protected by fingerprint checks.
+Full wrapper regression passed. The exact image was deployed at
+2026-09-18 22:54:25 UTC, healthy with zero restarts; original-record fingerprints,
+integrity and foreign keys were unchanged. A safe live browser reload retained
+the existing disabled webhook, loaded the local feedback element and connected
+live activity without console warnings/errors. This read-only observation does
+not claim a new physical clipboard or credential-rotation ceremony. Public
+regression, provider-signed logout, two health samples 65 seconds apart and lab
+validation passed. However, loaded-resource inspection found that this browser
+still used the old unversioned script and CSS despite the new HTML. Public asset
+responses permit four hours of caching. The initial reload receipt verifies
+page/data availability only, not that the fix executed. UX-025 remains open.
+
+Candidate `.39.1` versions this page's script and stylesheet using the installed
+package version, preserving normal cache policy while separating old asset keys.
+The regression now intercepts stale unversioned paths and requires both asset
+URLs to match the running release; `.39` fails that assertion. Fresh/existing
+browser asset validation and the new release/deployment/recovery gates remain
+pending. No cache purge, browser-security change or WAF bypass is used.
 
 ### UX-024: Use Document Navigation On Logout
 
