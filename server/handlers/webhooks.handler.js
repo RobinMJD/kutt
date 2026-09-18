@@ -4,10 +4,11 @@ const { validSession } = require("../oidc-security");
 const { CustomError } = require("../utils");
 const { boundary } = require("./privacy.handler");
 const connections = new Map();
+const assetVersion = encodeURIComponent(require("../../package.json").version);
 async function page(req, res) {
   await hooks.authorized(req);
-  res.render("webhooks", { title: "Integrations", event_types: hooks.TYPES,
-    custom_styles: [...(res.locals.custom_styles || []), "webhooks.css"] });
+  res.render("webhooks", { title: "Integrations", event_types: hooks.TYPES, asset_version: assetVersion,
+    custom_styles: [...(res.locals.custom_styles || []), `webhooks.css?v=${assetVersion}`] });
 }
 async function stream(req, res) {
   if (req.method !== "GET") throw new CustomError("Live updates require GET.", 405);

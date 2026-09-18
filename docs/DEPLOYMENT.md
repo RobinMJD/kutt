@@ -6,6 +6,23 @@ its hardened wrapper, WAF/Authentik routing, monitoring and private backup paths
 in its separate deployment repository. This public repository contains no real
 secrets, provider bindings or user data.
 
+### Webhook clipboard feedback (3.2.6-sr94.39.1)
+
+Reload Integrations to load the new signing-secret panel and script together.
+Copying/Copied and the success or failure message now stay beside the Copy
+control. Success requires a resolved clipboard write; rejection, timeout and
+unavailable clipboard produce local, sanitized feedback. Dismiss remains usable
+during a pending write, and callbacks for dismissed/replaced secrets are ignored.
+No database, dependency, API, credential, delivery policy, WAF or SSO change.
+Preserve current data and secrets for image/config-only rollback to `.38`, which
+is compatible but restores the distant-feedback defect. Publication, deployment
+and recovery validation are tracked separately in the UI/UX ledger.
+The initial `.39` deployment exposed old cached assets in an existing browser.
+`.39.1` adds the installed version to this page's script/stylesheet URLs, so an
+ordinary reload uses matching HTML and assets without purging caches or changing
+cache/security policy. Preserve query strings in proxy/CDN cache keys. Verify
+loaded asset contents as well as the new HTML when accepting an upgrade.
+
 ### Expiry editor upgrade (3.2.6-sr94.19.2)
 
 This release changes no database schema or API-relative-expiry semantics. Browser

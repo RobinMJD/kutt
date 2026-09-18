@@ -97,6 +97,13 @@ callbacks for a dismissed or replaced secret. Source-rendered 1440/390/320px
 regressions pass; publication, exact-image and deployment/recovery gates remain
 pending. No credential, authorization, WAF, schema or delivery policy changes.
 
+`.39` passed clean-browser, runtime and live API/health checks, but the existing
+live browser retained old unversioned JavaScript/CSS beside the new HTML. The
+`.39.1` candidate versions this page's two assets using the installed package
+version. Regression intercepts stale unversioned paths and requires both release
+keys before exercising the normal copy flow. No cache purge or policy weakening.
+Existing-browser loaded-resource validation and deployment/recovery remain open.
+
 - Native preview rendering passed separately from programmatic PDF checks.
   Physical printing and native file-save dialog completion are not claimed.
 - Credential-creation/rotation and irreversible deletion UI ceremonies retain
