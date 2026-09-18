@@ -74,6 +74,14 @@ no application change or root-cause claim was needed for this acceptance.
 
 ## Remaining Acceptance Limits
 
+The one-time token fix is included in `.37.1`. The earlier `.37` publication was
+not deployed after a fresh image scan identified vulnerable system zlib. The
+runtime Dockerfile removes its unused package-manager dependency chain after
+building dependencies, explicitly retains CA/TLS support and runs
+`tests/image-hardening.cjs`. Keep package inventory intact and rebuild images
+instead of installing packages at runtime. Final deployment checks for `.37.1`
+are tracked separately from these source changes.
+
 - Native preview rendering passed separately from programmatic PDF checks.
   Physical printing and native file-save dialog completion are not claimed.
 - Credential-creation/rotation and irreversible deletion UI ceremonies retain

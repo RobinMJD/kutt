@@ -30,6 +30,8 @@ jobs:
         run: docker build -t kutt-smoke .
       - name: Validate example deployment configuration
         run: python3 tests/compose-config.py
+      - name: Check hardened image runtime
+        run: docker run --rm --network none --read-only --cap-drop ALL --security-opt no-new-privileges:true --entrypoint node kutt-smoke tests/image-hardening.cjs
       - name: Test isolated SQLite runtime without external network access
         run: docker run --rm --network none --entrypoint node kutt-smoke tests/container-smoke.cjs
       - name: Test isolated Redis worker and rate limits
