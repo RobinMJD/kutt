@@ -113,7 +113,42 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
       await tokens.getByRole("button", { name: "Create token", exact: true }).click();
       const result = tokens.locator(".token-result");
       await result.getByLabel("New API token", { exact: true }).waitFor();
-      await exercise(result, result.getByRole("button", { name: "Copy API token", exact: true }));
+      const secret = result.getByLabel("New API token", { exact: true });
+      const value = await secret.inputValue(); assert(value);
+      assert.equal(await secret.getAttribute("type"), "password");
+      assert.equal(await result.locator("[data-url]").count(), 0);
+      const copyToken = result.getByRole("button", { name: "Copy API token", exact: true });
+      await override("reject"); await copyToken.click();
+      await result.getByText("Copy failed. Reveal the token to copy it manually.", { exact: true }).waitFor();
+      assert.equal(await secret.getAttribute("type"), "password");
+      assert.equal(await result.getByLabel("Value to copy", { exact: true }).count(), 0);
+      await result.getByRole("button", { name: "Reveal API token", exact: true }).click();
+      assert.equal(await secret.getAttribute("type"), "text");
+      assert.equal(await secret.inputValue(), value);
+      await result.getByRole("button", { name: "Mask API token", exact: true }).click();
+      await override("pending"); await copyToken.click();
+      assert(await copyToken.isDisabled());
+      await page.evaluate(() => window.finishCopy.resolve());
+      await result.getByText("Token copied.", { exact: true }).waitFor();
+      assert.equal(await page.evaluate(() => window.copiedValue), value);
+      assert.equal(await secret.getAttribute("type"), "password");
+      const geometry = await result.evaluate(el => {
+        const field = el.querySelector("input").getBoundingClientRect(), root = el.getBoundingClientRect();
+        return { width: field.width, rootWidth: root.width, inBounds: [...el.querySelectorAll("input,button")].every(item => {
+          const box = item.getBoundingClientRect(); return box.left >= root.left - 1 && box.right <= root.right + 1;
+        }) };
+      });
+      assert(geometry.inBounds);
+      assert(geometry.width >= Math.min(360, geometry.rootWidth) - 1, "Secret uses available width, not a fixed 240px field");
+      assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+      await result.screenshot({ path: path.join(evidence, `masked-token-${mode}.png`) });
+      await override("pending"); await copyToken.click();
+      await result.getByRole("button", { name: "Hide API token", exact: true }).click();
+      await page.evaluate(() => window.finishCopy.resolve());
+      assert.equal(await secret.inputValue(), ""); assert.equal(await secret.getAttribute("value"), null);
+      await result.getByText("Token hidden. It remains active until revoked.", { exact: true }).waitFor();
+      assert(await copyToken.isDisabled());
+      await page.reload(); assert.equal(await page.locator("[data-token-secret]").count(), 0);
     }
     // Workspace and QR have separate handlers; preserve their existing failure paths.
     const space = await context.request.post(origin + "/api/v2/workspaces", { data: { name: "Copy regression" }, headers });
@@ -131,6 +166,6 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
     await page.getByText("Could not copy image. Retry or download PNG.", { exact: true }).waitFor();
     assert(await page.getByRole("link", { name: "Download PNG", exact: true }).isVisible());
     assert.deepEqual(errors, []); assert.deepEqual(consoleErrors, []);
-    console.log("PASS: desktop/mobile/compact top, personal/admin row, API key and token copy; confirmed success, denied/missing clipboard, selected fallback, focus, no secret status, duplicate prevention, retry; workspace/QR fallback preserved; no extra permissions");
+    console.log("PASS: desktop/mobile/compact link and legacy-key copy, masked responsive one-time tokens, reveal/mask, confirmed copy, denied clipboard without auto-reveal, pending dismissal, cleared secret, reload; workspace/QR fallback preserved; no extra permissions");
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

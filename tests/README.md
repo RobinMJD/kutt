@@ -96,7 +96,7 @@ replace that suite or the separate Redis worker test when releasing.
 | `validation` | Named errors, independent drafts and error focus | `browser-validation.cjs`, `browser-oidc-validation.cjs` |
 | `login-copy` | Registration/login labels match enabled policies | `browser-login-copy.cjs` |
 | `contrast` | Text and control palette assertions | `browser-contrast.cjs` |
-| `copy` | Feedback only after clipboard success; usable fallback | `browser-copy.cjs` |
+| `copy` | Confirmed clipboard feedback; selectable link/legacy-key fallback; masked responsive one-time tokens with explicit reveal and safe dismissal | `browser-copy.cjs` |
 | `responses` | Typed response validation; malformed success must not replace saved state | `browser-responses.cjs` |
 | `login-navigation` | One full-document sign-in transition; unchanged JSON/auth boundaries | `browser-login-navigation.cjs` |
 | `unavailable` | Branded private-by-default 410 page; unchanged HEAD/API/lifecycle | `browser-unavailable.cjs` |

@@ -23,6 +23,7 @@ accessibility conformance.
 | Webhooks | Save errors remain visible by the relevant form | `webhooks.cjs`, `browser-webhook-errors.cjs` |
 | Contrast | Readable text, error, placeholder and control colors | `contrast.cjs`, `browser-contrast.cjs` |
 | Clipboard | Success follows the resolved write; denial/unsupported cases offer selectable text | `copy.cjs`, `browser-copy.cjs` |
+| One-time tokens | Masked responsive field; explicit reveal/copy/hide; failure does not auto-reveal; lifecycle cleanup and stale callback protection | `token-secret.cjs`, `browser-copy.cjs` |
 | API feedback | Validate status, content type and consumed schema before claiming success or replacing saved state | `responses.cjs`, `browser-responses.cjs` |
 | Recipients | Accessible branded 410 pages with a neutral next step, without private destination or lifecycle details | `unavailable.cjs`, `browser-unavailable.cjs` |
 | Header | Deliberate wrapping of brand/account actions and separate account-security content heading | `header.cjs`, `browser-header.cjs` |
@@ -35,6 +36,9 @@ accessibility conformance.
 - Edit receipts detect conflicts; they do not replace fresh ownership, workspace
   membership, token scope/domain or CSRF checks.
 - Password drafts are never echoed. A failed password edit requires re-entry.
+- One-time API tokens are masked initially and when the tab becomes hidden.
+  Dismissal, page exit and HTMX removal clear the displayed value and attribute;
+  these controls do not revoke the credential or clear the system clipboard.
 - Browser sign-in returns HTMX `204` with a fixed-root `HX-Redirect`, or native
   HTML `303` to `/`. JSON login keeps its existing contract. OIDC code/state/PKCE,
   identity binding, cookie and revocation checks remain in place.
@@ -74,8 +78,9 @@ no application change or root-cause claim was needed for this acceptance.
   Physical printing and native file-save dialog completion are not claimed.
 - Credential-creation/rotation and irreversible deletion UI ceremonies retain
   separate user-assisted acceptance. Synthetic API/security tests do not waive it.
-- Real Authentik MFA/session recovery and physical QR scanning are user-present
-  checks. Synthetic signed-provider tests and decoded pixels are not substitutes.
+- Physical QR scanning passed with account-holder confirmation that the public
+  destination opened without SSO. Real Authentik session recovery remains a
+  user-present check; synthetic signed-provider tests are not a substitute.
 - SQLite has executed feature regression; PostgreSQL/MariaDB examples are
   configuration-validated, not a full parity claim.
 - A bounded source-diff review found no actionable candidates across 124 changed

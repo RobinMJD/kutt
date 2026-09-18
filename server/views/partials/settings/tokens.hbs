@@ -1,14 +1,17 @@
 <section id="tokens-wrapper">
   <h2>API tokens</h2>
   {{#if newToken}}
-    <div class="token-result" data-copy-container>
-      <label>New token <small>(shown once)</small>
-        <input type="text" aria-label="New API token" readonly value="{{newToken}}" />
-      </label>
-      <button type="button" class="secondary" aria-label="Copy API token" title="Copy API token"
-        hx-on:click="handleShortURLCopyLink(this);" data-url="{{newToken}}">
-        {{> icons/copy}}
-      </button>
+    <div class="token-result" data-token-secret>
+      <label for="new-api-token">New token <small>(shown once)</small></label>
+      <div class="token-secret-controls">
+        <input id="new-api-token" type="password" aria-label="New API token" readonly autocomplete="off" spellcheck="false" value="{{newToken}}" />
+        <div class="token-secret-actions">
+          <button type="button" class="secondary" data-token-action="reveal" aria-label="Reveal API token" title="Reveal API token" aria-pressed="false" disabled>{{> icons/eye}}</button>
+          <button type="button" class="secondary" data-token-action="copy" aria-label="Copy API token" title="Copy API token" disabled>{{> icons/copy}}</button>
+          <button type="button" class="secondary" data-token-action="hide" aria-label="Hide API token" title="Hide API token" disabled>{{> icons/x}}</button>
+        </div>
+      </div>
+      <p class="token-secret-status" role="status" aria-live="polite" aria-atomic="true"></p>
     </div>
   {{/if}}
   {{#if error}}<p class="error" role="alert">{{error}}</p>{{/if}}
