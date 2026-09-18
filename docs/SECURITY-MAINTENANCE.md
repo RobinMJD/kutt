@@ -1,4 +1,29 @@
-# Security maintenance for the final roadmap release
+# Security maintenance
+
+## Runtime image hardening (3.2.6-sr94.37.1)
+
+The September 18 fresh vulnerability database identified CVE-2026-85091 in
+Alpine's system `zlib` 1.3.2-r0. This blocked deployment of `.37`; that release
+was published but never deployed. Do not reuse a cached clean scan as evidence
+for a later release.
+
+The pinned runtime uses system zlib only for `apk-tools`/`libapk`. Node and the
+application's native bindings do not link it. Remove these three build-only
+packages after dependency installation, while explicitly retaining
+`ca-certificates-bundle`, `libcrypto3`, `libssl3` and `ssl_client`. Keep the APK
+installed-package database intact for truthful scanning. Node's bundled
+compression library is distinct; removing system zlib is not a claim that all
+compression code is vulnerability-free.
+
+`tests/image-hardening.cjs` runs during Docker build and in isolated image CI.
+It checks package/file removal, preserved system and Node trust stores, TLS
+helper dependencies, compression round trips and SQLite. Rebuild rather than
+install packages into a running container. Re-run full runtime, OIDC and image
+scans whenever the pinned base or dependencies change. Do not suppress a new
+finding simply to pass deployment. `.37.1` publication/deployment validation
+is still pending; the audit records its final outcome separately.
+
+## Roadmap release 3.2.6-sr94.16
 
 These changes accompany release `v3.2.6-sr94.16`. Publication and deployment
 are separate gates recorded in [the roadmap](FEATURE-ROADMAP.md).

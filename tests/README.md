@@ -96,7 +96,7 @@ replace that suite or the separate Redis worker test when releasing.
 | `validation` | Named errors, independent drafts and error focus | `browser-validation.cjs`, `browser-oidc-validation.cjs` |
 | `login-copy` | Registration/login labels match enabled policies | `browser-login-copy.cjs` |
 | `contrast` | Text and control palette assertions | `browser-contrast.cjs` |
-| `copy` | Feedback only after clipboard success; usable fallback | `browser-copy.cjs` |
+| `copy` | Confirmed clipboard feedback; selectable link/legacy-key fallback; masked responsive one-time tokens with explicit reveal and safe dismissal | `browser-copy.cjs` |
 | `responses` | Typed response validation; malformed success must not replace saved state | `browser-responses.cjs` |
 | `login-navigation` | One full-document sign-in transition; unchanged JSON/auth boundaries | `browser-login-navigation.cjs` |
 | `unavailable` | Branded private-by-default 410 page; unchanged HEAD/API/lifecycle | `browser-unavailable.cjs` |
@@ -234,3 +234,9 @@ container against its deterministic action graph without importing or executing
 it. Native Shortcuts execution with dummy fixtures and physical iPhone acceptance
 are separate checks; neither is claimed by headless browser emulation. See
 `examples/IOS-SHORTCUT.md` for private first-import checks.
+## Image hardening
+
+`docker run --rm --network none --read-only --entrypoint node kutt-smoke tests/image-hardening.cjs`
+checks the Alpine production image only: no APK tools/system zlib, retained
+CA/TLS dependencies, Node compression and native SQLite. The Dockerfile also
+runs it during the build. Do not run it on a developer host.

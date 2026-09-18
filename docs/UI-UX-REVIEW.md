@@ -877,7 +877,13 @@ Focused unit and hardened-container tests passed. Fresh approved disposable
 browser tests passed at 1440, 390 and 320px, including bounds, clipboard denial,
 reveal/mask, copy, dismissal while pending, reload and unchanged link/legacy-key,
 workspace and QR copy behavior. Masked screenshots were visually inspected.
-Version `.37` is being prepared; no release/deployment/closure is claimed yet.
+Version `.37` was published with passing CI, full isolated runtime and exact
+desktop/mobile/compact browser checks, but was never deployed: the fresh
+September 18 Grype database found High CVE-2026-85091 in unused system zlib.
+Candidate `.37.1` removes the build-only package-manager/zlib dependency chain
+while retaining CA/TLS support, with an explicit image-hardening regression
+test. Its publication/deployment/recovery gates remain open. No finding was
+suppressed and production remains `.36.1` until all gates pass.
 
 ### UX-021: Let The Compact Header Wrap Deliberately
 

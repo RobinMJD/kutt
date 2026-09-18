@@ -15,6 +15,8 @@ RUN --mount=type=bind,source=package.json,target=package.json \
     apk add --no-cache --virtual .build-deps python3 make g++ && \
     npm ci --omit=dev && \
     apk del .build-deps && \
+    apk add --no-cache ca-certificates-bundle libcrypto3 libssl3 ssl_client && \
+    apk del apk-tools libapk zlib && \
     rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
       /opt/yarn-* /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/yarn \
       /usr/local/bin/yarnpkg /usr/local/bin/corepack
@@ -23,6 +25,9 @@ RUN mkdir -p /var/lib/kutt
 
 # copy the rest of source files into the image
 COPY . .
+
+# Keep build-only package tooling out without removing TLS runtime support.
+RUN node tests/image-hardening.cjs
 
 # expose the port that the app listens on
 EXPOSE 3000
