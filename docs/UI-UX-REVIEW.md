@@ -925,12 +925,16 @@ still used the old unversioned script and CSS despite the new HTML. Public asset
 responses permit four hours of caching. The initial reload receipt verifies
 page/data availability only, not that the fix executed. UX-025 remains open.
 
-Candidate `.39.1` versions this page's script and stylesheet using the installed
+Candidate `.39.2` versions this page's script and stylesheet using the installed
 package version, preserving normal cache policy while separating old asset keys.
 The regression now intercepts stale unversioned paths and requires both asset
 URLs to match the running release; `.39` fails that assertion. Fresh/existing
 browser asset validation and the new release/deployment/recovery gates remain
 pending. No cache purge, browser-security change or WAF bypass is used.
+The `.39.1` candidate passed rendered browser checks but was not published as an
+image or deployed: CI caught a raw-HTML assertion expecting an unescaped equals
+sign in the stylesheet URL. `.39.2` uses Handlebars' escaping for that assertion,
+retaining the exact release-version requirement and unchanged production markup.
 
 ### UX-024: Use Document Navigation On Logout
 

@@ -30,7 +30,8 @@ module.exports = async ({ request, session, database, account, restart, root, di
     assert.match(html, /id="hook-secret-copy-label">Copy</);
     const assetVersion = encodeURIComponent(require(path.join(root, "package.json")).version);
     assert(html.includes(`src="/scripts/webhooks.js?v=${assetVersion}"`));
-    assert(html.includes(`href="/css/webhooks.css?v=${assetVersion}"`));
+    const escapedStyle = require("handlebars").escapeExpression(`webhooks.css?v=${assetVersion}`);
+    assert(html.includes(`href="/css/${escapedStyle}"`));
     await check(request("GET", "/api/webhooks"), 401); await check(request("GET", "/api/events"), 401);
     for (const body of [{ ...config, url: "http://hooks.example.com" }, { ...config, url: "https://mixed.example.com" }, { ...config, events: ["visit.created"] }, { ...config, enabled: "true" }, { ...config, name: "" }, { ...config, user_id: 2 }]) await check(hook("POST", "", body), 400);
     await check(hook("POST", "", config, session, { Origin: "https://evil.invalid" }), 403);
