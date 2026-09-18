@@ -51,6 +51,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
     await call("POST", "/api/users/admin", { ...user, verified: true }, 201);
     const logout = async () => {
       await page.locator(".main-wrapper > header").getByRole("link", { name: "Log out", exact: true }).click();
+      await page.getByLabel("Email address:", { exact: true }).waitFor();
       await page.waitForLoadState("networkidle");
       assert.equal((await context.request.get(origin + "/api/links", { headers: { Accept: "application/json" } })).status(), 401);
     };

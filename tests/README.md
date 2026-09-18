@@ -234,3 +234,17 @@ container against its deterministic action graph without importing or executing
 it. Native Shortcuts execution with dummy fixtures and physical iPhone acceptance
 are separate checks; neither is claimed by headless browser emulation. See
 `examples/IOS-SHORTCUT.md` for private first-import checks.
+## Logout recovery
+
+`tests/browser-logout-navigation.cjs` runs on a fresh approved loopback fixture.
+Set `KUTT_BROWSER_DISPOSABLE=1`, `KUTT_TEST_URL` and `KUTT_EVIDENCE_DIR`.
+It checks explicit logout and revoked page/HTMX access, final login rendering,
+denied management access, rendered recovery and no duplicate scripts at three
+screen sizes. Waiting for network idle on an intermediate page is insufficient.
+
+## Image hardening
+
+`docker run --rm --network none --read-only --entrypoint node kutt-smoke tests/image-hardening.cjs`
+checks the Alpine production image only: no APK tools/system zlib, retained
+CA/TLS dependencies, Node compression and native SQLite. The Dockerfile also
+runs it during the build. Do not run it on a developer host.

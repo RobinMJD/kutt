@@ -24,6 +24,7 @@ accessibility conformance.
 | Contrast | Readable text, error, placeholder and control colors | `contrast.cjs`, `browser-contrast.cjs` |
 | Clipboard | Success follows the resolved write; denial/unsupported cases offer selectable text | `copy.cjs`, `browser-copy.cjs` |
 | One-time tokens | Masked responsive field; explicit reveal/copy/hide; failure does not auto-reveal; lifecycle cleanup and stale callback protection | `token-secret.cjs`, `browser-copy.cjs` |
+| Session recovery | Logout uses full document navigation instead of delayed body replacement; no duplicate scripts on revoked-page/background requests | `login-navigation.cjs`, `browser-logout-navigation.cjs` |
 | API feedback | Validate status, content type and consumed schema before claiming success or replacing saved state | `responses.cjs`, `browser-responses.cjs` |
 | Recipients | Accessible branded 410 pages with a neutral next step, without private destination or lifecycle details | `unavailable.cjs`, `browser-unavailable.cjs` |
 | Header | Deliberate wrapping of brand/account actions and separate account-security content heading | `header.cjs`, `browser-header.cjs` |
@@ -42,6 +43,9 @@ accessibility conformance.
 - Browser sign-in returns HTMX `204` with a fixed-root `HX-Redirect`, or native
   HTML `303` to `/`. JSON login keeps its existing contract. OIDC code/state/PKCE,
   identity binding, cookie and revocation checks remain in place.
+- Logout clears the cookie and uses the same fixed-root HTMX/native navigation
+  contract with no-store caching. Browser tests wait for the final login form,
+  not network idle on an intermediate page before its delayed request occurs.
 - Unavailable HTML GET/HEAD uses the new 410 page. HEAD remains bodyless; existing
   API/default/protected POST response contracts and counters are unchanged.
 - CSS is scoped to application surfaces; real mobile wrapping and action hit

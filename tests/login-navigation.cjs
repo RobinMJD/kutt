@@ -33,5 +33,14 @@ module.exports = async ({ request, account, root }) => {
   const invalid = await request("POST", "/api/auth/login", { ...account, password: "wrong-password" }, undefined, { Accept: "text/html", "HX-Request": "true" });
   assert.equal(invalid.status, 200); assert.equal(invalid.headers.get("HX-Redirect"), null); assert.equal(invalid.headers.getSetCookie().length, 0);
   assert((await invalid.text()).includes("Login credentials are wrong."));
+  for (const htmx of [true, false]) {
+    const result = await request("GET", "/logout", undefined, undefined,
+      { Accept: "text/html", ...(htmx ? { "HX-Request": "true" } : {}) });
+    assert.equal(result.status, htmx ? 204 : 303);
+    assert.equal(result.headers.get(htmx ? "HX-Redirect" : "Location"), "/");
+    assert.equal(result.headers.get("Cache-Control"), "no-store");
+    assert(result.headers.getSetCookie().some(cookie => /^token=;/.test(cookie) && /expires=/i.test(cookie)));
+    assert(!(await result.text()).includes("hx-target=\"body\""));
+  }
   console.log("PASS: successful browser login/setup uses document navigation, HTMX and native HTML contracts, JSON compatibility, invalid-credential recovery and cross-site denial");
 };
