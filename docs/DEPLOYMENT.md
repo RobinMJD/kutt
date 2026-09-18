@@ -6,7 +6,7 @@ its hardened wrapper, WAF/Authentik routing, monitoring and private backup paths
 in its separate deployment repository. This public repository contains no real
 secrets, provider bindings or user data.
 
-### Webhook clipboard feedback (3.2.6-sr94.39.1)
+### Webhook clipboard feedback (3.2.6-sr94.39.2)
 
 Reload Integrations to load the new signing-secret panel and script together.
 Copying/Copied and the success or failure message now stay beside the Copy
@@ -18,10 +18,14 @@ Preserve current data and secrets for image/config-only rollback to `.38`, which
 is compatible but restores the distant-feedback defect. Publication, deployment
 and recovery validation are tracked separately in the UI/UX ledger.
 The initial `.39` deployment exposed old cached assets in an existing browser.
-`.39.1` adds the installed version to this page's script/stylesheet URLs, so an
+`.39.2` adds the installed version to this page's script/stylesheet URLs, so an
 ordinary reload uses matching HTML and assets without purging caches or changing
 cache/security policy. Preserve query strings in proxy/CDN cache keys. Verify
 loaded asset contents as well as the new HTML when accepting an upgrade.
+Release CI, exact-image desktop/mobile/runtime checks, existing-browser loaded
+resources, public WAF/SSO regression, two monitored health samples and pre/post
+NAS writable restore all passed. The original data and disabled test webhook
+were retained. Human credential-rotation acceptance remains separate.
 
 ### Expiry editor upgrade (3.2.6-sr94.19.2)
 

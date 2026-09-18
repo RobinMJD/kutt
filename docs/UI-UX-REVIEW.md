@@ -68,8 +68,11 @@ to hide a failure. Fault-injection suites exercise malformed successes, denial,
 network errors, delayed requests and retry without accepting false saved state.
 
 The full runtime and exact deployed-image regressions passed for release
-`v3.2.6-sr94.38`, including nine logout/revoked-page/revoked-background-request
-browser cases at 1440/390/320px. Public route/security checks, monitored health
+`v3.2.6-sr94.39.2`, including local webhook clipboard feedback and stale-asset
+regressions at 1440/390/320px. Existing-browser resource inspection confirmed the
+corrected script and styling after ordinary reload and SSO recovery. Earlier
+nine logout/revoked-page/revoked-background-request browser cases remain covered.
+Public route/security checks, monitored health
 and pre/post off-host writable recovery also passed. Deployment/recovery evidence belongs to the fork operator
 ledger and is not a substitute for validating a different installation.
 
@@ -87,22 +90,25 @@ runtime Dockerfile removes its unused package-manager dependency chain after
 building dependencies, explicitly retains CA/TLS support and runs
 `tests/image-hardening.cjs`. Keep package inventory intact and rebuild images
 instead of installing packages at runtime. Both `.37.1` and `.38` passed their
-publication, exact-image, deployment and recovery gates. All 24 confirmed UI
-defects through `.38` are closed; this does not waive the human acceptance limits below.
+publication, exact-image, deployment and recovery gates. All 25 confirmed UI
+defects through `.39.2` are closed; this does not waive the human acceptance limits below.
 The subsequent live credential ceremony exposed a 25th finding: webhook Copy
 confirmed success only at the distant page header. The `.39` patch moves feedback
 beside the secret and into the button, reports success only after clipboard
 completion, handles denial/missing/timeout without raw error details, and ignores
 callbacks for a dismissed or replaced secret. Source-rendered 1440/390/320px
-regressions pass; publication, exact-image and deployment/recovery gates remain
-pending. No credential, authorization, WAF, schema or delivery policy changes.
+regressions pass. No credential, authorization, WAF, schema or delivery policy changes.
 
 `.39` passed clean-browser, runtime and live API/health checks, but the existing
 live browser retained old unversioned JavaScript/CSS beside the new HTML. The
-`.39.1` candidate versions this page's two assets using the installed package
+`.39.2` release versions this page's two assets using the installed package
 version. Regression intercepts stale unversioned paths and requires both release
 keys before exercising the normal copy flow. No cache purge or policy weakening.
-Existing-browser loaded-resource validation and deployment/recovery remain open.
+Existing-browser loaded-resource validation, release/exact-image tests, deployed
+public routes, monitored health and pre/post off-host writable recovery passed.
+The `.39.1` image was not published or deployed: CI caught a raw-HTML assertion
+expecting an unescaped equals sign. `.39.2` uses Handlebars escaping in that
+assertion, retaining the same exact-version contract and unchanged markup.
 
 - Native preview rendering passed separately from programmatic PDF checks.
   Physical printing and native file-save dialog completion are not claimed.

@@ -42,8 +42,8 @@ Unicode aliases and extra database engines are optional follow-ups. Each item
 needs tests and migration/rollback notes before completion. The completed feature
 series is submitted as [upstream PR #1046](https://github.com/thedevs-network/kutt/pull/1046)
 on `feature/managed-links-roadmap`. Its September 18-19 update also includes the
-selected community improvements and all 24
-confirmed UI/UX fixes through `v3.2.6-sr94.38`, with publication, deployment and
+selected community improvements and all 25
+confirmed UI/UX fixes through `v3.2.6-sr94.39.2`, with publication, deployment and
 verified pre/post recovery. Separate human acceptance limits remain explicit in
 [the UI/UX ledger](UI-UX-REVIEW.md). Optional deferred community
 proposals are still excluded. Maintainer review/merge is not claimed.
