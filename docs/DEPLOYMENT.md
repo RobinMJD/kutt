@@ -237,6 +237,32 @@ rotation. Image-only rollback to `.33` preserves data. Consult the ledger for th
 actual deployed version and completed gates rather than treating a published tag
 or these upgrade notes as deployment acceptance.
 
+### One-time tokens and logout recovery (.37.1/.38)
+
+New API tokens use a responsive masked field with explicit reveal/copy/hide.
+Clipboard denial does not reveal a token automatically. Dismissal, page exit and
+HTMX removal clear the displayed value; background tabs re-mask it. These actions
+do not revoke a token or erase an earlier system clipboard copy. Reload Settings
+after upgrading. No migration, token replacement or permission change is needed.
+
+Logout clears its cookie and returns no-store plus fixed-root document navigation:
+native 303, or HTMX 204 with `HX-Redirect: /`. This also avoids reexecuting layout
+scripts after an expired/revoked session. Keep the existing session lifetime,
+OIDC state/PKCE and revocation enforcement. The nine rendered regressions cover
+logout and revoked-page/background-request recovery at 1440, 390 and 320px.
+Rolling back to `.37.1` retains data but restores the logout defect; rolling back
+further also restores the token presentation defect.
+
+The `.37` image was published but not deployed after a fresh scan found vulnerable
+unused system zlib. `.37.1` removes the build-only package-manager chain while
+retaining CA/TLS and package inventory; see [security maintenance](SECURITY-MAINTENANCE.md).
+Rebuild and test the exact digest rather than modifying a running container.
+Outbound integration checks require complete A/AAAA DNS results. If a shared
+Docker gateway hits a resolver's per-client budget, preserve filtering/DNSSEC and
+SSRF checks; fix the network/resolver path instead of accepting incomplete answers.
+Keep installation-specific addresses and WAF exclusions in private deployment
+configuration, with narrow positive and negative regression checks.
+
 ## Initial setup
 
 Start with the SQLite Compose example and a private `.env` based on

@@ -1,9 +1,9 @@
 # UI/UX Review And Remediation Ledger
 
-Last updated: 2026-09-18 (Europe/Paris).
+Last updated: 2026-09-19 (Europe/Paris).
 
-**Status: 22 of 24 confirmed findings are verified/closed; UX-023 and UX-024 are implemented and being release-validated. User-assisted audit acceptance remains open.**
-UX-001 through UX-022 are verified/closed. Remaining concerns and workflow
+**Status: all 24 confirmed findings are verified/closed through .38. User-assisted audit acceptance remains open.**
+UX-001 through UX-024 are verified/closed. Remaining concerns and workflow
 coverage are tracked below. Do not describe this as a completed accessibility audit.
 The ordinary rendered workflows now have bounded coverage. The explicit
 AUDIT-00 remainder below separates external acceptance gates from regression
@@ -36,6 +36,10 @@ Compact-header crowding and the newly confirmed Account security heading issue
 passed all release, exact-image, live and clean recovery gates in `.36.1` as UX-021/022.
 A-01 native preview subsequently passed with fresh rendered evidence on
 2026-09-17. A-02..A-04 remain open; automated evidence does not waive those checks.
+UX-023 masked tokens passed publication, exact-image tests, live validation and
+pre/post recovery in `.37.1`. UX-024 logout/session recovery passed all the same
+gates in `.38` on September 18. The separate webhook WAF false positive and Kutt
+DNS path were corrected without relaxing authentication or outbound validation.
 
 ## Feature And Deployment Gate
 
@@ -623,7 +627,7 @@ The following table separates the completed preview check from the still
 | A-01 | Verified native preview rendering on 2026-09-17, in addition to prior zoom/PDF coverage | Fresh exact-image QR preview shows one page, complete QR/caption and enabled Save; Cancel works and captured pixels independently decode. See the fresh acceptance below; physical printing and native file save are not claimed |
 | A-02 | Scoped token create/copy/revoke passed on 2026-09-18; webhook creation/rotation retry remains after a WAF false-positive fix | User performs credential entry/creation steps; do not generate or type new credentials through UI on the user's behalf. The token ceremony exposed UX-023 |
 | A-03 | Saved-filter/label deletion and irreversible retention Apply UI | Present each exact disposable-fixture action and request action-time confirmation; no production deletion |
-| A-04 | Physical QR scan passed on 2026-09-18; real Authentik expired/revoked-session recovery remains | User confirmed Google opened without sign-in after scanning the public short-link QR. Real session recovery still requires user-present acceptance |
+| A-04 | Physical QR scan and real expired-session recovery passed on 2026-09-18 UTC; user-assisted real session revocation remains | User confirmed Google opened without sign-in. The naturally expired live session recovered through normal Authentik SSO on .38 without new credential entry or browser errors; no real user session was forcibly revoked |
 
 The optional mail-enabled report mode is not configured on the deployed service.
 It remains an explicitly untested optional mode, not evidence of a production
@@ -663,9 +667,12 @@ scoped runtime exclusion now removes only that exact event-array value from
 930120 on JSON POST/PUT webhook endpoints for this host. Other fields, values,
 routes and WAF rules remain inspected; SSO and authorization are unchanged.
 Scheduler reload and Nginx validation passed. Unauthenticated native/v2 valid
-events now reach Kutt's JSON 401, while three negative controls still return
-WAF 403. No webhook was created by these probes. Actual signed-in creation and
-rotation remain pending the user's retry, not inferred from anonymous checks.
+events now reach Kutt's JSON 401, while four negative controls still return
+WAF 403. No webhook was created by these anonymous probes. A separate disposable
+authenticated public regression created, updated and rotated a disabled webhook
+with all eleven events, confirmed no deliveries and removed only its fixture.
+That check passed through the unchanged authorization boundary. Actual browser
+creation/copy/rotation remain pending the user's retry, not inferred from API checks.
 
 ### 2026-09-17 Native Preview Acceptance
 
@@ -862,8 +869,8 @@ P3: polish with no blocked task. These are product priorities, not CVSS scores.
 | UX-020 | P1 | Checked workspace checkbox decoration covers editor fields | Fresh validation screenshot and inherited pseudo-element source | Verified/closed in .20 |
 | UX-021 | P3 | Compact authenticated header crowds the brand and wraps Log out mid-label | Fresh 320px desktop-browser captures during UX-011 verification | Verified/closed in .36.1 |
 | UX-022 | P2 | Account security page heading crowds Connected identity and splits Settings mid-word | Fresh 320px UX-021 source captures and obsolete header class | Verified/closed in .36.1 |
-| UX-023 | P2 | Newly created API token is exposed by default in a cramped fixed-width field | User-reported live token ceremony, confirmed type=text and 240px width with internal overflow | Implemented; release/deployment gates open |
-| UX-024 | P2 | Logout and expired/revoked-session navigation re-execute layout scripts | Real expired Authentik session and isolated delayed logout both reproduce duplicate copyStates declaration | Implemented; regression/release/deployment gates open |
+| UX-023 | P2 | Newly created API token is exposed by default in a cramped fixed-width field | User-reported live token ceremony, confirmed type=text and 240px width with internal overflow | Verified/closed in .37.1; all publication/deployment/recovery gates passed |
+| UX-024 | P2 | Logout and expired/revoked-session navigation re-execute layout scripts | Real expired Authentik session and isolated delayed logout both reproduce duplicate copyStates declaration | Verified/closed in .38; all publication/deployment/recovery gates passed |
 
 ### UX-024: Use Document Navigation On Logout
 
@@ -875,7 +882,7 @@ browser reproduced the same error after waiting for the final login form.
 The earlier sign-in test waited for network idle on the intermediate logout
 page and could navigate away before its one-second delayed request occurred.
 
-Candidate `.38` clears the cookie and returns a fixed-root native 303 or HTMX
+Release `.38` clears the cookie and returns a fixed-root native 303 or HTMX
 204/HX-Redirect, with no-store caching. The unused delayed logout template is
 removed. No session lifetime, OIDC trust, API privilege or SSO policy changes.
 Tests wait for the final login form and cover explicit logout, revoked-page and
@@ -883,8 +890,47 @@ revoked-HTMX recovery at desktop/mobile/compact sizes. Runtime API checks cover
 both response forms and cookie clearing. Focused runtime checks and all nine
 source-rendered flow/viewport combinations passed, including rendered recovery,
 no overflow and no browser errors. The compact result was visually inspected.
-Publication/deployment remain open;
-the real expiry check is evidence of the defect, not a clean acceptance pass.
+Release `v3.2.6-sr94.38` is published at source
+`10a59dcb431e8cb657d5068700f2915e34f3cc37`; tag CI `35339772396`, main CI
+`35339772555`, Shortcut CI `35339772400` and upstream-branch Docker CI
+`35339986965` passed. All nine exact-wrapper browser cases also passed, and the
+fresh September 18 image scan has zero critical/high and three medium findings.
+Evidence: [desktop logout](ui-ux-review/2026-09-18/logout-desktop.png),
+[compact revoked-session recovery](ui-ux-review/2026-09-18/revoked-session-compact.png)
+and [all nine results](ui-ux-review/2026-09-18/logout-recovery-results.json).
+The exact deployed wrapper is
+`sha256:1c2b23569deb6c6775c73f31a0af01a9614874092cf253bf4969042e7b31d2b6`.
+Pre-backup at 12:05:38 UTC: local `d35ef30b...`, NAS `10969236...`; all 62 files
+verified and isolated writable restore passed. Cutover at 12:06:19 UTC retained
+the original user/link fingerprints. Full public WAF/feature regression, actual
+synthetic HTTPS webhook delivery, provider-signed logout/replay rejection and
+two monitored intervals 65 seconds apart passed. Three probes succeeded, with
+zero alerts, restarts, failed units or unhealthy containers. Lab validation
+passed with the existing unrelated environment-template warnings.
+Post-backup at 12:16:04 UTC: local `ad17cd44...`, NAS `0e562169...`; all 62 files
+verified and exact-image writable restore retained one user/one link, with
+integrity and foreign-key checks passing. All disposable fixtures were removed.
+The real earlier expiry check remains evidence of the defect, not a clean human
+acceptance pass. A fresh follow-up at 22:09 UTC, about ten hours after cutover,
+again passed two health samples 65 seconds apart: unchanged exact image, healthy,
+zero restarts/alerts/failed units/unhealthy containers and three successful probes.
+Homelab deployment/documentation commit `868bb9c4afea9c71e6be291dbee855d718ddfa9a`
+passed [deployment CI](https://github.com/RobinMJD/homelab/actions/runs/35400423572)
+and [repository hygiene](https://github.com/RobinMJD/homelab/actions/runs/35400423617).
+
+At 22:13-22:16 UTC (September 19 locally), the existing live browser showed
+`Session ended. Sign in again.` after naturally expiring. Following Settings
+returned the signed-out Authentik entry page. The ordinary Sign in with Authentik
+action recovered the same account through its existing SSO session; Settings
+and Integrations loaded normally, live activity connected, and the browser log
+contained no warnings/errors. No cookie injection, credential change or policy
+bypass was used. This is real expired-session recovery, not a forced-revocation
+test or a new MFA ceremony. A disabled unsaved webhook draft was re-prepared;
+Save and secret rotation remain a user credential handoff. Human
+credential/deletion/revoked-session checks remain open. The
+[redacted observation receipt](ui-ux-review/2026-09-18/live-expired-session-recovery.json)
+records the limited result without account identifiers or authentication material.
+Private evidence: `/srv/homelab/security-reports/2026-09-18-kutt-ux024/`.
 
 ### UX-023: Mask And Fit One-Time API Tokens
 
@@ -902,10 +948,47 @@ workspace and QR copy behavior. Masked screenshots were visually inspected.
 Version `.37` was published with passing CI, full isolated runtime and exact
 desktop/mobile/compact browser checks, but was never deployed: the fresh
 September 18 Grype database found High CVE-2026-85091 in unused system zlib.
-Candidate `.37.1` removes the build-only package-manager/zlib dependency chain
+Release `.37.1` removes the build-only package-manager/zlib dependency chain
 while retaining CA/TLS support, with an explicit image-hardening regression
-test. Its publication/deployment/recovery gates remain open. No finding was
-suppressed and production remains `.36.1` until all gates pass.
+test. Tag CI `35338236507`, main CI `35338236425`, Shortcut CI `35338236573`,
+full exact-wrapper tests and desktop/mobile/compact token-copy regressions passed.
+The verified pre-backup/restore preceded its 11:31 UTC deployment on September 18.
+Fresh source and wrapper scans have zero critical/high and three medium matches.
+No finding was suppressed. During live validation, the first
+full public run passed webhook creation/rotation but reported `attention` for
+the external destination check. A direct probe with Kutt's own safe outbound
+implementation subsequently returned HTTP 204/OK. The original failed log is
+preserved; subsequent runs added redacted diagnostics without weakening assertions;
+the exact original transient cause was not captured and is not asserted.
+
+The next run identified an incomplete DNS response during webhook creation:
+IPv4 succeeded while AAAA timed out. Technitium logs show the shared Docker
+gateway repeatedly exceeding its 600 queries/minute UDP limit at the same
+times (601-621/minute), not a Kutt authorization or WAF failure. Kutt now uses
+the same filtering resolver directly; its existing address is reserved in the
+DNS service's Compose definition. No rate limit, DNSSEC, NextDNS policy or
+SSRF validation was relaxed. The DNS config was byte-identical after restart.
+The first readiness probe ran before DNS had started; a health/readiness check
+then passed. A prematurely started smoke run was interrupted with its normal
+fixture cleanup before Kutt's DNS change; neither run is counted as acceptance.
+Focused pre-DNS local/NAS snapshots `52d4972f...` / `6937fb48...` at 11:49:32 UTC
+passed 62-file verification and isolated writable recovery with one user/link.
+Forty-eight paired public A/AAAA checks over nearly two minutes passed with
+zero errors, using the application's unchanged safe resolver. The public DNS
+admin route still returns an authentication redirect. The complete public suite
+passed after this correction, including all-event disabled webhook creation,
+update and secret rotation, real synthetic HTTPS delivery, public redirects,
+scopes/SSRF, destination health, token revocation and blocked public bootstrap.
+Provider-signed logout and replay rejection passed. Original records and SQLite
+integrity/foreign keys were unchanged. The first final monitoring gate caught a
+transient pending public-probe failure/slow warning; a subsequent pair 65 seconds
+apart passed with three successful probes and zero alerts, restarts, failed units
+or unhealthy containers. Lab validation passed with existing unrelated environment
+template warnings. Post-backup at 12:04:22 UTC: local `5f3ba473...`, NAS
+`f9145d3f...`; all 62 files verified, exact-image writable restore retained the
+original one user/one link. Homelab commit `7fe7d14...` publishes the deployment,
+DNS reservation and regression. Human credential acceptance remains separate.
+This is a Kutt-specific path correction, not a change to every container's DNS.
 
 ### UX-021: Let The Compact Header Wrap Deliberately
 
@@ -1017,7 +1100,30 @@ Grype, release and deployment gates are separate; human acceptance is still open
 
 ### Final Publication And Source Reconciliation
 
-Verified on 2026-09-17 after the final deployment and fixture cleanup:
+Latest verification on 2026-09-19 locally (September 18 UTC):
+
+- The `.38` runtime remains byte-identical to release commit
+  `10a59dcb431e8cb657d5068700f2915e34f3cc37`. Main and the clean upstream worktree
+  match across all 396 tracked runtime/test paths compared; only test-guide and
+  operator-documentation presentation differs. Documentation closeout does not
+  require another runtime deployment or alter the released image.
+- Live `local/kutt:3.2.6-sr94.38` has the exact wrapper digest recorded under
+  UX-024, remains healthy with zero restarts, and passed the ten-hour follow-up.
+  Current Kutt Compose/Dockerfile/readme/config tests and Technitium Compose/readme
+  match published homelab commit `868bb9c4afea9c71e6be291dbee855d718ddfa9a`.
+  Both deployment and repository-hygiene CI passed. This is scoped alignment,
+  not a claim that the unrelated live homelab working tree is clean.
+- All 202 relative documentation links checked resolve. The upstream branch
+  keeps the reusable changes and concise audit guide; the fork keeps screenshots,
+  observation receipts and this full operator ledger.
+- A focused manual review of the later `.36.1` to `.38` runtime delta covered
+  token masking/lifecycle/callback handling, fixed-root no-store logout and
+  retained TLS dependencies during package-manager removal. No new actionable
+  finding emerged. This supplements, but does not complete or manufacture, the
+  tool-issued security report described above. The three medium image findings
+  and remaining user-assisted audit gates are still explicit.
+
+Earlier checkpoint on 2026-09-17 after deployment and fixture cleanup:
 
 - The `.36.1` runtime tree (server, static assets, migrations, package manifests
   and Dockerfile) matches the validated main closeout commit
@@ -2366,10 +2472,10 @@ Passing fix regressions are not substituted for the unperformed human workflows.
 | Desktop/mobile, true zoom, keyboard, focus and reduced motion | UX-001/002/003/008/010/021/022 and their named browser suites record measured layouts, focus, motion and real 200/400% zoom | User-assisted workflows remain unverified; no all-workflows accessibility claim |
 | Names, landmarks, errors, status and modal semantics | UX-001/005/008/009/011/014 include rendered semantics, error recovery, focus and dialog tests | Credential-bearing and permanent-deletion UI ceremonies remain A-02/03 |
 | Contrast and interactive target geometry | UX-002/003/010/021/022 record measured colors, bounds and hit regions rather than screenshots alone | Evidence is limited to the reviewed states, not exhaustive accessibility conformance |
-| Empty/populated/paginated/long-data, slow/offline/error and stale edits | Workflow matrix and UX-004/006/013/014/015/017/018/019 cover these states, including real independent-client conflicts | Real Authentik expired/revoked-session recovery remains A-04 |
-| Admin, ordinary user, owner/editor/viewer and outsider boundaries | Recorded rendered role transitions plus full authorization regressions; stale edits cannot regain revoked access | Token lifecycle UI remains A-02; protocol tests do not replace it |
+| Empty/populated/paginated/long-data, slow/offline/error and stale edits | Workflow matrix and UX-004/006/013/014/015/017/018/019 cover these states, including real independent-client conflicts; real expired Authentik session recovery passed on .38 | User-assisted real session revocation remains A-04 |
+| Admin, ordinary user, owner/editor/viewer and outsider boundaries | Recorded rendered role transitions plus full authorization regressions; stale edits cannot regain revoked access; user token create/copy/revoke passed | Browser webhook secret rotation remains A-02; protocol tests do not replace it |
 | Existing APIs, filters, public redirects and migrations | Full source/exact-wrapper/public WAF regressions passed; original data fingerprints, integrity and foreign keys preserved | SQLite verified; no new PostgreSQL/MariaDB parity claim |
-| Close fixes only after publication/deployment/recovery | UX-001..UX-022 each have versioned-release, test, live and recovery evidence | All 22 confirmed defects closed; broader audit remains open |
+| Close fixes only after publication/deployment/recovery | UX-001..UX-024 each have versioned-release, test, live and recovery evidence | All 24 confirmed defects closed through .38; broader audit remains open |
 | Final regression and security review | Full final regression passed; bounded source-diff review covered 124 source/config/test files; image scan found zero critical/high and three medium BusyBox matches without a listed fix | Security report finalization blocked by missing tool-issued scan identity; no sealed security verdict |
 | Published source and accurate recovery/deployment docs | Final publication/reconciliation section verifies runtime equality, CI, 43 live declarative files and recoverable pre/post backups | Unrelated dirty homelab work preserved; not a global clean-checkout claim |
 
@@ -2383,6 +2489,7 @@ classifying a standards failure.
 
 | Date | IDs | Change | Validation and outstanding gates |
 | --- | --- | --- | --- |
+| 2026-09-19 | UX-023/024, A-04 | Reconciled .37.1/.38 publication, deployment and pre/post writable recovery; confirmed naturally expired live session recovers through ordinary Authentik SSO | Fresh ten-hour follow-up: same healthy image, zero restarts/alerts, three probes passed. Homelab deployment/hygiene CI passed. Webhook credential rotation, permanent-deletion UI, real session revocation and the missing security-tool report identity remain explicit limits. |
 | 2026-09-17 | UX-015, remediation sequencing | User requested starting all fixes. Began expiry intent/concurrency remediation; preserved A-01..A-04 as outstanding acceptance, not a start blocker | Source work in progress. No release/deployment/closure claimed; next checks cover stale personal/admin saves, explicit expiry changes and independent drafts. |
 | 2026-09-15 | AUDIT-00, UX-001..007, C-01..06 | Created initial evidence-backed ledger after feature completion and exact-image fixture testing | Seven open findings; six unvalidated concerns. Tooling blocked the remainder of the rendered audit. No runtime fixes, release, deployment or completed-audit claim. |
 | 2026-09-15 | Goal | Created an active Codex goal referencing this ledger | Goal requires completing the audit, sequential remediation, an update after every change, and all publication/backup/deployment/verification gates before closure. Browser-tool permission remains pending. |

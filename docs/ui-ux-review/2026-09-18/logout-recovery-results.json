@@ -1,0 +1,65 @@
+[
+  {
+    "flow": "logout",
+    "width": 1440,
+    "deniedAfterLogout": true,
+    "recovered": true,
+    "browserErrors": 0
+  },
+  {
+    "flow": "revoked-page",
+    "width": 1440,
+    "deniedAfterLogout": true,
+    "recovered": true,
+    "browserErrors": 0
+  },
+  {
+    "flow": "revoked-htmx",
+    "width": 1440,
+    "deniedAfterLogout": true,
+    "recovered": true,
+    "browserErrors": 0
+  },
+  {
+    "flow": "logout",
+    "width": 390,
+    "deniedAfterLogout": true,
+    "recovered": true,
+    "browserErrors": 0
+  },
+  {
+    "flow": "revoked-page",
+    "width": 390,
+    "deniedAfterLogout": true,
+    "recovered": true,
+    "browserErrors": 0
+  },
+  {
+    "flow": "revoked-htmx",
+    "width": 390,
+    "deniedAfterLogout": true,
+    "recovered": true,
+    "browserErrors": 0
+  },
+  {
+    "flow": "logout",
+    "width": 320,
+    "deniedAfterLogout": true,
+    "recovered": true,
+    "browserErrors": 0
+  },
+  {
+    "flow": "revoked-page",
+    "width": 320,
+    "deniedAfterLogout": true,
+    "recovered": true,
+    "browserErrors": 0
+  },
+  {
+    "flow": "revoked-htmx",
+    "width": 320,
+    "deniedAfterLogout": true,
+    "recovered": true,
+    "browserErrors": 0
+  }
+]

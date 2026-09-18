@@ -1,0 +1,20 @@
+{
+  "observation_window_utc": "2026-09-18T22:13:00Z/2026-09-18T22:16:00Z",
+  "local_date": "2026-09-19 Europe/Paris",
+  "release": "v3.2.6-sr94.38",
+  "environment": "Existing live Codex in-app browser with normal Authentik SSO",
+  "observed": {
+    "initial_session_state": "Session ended. Sign in again.",
+    "management_navigation_when_expired": "Signed-out login page",
+    "normal_sso_recovery": "Authenticated home, Settings and Integrations rendered",
+    "integrations_live_activity": "Connected",
+    "console_warnings_or_errors_on_recovered_page": 0,
+    "webhook_state": "No webhooks configured; disabled unsaved test draft prepared"
+  },
+  "result": "PASS for naturally expired session recovery",
+  "not_claimed": [
+    "New credential or MFA ceremony",
+    "User-assisted real session revocation",
+    "Browser webhook creation or secret rotation"
+  ]
+}

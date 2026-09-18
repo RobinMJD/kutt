@@ -20,8 +20,21 @@ It checks package/file removal, preserved system and Node trust stores, TLS
 helper dependencies, compression round trips and SQLite. Rebuild rather than
 install packages into a running container. Re-run full runtime, OIDC and image
 scans whenever the pinned base or dependencies change. Do not suppress a new
-finding simply to pass deployment. `.37.1` publication/deployment validation
-is still pending; the audit records its final outcome separately.
+finding simply to pass deployment. `.37.1` passed CI, exact-image runtime/browser
+regression, public WAF/SSO regression, monitored health and pre/post NAS writable
+restore. Fresh source/wrapper scans reported zero critical/high and three medium
+BusyBox-family matches for CVE-2025-60876 with no fixed version listed. This is a
+dated image result, not a vulnerability-free claim. The `.38` logout correction
+retains the same hardening and passed exact-image, live, monitored health and
+pre/post NAS writable restore gates on September 18; see the audit for evidence
+and the separate remaining user-assisted acceptance limits.
+
+New tokens are masked by default, re-masked on backgrounding and removed from
+displayed state on dismissal/page exit. Copy errors never auto-reveal them, and
+late callbacks cannot repopulate a dismissed panel. Masking is not revocation.
+Logout uses fixed-root full document navigation and clears the cookie with
+no-store caching; this changes no OIDC/session/scope enforcement. Test both
+native and HTMX responses, denied management and rendered session recovery.
 
 ## Roadmap release 3.2.6-sr94.16
 
