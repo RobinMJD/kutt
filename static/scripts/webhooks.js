@@ -2,6 +2,7 @@
   const root = document.querySelector(".integrations-page"); if (!root) return;
   const $ = id => document.getElementById(id), form = $("hook-form");
   let rows = [], editing = null, selected = null, older = null, source = null, after = "0", busy = false, secret = "", deliveryBusy = false, editorOpener = null, validationError = false;
+  let secretGeneration = 0, secretCopyPending = false;
   const status = (text, error = false) => { $("integration-status").textContent = text; $("integration-status").className = error ? "integration-error" : ""; };
   function clearFormError() { $("hook-form-error").textContent = ""; $("hook-form-error").hidden = true; validationError = false; }
   const date = value => value ? new Date(value).toLocaleString() : "-";
@@ -31,13 +32,52 @@
       } else { status(error.message, true); if (fromForm) errorTarget = $("integration-status"); }
     } finally {
       busy = false; root.querySelectorAll("button,input").forEach(el => { el.disabled = false; });
+      $("hook-secret-copy").disabled = secretCopyPending || !secret;
       if (errorTarget && (document.activeElement === document.body || form.contains(document.activeElement))) errorTarget.focus();
     }
   }
   function node(tag, text, cls) { const el = document.createElement(tag); el.textContent = text; if (cls) el.className = cls; return el; }
   function button(text, click) { const el = node("button", text); el.type = "button"; el.addEventListener("click", click); return el; }
-  function hideSecret() { secret = ""; $("hook-secret-value").textContent = ""; $("hook-secret").hidden = true; }
-  function showSecret(value) { hideSecret(); if (value) { secret = value; $("hook-secret-value").textContent = value; $("hook-secret").hidden = false; } }
+  function secretStatus(text = "", error = false) {
+    $("hook-secret-status").textContent = text;
+    $("hook-secret-status").className = error ? "integration-error" : "";
+  }
+  function hideSecret() {
+    secretGeneration++; secretCopyPending = false; secret = "";
+    $("hook-secret-value").textContent = ""; $("hook-secret").hidden = true;
+    $("hook-secret-copy-label").textContent = "Copy"; $("hook-secret-copy").disabled = true;
+    secretStatus();
+  }
+  function showSecret(value) {
+    hideSecret();
+    if (value) {
+      secret = value; $("hook-secret-value").textContent = value; $("hook-secret").hidden = false;
+      $("hook-secret-copy").disabled = busy;
+    }
+  }
+  async function copySecret() {
+    if (busy || secretCopyPending || !secret) return;
+    const generation = secretGeneration;
+    const current = () => root.isConnected && generation === secretGeneration && !$("hook-secret").hidden;
+    secretCopyPending = true; $("hook-secret-copy").disabled = true;
+    $("hook-secret-copy-label").textContent = "Copying..."; secretStatus("Copying...");
+    let timer;
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error("Clipboard unavailable");
+      await Promise.race([navigator.clipboard.writeText(secret), new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error("Clipboard timeout")), 3000);
+      })]);
+      if (current()) { $("hook-secret-copy-label").textContent = "Copied"; secretStatus("Signing secret copied."); }
+    } catch {
+      if (current()) {
+        $("hook-secret-copy-label").textContent = "Copy";
+        secretStatus("Copy failed. Select the signing secret above to copy it manually.", true);
+      }
+    } finally {
+      clearTimeout(timer);
+      if (current()) { secretCopyPending = false; $("hook-secret-copy").disabled = busy || !secret; }
+    }
+  }
   function editor(row) {
     if (busy) return;
     editorOpener = document.activeElement; clearFormError(); status("");
@@ -129,7 +169,7 @@
   $("hook-cancel").onclick = () => { $("hook-editor").hidden = true; editing = null; clearFormError(); if (editorOpener?.isConnected) editorOpener.focus(); };
   $("hooks-reload").onclick = () => action(async () => { hideSecret(); clearFormError(); $("hook-editor").hidden = true; editing = null; await loadHooks(); const result = await api("events"); $("events-list").replaceChildren(); result.data.forEach(event); after = result.cursor; connect(); status("Integrations loaded."); });
   $("hook-secret-hide").onclick = hideSecret;
-  $("hook-secret-copy").onclick = () => action(async () => { if (secret) { await navigator.clipboard.writeText(secret); status("Signing secret copied."); } });
+  $("hook-secret-copy").onclick = copySecret;
   $("deliveries-reload").onclick = () => action(() => loadDeliveries());
   $("deliveries-older").onclick = () => action(() => loadDeliveries(older));
   $("events-live").onchange = connect;

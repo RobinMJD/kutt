@@ -2,8 +2,9 @@
 
 Last updated: 2026-09-19 (Europe/Paris).
 
-**Status: all 24 confirmed findings are verified/closed through .38. User-assisted audit acceptance remains open.**
-UX-001 through UX-024 are verified/closed. Remaining concerns and workflow
+**Status: 24 findings are verified/closed through .38; UX-025 webhook copy feedback is in remediation. User-assisted audit acceptance remains open.**
+UX-001 through UX-024 are verified/closed. The live credential ceremony exposed
+UX-025 after that checkpoint. Remaining concerns and workflow
 coverage are tracked below. Do not describe this as a completed accessibility audit.
 The ordinary rendered workflows now have bounded coverage. The explicit
 AUDIT-00 remainder below separates external acceptance gates from regression
@@ -871,6 +872,35 @@ P3: polish with no blocked task. These are product priorities, not CVSS scores.
 | UX-022 | P2 | Account security page heading crowds Connected identity and splits Settings mid-word | Fresh 320px UX-021 source captures and obsolete header class | Verified/closed in .36.1 |
 | UX-023 | P2 | Newly created API token is exposed by default in a cramped fixed-width field | User-reported live token ceremony, confirmed type=text and 240px width with internal overflow | Verified/closed in .37.1; all publication/deployment/recovery gates passed |
 | UX-024 | P2 | Logout and expired/revoked-session navigation re-execute layout scripts | Real expired Authentik session and isolated delayed logout both reproduce duplicate copyStates declaration | Verified/closed in .38; all publication/deployment/recovery gates passed |
+| UX-025 | P2 | Webhook Copy confirmation is distant from its control and easy to miss | User report; live DOM records `Signing secret copied.` only in top-of-page status while the secret panel has no feedback | Remediation in progress; release/deployment/recovery not yet complete |
+
+### UX-025: Keep Webhook Copy Feedback Beside The Secret
+
+The September 19 live credential check successfully created the disabled test
+webhook but exposed a distinct feedback issue: Copy wrote to the clipboard and
+updated the general status at the top of the page, not the visible secret panel.
+The user could not see a confirmation. The signing secret itself is not retained
+in diagnostics, screenshots or the ledger. Prior A-02 browser success is not
+assumed to cover rotation or satisfactory copy feedback.
+
+The patch adds a polite local status and fixed-width Copy/Copying/Copied button.
+Success is reported only after the clipboard promise resolves. Rejection,
+unavailable clipboard and timeout give a local failure message without raw error
+details. Dismiss remains usable during a pending copy; dismissal, reload or secret
+replacement invalidate old callbacks. This changes no webhook credentials,
+delivery policy, event/WAF exceptions, authorization or database schema.
+Fresh disposable desktop/mobile/compact regression and release/deployment gates
+are in progress. The old `.38` image failed the new local-feedback assertion.
+The corrected source passed 1440/390/320px keyboard copy, same-viewport status,
+stable button width, unavailable/rejected/timed-out clipboard, retry, duplicate
+suppression and dismissal/rotation races. A compact check first caught feedback
+below the viewport; reserving its place above the action row fixed the layout
+without relaxing the visibility assertion. The rotation test now waits for its
+actual response and new rendered state, not a stale prior success message.
+Initial fixture permission/readiness failures are not application results.
+The inspected screenshots mask synthetic secrets. Publication, exact-wrapper
+regression, deployment and pre/post recovery remain pending for `.39`; do not
+close UX-025 before all gates pass.
 
 ### UX-024: Use Document Navigation On Logout
 
