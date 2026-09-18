@@ -1,8 +1,8 @@
 # UI/UX Review And Remediation Ledger
 
-Last updated: 2026-09-17 (Europe/Paris).
+Last updated: 2026-09-18 (Europe/Paris).
 
-**Status: all 22 confirmed findings are fixed, released, deployed and recovery-verified; user-assisted audit acceptance remains open.**
+**Status: 22 of 23 confirmed findings are verified/closed; UX-023 is implemented and being release-validated. User-assisted audit acceptance remains open.**
 UX-001 through UX-022 are verified/closed. Remaining concerns and workflow
 coverage are tracked below. Do not describe this as a completed accessibility audit.
 The ordinary rendered workflows now have bounded coverage. The explicit
@@ -621,9 +621,9 @@ The following table separates the completed preview check from the still
 | Gate | Exact outstanding work | Required prerequisite |
 | --- | --- | --- |
 | A-01 | Verified native preview rendering on 2026-09-17, in addition to prior zoom/PDF coverage | Fresh exact-image QR preview shows one page, complete QR/caption and enabled Save; Cancel works and captured pixels independently decode. See the fresh acceptance below; physical printing and native file save are not claimed |
-| A-02 | Token create/copy/revoke UI and credential-bearing setup/rotation variants | User performs credential entry/creation steps; do not generate or type new credentials through UI on the user's behalf |
+| A-02 | Scoped token create/copy/revoke passed on 2026-09-18; webhook creation/rotation retry remains after a WAF false-positive fix | User performs credential entry/creation steps; do not generate or type new credentials through UI on the user's behalf. The token ceremony exposed UX-023 |
 | A-03 | Saved-filter/label deletion and irreversible retention Apply UI | Present each exact disposable-fixture action and request action-time confirmation; no production deletion |
-| A-04 | Real Authentik expired/revoked-session recovery and physical QR scan | User-present authenticated session test and user confirmation of actual device scan; synthetic OIDC/decoded pixels are narrower evidence |
+| A-04 | Physical QR scan passed on 2026-09-18; real Authentik expired/revoked-session recovery remains | User confirmed Google opened without sign-in after scanning the public short-link QR. Real session recovery still requires user-present acceptance |
 
 The optional mail-enabled report mode is not configured on the deployed service.
 It remains an explicitly untested optional mode, not evidence of a production
@@ -632,6 +632,40 @@ On 2026-09-17 the user explicitly requested "Start with all fixes": begin the
 confirmed remediations now, retaining these user-assisted acceptance checks as
 pending rather than prerequisites for starting fixes. Do not claim exhaustive
 accessibility conformance or silently waive the outstanding checks.
+
+### 2026-09-18 Live Acceptance And Webhook WAF Repair
+
+The user authorized disposable live-service tests because it is not shared and
+contains no real production data. This does not waive browser credential handoff
+or action-time permanent-deletion confirmation. The original one user and one
+link remain protected by before/after data checks.
+
+A fresh consistent snapshot was copied to NAS, all 62 restored files verified,
+configuration and secret files byte-compared without displaying contents, and
+the exact image passed an isolated writable restore (`users: 1`, `links: 1`).
+At 2026-09-18 10:19:22 UTC the local snapshot was
+`1eea4eb0f7f897476ef3f2ad84fd55e4df1e4d508be50bfd6da1376e5793aaca`
+and NAS snapshot
+`609b91151cd606c03f10e3a4bfd59ef58f8ebfe8db360ecb1e2fa73289b6eafe`.
+Private evidence: `/srv/homelab/security-reports/2026-09-18-kutt-acceptance/`.
+
+The user signed in through real Authentik, physically scanned the existing
+Google short-link QR and confirmed that Google opened without authentication.
+They created the seven-day, default-domain-only, `links:read` acceptance token,
+confirmed native Copy, reloaded to remove its secret, and revoked it. Rendered
+`Copied.` and `Revoked` states were verified. No token values were recorded.
+The plain-text narrow token presentation is tracked separately as UX-023.
+
+The disabled webhook test failed before reaching Kutt. BunkerWeb's CRS rule
+930120 interpreted the valid event `link.forwarding_updated` as the sensitive
+filename `.forward`; rule 949110 rejected the request with HTML 403. A narrowly
+scoped runtime exclusion now removes only that exact event-array value from
+930120 on JSON POST/PUT webhook endpoints for this host. Other fields, values,
+routes and WAF rules remain inspected; SSO and authorization are unchanged.
+Scheduler reload and Nginx validation passed. Unauthenticated native/v2 valid
+events now reach Kutt's JSON 401, while three negative controls still return
+WAF 403. No webhook was created by these probes. Actual signed-in creation and
+rotation remain pending the user's retry, not inferred from anonymous checks.
 
 ### 2026-09-17 Native Preview Acceptance
 
@@ -828,6 +862,22 @@ P3: polish with no blocked task. These are product priorities, not CVSS scores.
 | UX-020 | P1 | Checked workspace checkbox decoration covers editor fields | Fresh validation screenshot and inherited pseudo-element source | Verified/closed in .20 |
 | UX-021 | P3 | Compact authenticated header crowds the brand and wraps Log out mid-label | Fresh 320px desktop-browser captures during UX-011 verification | Verified/closed in .36.1 |
 | UX-022 | P2 | Account security page heading crowds Connected identity and splits Settings mid-word | Fresh 320px UX-021 source captures and obsolete header class | Verified/closed in .36.1 |
+| UX-023 | P2 | Newly created API token is exposed by default in a cramped fixed-width field | User-reported live token ceremony, confirmed type=text and 240px width with internal overflow | Implemented; release/deployment gates open |
+
+### UX-023: Mask And Fit One-Time API Tokens
+
+The new-token panel now uses an available-width masked field, explicit reveal,
+copy and hide icon controls, and polite status without including the secret.
+Clipboard rejection never auto-reveals the token. Hide clears both the input
+property and value attribute; page exit/HTMX removal clears it too. Hidden tabs
+re-mask the field. Pending copy callbacks cannot overwrite dismissal or detached
+panels; duplicate copy and stalled-clipboard timeout paths are covered.
+
+Focused unit and hardened-container tests passed. Fresh approved disposable
+browser tests passed at 1440, 390 and 320px, including bounds, clipboard denial,
+reveal/mask, copy, dismissal while pending, reload and unchanged link/legacy-key,
+workspace and QR copy behavior. Masked screenshots were visually inspected.
+Version `.37` is being prepared; no release/deployment/closure is claimed yet.
 
 ### UX-021: Let The Compact Header Wrap Deliberately
 

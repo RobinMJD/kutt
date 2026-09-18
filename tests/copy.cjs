@@ -5,7 +5,7 @@ const vm = require("node:vm");
 
 module.exports = async ({ root }) => {
   const source = readFileSync(path.join(root, "static/scripts/copy.js"), "utf8");
-  for (const file of ["shortener", "links/tr", "admin/links/tr", "settings/apikey", "settings/tokens"]) {
+  for (const file of ["shortener", "links/tr", "admin/links/tr", "settings/apikey"]) {
     assert.match(readFileSync(path.join(root, "server/views/partials", file + ".hbs"), "utf8"), /data-copy-container/);
   }
   assert.match(readFileSync(path.join(root, "server/views/layout.hbs"), "utf8"), /scripts\/copy\.js/);
@@ -66,4 +66,5 @@ module.exports = async ({ root }) => {
   assert.equal(host.attributes["aria-busy"], undefined);
   assert.equal(copied.size, 0);
   console.log("PASS: clipboard confirmed success only, rejected/missing/synchronous failures, selectable fallback, no secret announcements, duplicate suppression, no focus theft, retry and detached-target safety");
+  await require("./token-secret.cjs")({ root });
 };
