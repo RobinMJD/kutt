@@ -15,7 +15,16 @@
       <div class="integration-actions"><button type="submit">Save webhook</button><button id="hook-cancel" type="button">Cancel</button></div>
     </form>
   </section>
-  <section id="hook-secret" hidden><h2>Signing secret</h2><p>This secret is shown once. Store it securely on the receiver before using the webhook.</p><output id="hook-secret-value"></output><button id="hook-secret-copy" type="button" title="Copy signing secret">{{> icons/copy}} Copy</button><button id="hook-secret-hide" type="button">Dismiss</button></section>
+  <section id="hook-secret" aria-labelledby="hook-secret-title" hidden>
+    <h2 id="hook-secret-title">Signing secret</h2>
+    <p>This secret is shown once. Store it securely on the receiver before using the webhook.</p>
+    <output id="hook-secret-value"></output>
+    <p id="hook-secret-status" role="status" aria-live="polite" aria-atomic="true"></p>
+    <div class="integration-actions">
+      <button id="hook-secret-copy" type="button" title="Copy signing secret">{{> icons/copy}} <span id="hook-secret-copy-label">Copy</span></button>
+      <button id="hook-secret-hide" type="button">Dismiss</button>
+    </div>
+  </section>
   <section id="hook-deliveries" hidden><header><h2 id="deliveries-title">Deliveries</h2><button id="deliveries-reload" type="button" title="Reload deliveries">{{> icons/reload}}</button></header><p id="deliveries-status" role="status"></p><div id="deliveries-list"></div><button id="deliveries-older" type="button" hidden>Older deliveries</button></section>
   <section aria-labelledby="events-title"><header><h2 id="events-title">Live activity</h2><label class="integration-choice"><input id="events-live" type="checkbox" checked /> Live</label><span id="events-status" role="status">Connecting...</span></header><ol id="events-list"></ol></section>
 </main>

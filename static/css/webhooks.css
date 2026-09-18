@@ -21,6 +21,8 @@
 .integrations-page p { margin: 8px 0; }
 .hook-url,#hook-secret-value,.delivery-row, #events-list li { overflow-wrap: anywhere; word-break: break-word; }
 #hook-secret-value { display: block; font-family: monospace; margin: 12px 0; }
+#hook-secret-copy { width: 120px; flex: 0 0 120px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+#hook-secret-status { min-height: 1.5em; overflow-wrap: anywhere; }
 #events-list { padding-left: 24px; }
 #events-list li { margin-bottom: 12px; }
 #events-status { color: #4b6470; }

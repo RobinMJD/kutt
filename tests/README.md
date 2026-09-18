@@ -234,6 +234,22 @@ container against its deterministic action graph without importing or executing
 it. Native Shortcuts execution with dummy fixtures and physical iPhone acceptance
 are separate checks; neither is claimed by headless browser emulation. See
 `examples/IOS-SHORTCUT.md` for private first-import checks.
+## Webhook secret copy feedback
+
+`tests/browser-webhook-copy.cjs` uses a fresh approved loopback fixture with
+`KUTT_BROWSER_DISPOSABLE=1`, `KUTT_TEST_URL` and `KUTT_EVIDENCE_DIR`. Start the
+disposable app with `NODE_OPTIONS=--require=/kutt/tests/webhooks-offline.cjs`, a
+`DB_FILENAME` beginning `/tmp/kutt-smoke-`, loopback `DEFAULT_DOMAIN`, and
+`NODE_APP_INSTANCE=1`. The guarded test-only DNS fixture recognizes
+`hooks.example.com`; never load it in production. No outbound delivery is made.
+
+At 1440/390/320px, the rendered suite creates a disabled synthetic webhook and
+checks native keyboard copy, same-viewport confirmation, fixed button width,
+clipboard rejection/unavailability/timeout and retry. It verifies duplicate
+suppression, dismissal while pending, rotation with an older copy outstanding,
+secret clearing and exact fixture cleanup. Screenshots mask the synthetic secret;
+errors never include its value. Real user clipboard acceptance remains separate.
+
 ## Logout recovery
 
 `tests/browser-logout-navigation.cjs` targets a fresh approved loopback fixture

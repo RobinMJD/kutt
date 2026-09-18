@@ -25,6 +25,9 @@ module.exports = async ({ request, session, database, account, restart, root, di
     const html = await page.text();
     assert.match(html, /id="hook-form" method="post" action="\/api\/v2\/webhooks" aria-labelledby="hook-editor-title"/);
     assert.match(html, /id="hook-form-error"[^>]*role="alert"[^>]*tabindex="-1"[^>]*hidden/);
+    assert.match(html, /id="hook-secret" aria-labelledby="hook-secret-title"/);
+    assert.match(html, /id="hook-secret-status" role="status" aria-live="polite" aria-atomic="true"/);
+    assert.match(html, /id="hook-secret-copy-label">Copy</);
     await check(request("GET", "/api/webhooks"), 401); await check(request("GET", "/api/events"), 401);
     for (const body of [{ ...config, url: "http://hooks.example.com" }, { ...config, url: "https://mixed.example.com" }, { ...config, events: ["visit.created"] }, { ...config, enabled: "true" }, { ...config, name: "" }, { ...config, user_id: 2 }]) await check(hook("POST", "", body), 400);
     await check(hook("POST", "", config, session, { Origin: "https://evil.invalid" }), 403);

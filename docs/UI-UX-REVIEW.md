@@ -21,6 +21,7 @@ accessibility conformance.
 | Import | Downloadable CSV/JSON examples, actionable row errors and preserved authorization | `transfer.cjs`, `browser-transfer.cjs` |
 | Authentication | Labels reflect enabled registration/login; successful browser login navigates once, without duplicate HTMX/table setup | `login-copy.cjs`, `login-navigation.cjs`, corresponding browser suites |
 | Webhooks | Save errors remain visible by the relevant form | `webhooks.cjs`, `browser-webhook-errors.cjs` |
+| Webhook clipboard | Local confirmation and fixed-width Copy/Copying/Copied states; bounded failure handling and stale-copy suppression after dismissal/rotation | `webhooks.cjs`, `browser-webhook-copy.cjs` |
 | Contrast | Readable text, error, placeholder and control colors | `contrast.cjs`, `browser-contrast.cjs` |
 | Clipboard | Success follows the resolved write; denial/unsupported cases offer selectable text | `copy.cjs`, `browser-copy.cjs` |
 | One-time tokens | Masked responsive field; explicit reveal/copy/hide; failure does not auto-reveal; lifecycle cleanup and stale callback protection | `token-secret.cjs`, `browser-copy.cjs` |
@@ -87,7 +88,14 @@ building dependencies, explicitly retains CA/TLS support and runs
 `tests/image-hardening.cjs`. Keep package inventory intact and rebuild images
 instead of installing packages at runtime. Both `.37.1` and `.38` passed their
 publication, exact-image, deployment and recovery gates. All 24 confirmed UI
-defects are closed; this does not waive the human acceptance limits below.
+defects through `.38` are closed; this does not waive the human acceptance limits below.
+The subsequent live credential ceremony exposed a 25th finding: webhook Copy
+confirmed success only at the distant page header. The `.39` patch moves feedback
+beside the secret and into the button, reports success only after clipboard
+completion, handles denial/missing/timeout without raw error details, and ignores
+callbacks for a dismissed or replaced secret. Source-rendered 1440/390/320px
+regressions pass; publication, exact-image and deployment/recovery gates remain
+pending. No credential, authorization, WAF, schema or delivery policy changes.
 
 - Native preview rendering passed separately from programmatic PDF checks.
   Physical printing and native file-save dialog completion are not claimed.
