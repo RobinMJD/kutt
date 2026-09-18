@@ -105,7 +105,7 @@ replace that suite or the separate Redis worker test when releasing.
 Use fresh loopback-only disposable instances and a separate evidence directory
 for each rendered suite. `browser-login-navigation.cjs` requires HTTPS loopback
 with a test-only certificate. `browser-header.cjs` takes `KUTT_HEADER_FIXTURES`
-as a JSON array of `{ "origin": "http://127.0.0.1:PORT", "name": "Site name" }`
+as a JSON array of exactly three `{ "origin": "http://127.0.0.1:PORT", "name": "Site name" }`
 entries matching each fresh instance's configured brand. Never point these
 tests at production or reuse a real user's browser profile.
 
@@ -236,11 +236,12 @@ are separate checks; neither is claimed by headless browser emulation. See
 `examples/IOS-SHORTCUT.md` for private first-import checks.
 ## Logout recovery
 
-`tests/browser-logout-navigation.cjs` runs on a fresh approved loopback fixture.
-Set `KUTT_BROWSER_DISPOSABLE=1`, `KUTT_TEST_URL` and `KUTT_EVIDENCE_DIR`.
-It checks explicit logout and revoked page/HTMX access, final login rendering,
-denied management access, rendered recovery and no duplicate scripts at three
-screen sizes. Waiting for network idle on an intermediate page is insufficient.
+`tests/browser-logout-navigation.cjs` targets a fresh approved loopback fixture
+with `KUTT_BROWSER_DISPOSABLE=1`, `KUTT_TEST_URL` and `KUTT_EVIDENCE_DIR`.
+It waits for the final login form after explicit logout or server-side session
+revocation, checks denial and successful rendered recovery at 1440/390/320px,
+and rejects duplicate script/browser errors. Waiting for network idle on the
+intermediate delayed logout page would miss that regression.
 
 ## Image hardening
 
