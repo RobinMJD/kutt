@@ -1,329 +1,320 @@
-<p align="center"><a href="https://kutt.to" title="kutt.to"><img src="https://raw.githubusercontent.com/thedevs-network/kutt/9d1c873897c3f5b9a1bd0c74dc5d23f2ed01f2ec/static/images/logo-github.png" alt="Kutt.to"></a></p>
+<p align="center">
+  <img src="static/images/logo.png" alt="Kutt logo" width="100">
+</p>
 
-# Kutt.to
+# Kutt: RobinMJD fork
 
-## RobinMJD fork
+A self-hosted URL shortener with public redirects, authenticated management,
+shared workspaces, advanced routing and operational controls. Built on
+[thedevs-network/kutt](https://github.com/thedevs-network/kutt), using Node.js,
+Express, server-rendered templates and HTMX. This is an independent fork, not
+the upstream hosted service.
 
-This fork develops tested, incremental improvements to upstream Kutt.
-The original series runs from `v3.2.6-sr94.1` through `.16` and is complete.
-See the [feature roadmap and release gates](docs/FEATURE-ROADMAP.md) for verified
-deployment evidence and upstream PR #1046.
+[![Fork CI](https://github.com/RobinMJD/kutt/actions/workflows/fork-release.yaml/badge.svg?branch=main)](https://github.com/RobinMJD/kutt/actions/workflows/fork-release.yaml)
+[![Release](https://img.shields.io/github/v/release/RobinMJD/kutt)](https://github.com/RobinMJD/kutt/releases/latest)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Identity migration and logout requirements for the OIDC security release are in
-[OIDC security](docs/OIDC-SECURITY.md). Existing accounts need verified bindings;
-do not upgrade an email-based deployment without the documented backup and
-migration procedure.
+## Project status
 
-The [Library guide](docs/LIBRARY.md) covers tags, collections, saved filters,
-ownership-safe bulk actions and their API/migration boundaries.
-The [transfer guide](docs/TRANSFER.md) covers CSV/JSON downloads, dry-run imports,
-alias conflicts, protected links, scoped authorization and retry recovery.
-The [routing guide](docs/ROUTING.md) covers ordered redirect conditions, preview,
-authorization and recovery constraints.
-The [analytics guide](docs/ANALYTICS.md) covers UTC date ranges, tag summaries,
-private exports, bot classification and aggregate compatibility.
-The [privacy guide](docs/PRIVACY.md) covers per-link tracking opt-outs,
-signed retention confirmation and recovery restrictions. The
-[integrations guide](docs/WEBHOOKS.md) documents signed webhooks, private live
-updates, delivery retries, receiver verification and recovery restrictions.
-The [forwarding guide](docs/FORWARDING.md) covers nested aliases,
-explicit query/path allowlists and reserved-child precedence.
-The [campaign guide](docs/CAMPAIGNS.md) covers UTM URL building in link forms
-and APIs, query precedence, encoding limits and backward-compatible storage.
-The [destination monitoring guide](docs/DESTINATION-HEALTH.md) covers opt-in
-checks, SSRF controls, owner-scoped results, operational alerts and recovery.
-The [QR guide](docs/QR-CODES.md) covers owner-only PNG copying/downloads, SVG export, printing,
-scoped API use and independent decoder/browser validation.
-The [Workspaces guide](docs/WORKSPACES.md) covers accepted invitations,
-owner/editor/viewer permissions, shared-link APIs and non-destructive closure.
-The [iOS Shortcut guide](examples/IOS-SHORTCUT.md) covers optional share-sheet
-shortening with a limited token. It is a client integration, not a server dependency.
-See [deployment and recovery](docs/DEPLOYMENT.md) and the
-[security maintenance notes](docs/SECURITY-MAINTENANCE.md) before upgrading.
-The [community PR review](docs/UPSTREAM-PR-REVIEW.md) records selected improvements,
-contributor credits and deferred proposals with their compatibility/security tradeoffs.
-The [UI/UX review ledger](docs/UI-UX-REVIEW.md) tracks confirmed findings, remaining
-audit coverage and per-fix testing, release and deployment gates.
+As of **19 September 2026**, the current published application version is
+[3.2.6-sr94.39.2](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.39.2).
+All 16 original roadmap features, the selected community improvements and 25
+confirmed UI/UX fixes have passed their recorded release and homelab deployment
+gates. The latest fix keeps webhook Copy confirmation beside the button and
+versions the Integrations assets so an ordinary reload loads matching code.
 
-Fork CI tests an isolated SQLite database on each main-branch push. Version tags
-matching `v*-sr94.*` publish the tested amd64 image to `ghcr.io/robinmjd/kutt`.
-Production deployment is a separate backup/test/approval-controlled operation,
-not an automatic replacement of a running instance. Pin image digests in
-production. Existing upstream Docker Hub workflows do not publish from forks.
+- [Feature roadmap](docs/FEATURE-ROADMAP.md): completed features and release evidence.
+- [Community contribution review](docs/UPSTREAM-PR-REVIEW.md): selected proposals, attribution and deferred ideas.
+- [UI/UX review](docs/UI-UX-REVIEW.md): fixes, tests and remaining human acceptance checks. The broader audit is not claimed complete.
+- [Upstream PR #1046](https://github.com/thedevs-network/kutt/pull/1046): submitted changes; still awaiting upstream review/merge at the status date above.
 
-Run regression tests with `docker build -t kutt-test .` followed by
-`docker run --rm --network none --entrypoint node kutt-test tests/container-smoke.cjs`.
-SQLite is exercised end-to-end; PostgreSQL and MySQL remain unvalidated for this
-feature release. Do not substitute a production database into the test harness.
+SQLite is the fully exercised database engine. PostgreSQL and MariaDB examples
+are configuration-validated, **not** full feature-parity guarantees. Security
+reviews and image scans are bounded, dated evidence, not certification that the
+application has no vulnerabilities.
 
-**Kutt** is a modern URL shortener with support for custom domains. Create and edit links, view statistics, manage users, and more.
+## Contents
 
-[https://kutt.to](https://kutt.to)
+- [Features](#features)
+- [Quick start](#quick-start)
+- [Configuration and access](#configuration-and-access)
+- [API and integrations](#api-and-integrations)
+- [Development and testing](#development-and-testing)
+- [Upgrades and recovery](#upgrades-and-recovery)
+- [Customization](#customization)
+- [Documentation](#documentation)
+- [Contributing and credits](#contributing-and-credits)
 
-> [!WARNING]
-> **[kutt.it](https://kutt.it) is NOT OWNED BY US.** It could be a phishing site. We had the domain but it has been deactivated by the Italian TLD registrar due to the lack of identification documents, and now it's owned by someone else.
+## Features
 
+The fork retains custom domains, custom aliases, password-protected links,
+visit statistics, local accounts and administrator tools. It adds:
 
->  Please use [kutt.to](https://kutt.to), all the previous and the future links work with this domain as well.
+| Area | Capabilities and guide |
+| --- | --- |
+| API access | [Named, scoped, expiring and revocable tokens](docs/API-TOKENS.md), domain restrictions and retry-safe idempotent link creation |
+| Link availability | [Pause, scheduled start/end and maximum visits](docs/LINK-LIFECYCLE.md), enforced when a redirect is requested |
+| Recovery | [Change history, trash and restore](docs/LINK-HISTORY.md), with protection against silently reusing retired aliases |
+| Sign-in | [Stable OIDC identity binding, session revocation, signed back-channel logout and diagnostics](docs/OIDC-SECURITY.md) |
+| Organization | [Tags, collections, saved filters and bulk actions](docs/LIBRARY.md) |
+| Data transfer | [CSV/JSON import and export](docs/TRANSFER.md), templates, dry-run previews and explicit conflict handling |
+| QR codes | [PNG/SVG downloads, PNG clipboard copy and printing](docs/QR-CODES.md), generated locally |
+| Collaboration | [Shared workspaces](docs/WORKSPACES.md) with owner/editor/viewer roles and conflict-aware editing |
+| Routing | [Ordered device, language, country and query rules](docs/ROUTING.md), with a redirect preview |
+| Forwarding | [Multi-segment aliases and allowlisted query/path forwarding](docs/FORWARDING.md) |
+| Campaigns | [UTM campaign builder](docs/CAMPAIGNS.md) in personal, admin and workspace editors, with API support |
+| Analytics | [Date ranges, exports, tag summaries and bot filtering](docs/ANALYTICS.md) |
+| Privacy | [Per-link tracking opt-outs and administrator-controlled retention](docs/PRIVACY.md) |
+| Integrations | [Signed asynchronous webhooks, delivery history, retries and private live updates](docs/WEBHOOKS.md) |
+| Monitoring | [Opt-in destination checks](docs/DESTINATION-HEALTH.md), private aggregate monitoring and protections against requests to private network destinations |
+| Optional mobile client | [Scoped-token iOS Shortcut](examples/IOS-SHORTCUT.md); Apple Shortcuts is not needed to run the server |
 
+Management screens include responsive tables, keyboard-accessible dialogs,
+draft preservation, conflict feedback, masked one-time credentials and explicit
+clipboard success/failure states. See the [UI/UX ledger](docs/UI-UX-REVIEW.md)
+for measured coverage and limitations.
 
-[![docker-build-release](https://github.com/thedevs-network/kutt/actions/workflows/docker-build-release.yaml/badge.svg)](https://github.com/thedevs-network/kutt/actions/workflows/docker-build-release.yaml)
-[![Uptime Status](https://uptime.betterstack.com/status-badges/v2/monitor/1ogaa.svg)](https://status.kutt.to)
-[![Contributions](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](https://github.com/thedevs-network/kutt/#contributing)
-[![GitHub license](https://img.shields.io/github/license/thedevs-network/kutt.svg)](https://github.com/thedevs-network/kutt/blob/develop/LICENSE)
+## Quick start
 
-## Table of contents
+### Docker Compose with SQLite
 
-- [Key features](#key-features)
-- [Donations and sponsors](#donations-and-sponsors)
-- [Setup](#setup)
-- [Docker](#docker)
-- [API](#api)
-- [Configuration](#configuration)
-- [Themes and customizations](#themes-and-customizations)
-- [Browser extensions](#browser-extensions)
-- [Videos](#videos)
-- [Integrations](#integrations)
-- [Contributing](#contributing)
+Use Docker Engine with the Compose plugin. The default example builds the
+checked-out source, persists SQLite and custom assets in named volumes, and
+publishes only `127.0.0.1:3000` on the Docker host.
 
-## Key features
+```sh
+git clone --branch v3.2.6-sr94.39.2 --depth 1 https://github.com/RobinMJD/kutt.git
+cd kutt
+cp .example.env .env
+chmod 600 .env
+```
 
-- Created with self-host in mind:
-  - SQLite by default, with explicit production secrets
-  - Easy setup with no build step
-  - Supporting various databases (SQLite, Postgres, MySQL)
-  - Ability to disable registration and anonymous links
-  - OpenID Connect (OIDC) login
-- Custom domain support
-- Set custom URLs, password, description, and expiration time for links
-- View, edit, delete and manage your links
-- Private statistics for shortened URLs
-- Admin page to manage users and links
-- Customizability and themes
-- RESTful API
+Before starting, edit `.env`:
 
-## Donations and sponsors
-
-Support the development of Kutt by making a donation or becoming an sponsor.
-
-[Donate or sponsor →](https://btcpay.kutt.to/apps/L9Gc7PrnLykeRHkhsH2jHivBeEh/crowdfund)
-
-## Setup
-
-Use [Node.js](https://nodejs.org/) 24, matching the tested Docker runtime. The default database is SQLite. Optional Postgres and MySQL/MariaDB examples are not evidence that every fork feature has passed those engines. Redis can provide shared cache, visit queues and rate-limit storage.
-
-When you first start the app, you're prompted to create an admin account.
-
-1. Clone this fork or download a [versioned release](https://github.com/RobinMJD/kutt/releases).
-2. Copy `.example.env` to `.env`, restrict it to mode `0600`, and set a long random `JWT_SECRET`. Set `DEFAULT_DOMAIN` to the canonical hostname (no scheme/path). Preserve existing production secrets when upgrading.
-3. Install locked dependencies: `npm ci`.
-4. Initialize the configured database: `npm run migrate`.
-5. Start development with `npm run dev`, or production with `npm start` behind your secured HTTPS reverse proxy.
-
-## Docker
-
-Configure the private `.env` above first. With Docker Compose installed:
+1. Set `JWT_SECRET` to a long random value. For a **new installation**, generate
+   one with `openssl rand -base64 48`. Preserve the existing secret on upgrades.
+2. Set `DEFAULT_DOMAIN` to the canonical hostname, without a scheme or path,
+   for example `short.example.com`. Keep `localhost:3000` only for local testing.
+3. Leave anonymous creation and local registration disabled unless deliberately
+   required. Keep `TRUST_PROXY=false` for direct local access; configure it
+   explicitly for your trusted proxy topology before deployment.
 
 ```sh
 docker compose config --quiet
 docker compose up --build -d
+docker compose ps
 ```
 
-Various docker-compose configurations are available. Use `docker compose -f <file_name> up` to start the one you want:
+The container applies database migrations before starting. Complete first-admin
+setup **privately** before enabling public routing. On a remote Docker host,
+use a private tunnel or the documented trusted proxy path, not a public backend
+port. Follow [deployment setup](docs/DEPLOYMENT.md#initial-setup) to configure
+TLS, WAF and OIDC management access before exposure. These controls are **not**
+automatically installed by the Compose example.
 
-- [`docker-compose.yml`](./docker-compose.yml): Default Kutt setup. Uses SQLite for the database.
-- [`docker-compose.sqlite-redis.yml`](./docker-compose.sqlite-redis.yml): Starts Kutt with SQLite and Redis; enables Redis automatically.
-- [`docker-compose.postgres.yml`](./docker-compose.postgres.yml): Starts Kutt with Postgres and Redis.
-  - Required environment variables: `POSTGRES_IMAGE`, `DB_PASSWORD`, `DB_NAME`, `DB_USER`.
-- [`docker-compose.mariadb.yml`](./docker-compose.mariadb.yml): Starts Kutt with MariaDB and Redis.
-  - Required environment variables: `MARIADB_IMAGE`, `DB_PASSWORD`, `DB_NAME`, a non-root `DB_USER`, and `MARIADB_ROOT_PASSWORD_FILE` pointing to a separate root-password file.
+The default example is a starting point, not the complete hardened homelab
+deployment. Add an appropriate restart, backup, monitoring and resource policy
+for your environment. Do not use `docker compose down --volumes` on an instance
+whose data you intend to keep.
 
-All examples require `JWT_SECRET`, pass application configuration from `.env`,
-and publish only `127.0.0.1:3000`. SQL credentials must match any existing volume;
-changing environment variables does not change existing database accounts.
-Do not publish the backend directly. Configure HTTPS, WAF and management SSO
-before external access, keeping only short-link redirects intentionally public.
-See [deployment and recovery](docs/DEPLOYMENT.md) for proxy, database-version,
-backup and rollback requirements. Never use `docker compose down --volumes` on
-an instance whose data you intend to retain.
+### Published images and alternative examples
 
-Official Kutt Docker image is available on [Docker Hub](https://hub.docker.com/r/kutt/kutt).
+Fork images are published as
+`ghcr.io/robinmjd/kutt:v3.2.6-sr94.39.2`. For an image-based deployment, replace
+the Compose service's `build` section with an `image` reference, retaining its
+environment and persistent volumes. Pin the tested image digest in production.
+The upstream `kutt/kutt` Docker Hub image does **not** contain these fork changes.
 
-## API
+The [fork workflow](.github/workflows/fork-release.yaml) tests `main` and release
+tags, but publishes an image only for `v*-sr94.*` tags. Publication is separate
+from deployment; do not auto-deploy untested branch builds or moving tags.
 
-[View API documentation →](https://docs.kutt.to)
+| Example | Purpose |
+| --- | --- |
+| [docker-compose.yml](docker-compose.yml) | SQLite, no external database service |
+| [docker-compose.sqlite-redis.yml](docker-compose.sqlite-redis.yml) | SQLite with private Redis for visit queues and shared rate-limit state |
+| [docker-compose.postgres.yml](docker-compose.postgres.yml) | PostgreSQL configuration example; explicit database image and credentials required |
+| [docker-compose.mariadb.yml](docker-compose.mariadb.yml) | MariaDB configuration example; separate application and root credentials required |
 
-## Configuration
+Select an alternative with `docker compose -f <file> ...`; these are standalone
+examples, not overlays to combine. Read the [database and Redis caveats](docs/DEPLOYMENT.md#optional-database-examples)
+before using them. In particular, the Redis examples do not persist queued work,
+and changing database image tags is not a supported major-version migration.
 
-The app is configured via environment variables. You can pass environment variables directly or create a `.env` file. View [`.example.env`](./.example.env) file for the list of configurations.
+## Configuration and access
 
-All variables are optional except `JWT_SECRET` which is required on production. 
+Use [`.example.env`](.example.env) as the configuration checklist and
+[`server/env.js`](server/env.js) for the accepted values/defaults. Avoid copying
+an old full environment table from another Kutt version. Important settings:
 
-You can use files for each variable by appending `_FILE`. Example:
-`JWT_SECRET_FILE=/run/secrets/jwt_secret`. The file must exist inside the app
-container/process, is trimmed, and takes precedence over the inline value.
-Unreadable configured files stop startup rather than silently using a fallback.
-The Compose examples use inline `JWT_SECRET` validation; adapt their mounts and
-environment explicitly when using Docker secrets instead.
+| Setting | Operational guidance |
+| --- | --- |
+| `JWT_SECRET` | Required for production; preserve it with the database because it also protects sessions and encrypted webhook credentials |
+| `DEFAULT_DOMAIN`, `SITE_NAME` | Canonical hostname and display name; the domain contains no scheme/path |
+| `DISALLOW_ANONYMOUS_LINKS`, `DISALLOW_REGISTRATION` | Both default to `true`; delegated OIDC provisioning is a separate policy |
+| `OIDC_*`, `DISALLOW_LOGIN_FORM` | Configure native SSO and provider admission first; use `DISALLOW_LOGIN_FORM=true` for SSO-only login |
+| `OIDC_ALLOW_REGISTRATION` | Controls new OIDC identities, not local signup; defaults to `true` |
+| `OIDC_SESSION_MAX_SECONDS` | Absolute OIDC session lifetime; defaults to 3,600 seconds |
+| `TRUST_PROXY` | Examples use `false`; the application's legacy default is `true`. Only trust proxies that are the exclusive backend path and replace untrusted forwarding headers |
+| `DB_*`, `REDIS_*` | Must match the selected topology, persistent paths and existing credentials |
+| `ENABLE_RATE_LIMIT` | Optional management API limiting; protected-link password and report throttles remain enabled independently |
+| `CUSTOM_DOMAIN_USE_HTTPS` | Controls custom-domain link URLs; it does not provision DNS, TLS certificates or proxy routes |
+| `MAIL_*`, `REPORT_EMAIL`, `CONTACT_EMAIL` | Configure SMTP for verification/recovery/report workflows; mail is disabled by default |
 
-| Variable | Description | Default | Example |
-| -------- | ----------- | ------- | ------- |
-| `JWT_SECRET` | This is used to sign authentication tokens. Use a **long** **random** string. | - | - |
-| `PORT` |  The port to start the app on | `3000` | `8888` |
-| `SITE_NAME` |  Name of the website | `Kutt` | `Your Site` |
-| `DEFAULT_DOMAIN` |  The domain address that this app runs on | `localhost:3000` | `yoursite.com` |
-| `LINK_LENGTH` | The length of of shortened address | `6` | `5` |
-| `LINK_CUSTOM_ALPHABET` | Alphabet used to generate custom addresses. Default value omits o, O, 0, i, I, l, 1, and j to avoid confusion when reading the URL. | (abcd..789) | `abcABC^&*()@` |
-| `DISALLOW_REGISTRATION` | Disable registration. Note that if `MAIL_ENABLED` is set to false, then the registration would still be disabled since it relies on emails to sign up users. | `true` | `false` |
-| `DISALLOW_LOGIN_FORM` | Disable login with email and password. Only makes sense if OIDC is enabled. | `false` | `true` |
-| `DISALLOW_ANONYMOUS_LINKS` | Disable anonymous link creation | `true` | `false` |
-| `TRUST_PROXY` | If the app is running behind a proxy server like NGINX or Cloudflare and that it should get the IP address from that proxy server. If you're not using a proxy server then set this to false, otherwise users can override their IP address. | `true` | `false` |
-| `DB_CLIENT` |  Which database client to use. Supported clients: `pg` or `pg-native` for Postgres, `mysql2` for MySQL or MariaDB, `sqlite3` and `better-sqlite3` for SQLite. NOTE: `pg-native` and `sqlite3` are not installed by default, use `npm` to install them before use. | `better-sqlite3` | `pg` |
-| `DB_FILENAME` |  File path for the SQLite database. Only if you use SQLite. | `db/data` | `/var/lib/data` |
-| `DB_HOST` | Database connection host. Only if you use Postgres or MySQL. | `localhost` | `your-db-host.com` |
-| `DB_PORT` | Database port. Only if you use Postgres or MySQL. | `5432` (Postgres) | `3306` (MySQL) |
-| `DB_NAME` | Database name. Only if you use Postgres or MySQL. | `kutt` | `mydb` |
-| `DB_USER` | Database user. Only if you use Postgres or MySQL. | `postgres` | `myuser` |
-| `DB_PASSWORD` | Database password. Only if you use Postgres or MySQL. | - | `mypassword` |
-| `DB_SSL` | Whether use SSL for the database connection. Only if you use Postgres or MySQL. | `false` | `true` |
-| `DB_POOL_MIN` | Minimum number of database connection pools. Only if you use Postgres or MySQL. | `0` | `2` |
-| `DB_POOL_MAX` | Maximum number of database connection pools. Only if you use Postgres or MySQL. | `10` | `5` |
-| `REDIS_ENABLED` | Whether to use Redis for cache | `false` | `true` |
-| `REDIS_HOST` | Redis connection host | `127.0.0.1` | `your-redis-host.com` |
-| `REDIS_PORT` | Redis port | `6379` | `6379` |
-| `REDIS_PASSWORD` | Redis password | - | `mypassword` |
-| `REDIS_DB` | Redis database number, between 0 and 15. | `0` | `1` |
-| `SERVER_IP_ADDRESS` | The IP address shown to the user on the setting's page. It's only for display purposes and has no other use. | - | `1.2.3.4` |
-| `SERVER_CNAME_ADDRESS` | The subdomain shown to the user on the setting's page. It's only for display purposes and has no other use. | - | `custom.yoursite.com` |
-| `CUSTOM_DOMAIN_USE_HTTPS` | Use https for links with custom domain. It's on you to generate SSL certificates for those domains manually—at least on this version for now. | `false` | `true` |
-| `ENABLE_RATE_LIMIT` | Enable rate limiting for some API routes. If Redis is enabled uses Redis, otherwise, uses memory. | `false` | `true` |
-| `MAIL_ENABLED` | Enable emails, which are used for signup, verifying or changing email address, resetting password, and sending reports. If is disabled, all these functionalities will be disabled too. | `false` | `true` | 
-| `MAIL_HOST` | Email server host | - | `your-mail-server.com` |
-| `MAIL_PORT` | Email server port | `587` | `465` (SSL) | 
-| `MAIL_USER` | Email server user | - | `myuser` | 
-| `MAIL_PASSWORD` | Email server password for the user | - | `mypassword` | 
-| `MAIL_FROM` | Email address to send the user from | - | `example@yoursite.com` | 
-| `MAIL_SECURE` | Whether use SSL for the email server connection | `false` | `true` | 
-| `OIDC_ENABLED` | Enable OpenID Connect | `false` | `true` | 
-| `OIDC_ISSUER` | OIDC issuer URL | - | `https://example.com/some/path` | 
-| `OIDC_PROMPT` | OIDC prompt | - | `login` |
-| `OIDC_CLIENT_ID` | OIDC client id | - | `example-app` | 
-| `OIDC_CLIENT_SECRET` | OIDC client secret | - | `some-secret` | 
-| `OIDC_SCOPE` | OIDC Scope | `openid profile email` | `openid email` | 
-| `OIDC_EMAIL_CLAIM` | Name of the field to get user's email from | `email` | `userEmail` | 
-| `OIDC_BUTTON_TEXT` | OIDC login button text | `Log in with OIDC` | `Log in via Example` | 
-| `REPORT_EMAIL` | The email address that will receive submitted reports | - | `example@yoursite.com` | 
-| `CONTACT_EMAIL` | The support email address to show on the app | - | `example@yoursite.com` | 
+Declared application settings support `NAME_FILE` secret-file input. File
+values take precedence over inline values and unreadable files fail startup.
+Mount secret files read-only at their **container** paths. The supplied Compose
+examples validate an inline `JWT_SECRET`; adapt that declaration deliberately
+when switching to file-only injection. Never commit real `.env` files,
+credentials, identity mappings, databases or backup archives.
 
-## Themes and customizations
+### Public links, protected management
 
-You can add styles, change images, or render custom HTML. Place your content inside the [`/custom`](./custom) folder according to below instructions.
+- Public short-link redirects do not require a Kutt or Authentik login. An
+  explicitly password-protected link still requires its own link password, and
+  pause/expiry/trash rules still apply. Do not put an interactive SSO challenge
+  over the whole hostname.
+- Management uses Kutt's authorization and native OIDC. The homelab uses
+  Authentik plus BunkerWeb/WAF; a new installation must configure its own edge
+  protections and provider access policy. Never expose a direct backend to
+  bypass those controls.
+- API clients authenticate with scoped tokens. OIDC callbacks and signed
+  back-channel logout need their documented routes, not an extra interactive
+  SSO challenge. WAF and application validation must remain in place.
+- Existing accounts are **not automatically linked by email**. Before migrating
+  an existing OIDC installation, follow the [verified identity-binding procedure](docs/OIDC-SECURITY.md#existing-account-migration).
+  The callback is `https://YOUR_DOMAIN/login/oidc`; changing issuer or subject
+  mode later requires a planned identity migration.
 
-#### How it works:
+## API and integrations
 
-The structure of the custom folder is like this:
+The application serves both `/api` and `/api/v2`. Prefer named tokens created
+in Settings, give each integration only the scopes/domain it needs, and send
+the secret in the `X-API-Key` header. Public redirects need no API credential.
+Legacy API keys remain compatible but broad; migrate integrations to scoped
+tokens rather than treating old keys as least-privilege credentials.
 
-```
-custom/
-├─ css/
-│  ├─ custom1.css
-│  ├─ custom2.css
-│  ├─ ...
-├─ images/
-│  ├─ logo.png
-│  ├─ favicon.ico
-│  ├─ ...
-├─ views/
-│  ├─ partials/
-│  │  ├─ footer.hbs
-│  ├─ 404.hbs
-│  ├─ ...
-```
+Start with the [API token and idempotency guide](docs/API-TOKENS.md). Feature
+guides above document their endpoints, permissions, limits and recovery
+behavior. Some account, invitation and administrator operations deliberately
+require a browser session; a token never grants site-administrator privileges.
 
-- **css**: Put your CSS style files here. ([View example →](https://github.com/thedevs-network/kutt-customizations/tree/main/themes/crimson/css))
-  - You can put as many style files as you want: `custom1.css`, `custom2.css`, etc.
-  - If you name your style file `styles.css`, it will replace Kutt's original `styles.css` file.
-  - Each file will be accessible by `<your-site.com>/css/<file>.css`
-- **images**: Put your images here. ([View example →](https://github.com/thedevs-network/kutt-customizations/tree/main/themes/crimson/images))
-  - Name them just like the files inside the [`/static/images/`](./static/images) folder to replace Kutt's original images.
-  - Each image will be accessible by `<your-site.com>/images/<image>.<image-format>`
-- **views**: Custom HTML templates to render. ([View example →](https://github.com/thedevs-network/kutt-customizations/tree/main/themes/crimson/views))
-  - It should follow the same file naming and folder structure as [`/server/views`](./server/views)
-  - Although we try to keep the original file names unchanged, be aware that new changes on Kutt might break your custom views.
- 
-#### Example theme: Crimson
+The [base API specification](docs/api/api.js) can be rendered with
+`npm run docs:build` in a development checkout. It is not a complete reference
+for every fork endpoint; use the feature guides for additions. Older upstream
+API clients may work with compatible routes but are not automatically validated
+against the fork's scopes and security policies.
 
-This is an example and official theme. Crimson includes custom styles, images, and views.
+The optional [iOS Shortcut guide](examples/IOS-SHORTCUT.md) covers the reviewed
+artifact and private token setup. It is an API client example, not a server
+dependency or deployment mechanism.
 
-[Get Crimson theme →](https://github.com/thedevs-network/kutt-customizations/tree/main/themes/crimson)
+## Development and testing
 
-[View list of themes and customizations →](https://github.com/thedevs-network/kutt-customizations)
-
-
-| Homepage | Admin page | Login/signup |
-| -------- | ---------- | ------------ |
-| ![crimson-homepage](https://github.com/user-attachments/assets/b74fab78-5e80-4f57-8425-f0cc73e9c68d) | ![crimson-admin](https://github.com/user-attachments/assets/a75d2430-8074-4ce4-93ec-d8bdfd75d917) | ![crimson-login-signup ](https://github.com/user-attachments/assets/b915eb77-3d66-4407-8e5d-b556f80ff453)
-
-#### Usage with Docker:
-
-If you're building the image locally, then the `/custom` folder should already be included in your app.
-
-If you're pulling the official image, make sure `/kutt/custom` volume is mounted or you have access to it. [View Docker compose example →](https://github.com/thedevs-network/kutt/blob/main/docker-compose.yml#L7)
-
-Then, move your files to that volume. You can do it with this Docker command:
+Use **Node.js 24**. SQLite is the default and needs no separate database server.
+There is no frontend bundler step; templates, CSS and browser scripts ship with
+the application. Install locked dependencies, configure a private `.env` and
+initialize the database:
 
 ```sh
-docker cp <path-to-custom-folder> <kutt-container-name>:/kutt
+npm ci
+npm run migrate
+npm run dev
 ```
 
-For example:
+`npm start` runs production mode. Standalone Node listens on network interfaces,
+so restrict access with your host firewall/trusted proxy; the Compose loopback
+binding does not apply to a standalone process. Native SQLite dependencies may
+need a compiler toolchain when no prebuilt binary is available for your platform.
+
+For release validation, use a separate disposable checkout with **no `.env`**:
 
 ```sh
-docker cp custom kutt-server-1:/kutt
+docker build -t kutt-smoke .
+docker run --rm --network none --entrypoint node kutt-smoke tests/container-smoke.cjs
+sh tests/redis-smoke.sh kutt-smoke
+python3 tests/compose-config.py
 ```
 
-Make sure to restart the kutt server container after copying files or making changes.
+The full smoke suite uses temporary SQLite data and tests migrations, API
+compatibility, authorization, public redirects and feature behavior. The Redis
+test uses its own isolated containers. Compose validation renders the four
+examples without claiming full PostgreSQL/MariaDB runtime coverage.
 
-## Browser extensions
+See [test instructions](tests/README.md) for rendered desktop/mobile suites,
+fresh loopback fixtures, Playwright requirements and separate native-device
+acceptance. **Never point disposable browser tests at a real deployment or an
+existing user's browser profile.** CI is not a substitute for testing the exact
+deployed image, real SSO, monitoring and recovery.
 
-Download Kutt's extension for web browsers via below links.
+## Upgrades and recovery
 
-- [Chrome](https://chrome.google.com/webstore/detail/kutt/pklakpjfiegjacoppcodencchehlfnpd)
-- [Firefox](https://addons.mozilla.org/en-US/firefox/addon/kutt/)
+Read [deployment and recoverable upgrades](docs/DEPLOYMENT.md) before changing
+an existing instance. Release publication alone is not a successful deployment.
 
-## Videos
+1. Record the current source/image digest, configuration, database version and
+   health. Take a consistent backup of the database, custom assets and private
+   configuration/secrets, and keep an encrypted off-host copy.
+2. Restore into an isolated instance using the exact candidate image; verify
+   integrity, migrations and a write/read cycle before deploying. For SQLite,
+   use its backup API or stop writers; copying only a live main file is unsafe.
+3. Deploy the tested digest without replacing secrets or volumes. Validate
+   existing links, public redirects, management authorization, real OIDC and
+   enabled integrations, then observe monitoring through a post-restart interval.
+4. Take a clean post-deployment backup and verify restoration again. Record the
+   deployment and rollback evidence separately from release CI.
 
-**Official videos**
+Prefer fix-forward or a documented schema-compatible rollback. Old images can
+ignore newer lifecycle, privacy or revocation rules; do not drop populated policy
+tables to force a downgrade. Restores must reconcile later writes and revoked
+credentials before reopening access. **The repository alone can recreate an
+empty application, not recover lost users, links, secrets or analytics.**
 
-- [Next.js to htmx – A Real World Example](https://www.youtube.com/watch?v=8RL4NvYZDT4)
+## Customization
 
-## Integrations
+Local branding can override files through `custom/css`, `custom/images` and
+`custom/views`. A `custom/css/styles.css` replaces the corresponding default
+stylesheet. Keep overrides under version control without private credentials,
+and include them in backups.
 
-- **ShareX** – You can use Kutt as your default URL shortener in [ShareX](https://getsharex.com/). If you host your custom instance of Kutt, refer to [ShareX wiki](https://github.com/thedevs-network/kutt/wiki/ShareX) on how to setup.
-- **Alfred workflow** – Download Kutt's official workflow for [Alfred](https://www.alfredapp.com/) app from [alfred-kutt](https://github.com/thedevs-network/alfred-kutt) repository.
-- **iOS shortcut** – [Kutt shortcut](https://www.icloud.com/shortcuts/a829856aea2c420e97c53437e68b752b) for your apple device which works from the iOS sharing context menu or on standalone mode. A courtesy of [@caneeeeee](https://github.com/caneeeeee).
+Containers load overrides from `/kutt/custom`. The example Compose files mount
+a persistent `custom` volume there; populate that volume or use a deliberate
+bind mount instead of relying on edits to an ephemeral container filesystem.
+Restart after template/configuration changes and verify loaded browser assets.
 
-**Third-party packages**
+Custom templates and themes must be checked on every upgrade. Older upstream
+themes may omit new controls, validation, accessibility or security behavior;
+they are not automatically compatible with this fork. Preserve versioned asset
+URLs and their query strings through proxy/CDN caches.
 
+## Documentation
 
-| Language        | Link                                                                              | Description                                          |
-| --------------- | --------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| C# (.NET)       | [KuttSharp](https://github.com/0xaryan/KuttSharp)                                 | .NET package for Kutt.to url shortener               |
-| C# (.NET)       | [Kutt.NET](https://github.com/AlphaNecron/Kutt.NET)                               | C# API Wrapper for Kutt                              |
-| Python          | [kutt-cli](https://github.com/RealAmirali/kutt-cli)                               | Command-line client for Kutt written in Python       |
-| Ruby            | [kutt.rb](https://github.com/RealAmirali/kutt.rb)                                 | Kutt library written in Ruby                         |
-| Rust            | [urlshortener](https://github.com/vityafx/urlshortener-rs)                        | URL shortener library written in Rust                |
-| Rust            | [kutt-rs](https://github.com/robatipoor/kutt-rs)                                  | Command line tool written in Rust                    |
-| Node.js         | [node-kutt](https://github.com/ardalanamini/node-kutt)                            | Node.js client for Kutt.to url shortener             |
-| JavaScript      | [kutt-vscode](https://github.com/mehrad77/kutt-vscode)                            | Visual Studio Code extension for Kutt                |
-| Java            | [kutt-desktop](https://github.com/cipher812/kutt-desktop)                         | A Cross platform Java desktop application for Kutt   |
-| Go              | [kutt-go](https://github.com/raahii/kutt-go)                                      | Go client for Kutt.to url shortener                  |
-| BASH            | [GitHub Gist](https://gist.github.com/hashworks/6d6e4eae8984a5018f7692a796d570b4) | Simple BASH function to access the API               |
-| BASH            | [url-shortener](https://git.tim-peters.org/Tim/url-shortener)                     | Simple BASH script with GUI                          |
-| Kubernetes/Helm | [ArtifactHub](https://artifacthub.io/packages/helm/christianhuth/kutt)            | A Helm Chart to install Kutt on a Kubernetes cluster |
+| Task | Start here |
+| --- | --- |
+| Install, upgrade or restore | [Deployment and recovery](docs/DEPLOYMENT.md) |
+| Configure SSO or migrate identities | [OIDC security](docs/OIDC-SECURITY.md) |
+| Connect an API client | [Tokens and idempotency](docs/API-TOKENS.md) |
+| Understand a feature | [Feature guides](#features) |
+| Operate destination checks | [Destination health](docs/DESTINATION-HEALTH.md) |
+| Review hardening and scan limits | [Security maintenance](docs/SECURITY-MAINTENANCE.md) |
+| Reproduce automated checks | [Testing](tests/README.md) |
+| Check implementation/deployment status | [Roadmap](docs/FEATURE-ROADMAP.md) and [UI/UX ledger](docs/UI-UX-REVIEW.md) |
+| Review community ideas and attribution | [Community review](docs/UPSTREAM-PR-REVIEW.md) |
 
-## Contributing
+## Contributing and credits
 
-Pull requests are welcome. Open a discussion for feedback, requesting features, or discussing ideas.
+Report fork-specific problems and propose changes in
+[RobinMJD/kutt](https://github.com/RobinMJD/kutt/issues). Include the version,
+database engine, reproduction steps and sanitized logs; never post credentials,
+private destinations or identity mappings. Changes should include focused tests,
+authorization/backward-compatibility checks and any migration/recovery notes.
 
-Special thanks to [Thomas](https://github.com/trgwii) and [Muthu](https://github.com/MKRhere). Logo design by [Muthu](https://github.com/MKRhere).
+This fork builds on the work of the
+[upstream Kutt contributors](https://github.com/thedevs-network/kutt/graphs/contributors).
+Original author: Pouria Ezzati. Special thanks to
+[Thomas](https://github.com/trgwii) and [Muthu](https://github.com/MKRhere);
+logo design by Muthu. Selected community proposals are credited in the review
+linked above. The upstream hosted service and third-party integrations are
+operated independently of this fork.
+
+Licensed under the [MIT License](LICENSE).
