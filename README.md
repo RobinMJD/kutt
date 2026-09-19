@@ -303,11 +303,12 @@ URLs and their query strings through proxy/CDN caches.
 
 ## Contributing and credits
 
-Report fork-specific problems and propose changes in
-[RobinMJD/kutt](https://github.com/RobinMJD/kutt/issues). Include the version,
-database engine, reproduction steps and sanitized logs; never post credentials,
-private destinations or identity mappings. Changes should include focused tests,
-authorization/backward-compatibility checks and any migration/recovery notes.
+Propose fork-specific fixes and enhancements through
+[pull requests](https://github.com/RobinMJD/kutt/pulls). The fork's issue tracker
+is currently disabled. Include the version, database engine, reproduction steps
+and sanitized logs; never post credentials, private destinations or identity
+mappings. Changes should include focused tests, authorization/backward-compatibility
+checks and any migration/recovery notes.
 
 This fork builds on the work of the
 [upstream Kutt contributors](https://github.com/thedevs-network/kutt/graphs/contributors).
