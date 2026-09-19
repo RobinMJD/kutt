@@ -43,7 +43,8 @@ See [deployment and recovery](docs/DEPLOYMENT.md) and the
 The [community PR review](docs/UPSTREAM-PR-REVIEW.md) records selected improvements,
 contributor credits and deferred proposals with their compatibility/security tradeoffs.
 The [UI/UX review](docs/UI-UX-REVIEW.md) summarizes the reusable fixes, regression
-coverage and remaining user-assisted acceptance checks.
+coverage and validation limits. The [custom-domain guide](docs/CUSTOM-DOMAINS.md)
+documents the DNS TXT ownership exchange required for new domain claims.
 
 Fork CI tests an isolated SQLite database on each main-branch push. Version tags
 matching `v*-sr94.*` publish the tested amd64 image to `ghcr.io/robinmjd/kutt`.
@@ -53,8 +54,9 @@ production. Existing upstream Docker Hub workflows do not publish from forks.
 
 Run regression tests with `docker build -t kutt-test .` followed by
 `docker run --rm --network none --entrypoint node kutt-test tests/container-smoke.cjs`.
-SQLite is exercised end-to-end; PostgreSQL and MySQL remain unvalidated for this
-feature release. Do not substitute a production database into the test harness.
+SQLite is exercised end-to-end; PostgreSQL 16 and MySQL 8.4 have targeted
+security/concurrency coverage, not full feature parity. Do not substitute a
+production database into the test harness.
 
 **Kutt** is a modern URL shortener with support for custom domains. Create and edit links, view statistics, manage users, and more.
 

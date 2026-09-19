@@ -65,12 +65,37 @@ new integrations should use explicit scopes in the `X-API-Key` header.
 | `GET /events?after={sequence}` | `events:read`; up to 50 ascending events, last cursor; omit after for latest 50 |
 | `GET /events/stream?after={sequence}` | Browser only; SSE `management`, `revoked`, `unavailable`; honors `Last-Event-ID` |
 
-Ten subscriptions per owner. Creates/edits/deletes are limited to ten requests per
-minute; rotation to five; test/manual retry to four per route/client. Stale
+Ten subscriptions per owner. When `ENABLE_RATE_LIMIT=true`, creates/edits/deletes
+are limited to ten requests per minute; rotation to five; test/manual retry to
+four per route/client. The durable admission limits below are always enforced,
+independently of that optional request throttle. Stale
 configuration revisions return 409; reload rather than guessing revisions.
 Session-wide revocation pauses existing subscriptions until an authorized owner
 saves or rotates them again. API-token revocation prevents further configuration
 changes; a subscription is persistent configuration, not a token session.
+
+## Admission and fairness
+
+Release `.40` caps pending plus delivering work at 2,000 per owner
+and 10,000 globally. Admissions also have durable 60-second budgets of 1,000 per
+owner and 5,000 globally, shared by automatic events, Send test and manual retry.
+Deleting/recreating a subscription does not reset the owner's budget. A lease
+reclaim or scheduled retry is already-admitted work, not a new admission.
+Database serialization prevents simultaneous requests from exceeding these caps.
+
+At capacity an ordinary mutation returns 429 and saves neither its link change,
+event nor partial deliveries. Wait for capacity or disable the backed-up receiver
+before retrying. Existing oversized queues are allowed to drain, not deleted.
+Leases are selected round-robin by owner so a backlog cannot take every slot.
+This bounds outstanding work, not all historic event storage.
+
+Administrator ban/trash actions must remain available even when an owner fills
+the queue. Only for these moderation actions, capacity exhaustion saves the
+mutation and audit event without scheduling excess deliveries. The event includes
+`"delivery":{"status":"not_queued","reason":"CAPACITY_LIMIT"}` and Integrations
+shows the omitted notification explicitly. It is not automatically delivered
+later. Administrators' ordinary edits, other users and non-capacity errors do not
+receive this exception. Existing delivery leases and limits are unchanged.
 
 ## Receiver verification and delivery
 

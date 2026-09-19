@@ -205,6 +205,30 @@ and confirms a revoked editor can no longer submit. No real account is used.
 
 ## Final roadmap and security validation
 
+`security-boundaries.cjs` covers legacy origin/principal boundaries, verification
+without login, recovery invalidation, DNS proof/atomic ownership, URL complexity,
+bounded/fair webhook admission and administration under queue exhaustion.
+`KUTT_TEST_ONLY=security-boundaries` selects it during development. Full release
+regression still runs all suites. Redis regression additionally exercises stale
+cached principals across revocation/key rotation; cleanup mock tests require
+exact fixture IDs and preserve foreign name collisions and original exit status.
+
+`security-database.cjs` is a separate destructive-to-fixture-only PostgreSQL 16 /
+MySQL 8.4 race test. It requires `KUTT_DATABASE_DISPOSABLE=1`, a loopback database
+host, a database name beginning `kutt_security_` and no initialized user tables.
+Run it only in a fresh `--network none` database container's network namespace,
+with throwaway credentials/storage. It applies migrations and tests competing
+domain claims, queue serialization (including old repeatable-read snapshots),
+fair leases and recovery invalidation. This is not full product database parity.
+
+`browser-domain-proof.cjs` checks the DNS challenge, preserved draft, visible Copy
+icons/feedback, claim and reload at 1440/390/320px. Its loopback-only disposable
+app needs `NODE_OPTIONS=--require=/kutt/tests/domain-proof-offline.cjs`,
+`KUTT_BROWSER_DISPOSABLE=1`, `NODE_APP_INSTANCE=1`, mail/OIDC disabled and a
+`/tmp/kutt-smoke-` database. This explicitly guarded TXT fixture only recognizes
+generated `.example.invalid` challenges. The QR/dialog suites use the same preload
+when their synthetic setup creates custom domains. Never use it in production.
+
 The full suite also runs `analytics.cjs`, `privacy.cjs`, `webhooks.cjs`,
 `forwarding.cjs`, `link-health.cjs`, `shortcuts.cjs` and
 `security-regressions.cjs`. Their corresponding `browser-*.cjs` scripts use the

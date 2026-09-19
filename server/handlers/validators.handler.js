@@ -21,10 +21,11 @@ const createLink = [
   body("target")
     .exists({ checkNull: true, checkFalsy: true })
     .withMessage("Target is missing.")
-    .isString()
+    .isString().bail()
     .trim()
     .isLength({ min: 1, max: 2040 })
     .withMessage("Maximum URL length is 2040.")
+    .bail()
     .customSanitizer(utils.addProtocol)
     .custom(value => utils.urlRegex.test(value) || /^(?!https?|ftp)(\w+:|\/\/)/.test(value))
     .withMessage("URL is not valid.")
@@ -101,10 +102,11 @@ const createLink = [
 const editLink = [
   body("target")
     .optional({ checkFalsy: true, nullable: true })
-    .isString()
+    .isString().bail()
     .trim()
     .isLength({ min: 1, max: 2040 })
     .withMessage("Maximum URL length is 2040.")
+    .bail()
     .customSanitizer(utils.addProtocol)
     .custom(value => utils.urlRegex.test(value) || /^(?!https?|ftp)(\w+:|\/\/)/.test(value))
     .withMessage("URL is not valid.")
@@ -166,11 +168,12 @@ const redirectProtected = [
 const addDomain = [
   body("address", "Domain is not valid.")
     .exists({ checkFalsy: true, checkNull: true })
+    .isString().bail()
     .isLength({ min: 3, max: 64 })
-    .withMessage("Domain length must be between 3 and 64.")
+    .withMessage("Domain length must be between 3 and 64.").bail()
     .trim()
     .customSanitizer(utils.addProtocol)
-    .custom(value => utils.urlRegex.test(value))
+    .custom(value => utils.urlRegex.test(value)).bail()
     .customSanitizer(value => {
       const parsed = URL.parse(value);
       return utils.removeWww(parsed.hostname || parsed.href);
@@ -184,6 +187,8 @@ const addDomain = [
     .withMessage("You can't add this domain."),
   body("homepage")
     .optional({ checkFalsy: true, nullable: true })
+    .isString().bail()
+    .isLength({ max: 2040 }).withMessage("Maximum homepage URL length is 2040.").bail()
     .customSanitizer(utils.addProtocol)
     .custom(value => utils.urlRegex.test(value) || /^(?!https?|ftp)(\w+:|\/\/)/.test(value))
     .withMessage("Homepage is not valid.")
@@ -192,11 +197,12 @@ const addDomain = [
 const addDomainAdmin = [
   body("address", "Domain is not valid.")
     .exists({ checkFalsy: true, checkNull: true })
+    .isString().bail()
     .isLength({ min: 3, max: 64 })
-    .withMessage("Domain length must be between 3 and 64.")
+    .withMessage("Domain length must be between 3 and 64.").bail()
     .trim()
     .customSanitizer(utils.addProtocol)
-    .custom(value => utils.urlRegex.test(value))
+    .custom(value => utils.urlRegex.test(value)).bail()
     .customSanitizer(value => {
       const parsed = URL.parse(value);
       return utils.removeWww(parsed.hostname || parsed.href);
@@ -210,6 +216,8 @@ const addDomainAdmin = [
     .withMessage("Domain already exists."),
   body("homepage")
     .optional({ checkFalsy: true, nullable: true })
+    .isString().bail()
+    .isLength({ max: 2040 }).withMessage("Maximum homepage URL length is 2040.").bail()
     .customSanitizer(utils.addProtocol)
     .custom(value => utils.urlRegex.test(value) || /^(?!https?|ftp)(\w+:|\/\/)/.test(value))
     .withMessage("Homepage is not valid."),

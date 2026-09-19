@@ -1,9 +1,8 @@
 {{> header}}
 <section id="verify" class="section-container verify-page">
   {{#if token_verified}}
-    <h2 hx-get="/" hx-trigger="load delay:1s" hx-target="body" hx-push-url="/">
-      Your account has been verified. Redirecting to homepage...
-    </h2>
+    <h2>Your account has been verified.</h2>
+    <a href="/login">Continue to sign in</a>
   {{else}}
     <h2>
       {{> icons/x}}

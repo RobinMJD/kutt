@@ -29,10 +29,14 @@ accessibility conformance.
 | API feedback | Validate status, content type and consumed schema before claiming success or replacing saved state | `responses.cjs`, `browser-responses.cjs` |
 | Recipients | Accessible branded 410 pages with a neutral next step, without private destination or lifecycle details | `unavailable.cjs`, `browser-unavailable.cjs` |
 | Header | Deliberate wrapping of brand/account actions and separate account-security content heading | `header.cjs`, `browser-header.cjs` |
+| Domain ownership | Signed, user-bound DNS TXT challenge, preserved draft and visible Copy feedback at desktop/mobile widths | `security-boundaries.cjs`, `security-database.cjs`, `browser-domain-proof.cjs` |
+| Moderation | A full webhook queue cannot veto administrator ban/trash; notification omission is explicit in history | `security-boundaries.cjs`, `browser-domain-proof.cjs` |
 
 ## Compatibility And Security
 
-- Existing links, users, signing/encryption keys and database schemas are retained.
+- Existing links, users and signing/encryption keys are retained. The additive
+  security migration retires pre-upgrade pending recovery links and adds durable
+  webhook admission state; see [DEPLOYMENT.md](DEPLOYMENT.md).
 - Public redirects remain unauthenticated and continue to enforce password,
   availability, domain and routing policies. Management remains authenticated.
 - Edit receipts detect conflicts; they do not replace fresh ownership, workspace
@@ -112,16 +116,37 @@ assertion, retaining the same exact-version contract and unchanged markup.
 
 - Native preview rendering passed separately from programmatic PDF checks.
   Physical printing and native file-save dialog completion are not claimed.
-- Credential-creation/rotation and irreversible deletion UI ceremonies retain
-  separate user-assisted acceptance. Synthetic API/security tests do not waive it.
+- Account-holder token creation/copy/revocation, webhook rotation/copy and
+  explicitly approved disposable-only irreversible deletions passed separately
+  from synthetic API checks on September 19.
 - Physical QR scanning passed with account-holder confirmation that the public
   destination opened without SSO. Naturally expired live Authentik session
   recovery also passed on `.38` through ordinary SSO, without browser errors or
-  policy changes. User-assisted real session revocation remains unverified;
-  synthetic signed-provider tests do not substitute for that check.
-- SQLite has executed feature regression; PostgreSQL/MariaDB examples are
-  configuration-validated, not a full parity claim.
-- A bounded source-diff review found no actionable candidates across 124 changed
-  source/config/test files. Its security-tool report could not be finalized
-  because desktop scan creation issued no identity. No completed scan verdict or
-  exhaustive vulnerability-free claim is made. Image scanning is a separate gate.
+  policy changes. User-assisted real session revocation and return through SSO
+  subsequently passed as separate acceptance on September 19.
+- SQLite has executed full feature regression. PostgreSQL 16 and MySQL 8.4 have
+  targeted security/concurrency tests, not full feature parity. MariaDB remains
+  configuration-only coverage.
+- The missing scan identity was resolved. A finalized source scan identified seven
+  medium findings addressed in `.40`: webhook admission, atomic claims, DNS proof,
+  recovery capability invalidation, verification-login CSRF, legacy-write CSRF
+  and URL-regex work. Independent patch review also caught quota-blocked moderation
+  and stale Redis principals; both received fixes and regression tests before
+  publication. See [SECURITY-MAINTENANCE.md](SECURITY-MAINTENANCE.md). This is a
+  bounded review, not an exhaustive vulnerability-free guarantee. Image scanning
+and the deployment/restore checks are separate evidence, not substitutes for
+source tests. Release `.40` passed full exact-image regression, rendered DNS
+proof/copy/persistence and moderation feedback at 1440/390/320px, real public
+DNS/WAF ownership proof, HTTPS webhook delivery and Authentik-signed logout/replay.
+Pre/post off-host backups were byte-verified and restored with a successful write
+test; the original account/link remained unchanged. Monitored health and lab
+validation passed. All temporary DNS, app and browser fixtures were removed.
+
+The `.40` runtime source is `1107011e7a8a0ad11b69a8af0f871f7794ad93ef`;
+subsequent closure commits change documentation only. Fork release CI
+`35416114256` and main CI `35416090059` passed. Published image digest:
+`sha256:05b332018c4891a7f2457225dcdadeededcac1a8efbf62ff1c1c06ea201b179f`.
+The privately hardened deployed wrapper is distinct and tested separately.
+Fresh published/wrapper Grype scans retain zero Critical/High and three Medium
+BusyBox matches for CVE-2025-60876, without a vendor fix in the valid September 18
+database. None were suppressed. Deployment-specific raw evidence remains private.

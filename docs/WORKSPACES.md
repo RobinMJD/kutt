@@ -61,7 +61,7 @@ The snapshot uses the existing JWT secret; no migration or new secret is needed.
 Rotating that secret invalidates snapshots as well as sessions. Image rollback
 preserves data but restores the stale-write risk. Never restore an old database
 just to revert this UI change. Publication/deployment acceptance is tracked in
-[the fork operator ledger](https://github.com/RobinMJD/kutt/blob/main/docs/UI-UX-REVIEW.md), not claimed by this implementation note.
+[UI-UX-REVIEW.md](UI-UX-REVIEW.md), not claimed by this implementation note.
 
 Personal tags/collections, imports/exports, QR pages and analytics retain their
 existing personal authorization. They do not inherit workspace permissions.

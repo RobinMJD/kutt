@@ -47,9 +47,10 @@ async function add(params, user) {
   };
   
   if (user) {
-    await knex("users")
-      .where("id", user.id)
-      .update({ ...data, updated_at: utils.dateToUTC(new Date()) });
+    const changed = await knex("users")
+      .where({ id: user.id, verified: false, auth_version: user.auth_version }).increment("auth_version", 1)
+      .update({ ...data, ...require("../account-tokens"), updated_at: utils.dateToUTC(new Date()) });
+    if (!changed) throw new utils.CustomError("Account changed. Please sign in or request account recovery.", 409);
   } else {
     await knex("users").insert(data);
   }
@@ -78,14 +79,19 @@ async function update(match, update, methods) {
     Object.entries(match).forEach(([key, value]) => {
       updateQuery.andWhere(key, ...(Array.isArray(value) ? value : [value]));
     });
-    if (update.password !== undefined || update.banned !== undefined) updateQuery.increment("auth_version", 1);
+    const invalidates = update.password !== undefined || update.banned !== undefined || update.email !== undefined;
+    if (invalidates) updateQuery.increment("auth_version", 1);
+    if (update.change_email_token || update.reset_password_token) {
+      updateQuery.andWhere("auth_version", user.auth_version);
+    }
     if (methods?.increments) {
       methods.increments.forEach(columnName => {
         updateQuery.increment(columnName);
       });
     }
     
-    const changed = await updateQuery.update({ ...update, updated_at: utils.dateToUTC(new Date()) });
+    const changed = await updateQuery.update({ ...update,
+      ...(invalidates ? require("../account-tokens") : {}), updated_at: utils.dateToUTC(new Date()) });
     if (!changed) return {};
     const updated_user = await trx("users").where("id", user.id).first();
 

@@ -37,6 +37,20 @@
       {{#if errors.homepage}}<p class="error">{{errors.homepage}}</p>{{/if}}
     </label>
   </div>
+  {{#if domain_verification}}
+    <input type="hidden" name="proof" value="{{domain_verification.proof}}" />
+    <p role="status">{{verification_notice}}</p>
+    <dl class="domain-verification">
+      <dt>DNS record type</dt><dd>TXT</dd>
+      <dt>Record name</dt><dd data-copy-container><code>{{domain_verification.record_name}}</code>
+        <button type="button" aria-label="Copy DNS record name" title="Copy DNS record name" data-url="{{domain_verification.record_name}}" hx-on:click="handleShortURLCopyLink(this)">{{> icons/copy}}</button>
+      </dd>
+      <dt>Record value</dt><dd data-copy-container><code>{{domain_verification.record_value}}</code>
+        <button type="button" aria-label="Copy DNS record value" title="Copy DNS record value" data-url="{{domain_verification.record_value}}" hx-on:click="handleShortURLCopyLink(this)">{{> icons/copy}}</button>
+      </dd>
+      <dt>Expires</dt><dd>{{domain_verification.expires_at}}</dd>
+    </dl>
+  {{/if}}
   <p>
     <small>
       If you leave homepage empty, <b>yoursite.com</b> will be redirected to <b>{{default_domain}}</b>.
@@ -51,7 +65,7 @@
     </button>
     <button type="submit" class="primary">
       <span>{{> icons/plus}}</span>
-      Add domain
+      {{#if domain_verification}}Verify ownership{{else}}Add domain{{/if}}
     </button>
   </div>
   {{> icons/spinner}}

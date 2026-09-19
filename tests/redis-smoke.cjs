@@ -85,8 +85,28 @@ async function main() {
     await stop(); await start();
     assert.equal((await request("HEAD", "/redis-protected", undefined, undefined, { Authorization: "Basic " + Buffer.from("u:protected-secret").toString("base64") })).status, 429);
     assert.equal((await request("GET", "/redis-protected")).status, 200);
+    response = await request("POST", "/api/auth/apikey", {}, token);
+    assert.equal(response.status, 201);
+    const { apikey } = await response.json();
+    const cached = db.prepare("SELECT * FROM users WHERE email=?").get(account.email);
+    await client.set("u:" + apikey, JSON.stringify(cached), "EX", 900);
+    assert.equal((await request("POST", "/api/auth/revoke-sessions", {}, token)).status, 204);
+    assert.equal((await request("GET", "/api/users", undefined, token)).status, 401);
+    const current = db.prepare("SELECT * FROM users WHERE id=?").get(cached.id);
+    assert.equal(current.auth_version, cached.auth_version + 1);
+    for (const api of ["/api", "/api/v2"]) {
+      assert.equal((await request("GET", api + "/users", undefined, undefined, { "X-API-Key": apikey })).status, 200);
+      response = await request("POST", api + "/domains", { address: "redis-proof.example.invalid" }, undefined, { "X-API-Key": apikey });
+      assert.equal(response.status, 409);
+      const challenge = (await response.json()).verification;
+      assert.equal(require("jsonwebtoken").decode(challenge.proof).av, current.auth_version, "Domain proof uses the fresh API principal after revocation");
+    }
+    assert.equal(JSON.parse(await client.get("u:" + apikey)).auth_version, cached.auth_version, "Exercise a genuinely stale cache entry");
+    const writer = new Database(env.DB_FILENAME);
+    try { writer.prepare("UPDATE users SET apikey=? WHERE id=?").run(randomBytes(24).toString("hex"), cached.id); } finally { writer.close(); }
+    assert.equal((await request("GET", "/api/users", undefined, undefined, { "X-API-Key": apikey })).status, 401, "A cached old API key cannot authenticate after rotation");
     assert(!/UnhandledPromiseRejection|unhandled error event|MODULE_NOT_FOUND/.test(output));
-    console.log("PASS: real Redis/Bull visit processing, UUID compatibility, referrer privacy and shared alias/password rate limits across app restarts");
+    console.log("PASS: real Redis/Bull visit processing, referrer privacy, restart-persistent rate limits and fresh API authentication/domain proof after revocation and rotation");
   } finally {
     await stop(); if (db) db.close(); client.disconnect(); rmSync(directory, { recursive: true, force: true });
   }

@@ -43,7 +43,8 @@
     timestamp(value.created_at) && timestamp(value.updated_at);
   const hookList = value => object(value) && list(value.data, hook) && list(value.event_types, text);
   const event = value => object(value) && text(value.id) && text(value.type) && timestamp(value.occurred_at) &&
-    cursor(value.sequence) && object(value.data) && (value.data.link_id === undefined || text(value.data.link_id));
+    cursor(value.sequence) && object(value.data) && (value.data.link_id === undefined || text(value.data.link_id)) &&
+    (value.delivery === undefined || object(value.delivery) && value.delivery.status === "not_queued" && value.delivery.reason === "CAPACITY_LIMIT");
   const events = value => object(value) && list(value.data, event) && cursor(value.cursor);
   const deliveries = value => object(value) && nullable(cursor)(value.next) && list(value.data, item =>
     policy(item) && text(item.id) && text(item.type) && text(item.state) && count(item.total_attempts) &&

@@ -7,12 +7,19 @@ const utils = require("../utils");
 const env = require("../env");
 
 async function add(req, res) {
-  const { address, homepage } = req.body;
+  const address = req.body.address.toLowerCase(), homepage = req.body.homepage;
+  const verification = require("../domain-verification");
+  if (!await verification.verify(address, req.user, req.body.proof)) {
+    const proof = verification.pending(address, req.user, req.body.proof) || verification.challenge(address, req.user);
+    const message = "Publish this DNS TXT record, then verify ownership. Existing domains are unchanged.";
+    if (req.isHTML) return res.render("partials/settings/domain/add_form", { domain_verification: proof, verification_notice: message });
+    return res.status(409).json({ error: message, verification: proof });
+  }
 
-  const domain = await query.domain.add({
+  const domain = await query.domain.claim({
     address,
     homepage,
-    user_id: req.user.id
+    user: req.user
   });
 
   if (req.isHTML) {
@@ -58,10 +65,7 @@ async function remove(req, res) {
     throw new CustomError("Could not delete the domain.", 400);
   }
   
-  const [updatedDomain] = await query.domain.update(
-    { id: domain.id },
-    { user_id: null }
-  );
+  const updatedDomain = await query.domain.release(domain.id, req.user.id);
 
   if (!updatedDomain) {
     throw new CustomError("Could not delete the domain.", 500);
