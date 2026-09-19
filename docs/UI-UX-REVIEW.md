@@ -36,7 +36,8 @@ release, exact-image, deployment and clean post-backup recovery gates in `.35.1`
 Compact-header crowding and the newly confirmed Account security heading issue
 passed all release, exact-image, live and clean recovery gates in `.36.1` as UX-021/022.
 A-01 native preview subsequently passed with fresh rendered evidence on
-2026-09-17. A-02..A-04 remain open; automated evidence does not waive those checks.
+2026-09-17. A-02 token/webhook credential acceptance passed on September 19;
+A-03/A-04 remain open. Automated evidence does not waive those checks.
 UX-023 masked tokens passed publication, exact-image tests, live validation and
 pre/post recovery in `.37.1`. UX-024 logout/session recovery passed all the same
 gates in `.38` on September 18. The separate webhook WAF false positive and Kutt
@@ -595,7 +596,7 @@ healthy on the same exact `3.2.6-sr94.18` image with zero restarts.
 
 The following matrix preserves the **pre-remediation audit observations** from
 2026-09-15/16. It is not the current defect status: the later finding sections
-record the fixes and release acceptance. Only A-02..A-04 below remain open from
+record the fixes and release acceptance. Only A-03/A-04 below remain open from
 this matrix; do not reopen a closed UX finding from its historical observation.
 
 | Step | Workflow | Pre-remediation result | Acceptance identified at that time |
@@ -626,17 +627,42 @@ The following table separates the completed preview check from the still
 | Gate | Exact outstanding work | Required prerequisite |
 | --- | --- | --- |
 | A-01 | Verified native preview rendering on 2026-09-17, in addition to prior zoom/PDF coverage | Fresh exact-image QR preview shows one page, complete QR/caption and enabled Save; Cancel works and captured pixels independently decode. See the fresh acceptance below; physical printing and native file save are not claimed |
-| A-02 | Scoped token create/copy/revoke passed on 2026-09-18; disabled live webhook creation and a successful clipboard status were observed on September 19 locally. Distant copy feedback became UX-025; user-assisted live rotation remains unverified | User performs credential entry/creation steps; do not generate or type new credentials through UI on the user's behalf. The token ceremony exposed UX-023. Permission to read test secrets is not acceptance of an unperformed rotation |
+| A-02 | Verified: scoped token create/copy/revoke on 2026-09-18; disabled live webhook creation and user-performed rotation/copy on September 19 | The user reported "rotated (and copied)"; the live page showed the successful rotation. A fresh native Copy action produced matching clipboard bytes and adjacent success feedback; Dismiss cleared the secret. No credential values recorded. See the acceptance receipt below |
 | A-03 | Saved-filter/label deletion and irreversible retention Apply UI | Present each exact disposable-fixture action and request action-time confirmation; no production deletion |
 | A-04 | Physical QR scan and real expired-session recovery passed on 2026-09-18 UTC; user-assisted real session revocation remains | User confirmed Google opened without sign-in. The naturally expired live session recovered through normal Authentik SSO on .38 without new credential entry or browser errors; no real user session was forcibly revoked |
 
 The optional mail-enabled report mode is not configured on the deployed service.
 It remains an explicitly untested optional mode, not evidence of a production
-failure. Test it before enabling that mode. AUDIT-00 remains open for A-02..A-04.
+failure. Test it before enabling that mode. AUDIT-00 remains open for A-03/A-04.
 On 2026-09-17 the user explicitly requested "Start with all fixes": begin the
 confirmed remediations now, retaining these user-assisted acceptance checks as
 pending rather than prerequisites for starting fixes. Do not claim exhaustive
 accessibility conformance or silently waive the outstanding checks.
+
+### 2026-09-19 Live Webhook Rotation Acceptance
+
+On deployed `.39.2`, the user rotated the signing secret of the disabled
+`UI acceptance disabled webhook 2026-09-19` and reported copying it. The live
+page showed `Signing secret rotated.`, `Copied` and `Signing secret copied.`.
+An initial browser-session clipboard comparison did not match the displayed
+49-character secret. Both values had the same length and trimming did not
+resolve the difference. The original copy sequence and intervening clipboard
+activity were not observed, so this alone does not establish a code defect.
+
+A fresh click on the real Copy button produced exact matching clipboard bytes
+and the adjacent success feedback. Dismiss hid the panel, removed its plaintext
+from the DOM and disabled Copy. The webhook remained disabled with no deliveries;
+neither Enable nor Send test was used. No old/new secret comparison is claimed
+because the pre-rotation value was not retained. The user-performed rotation,
+rendered success and verified fresh copy close A-02. The
+[redacted receipt](ui-ux-review/2026-09-19/live-webhook-rotation-acceptance.json)
+contains only status/boolean/length evidence, never credential values.
+
+The live Account security page was prepared for A-04 and the user was asked to
+perform its Sign out all sessions confirmation, then leave the resulting sign-in
+page open. No session was revoked by the agent at this checkpoint. A-03 remains
+an isolated-fixture deletion check requiring exact action-time approval. This
+update changes documentation only; it does not publish or deploy a new runtime.
 
 ### 2026-09-18 Live Acceptance And Webhook WAF Repair
 
@@ -2569,12 +2595,12 @@ Passing fix regressions are not substituted for the unperformed human workflows.
 
 | Requirement | Evidence and current result | Remaining gate |
 | --- | --- | --- |
-| Finish workflow coverage and triage source concerns | C-01..C-07 triaged; ordinary rendered workflows, native print preview and all confirmed fixes have recorded acceptance | AUDIT-00 remains open for A-02..A-04 |
+| Finish workflow coverage and triage source concerns | C-01..C-07 triaged; ordinary rendered workflows, native print preview, token/webhook credential ceremonies and all confirmed fixes have recorded acceptance | AUDIT-00 remains open for A-03/A-04 |
 | Desktop/mobile, true zoom, keyboard, focus and reduced motion | UX-001/002/003/008/010/021/022 and their named browser suites record measured layouts, focus, motion and real 200/400% zoom | User-assisted workflows remain unverified; no all-workflows accessibility claim |
-| Names, landmarks, errors, status and modal semantics | UX-001/005/008/009/011/014 include rendered semantics, error recovery, focus and dialog tests | Credential-bearing and permanent-deletion UI ceremonies remain A-02/03 |
+| Names, landmarks, errors, status and modal semantics | UX-001/005/008/009/011/014 include rendered semantics, error recovery, focus and dialog tests; A-02 credential ceremonies passed | Permanent-deletion UI ceremony remains A-03 |
 | Contrast and interactive target geometry | UX-002/003/010/021/022 record measured colors, bounds and hit regions rather than screenshots alone | Evidence is limited to the reviewed states, not exhaustive accessibility conformance |
 | Empty/populated/paginated/long-data, slow/offline/error and stale edits | Workflow matrix and UX-004/006/013/014/015/017/018/019 cover these states, including real independent-client conflicts; real expired Authentik session recovery passed on .38 | User-assisted real session revocation remains A-04 |
-| Admin, ordinary user, owner/editor/viewer and outsider boundaries | Recorded rendered role transitions plus full authorization regressions; stale edits cannot regain revoked access; user token create/copy/revoke passed | Browser webhook secret rotation remains A-02; protocol tests do not replace it |
+| Admin, ordinary user, owner/editor/viewer and outsider boundaries | Recorded rendered role transitions plus full authorization regressions; stale edits cannot regain revoked access; user token create/copy/revoke and live webhook rotation/copy passed | Real session revocation remains A-04; protocol tests do not replace it |
 | Existing APIs, filters, public redirects and migrations | Full source/exact-wrapper/public WAF regressions passed; original data fingerprints, integrity and foreign keys preserved | SQLite verified; no new PostgreSQL/MariaDB parity claim |
 | Close fixes only after publication/deployment/recovery | UX-001..UX-025 each have versioned-release, test, live and recovery evidence | All 25 confirmed defects closed through .39.2; broader audit remains open |
 | Final regression and security review | Full final regression passed; bounded source-diff review covered 124 source/config/test files; image scan found zero critical/high and three medium BusyBox matches without a listed fix | Security report finalization blocked by missing tool-issued scan identity; no sealed security verdict |
@@ -2590,6 +2616,7 @@ classifying a standards failure.
 
 | Date | IDs | Change | Validation and outstanding gates |
 | --- | --- | --- | --- |
+| 2026-09-19 | A-02 | Verified user-performed live webhook rotation, fresh Copy byte equality/adjacent feedback and Dismiss clearing | Disabled webhook, no deliveries, no recorded secrets. Initial clipboard mismatch resolved by fresh Copy; cause not established. A-03/A-04 and the security report identity limitation remain. Documentation only, no runtime change. |
 | 2026-09-19 | UX-023/024, A-04 | Reconciled .37.1/.38 publication, deployment and pre/post writable recovery; confirmed naturally expired live session recovers through ordinary Authentik SSO | Fresh ten-hour follow-up: same healthy image, zero restarts/alerts, three probes passed. Homelab deployment/hygiene CI passed. Webhook credential rotation, permanent-deletion UI, real session revocation and the missing security-tool report identity remain explicit limits. |
 | 2026-09-17 | UX-015, remediation sequencing | User requested starting all fixes. Began expiry intent/concurrency remediation; preserved A-01..A-04 as outstanding acceptance, not a start blocker | Source work in progress. No release/deployment/closure claimed; next checks cover stale personal/admin saves, explicit expiry changes and independent drafts. |
 | 2026-09-15 | AUDIT-00, UX-001..007, C-01..06 | Created initial evidence-backed ledger after feature completion and exact-image fixture testing | Seven open findings; six unvalidated concerns. Tooling blocked the remainder of the rendered audit. No runtime fixes, release, deployment or completed-audit claim. |

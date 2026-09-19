@@ -1,0 +1,32 @@
+{
+  "observed_at_utc": "2026-09-19T00:50:00Z",
+  "runtime_version": "3.2.6-sr94.39.2",
+  "url": "https://shorter-link.com/settings/integrations",
+  "webhook": "UI acceptance disabled webhook 2026-09-19",
+  "user_report": "rotated (and copied)",
+  "rotation_status": "Signing secret rotated.",
+  "initial_comparison": {
+    "displayed_length": 49,
+    "clipboard_length": 49,
+    "exact_match": false,
+    "trimmed_match": false,
+    "cause": "Not established; original copy sequence and intervening clipboard activity were not observed."
+  },
+  "fresh_native_copy": {
+    "exact_match": true,
+    "button_label": "Copied",
+    "adjacent_status": "Signing secret copied."
+  },
+  "dismiss": {
+    "panel_hidden": true,
+    "plaintext_cleared": true,
+    "copy_disabled": true
+  },
+  "webhook_disabled": true,
+  "delivery_status": "No deliveries yet.",
+  "enabled_or_test_sent": false,
+  "secret_values_recorded": false,
+  "previous_secret_comparison_performed": false,
+  "a02_status": "verified",
+  "remaining_acceptance_gates": ["A-03", "A-04"]
+}
