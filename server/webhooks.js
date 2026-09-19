@@ -2,6 +2,7 @@ const { randomUUID, randomBytes, hkdfSync, createCipheriv, createDecipheriv, cre
 const knex = require("./knex");
 const env = require("./env");
 const safe = require("./safe-http");
+const queue = require("./webhook-queue");
 const { CustomError } = require("./utils");
 const TYPES = Object.freeze(["link.created", "link.updated", "link.trashed", "link.restored", "link.organized", "link.imported", "link.routing_updated", "link.tracking_updated", "link.forwarding_updated", "link.health_configured", "link.health_changed"]);
 const fail = (message, status = 400) => { throw new CustomError(message, status); };
@@ -137,6 +138,7 @@ async function retry(req) {
   await knex.transaction(async db => {
     const user = await authorized(req, db, true), hook = await owned(req, db);
     if (!hook.enabled || Number(hook.auth_version) !== Number(user.auth_version) || Number(hook.revision) !== req.body.revision) fail("Reload and enable the current webhook before retrying.", 409);
+    await queue.admit(db, user.id, 1);
     const changed = await db("webhook_deliveries").where({ id: req.body.delivery_id, webhook_id: hook.id, revision: hook.revision, state: "failed" })
       .update({ state: "pending", attempts: 0, next_at: Date.now(), completed_at: null, error: null, http_status: null });
     if (!changed) fail("Only failed deliveries of the current configuration can be retried.", 409);
@@ -147,6 +149,7 @@ async function test(req) {
   return knex.transaction(async db => {
     const user = await authorized(req, db, true), hook = await owned(req, db);
     if (!hook.enabled || Number(hook.auth_version) !== Number(user.auth_version) || Number(hook.revision) !== req.body.revision) fail("Reload and enable the current webhook before testing.", 409);
+    await queue.admit(db, user.id, 1);
     const id = randomUUID(), delivery = randomUUID(), now = Date.now(), type = "webhook.test";
     const payload = JSON.stringify({ id, type, occurred_at: new Date(now).toISOString(), data: {} });
     await db("management_events").insert({ id, user_id: user.id, type, payload, created_at: now });
@@ -154,16 +157,28 @@ async function test(req) {
     return { delivery_id: delivery, event_id: id };
   });
 }
-async function record(db, link, action, fields) {
+async function record(db, link, action, fields, actor = {}) {
   if (!link.user_id || !TYPES.includes("link." + action)) return;
   const user = await db("users").where({ id: link.user_id }).first();
   if (!user) return;
   const id = randomUUID(), now = Date.now(), type = "link." + action;
-  const payload = JSON.stringify({ id, type, occurred_at: new Date(now).toISOString(), data: { link_id: link.uuid, fields } });
+  const event = { id, type, occurred_at: new Date(now).toISOString(), data: { link_id: link.uuid, fields } };
+  let hooks = user.banned || !user.verified ? [] : (await db("webhooks").where({ user_id: user.id, enabled: true, auth_version: user.auth_version }))
+    .filter(hook => JSON.parse(hook.events).includes(type));
+  try {
+    await queue.admit(db, user.id, hooks.length, now);
+  } catch (error) {
+    // An owner's backlog cannot veto moderation; keep the event, not excess work.
+    const moderation = action === "trashed" || (action === "updated" && fields.includes("banned"));
+    if (error.code !== "WEBHOOK_CAPACITY" || !moderation || !actor.id ||
+      !await db("users").where({ id: actor.id, role: "ADMIN", verified: true, banned: false }).first()) throw error;
+    hooks = [];
+    event.delivery = { status: "not_queued", reason: "CAPACITY_LIMIT" };
+  }
+  const payload = JSON.stringify(event);
   await db("management_events").insert({ id, user_id: user.id, type, payload, created_at: now });
-  const hooks = await db("webhooks").where({ user_id: user.id, enabled: true, auth_version: user.auth_version });
-  if (!user.banned && user.verified) for (const hook of hooks) {
-    if (JSON.parse(hook.events).includes(type)) await db("webhook_deliveries").insert({
+  for (const hook of hooks) {
+    await db("webhook_deliveries").insert({
       id: randomUUID(), webhook_id: hook.id, event_id: id, revision: hook.revision, state: "pending", next_at: now, created_at: now
     });
   }
@@ -171,21 +186,30 @@ async function record(db, link, action, fields) {
 
 async function claim(now) {
   return knex.transaction(async db => {
-    // A conditional lease claim is portable across SQLite and row-locking engines.
-    const row = await db("webhook_deliveries").where(q => q.where({ state: "pending" }).where("next_at", "<=", now)
-      .orWhere(q => q.where({ state: "delivering" }).where("lease_until", "<=", now))).orderBy("next_at").first();
-    if (!row) return null;
-    if (row.attempts >= 6) {
-      await db("webhook_deliveries").where({ id: row.id, state: row.state }).modify(q => {
+    const state = await queue.lock(db);
+    // Owner-level round robin prevents one slow receiver's backlog taking every slot.
+    for (let skipped = 0; skipped < 50; skipped++) {
+      const row = await db("webhook_deliveries as d").join("webhooks as h", "h.id", "d.webhook_id")
+        .leftJoin("webhook_queue_owners as o", "o.user_id", "h.user_id").select("d.*", "h.user_id")
+        .where(q => q.where({ "d.state": "pending" }).where("d.next_at", "<=", now)
+        .orWhere(q => q.where({ "d.state": "delivering" }).where("d.lease_until", "<=", now)))
+        .orderByRaw("coalesce(o.last_served, 0) asc").orderBy("d.next_at").orderBy("d.id").forUpdate("d").first();
+      if (!row) return null;
+      await queue.owner(db, row.user_id);
+      await db("webhook_queue_owners").where({ user_id: row.user_id }).update({ last_served: state.sequence });
+      if (row.attempts >= 6) {
+        await db("webhook_deliveries").where({ id: row.id, state: row.state }).modify(q => {
+          if (row.state === "delivering") q.where("lease", row.lease).where("lease_until", "<=", now);
+        }).update({ state: "failed", error: "ATTEMPTS_EXHAUSTED", lease: null, lease_until: null, completed_at: now });
+        continue;
+      }
+      const lease = randomUUID();
+      const changed = await db("webhook_deliveries").where({ id: row.id, state: row.state }).modify(q => {
         if (row.state === "delivering") q.where("lease", row.lease).where("lease_until", "<=", now);
-      }).update({ state: "failed", error: "ATTEMPTS_EXHAUSTED", lease: null, lease_until: null, completed_at: now });
-      return null;
+      }).update({ state: "delivering", lease, lease_until: now + 60000, attempts: row.attempts + 1, total_attempts: row.total_attempts + 1 });
+      return changed ? { ...row, state: "delivering", lease, attempts: row.attempts + 1 } : null;
     }
-    const lease = randomUUID();
-    const changed = await db("webhook_deliveries").where({ id: row.id, state: row.state }).modify(q => {
-      if (row.state === "delivering") q.where("lease", row.lease).where("lease_until", "<=", now);
-    }).update({ state: "delivering", lease, lease_until: now + 60000, attempts: row.attempts + 1, total_attempts: row.total_attempts + 1 });
-    return changed ? { ...row, state: "delivering", lease, attempts: row.attempts + 1 } : null;
+    return null;
   });
 }
 async function deliver(row, now = Date.now()) {

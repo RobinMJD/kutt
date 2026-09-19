@@ -22,7 +22,7 @@ async function main() {
       if (await db("oidc_identities").where({ user_id: user.id, issuer: row.issuer }).first()) throw new Error("Account already bound to another subject");
       await db("oidc_identities").insert({ id, issuer: row.issuer, subject: row.subject, user_id: user.id, created_at: Date.now() });
       // Pre-migration cookies have no issuer/subject context; require a fresh login.
-      await db("users").where({ id: user.id }).increment("auth_version", 1);
+      await db("users").where({ id: user.id }).increment("auth_version", 1).update(require("../server/account-tokens"));
     }
   });
   console.log(JSON.stringify({ result: "bound", mappings: rows.length }));

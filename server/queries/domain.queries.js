@@ -24,6 +24,33 @@ function get(match) {
   return knex("domains").where(match);
 }
 
+// Claims must not overwrite an owner or a ban acquired while DNS was checked.
+async function claim({ address, homepage, user }) {
+  address = address.toLowerCase();
+  const domain = await knex.transaction(async db => {
+    const current = await db("users").where({ id: user.id }).forUpdate().first();
+    if (!current || current.banned || !current.verified || Number(current.auth_version) !== Number(user.auth_version)) {
+      throw new utils.CustomError("Sign in again.", 401);
+    }
+    await db("domains").insert({ address, user_id: null, banned: false }).onConflict("address").ignore();
+    const changed = await db("domains").where({ address, user_id: null, banned: false })
+      .update({ user_id: user.id, homepage, updated_at: utils.dateToUTC(new Date()) });
+    if (!changed) throw new utils.CustomError("Domain is already owned or unavailable.", 409);
+    return db("domains").where({ address, user_id: user.id }).first();
+  });
+  if (env.REDIS_ENABLED) redis.remove.domain(domain);
+  return domain;
+}
+
+async function release(id, userId) {
+  const domain = await knex.transaction(async db => {
+    const changed = await db("domains").where({ id, user_id: userId }).update({ user_id: null, updated_at: utils.dateToUTC(new Date()) });
+    return changed ? db("domains").where({ id }).first() : null;
+  });
+  if (domain && env.REDIS_ENABLED) redis.remove.domain(domain);
+  return domain;
+}
+
 async function add(params) {
   params.address = params.address.toLowerCase();
 
@@ -220,6 +247,8 @@ async function remove(domain, { trashLinks = false, actor = {} } = {}) {
 
 module.exports = {
   add,
+  claim,
+  release,
   find,
   get,
   getAdmin,

@@ -65,7 +65,8 @@ const localAPIKeyOptions = {
 passport.use(
   new LocalAPIKeyStrategy(localAPIKeyOptions, async (apikey, done) => {
     try {
-      const user = await query.user.find({ apikey });
+      // Like browser sessions, API authentication must see current revocation state.
+      const user = await require("./knex")("users").where({ apikey }).first();
       if (!user) {
         return done(null, false);
       }

@@ -40,7 +40,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
     const link = await request("POST", "/api/links", { target: "https://example.org/modal", customurl: "dialog-fixture" }, 201);
     const email = "dialog-other@example.invalid";
     await request("POST", "/api/users/admin", { email, password: randomBytes(32).toString("hex"), verified: true }, 201);
-    await request("POST", "/api/domains", { address: "dialog-owned.example.invalid" });
+    await require("./browser-domain-fixture.cjs")(context, origin, "dialog-owned.example.invalid");
     await request("POST", "/api/domains/admin", { address: "dialog-unowned.example.invalid" });
     page = await context.newPage(); page.setDefaultTimeout(12000);
     page.on("pageerror", error => errors.push(error.message));

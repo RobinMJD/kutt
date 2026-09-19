@@ -257,7 +257,7 @@ module.exports = {
     "/domains": {
       post: {
         tags: ["domains"],
-        description: "Create a domain",
+        description: "Claim a domain after DNS TXT ownership proof. Existing domains are unchanged. First submit address/homepage, publish the TXT challenge returned with 409, then repeat with its opaque proof. Challenges expire after 30 minutes and are bound to account, hostname and authentication generation.",
         requestBody: {
           content: {
             "application/json": {
@@ -269,7 +269,7 @@ module.exports = {
         },
         responses: {
           "200": {
-            description: "Created domain",
+            description: "Verified and claimed domain",
             content: {
               "application/json": {
                 schema: {
@@ -277,7 +277,20 @@ module.exports = {
                 }
               }
             }
-          }
+          },
+          "409": {
+            description: "Ownership proof required, expired, unavailable in DNS, or a competing ownership/ban conflict. When verification is present, publish its TXT record and retry with proof.",
+            content: { "application/json": { schema: {
+              type: "object", required: ["error"], properties: {
+                error: { type: "string" },
+                verification: { type: "object", required: ["record_name", "record_value", "proof", "expires_at"], properties: {
+                  record_name: { type: "string" }, record_value: { type: "string" },
+                  proof: { type: "string" }, expires_at: { type: "string", format: "date-time" }
+                } }
+              }
+            } } }
+          },
+          "429": { description: "Domain claim request rate exceeded. Retry later." }
         },
         security: [
           {
@@ -583,6 +596,10 @@ module.exports = {
           },
           homepage: {
             type: "string"
+          },
+          proof: {
+            type: "string",
+            description: "Opaque unexpired DNS ownership challenge returned by the server. Submit only after publishing its TXT value."
           }
         }
       },

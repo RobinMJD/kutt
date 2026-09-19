@@ -1915,6 +1915,10 @@ form#add-domain .spinner { width: 20px; display: none; }
 form#add-domain.htmx-request .buttons-wrapper { display: none; }
 form#add-domain.htmx-request .spinner { display: block; }
 form#add-domain .error { font-size: 0.85rem; }
+form#add-domain .domain-verification { overflow-wrap: anywhere; }
+form#add-domain .domain-verification dd { margin: 0.25rem 0 0.75rem; }
+form#add-domain .domain-verification button { width: 36px; height: 36px; padding: 8px; margin: 0.25rem 0; display: flex; align-items: center; justify-content: center; }
+form#add-domain .domain-verification button svg { width: 20px; height: 20px; flex: none; stroke-width: 2; }
 
 /* SETTINGS - API */
 

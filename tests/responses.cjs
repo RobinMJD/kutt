@@ -63,6 +63,10 @@ module.exports = async ({ root, request, session }) => {
   assert(schemas.hookSecret({ ...hook, secret: "whsec_synthetic" })); assert(!schemas.hookSecret(hook));
   assert(!schemas.hookList({ data: [null], event_types: [] }));
   assert(!schemas.events({ data: [{}], cursor: "1" }));
+  const omitted = { id: "moderation-event", type: "link.updated", sequence: "1", occurred_at: new Date().toISOString(), data: {}, delivery: { status: "not_queued", reason: "CAPACITY_LIMIT" } };
+  assert(schemas.event(omitted));
+  assert(!schemas.event({ ...omitted, delivery: { status: "not_queued", reason: "arbitrary-value" } }));
+  assert(!schemas.event({ ...omitted, delivery: null }));
   const delivery = { id: "synthetic-delivery", type: "webhook.test", state: "failed", total_attempts: 1, revision: 1,
     created_at: hook.created_at, next_at: null, error: null, http_status: 503 };
   assert(schemas.deliveries({ data: [delivery], next: null })); assert(!schemas.deliveries({ data: [{ ...delivery, total_attempts: "1" }], next: null }));

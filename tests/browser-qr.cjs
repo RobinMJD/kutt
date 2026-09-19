@@ -43,9 +43,7 @@ const decode = require(process.env.QR_DECODER_MODULE || "./browser-deps/node_mod
     const creation = await context.request.post(origin + "/api/links", { data: { customurl: "qr-browser-validation", target: "https://192.0.2.1/qr-private-target" }, headers: { Accept: "application/json" } });
     assert.equal(creation.status(), 201); const link = await creation.json();
     const domain = "qr-browser.example.invalid";
-    assert.equal((await context.request.post(origin + "/api/domains", {
-      data: { address: domain }, headers: { Accept: "application/json" }
-    })).status(), 200);
+    await require("./browser-domain-fixture.cjs")(context, origin, domain);
     page = await context.newPage(); const errors = [];
     page.on("pageerror", error => errors.push(error.message));
     const decodedImage = async (data, type) => {

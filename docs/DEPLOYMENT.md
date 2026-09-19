@@ -6,6 +6,32 @@ its hardened wrapper, WAF/Authentik routing, monitoring and private backup paths
 in its separate deployment repository. This public repository contains no real
 secrets, provider bindings or user data.
 
+### Security boundary upgrade candidate (3.2.6-sr94.40)
+
+Before deploying, take a consistent database/configuration/secret backup, copy it
+off-host, verify its bytes and run migrations plus a disposable write on the
+restored copy using the exact candidate image. Publication and live acceptance
+remain recorded separately in [the ledger](UI-UX-REVIEW.md).
+
+Migration `20260919000000_security_boundaries` adds durable webhook admission
+state and retires pending password-reset/email-change links issued before the
+fix. Request new recovery links afterward. It preserves account passwords,
+API/signing/JWT secrets, existing sessions, domains, links and deliveries. Existing
+owned domains do not need re-verification. New claims require the documented
+[DNS proof exchange](CUSTOM-DOMAINS.md); update clients that assumed immediate
+registration. Verification pages no longer sign in automatically.
+
+Reload management pages for the DNS form and notification-omission UI. Preserve
+WAF/SSO, DNS/TLS routing, private backend listeners and public short-link redirects.
+Verify administrative ban/trash remains possible with a full webhook queue.
+
+Do not run the migration's `down` operation on a populated deployment: resetting
+admission state could bypass the limits, and retired recovery tokens cannot be
+reconstructed safely. Prefer a forward fix. An emergency image rollback to
+`.39.2` can leave the additive tables/data intact, but reintroduces the documented
+security issues. Restore an older snapshot only after accounting for newer writes
+and ensuring old recovery links are invalidated; never silently discard data.
+
 ### Webhook clipboard feedback (3.2.6-sr94.39.2)
 
 Reload Integrations to load the new signing-secret panel and script together.

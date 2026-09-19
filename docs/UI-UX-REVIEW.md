@@ -3,6 +3,29 @@
 Last updated: 2026-09-19 (Europe/Paris).
 
 **Status: 25 findings are verified/closed through .39.2. All four explicit user-assisted acceptance gates have passed. Final security-report closure remains separate.**
+
+### September 19 security follow-up
+
+The earlier missing scan identity is resolved. Official scan
+`6a68942a-7442-49ba-aad5-b2313775bada` finalized seven medium source findings:
+webhook admission/fairness, concurrent domain ownership, missing DNS proof,
+stale email-change capabilities after recovery, verification-login CSRF,
+legacy management CSRF and unbounded URL-regex work. The scan is sealed; patch
+validation is recorded separately, not retroactively substituted for the baseline.
+
+Candidate `.40` implements the fixes with focused tests, DNS ownership UI/API,
+migration and recovery documentation. Independent review identified two
+regressions, now covered by additional patches/tests: webhook capacity must not
+veto administrator moderation, and Redis API principals must not retain an old
+authentication generation. A blank DNS Copy icon found in mobile testing was
+also corrected. The live service remains `.39.2` until every deployment gate passes.
+
+Source regression, targeted PostgreSQL/MySQL checks and real Redis tests have
+passed on candidate checkpoints. Final exact-image tests, publication/CI,
+recoverable pre/post backup, deployment, public WAF/SSO validation, source
+reconciliation and upstream update are still pending. No new user action is
+currently required. Historical references to the missing scan identity below
+describe earlier checkpoints, not the current blocker.
 UX-001 through UX-025 are verified/closed. The live credential ceremony exposed
 UX-025 after the initial checkpoint; its copy/cache fix is deployed. Bounded workflow
 coverage is tracked below. Do not describe this as an exhaustive accessibility audit.

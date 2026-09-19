@@ -1,5 +1,45 @@
 # Security maintenance
 
+## Security boundary candidate (3.2.6-sr94.40)
+
+The September 19 authenticated source review finalized seven medium findings.
+The candidate addresses bounded webhook admission/fairness, atomic domain claims,
+DNS ownership proof, stale email-change capabilities after account recovery,
+verification-link login CSRF, legacy management CSRF and pathological URL parsing.
+Source scan identity: `6a68942a-7442-49ba-aad5-b2313775bada`. Scan evidence and the
+separate fix report are retained privately; no credentials appear in public docs.
+
+- New domain claims use [DNS TXT proof](CUSTOM-DOMAINS.md), without changing
+  existing domains or allowing a concurrent claimant to overwrite ownership/bans.
+- Cookie-authorized legacy writes enforce the existing trusted-origin boundary.
+  An ignored API-key field cannot exempt a request authenticated by its cookie.
+- Verification GET confirms only the token action, never creates or switches a
+  browser login. HEAD is non-consuming. The user explicitly signs in afterward.
+- Password recovery/change, email change and session revocation clear pending
+  recovery/email-change capabilities. Issuance and consumption recheck the
+  current authentication generation at the final database write. Re-registering
+  an unverified account also retires previous capabilities.
+- Legacy API authentication reads current persisted state, avoiding stale Redis
+  principals after revocation and preventing cached rotated keys from logging in.
+- URL validation rejects oversized/non-string values before parsing. Userinfo
+  matching no longer contains overlapping backtracking alternatives.
+- Webhook admission has durable owner/global rate and outstanding-work caps,
+  with owner-fair leasing. Queue exhaustion cannot veto a fresh administrator's
+  ban/trash action: the audit event records an explicit notification omission.
+  Ordinary mutations remain transactional and fail with 429 without partial save.
+- The isolated Redis test harness removes only its own recorded container ID,
+  never a different container whose name collided with its proposed fixture name.
+
+An independent patch review caught the administrative moderation and stale-cache
+edge cases before publication. Both have dedicated regression coverage. Testing,
+publication, deployment and writable restore remain separate gates in the UI/UX
+ledger; this section is not a completed-deployment claim.
+
+The migration invalidates pending password-reset/email-change links once. Users
+request fresh links as needed; passwords, API keys, signing secrets, sessions,
+existing domains and short links are not reset. See [upgrade recovery](DEPLOYMENT.md).
+
+
 ## Runtime image hardening (3.2.6-sr94.37.1)
 
 The September 18 fresh vulnerability database identified CVE-2026-85091 in

@@ -61,6 +61,7 @@ function authenticate(type, error, isStrict, redirect) {
       }
 
       if (user) {
+        req.authMethod = type;
         req.authInfo = info || {};
         res.locals.isAdmin = utils.isAdmin(user);
         req.user = {
@@ -98,9 +99,9 @@ function admin(req, res, next) {
 }
 
 function sessionOrigin(req, res, next) {
-  // API middleware already rejects invalid explicit keys before authentication;
-  // a valid key is deliberate authorization, not an ambient browser cookie.
-  if (req.user && !req.apiToken && req.get("X-API-Key") === undefined && req.body?.apikey === undefined && req.query.apikey === undefined) {
+  // Exempt only the credential that actually selected the principal. JWT-only
+  // routes must not let an ignored (even valid) foreign API key bypass CSRF.
+  if (req.user && !req.apiToken && req.authMethod !== "localapikey") {
     require("./link-history.handler").sameOrigin(req);
   }
   next();
@@ -169,6 +170,7 @@ function login(req, res) {
 }
 
 async function verify(req, res, next) {
+  if (req.method === "HEAD") return next();
   if (!req.params.verificationToken) return next();
 
   const user = await query.user.update(
@@ -184,11 +186,7 @@ async function verify(req, res, next) {
   );
   
   if (user) {
-    const token = utils.signToken(user);
-    utils.deleteCurrentToken(res);
-    utils.setToken(res, token);
     res.locals.token_verified = true;
-    req.cookies.token = token;
   }
   
   return next();
@@ -205,7 +203,7 @@ async function changePassword(req, res) {
   const salt = await bcrypt.genSalt(12);
   const newpassword = await bcrypt.hash(req.body.newpassword, salt);
   
-  const user = await query.user.update({ id: req.user.id }, { password: newpassword });
+  const user = await query.user.update({ id: req.user.id, auth_version: req.user.auth_version }, { password: newpassword });
   
   if (!user) {
     throw new CustomError("Couldn't change the password. Try again later.");
@@ -231,7 +229,7 @@ async function generateApiKey(req, res) {
     redis.remove.user(req.user);
   }
   
-  const user = await query.user.update({ id: req.user.id }, { apikey });
+  const user = await query.user.update({ id: req.user.id, auth_version: req.user.auth_version }, { apikey });
   
   if (!user) {
     throw new CustomError("Couldn't generate API key. Please try again later.");
@@ -322,7 +320,7 @@ async function changeEmailRequest(req, res) {
   }
   
   const updatedUser = await query.user.update(
-    { id: req.user.id },
+    { id: req.user.id, auth_version: req.user.auth_version },
     {
       change_email_address: email,
       change_email_token: randomUUID(),
@@ -332,6 +330,8 @@ async function changeEmailRequest(req, res) {
   
   if (updatedUser) {
     await mail.changeEmail({ ...updatedUser, email });
+  } else {
+    throw new CustomError("Sign in again before changing your email address.", 401);
   }
 
   const message = "A verification link has been sent to the requested email address."
@@ -348,6 +348,7 @@ async function changeEmailRequest(req, res) {
 }
 
 async function changeEmail(req, res, next) {
+  if (req.method === "HEAD") return next();
   const changeEmailToken = req.params.changeEmailToken;
   
   if (changeEmailToken) {
@@ -359,7 +360,7 @@ async function changeEmail(req, res, next) {
     if (!foundUser) return next();
   
     const user = await query.user.update(
-      { id: foundUser.id, change_email_token: changeEmailToken,
+      { id: foundUser.id, auth_version: foundUser.auth_version, change_email_token: changeEmailToken,
         change_email_expires: [">", utils.dateToUTC(new Date())] },
       {
         change_email_token: null,
@@ -370,11 +371,7 @@ async function changeEmail(req, res, next) {
     );
   
     if (user) {
-      const token = utils.signToken(user);
-      utils.deleteCurrentToken(res);
-      utils.setToken(res, token);
       res.locals.token_verified = true;
-      req.cookies.token = token;
     }
   }
   return next();

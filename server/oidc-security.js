@@ -70,7 +70,7 @@ async function recordLogout(payload) {
 }
 
 async function revoke(userId) {
-  await knex("users").where({ id: userId }).increment("auth_version", 1);
+  await knex("users").where({ id: userId }).increment("auth_version", 1).update(require("./account-tokens"));
 }
 
 module.exports = { identityKey, identity, validSession, recordLogout, revoke, fail };

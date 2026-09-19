@@ -25,7 +25,8 @@ versions the Integrations assets so an ordinary reload loads matching code.
 
 - [Feature roadmap](docs/FEATURE-ROADMAP.md): completed features and release evidence.
 - [Community contribution review](docs/UPSTREAM-PR-REVIEW.md): selected proposals, attribution and deferred ideas.
-- [UI/UX review](docs/UI-UX-REVIEW.md): fixes, tests and remaining human acceptance checks. The broader audit is not claimed complete.
+- [UI/UX review](docs/UI-UX-REVIEW.md): fixes, completed human acceptance and the final security remediation gates.
+- [Custom domain ownership](docs/CUSTOM-DOMAINS.md): DNS proof, client compatibility and recovery for new claims in the security candidate.
 - [Upstream PR #1046](https://github.com/thedevs-network/kutt/pull/1046): submitted changes; still awaiting upstream review/merge at the status date above.
 
 SQLite is the fully exercised database engine. PostgreSQL and MariaDB examples

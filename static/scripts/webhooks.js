@@ -146,6 +146,7 @@
     const list = $("events-list");
     if (Array.from(list.children).some(el => el.dataset.id === value.id)) return;
     const item = node("li", value.type + " - " + date(value.occurred_at) + (value.data.link_id ? " - " + value.data.link_id : ""));
+    if (value.delivery?.status === "not_queued") item.append(node("p", "Moderation saved. Webhook notification was not queued because delivery capacity was reached."));
     item.dataset.id = value.id; list.prepend(item);
     while (list.children.length > 50) list.lastElementChild.remove(); after = value.sequence;
   }

@@ -72,6 +72,29 @@ Session-wide revocation pauses existing subscriptions until an authorized owner
 saves or rotates them again. API-token revocation prevents further configuration
 changes; a subscription is persistent configuration, not a token session.
 
+## Admission and fairness
+
+The `.40` security candidate caps pending plus delivering work at 2,000 per owner
+and 10,000 globally. Admissions also have durable 60-second budgets of 1,000 per
+owner and 5,000 globally, shared by automatic events, Send test and manual retry.
+Deleting/recreating a subscription does not reset the owner's budget. A lease
+reclaim or scheduled retry is already-admitted work, not a new admission.
+Database serialization prevents simultaneous requests from exceeding these caps.
+
+At capacity an ordinary mutation returns 429 and saves neither its link change,
+event nor partial deliveries. Wait for capacity or disable the backed-up receiver
+before retrying. Existing oversized queues are allowed to drain, not deleted.
+Leases are selected round-robin by owner so a backlog cannot take every slot.
+This bounds outstanding work, not all historic event storage.
+
+Administrator ban/trash actions must remain available even when an owner fills
+the queue. Only for these moderation actions, capacity exhaustion saves the
+mutation and audit event without scheduling excess deliveries. The event includes
+`"delivery":{"status":"not_queued","reason":"CAPACITY_LIMIT"}` and Integrations
+shows the omitted notification explicitly. It is not automatically delivered
+later. Administrators' ordinary edits, other users and non-capacity errors do not
+receive this exception. Existing delivery leases and limits are unchanged.
+
 ## Receiver verification and delivery
 
 Receivers must be public HTTPS DNS names on port 443, without URL credentials or
