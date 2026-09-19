@@ -14,6 +14,9 @@ upgrade. DNS proof does not provision certificates, reverse-proxy routes or SSO.
    record name, value and expiry, with named Copy buttons and nearby confirmation.
 3. Publish that TXT record in authoritative DNS and select **Verify ownership**.
    The same unexpired challenge is retained when DNS has not propagated yet.
+   Wait for authoritative publication before retrying: an early failed lookup
+   can be negatively cached by recursive DNS (for example, 30 minutes). If the
+   challenge expires meanwhile, request a fresh one and publish its new value.
    Some DNS consoles expect the relative record name, not the full hostname.
 4. A successful claim appears in the domain table. An expired challenge is
    replaced; publish the new value and retry. Remove obsolete challenge records

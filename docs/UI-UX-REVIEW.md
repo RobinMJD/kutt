@@ -2,7 +2,7 @@
 
 Last updated: 2026-09-19 (Europe/Paris).
 
-**Status: 25 findings are verified/closed through .39.2. All four explicit user-assisted acceptance gates have passed. Final security-report closure remains separate.**
+**Status: all 25 UI findings and four explicit user-assisted acceptance gates are closed. Release .40 also fixes the seven finalized security findings and has passed exact-image, public deployment and pre/post writable-recovery validation.**
 
 ### September 19 security follow-up
 
@@ -13,19 +13,32 @@ stale email-change capabilities after recovery, verification-login CSRF,
 legacy management CSRF and unbounded URL-regex work. The scan is sealed; patch
 validation is recorded separately, not retroactively substituted for the baseline.
 
-Candidate `.40` implements the fixes with focused tests, DNS ownership UI/API,
+Release `.40` implements the fixes with focused tests, DNS ownership UI/API,
 migration and recovery documentation. Independent review identified two
 regressions, now covered by additional patches/tests: webhook capacity must not
 veto administrator moderation, and Redis API principals must not retain an old
 authentication generation. A blank DNS Copy icon found in mobile testing was
-also corrected. The live service remains `.39.2` until every deployment gate passes.
+also corrected. The live service runs the exact `.40` wrapper below.
 
-Source regression, targeted PostgreSQL/MySQL checks and real Redis tests have
-passed on candidate checkpoints. Final exact-image tests, publication/CI,
-recoverable pre/post backup, deployment, public WAF/SSO validation, source
-reconciliation and upstream update are still pending. No new user action is
-currently required. Historical references to the missing scan identity below
-describe earlier checkpoints, not the current blocker.
+Source and exact-wrapper full regression, targeted PostgreSQL 16/MySQL 8.4
+security/concurrency checks and real Redis tests passed. Exact-image rendered
+DNS proof/copy/persistence and moderation feedback passed at 1440/390/320px with
+no page errors or overflow. Release CI `35416114256`, main CI `35416090059` and
+both signed Shortcut checks passed. Runtime source is
+`1107011e7a8a0ad11b69a8af0f871f7794ad93ef`; later closure commits are documentation only.
+
+- Published source digest: `sha256:05b332018c4891a7f2457225dcdadeededcac1a8efbf62ff1c1c06ea201b179f`.
+- Deployed wrapper: `local/kutt:3.2.6-sr94.40`, ID `sha256:cc93ed9633f58eb0c4e4ab096f1421ac9de0a1a9fa87e537aece8707567d0e24`.
+- Pre-change backup at 02:48:26 UTC: local `2f451777...`, off-host NAS `cf99cbb9...`; 62 files byte-verified and exact-image writable migration/restore passed.
+- Public WAF regression, real HTTPS webhook delivery, Authentik-signed logout/replay and real authoritative DNS TXT ownership verification passed. The DNS test waits for authoritative publication before recursive lookup to avoid caching an initial NXDOMAIN; the first failed propagation attempt and its cleanup remain in the evidence.
+- Two health samples 65 seconds apart passed: three fresh probes, healthy exact image, zero restarts, Kutt alerts, failed units or unhealthy containers. Whole-lab validation passed with existing unrelated environment-template warnings.
+- Post-change backup at 03:07:48 UTC: local `f4e873d6...`, off-host NAS `67661e42...`; all 63 files byte-verified and exact-image writable restore passed. The original one user/one link, integrity and foreign keys remain unchanged. Temporary DNS, account, link and browser fixtures and the tunnel were removed.
+- Fresh published/wrapper Grype scans report zero Critical/High and three Medium BusyBox package matches for CVE-2025-60876, with no vendor fix in the valid September 18 database. No findings were suppressed. This bounded source review is not a vulnerability-free guarantee.
+
+Private raw evidence is retained under `security-reports/2026-09-19-kutt-security/`;
+the sealed scan and separate fix report are retained outside Git. No further user
+action is required for these gates. Historical references to the missing scan
+identity below describe earlier checkpoints, not a current blocker.
 UX-001 through UX-025 are verified/closed. The live credential ceremony exposed
 UX-025 after the initial checkpoint; its copy/cache fix is deployed. Bounded workflow
 coverage is tracked below. Do not describe this as an exhaustive accessibility audit.

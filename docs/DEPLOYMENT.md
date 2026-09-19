@@ -6,12 +6,18 @@ its hardened wrapper, WAF/Authentik routing, monitoring and private backup paths
 in its separate deployment repository. This public repository contains no real
 secrets, provider bindings or user data.
 
-### Security boundary upgrade candidate (3.2.6-sr94.40)
+### Security boundary upgrade (3.2.6-sr94.40)
 
 Before deploying, take a consistent database/configuration/secret backup, copy it
 off-host, verify its bytes and run migrations plus a disposable write on the
 restored copy using the exact candidate image. Publication and live acceptance
 remain recorded separately in [the ledger](UI-UX-REVIEW.md).
+
+The fork's September 19 deployment passed these gates, full exact-image
+regression, public WAF/SSO and real DNS ownership checks, monitored health and a
+fresh post-upgrade writable NAS restore. This dated result does not replace
+backup/validation for another installation. Runtime source is `1107011e7a8a0ad11b69a8af0f871f7794ad93ef`;
+subsequent closure-documentation commits do not change the released image.
 
 Migration `20260919000000_security_boundaries` adds durable webhook admission
 state and retires pending password-reset/email-change links issued before the

@@ -44,8 +44,12 @@ series is submitted as [upstream PR #1046](https://github.com/thedevs-network/ku
 on `feature/managed-links-roadmap`. Its September 18-19 update also includes the
 selected community improvements and all 25
 confirmed UI/UX fixes through `v3.2.6-sr94.39.2`, with publication, deployment and
-verified pre/post recovery. Separate human acceptance limits remain explicit in
-[the UI/UX ledger](UI-UX-REVIEW.md). Optional deferred community
+verified pre/post recovery. All four explicit user-assisted acceptance gates
+subsequently passed. Release `.40` closes the finalized seven-finding security
+review with exact-image regression, desktop/mobile DNS ownership UI, real public
+DNS/WAF verification, monitored deployment and pre/post writable NAS restores.
+See [the UI/UX ledger](UI-UX-REVIEW.md) for exact release/evidence identities and
+optional physical printing/Shortcut limits. Optional deferred community
 proposals are still excluded. Maintainer review/merge is not claimed.
 
 ## Final Roadmap Deployment Evidence

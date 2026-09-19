@@ -1,9 +1,9 @@
 # Security maintenance
 
-## Security boundary candidate (3.2.6-sr94.40)
+## Security boundary release (3.2.6-sr94.40)
 
 The September 19 authenticated source review finalized seven medium findings.
-The candidate addresses bounded webhook admission/fairness, atomic domain claims,
+The release addresses bounded webhook admission/fairness, atomic domain claims,
 DNS ownership proof, stale email-change capabilities after account recovery,
 verification-link login CSRF, legacy management CSRF and pathological URL parsing.
 Source scan identity: `6a68942a-7442-49ba-aad5-b2313775bada`. Scan evidence and the
@@ -31,9 +31,14 @@ separate fix report are retained privately; no credentials appear in public docs
   never a different container whose name collided with its proposed fixture name.
 
 An independent patch review caught the administrative moderation and stale-cache
-edge cases before publication. Both have dedicated regression coverage. Testing,
-publication, deployment and writable restore remain separate gates in the UI/UX
-ledger; this section is not a completed-deployment claim.
+edge cases before publication. Both have dedicated regression coverage. Full
+source/exact-image regression, Redis and targeted PostgreSQL/MySQL checks passed.
+The release was published and deployed on September 19; public WAF/SSO checks,
+real DNS ownership proof, monitored health and byte-verified pre/post off-host
+writable restores passed. Exact identities and dated evidence are in the
+[UI/UX ledger](UI-UX-REVIEW.md). Published/wrapper image scans retain zero
+Critical/High and three Medium BusyBox matches with no vendor fix listed; this
+is not an exhaustive security certification.
 
 The migration invalidates pending password-reset/email-change links once. Users
 request fresh links as needed; passwords, API keys, signing secrets, sessions,

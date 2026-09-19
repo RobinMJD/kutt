@@ -65,8 +65,10 @@ new integrations should use explicit scopes in the `X-API-Key` header.
 | `GET /events?after={sequence}` | `events:read`; up to 50 ascending events, last cursor; omit after for latest 50 |
 | `GET /events/stream?after={sequence}` | Browser only; SSE `management`, `revoked`, `unavailable`; honors `Last-Event-ID` |
 
-Ten subscriptions per owner. Creates/edits/deletes are limited to ten requests per
-minute; rotation to five; test/manual retry to four per route/client. Stale
+Ten subscriptions per owner. When `ENABLE_RATE_LIMIT=true`, creates/edits/deletes
+are limited to ten requests per minute; rotation to five; test/manual retry to
+four per route/client. The durable admission limits below are always enforced,
+independently of that optional request throttle. Stale
 configuration revisions return 409; reload rather than guessing revisions.
 Session-wide revocation pauses existing subscriptions until an authorized owner
 saves or rotates them again. API-token revocation prevents further configuration
@@ -74,7 +76,7 @@ changes; a subscription is persistent configuration, not a token session.
 
 ## Admission and fairness
 
-The `.40` security candidate caps pending plus delivering work at 2,000 per owner
+Release `.40` caps pending plus delivering work at 2,000 per owner
 and 10,000 globally. Admissions also have durable 60-second budgets of 1,000 per
 owner and 5,000 globally, shared by automatic events, Send test and manual retry.
 Deleting/recreating a subscription does not reset the owner's budget. A lease
