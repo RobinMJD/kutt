@@ -1,0 +1,63 @@
+{
+  "date": "2026-09-19",
+  "gate": "A-03",
+  "status": "passed",
+  "runtime": "3.2.6-sr94.39.2",
+  "image_id": "sha256:a336f977615cb2aa5eda8c1cc86ce50bbf6043c9f44e39e3e96c998d5670d908",
+  "environment": "Loopback-only disposable instance of the exact live wrapper image; no production mounts, identities or secrets",
+  "approval": "User approved the exact filter, tag and two old synthetic hourly-bucket deletions before execution",
+  "library": {
+    "saved_filter_removed": "A03 disposable filter",
+    "tag_removed": "A03 disposable tag",
+    "remaining_filters": 0,
+    "remaining_labels": 0,
+    "remaining_label_associations": 0,
+    "native_controls_used": true,
+    "native_confirmation_observed_by_automation": false,
+    "input_dispatch_timeout_retried": false,
+    "outcome_verified_in_ui_and_database": true
+  },
+  "retention": {
+    "preview_days": 30,
+    "preview_eligible_buckets": 2,
+    "acknowledgment_checked": true,
+    "apply_status": "Retention saved",
+    "policy_persisted_after_reload": true,
+    "unmodified_worker_executed_in_fixture": true,
+    "deleted_buckets": 2,
+    "remaining_buckets": 1,
+    "recent_row_unchanged": true,
+    "last_error": null
+  },
+  "preservation": {
+    "all_user_columns_unchanged": true,
+    "all_link_columns_unchanged": true,
+    "link": "a03-keep-link",
+    "visit_count": 3,
+    "redirect_count": 3,
+    "quick_check": "ok",
+    "foreign_key_errors": 0
+  },
+  "browser": {
+    "warnings_or_errors": 0,
+    "observed_viewport": [638, 800],
+    "horizontal_overflow": false
+  },
+  "evidence": {
+    "before_sha256": "0eda798e53c8ea29e7400c047fb9909b70f0e67fe629d84458ea449dfb535d09",
+    "after_sha256": "ce12d9ee7b86e2528b32314118e6273064291cca82cf3155bda96c72df833b8f",
+    "local_server_copies_match": true,
+    "database_copies_private_not_committed": true
+  },
+  "cleanup": {
+    "fixture_container_removed": true,
+    "fixture_tab_closed": true,
+    "ssh_tunnel_removed": true,
+    "local_port_31109_no_listener": true
+  },
+  "production": {
+    "data_or_config_changed": false,
+    "healthy": true,
+    "image_unchanged": true
+  }
+}

@@ -2,10 +2,10 @@
 
 Last updated: 2026-09-19 (Europe/Paris).
 
-**Status: 25 findings are verified/closed through .39.2. User-assisted audit acceptance remains open.**
+**Status: 25 findings are verified/closed through .39.2. All four explicit user-assisted acceptance gates have passed. Final security-report closure remains separate.**
 UX-001 through UX-025 are verified/closed. The live credential ceremony exposed
-UX-025 after the initial checkpoint; its copy/cache fix is deployed. Remaining workflow
-coverage are tracked below. Do not describe this as a completed accessibility audit.
+UX-025 after the initial checkpoint; its copy/cache fix is deployed. Bounded workflow
+coverage is tracked below. Do not describe this as an exhaustive accessibility audit.
 The ordinary rendered workflows now have bounded coverage. The explicit
 AUDIT-00 remainder below separates external acceptance gates from regression
 tests for already-confirmed defects; do not restart passing workflows or invent
@@ -37,8 +37,8 @@ Compact-header crowding and the newly confirmed Account security heading issue
 passed all release, exact-image, live and clean recovery gates in `.36.1` as UX-021/022.
 A-01 native preview subsequently passed with fresh rendered evidence on
 2026-09-17. A-02 token/webhook credential acceptance passed on September 19;
-A-04 live session revocation and SSO recovery subsequently passed. A-03 remains
-open. Automated evidence does not waive that check.
+A-04 live session revocation and SSO recovery subsequently passed. A-03 passed
+after explicit approval of the three fixture-only deletions on September 19.
 UX-023 masked tokens passed publication, exact-image tests, live validation and
 pre/post recovery in `.37.1`. UX-024 logout/session recovery passed all the same
 gates in `.38` on September 18. The separate webhook WAF false positive and Kutt
@@ -622,19 +622,20 @@ this matrix; do not reopen a closed UX finding from its historical observation.
 Candidate C-01 through C-06 are triaged below, and C-07 is UX-016. No additional
 unspecified editor/dialog variants are a preliminary-audit requirement. The
 confirmed findings already define their regression and fix acceptance matrices.
-The following table separates the completed preview check from the still
-**unverified** human acceptance gates. No gate is waived or silently deferred:
+The following table records the finite acceptance gates and their evidence.
+All four have passed; none was waived or silently deferred:
 
 | Gate | Exact outstanding work | Required prerequisite |
 | --- | --- | --- |
 | A-01 | Verified native preview rendering on 2026-09-17, in addition to prior zoom/PDF coverage | Fresh exact-image QR preview shows one page, complete QR/caption and enabled Save; Cancel works and captured pixels independently decode. See the fresh acceptance below; physical printing and native file save are not claimed |
 | A-02 | Verified: scoped token create/copy/revoke on 2026-09-18; disabled live webhook creation and user-performed rotation/copy on September 19 | The user reported "rotated (and copied)"; the live page showed the successful rotation. A fresh native Copy action produced matching clipboard bytes and adjacent success feedback; Dismiss cleared the secret. No credential values recorded. See the acceptance receipt below |
-| A-03 | Saved-filter/label deletion and irreversible retention Apply UI | Present each exact disposable-fixture action and request action-time confirmation; no production deletion |
+| A-03 | Verified: saved-filter/label deletion and irreversible retention Apply UI on September 19 | Explicit fixture-only approval; native Remove actions removed the named filter/tag. Signed preview and acknowledged Apply saved 30 days; the actual retention worker removed exactly two old buckets. User/link rows and the recent bucket remain byte-for-byte equivalent at the SQL-value level. No production deletion; fixture and tunnel removed |
 | A-04 | Verified: physical QR scan and expired-session recovery on 2026-09-18; user-confirmed live session revocation and ordinary SSO re-login on September 19 | The confirmation initially appeared late. After the user accepted it, BunkerWeb recorded POST `/api/auth/revoke-sessions` 200, the page became Log in, and normal Authentik sign-in recovered the existing account/link with no browser errors. No unrelated app sessions or API tokens revoked |
 
 The optional mail-enabled report mode is not configured on the deployed service.
 It remains an explicitly untested optional mode, not evidence of a production
-failure. Test it before enabling that mode. AUDIT-00 remains open for A-03.
+failure. Test it before enabling that mode. AUDIT-00's finite workflow acceptance
+is complete; security-report finalization remains a separate goal requirement.
 On 2026-09-17 the user explicitly requested "Start with all fixes": begin the
 confirmed remediations now, retaining these user-assisted acceptance checks as
 pending rather than prerequisites for starting fixes. Do not claim exhaustive
@@ -702,6 +703,41 @@ private local and server evidence, both SHA-256
 `0eda798e53c8ea29e7400c047fb9909b70f0e67fe629d84458ea449dfb535d09`.
 The temporary fixture and tunnel are retained for this precise handoff and must
 be removed after acceptance or cancellation. They are not production services.
+
+### 2026-09-19 A-03 Approved Deletion Acceptance
+
+The user approved the exact pending fixture-only actions. A refreshed signed
+30-day preview again reported two eligible hourly buckets. The real checkbox
+and Apply button produced `Retention saved`. The unmodified retention worker
+was then invoked once inside that same disposable container (automatic workers
+were deliberately disabled there). It removed exactly two buckets and recorded
+a successful run. Reload showed the persisted 30-day policy and two deletions.
+
+The Library's real Remove saved filter and Remove label controls removed
+`A03 disposable filter`, then `A03 disposable tag`. The first browser click
+reported an input-dispatch timeout, but the subsequent rendered page and database
+both proved the deletion had completed; it was not blindly retried. No dialog
+was exposed by the browser API at inspection time, so automated observation of
+the native confirmation itself is not claimed. Both actions were explicitly
+approved by the user before execution.
+
+Independent read-only comparison against the before snapshot proved every
+user and link column unchanged, including the alias, destination and lifetime
+counters (three each). The recent analytics row is unchanged; labels, filters
+and label associations are empty. Integrity is `ok` with zero foreign-key errors.
+The rendered library retains one active link and no deleted tag/filter, with
+zero captured browser warnings/errors and no horizontal overflow at 638 x 800.
+Earlier named browser suites supply desktop/mobile and native-cancel coverage;
+this final ceremony does not expand that claim to every browser.
+
+The after snapshot is retained privately alongside the verified before snapshot,
+locally and on Debian3, SHA-256
+`ce12d9ee7b86e2528b32314118e6273064291cca82cf3155bda96c72df833b8f`.
+The exact temporary container, browser tab and SSH tunnel were removed; no
+listener remains on local port 31109. Production `kutt` remains healthy on the
+same image, with no production data/configuration change. A-03 is closed.
+See the [sanitized receipt](ui-ux-review/2026-09-19/disposable-deletion-acceptance.json).
+This is a documentation-only acceptance update, not a new runtime release.
 
 ### 2026-09-18 Live Acceptance And Webhook WAF Repair
 
@@ -2634,14 +2670,14 @@ Passing fix regressions are not substituted for the unperformed human workflows.
 
 | Requirement | Evidence and current result | Remaining gate |
 | --- | --- | --- |
-| Finish workflow coverage and triage source concerns | C-01..C-07 triaged; ordinary rendered workflows, native print preview, credential ceremonies, real session revocation/recovery and all confirmed fixes have recorded acceptance | AUDIT-00 remains open for A-03 |
-| Desktop/mobile, true zoom, keyboard, focus and reduced motion | UX-001/002/003/008/010/021/022 and their named browser suites record measured layouts, focus, motion and real 200/400% zoom | User-assisted workflows remain unverified; no all-workflows accessibility claim |
-| Names, landmarks, errors, status and modal semantics | UX-001/005/008/009/011/014 include rendered semantics, error recovery, focus and dialog tests; A-02 credential ceremonies passed | Permanent-deletion UI ceremony remains A-03 |
+| Finish workflow coverage and triage source concerns | C-01..C-07 triaged; ordinary rendered workflows, A-01..A-04 acceptance and all confirmed fixes have recorded evidence | Finite AUDIT-00 workflow acceptance complete; no exhaustive accessibility claim |
+| Desktop/mobile, true zoom, keyboard, focus and reduced motion | UX-001/002/003/008/010/021/022 and their named browser suites record measured layouts, focus, motion and real 200/400% zoom | Evidence is limited to the reviewed states; no all-workflows accessibility claim |
+| Names, landmarks, errors, status and modal semantics | UX-001/005/008/009/011/014 include rendered semantics, error recovery, focus and dialog tests; A-02/A-03 ceremonies passed | Native deletion confirmation was not exposed to browser diagnostics; resulting deletion and preservation verified independently |
 | Contrast and interactive target geometry | UX-002/003/010/021/022 record measured colors, bounds and hit regions rather than screenshots alone | Evidence is limited to the reviewed states, not exhaustive accessibility conformance |
 | Empty/populated/paginated/long-data, slow/offline/error and stale edits | Workflow matrix and UX-004/006/013/014/015/017/018/019 cover these states, including real independent-client conflicts; real expired and revoked-session SSO recovery passed | Initial live native-confirmation delay has no established cause; do not claim it was repaired |
 | Admin, ordinary user, owner/editor/viewer and outsider boundaries | Recorded rendered role transitions plus full authorization regressions; stale edits cannot regain revoked access; user token create/copy/revoke, live webhook rotation/copy and session revocation passed | Live ceremony did not replay old cookies; stale-cookie denial is supported by separate exact-image tests |
 | Existing APIs, filters, public redirects and migrations | Full source/exact-wrapper/public WAF regressions passed; original data fingerprints, integrity and foreign keys preserved | SQLite verified; no new PostgreSQL/MariaDB parity claim |
-| Close fixes only after publication/deployment/recovery | UX-001..UX-025 each have versioned-release, test, live and recovery evidence | All 25 confirmed defects closed through .39.2; broader audit remains open |
+| Close fixes only after publication/deployment/recovery | UX-001..UX-025 each have versioned-release, test, live and recovery evidence | All 25 confirmed defects closed through .39.2; security-report finalization remains separate |
 | Final regression and security review | Full final regression passed; bounded source-diff review covered 124 source/config/test files; image scan found zero critical/high and three medium BusyBox matches without a listed fix | Security report finalization blocked by missing tool-issued scan identity; no sealed security verdict |
 | Published source and accurate recovery/deployment docs | Final publication/reconciliation section verifies runtime equality, CI, 43 live declarative files and recoverable pre/post backups | Unrelated dirty homelab work preserved; not a global clean-checkout claim |
 
@@ -2655,6 +2691,7 @@ classifying a standards failure.
 
 | Date | IDs | Change | Validation and outstanding gates |
 | --- | --- | --- | --- |
+| 2026-09-19 | A-03, AUDIT-00 | Completed explicitly approved fixture-only filter, tag and expired-analytics deletion; closed finite acceptance remainder | Two old buckets removed, recent row and all user/link columns unchanged, integrity/FKs clean, no browser warnings/errors. Before/after evidence retained; fixture/tunnel removed; live image remains healthy. Documentation only; security-report finalization remains separate. |
 | 2026-09-19 | A-04, A-03 | Verified user-confirmed live sign-out and ordinary Authentik recovery; staged exact-image isolated deletion fixture and signed retention preview | Edge POST 200, rendered Log in, existing link restored, zero browser warnings/errors. Native-confirmation delay remains unexplained. A-03 deletions await exact approval; fixture backup hash matches locally/remotely. Earlier A-02 documentation CI passed in run 35410788687. No runtime change. |
 | 2026-09-19 | A-02 | Verified user-performed live webhook rotation, fresh Copy byte equality/adjacent feedback and Dismiss clearing | Disabled webhook, no deliveries, no recorded secrets. Initial clipboard mismatch resolved by fresh Copy; cause not established. A-03/A-04 and the security report identity limitation remain. Documentation only, no runtime change. |
 | 2026-09-19 | UX-023/024, A-04 | Reconciled .37.1/.38 publication, deployment and pre/post writable recovery; confirmed naturally expired live session recovers through ordinary Authentik SSO | Fresh ten-hour follow-up: same healthy image, zero restarts/alerts, three probes passed. Homelab deployment/hygiene CI passed. Webhook credential rotation, permanent-deletion UI, real session revocation and the missing security-tool report identity remain explicit limits. |
