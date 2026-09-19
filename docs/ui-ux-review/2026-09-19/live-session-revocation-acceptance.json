@@ -1,0 +1,37 @@
+{
+  "recorded_at_utc": "2026-09-19T01:07:36Z",
+  "runtime_version": "3.2.6-sr94.39.2",
+  "initial_state": {
+    "user_report": "No confirmation appeared",
+    "button_enabled": true,
+    "active_dialog": false,
+    "browser_warning_or_error_count": 0,
+    "recent_matching_edge_requests": 0,
+    "diagnostic_click": "Input dispatch timed out; no dialog exposed by the browser API",
+    "cause": "Not established"
+  },
+  "user_confirmation": "Now it did and I clicked it",
+  "server_result": {
+    "path": "/api/auth/revoke-sessions",
+    "method": "POST",
+    "status": 200,
+    "matching_edge_requests": 1
+  },
+  "signed_out": {
+    "url": "https://shorter-link.com/login",
+    "title": "Shorter Link | Log in",
+    "management_navigation_absent": true,
+    "authentik_sign_in_present": true
+  },
+  "recovery": {
+    "method": "Normal Sign in with Authentik action",
+    "new_credential_entry": false,
+    "management_navigation_restored": true,
+    "existing_link": "ggl",
+    "browser_warning_or_error_count": 0
+  },
+  "old_cookie_replayed": false,
+  "production_code_or_config_changed": false,
+  "a04_status": "verified",
+  "remaining_acceptance_gates": ["A-03"]
+}

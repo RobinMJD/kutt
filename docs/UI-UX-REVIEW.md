@@ -37,7 +37,8 @@ Compact-header crowding and the newly confirmed Account security heading issue
 passed all release, exact-image, live and clean recovery gates in `.36.1` as UX-021/022.
 A-01 native preview subsequently passed with fresh rendered evidence on
 2026-09-17. A-02 token/webhook credential acceptance passed on September 19;
-A-03/A-04 remain open. Automated evidence does not waive those checks.
+A-04 live session revocation and SSO recovery subsequently passed. A-03 remains
+open. Automated evidence does not waive that check.
 UX-023 masked tokens passed publication, exact-image tests, live validation and
 pre/post recovery in `.37.1`. UX-024 logout/session recovery passed all the same
 gates in `.38` on September 18. The separate webhook WAF false positive and Kutt
@@ -596,7 +597,7 @@ healthy on the same exact `3.2.6-sr94.18` image with zero restarts.
 
 The following matrix preserves the **pre-remediation audit observations** from
 2026-09-15/16. It is not the current defect status: the later finding sections
-record the fixes and release acceptance. Only A-03/A-04 below remain open from
+record the fixes and release acceptance. Only A-03 below remains open from
 this matrix; do not reopen a closed UX finding from its historical observation.
 
 | Step | Workflow | Pre-remediation result | Acceptance identified at that time |
@@ -629,11 +630,11 @@ The following table separates the completed preview check from the still
 | A-01 | Verified native preview rendering on 2026-09-17, in addition to prior zoom/PDF coverage | Fresh exact-image QR preview shows one page, complete QR/caption and enabled Save; Cancel works and captured pixels independently decode. See the fresh acceptance below; physical printing and native file save are not claimed |
 | A-02 | Verified: scoped token create/copy/revoke on 2026-09-18; disabled live webhook creation and user-performed rotation/copy on September 19 | The user reported "rotated (and copied)"; the live page showed the successful rotation. A fresh native Copy action produced matching clipboard bytes and adjacent success feedback; Dismiss cleared the secret. No credential values recorded. See the acceptance receipt below |
 | A-03 | Saved-filter/label deletion and irreversible retention Apply UI | Present each exact disposable-fixture action and request action-time confirmation; no production deletion |
-| A-04 | Physical QR scan and real expired-session recovery passed on 2026-09-18 UTC; user-assisted real session revocation remains | User confirmed Google opened without sign-in. The naturally expired live session recovered through normal Authentik SSO on .38 without new credential entry or browser errors; no real user session was forcibly revoked |
+| A-04 | Verified: physical QR scan and expired-session recovery on 2026-09-18; user-confirmed live session revocation and ordinary SSO re-login on September 19 | The confirmation initially appeared late. After the user accepted it, BunkerWeb recorded POST `/api/auth/revoke-sessions` 200, the page became Log in, and normal Authentik sign-in recovered the existing account/link with no browser errors. No unrelated app sessions or API tokens revoked |
 
 The optional mail-enabled report mode is not configured on the deployed service.
 It remains an explicitly untested optional mode, not evidence of a production
-failure. Test it before enabling that mode. AUDIT-00 remains open for A-03/A-04.
+failure. Test it before enabling that mode. AUDIT-00 remains open for A-03.
 On 2026-09-17 the user explicitly requested "Start with all fixes": begin the
 confirmed remediations now, retaining these user-assisted acceptance checks as
 pending rather than prerequisites for starting fixes. Do not claim exhaustive
@@ -663,6 +664,44 @@ perform its Sign out all sessions confirmation, then leave the resulting sign-in
 page open. No session was revoked by the agent at this checkpoint. A-03 remains
 an isolated-fixture deletion check requiring exact action-time approval. This
 update changes documentation only; it does not publish or deploy a new runtime.
+
+### 2026-09-19 Live Session Revocation And A-03 Preparation
+
+The user initially reported that Sign out all sessions appeared to do nothing,
+and confirmed that no confirmation was visible. The button remained enabled,
+there was no active dialog or browser warning/error, and the recent edge logs
+contained no request to the revocation endpoint. A diagnostic attempt to open
+the confirmation timed out in browser input dispatch without an observable
+dialog. The user subsequently reported that the confirmation appeared and that
+they accepted it. Its original delay is not explained; no application fix or
+browser-tool root cause is claimed from these observations.
+
+The edge then recorded exactly one matching POST with HTTP 200. The rendered
+page was `/login` with only the unauthenticated navigation and the Authentik
+sign-in action. Normal sign-in recovered the existing account and its `ggl`
+link, with no warning/error in the captured browser log. This closes the live
+A-04 ceremony. Earlier exact-image tests separately prove stale-cookie rejection;
+this live pass did not retain or replay an old browser cookie. No app code,
+WAF rule, session lifetime, token permission or production service was changed.
+See the [redacted session receipt](ui-ux-review/2026-09-19/live-session-revocation-acceptance.json).
+
+A-03 is staged in `kutt-a03-20260919`, a new non-root, read-only, capability-dropped,
+512 MiB/one-CPU container using the exact deployed wrapper image. It has no
+production mounts, cookies, identities or secrets. Only loopback port 31109 is
+published, reached through a loopback SSH tunnel. Local fixture authentication
+is separate from unchanged live Authentik/WAF. Scheduled workers are disabled
+only in this disposable instance so a retention draft cannot trigger cleanup.
+
+The synthetic dataset contains one user, `a03-keep-link`, `A03 disposable tag`,
+`A03 disposable filter` and three hourly analytics rows (60, 45 and one day old).
+Native UI preview for 30 days reports exactly two eligible buckets. No Apply
+or Remove action has been executed. The user was asked to approve exactly the
+filter, label and two old analytics deletions; the link and recent bucket must
+remain. A SQLite backup passed integrity/foreign-key checks and was copied to
+private local and server evidence, both SHA-256
+`0eda798e53c8ea29e7400c047fb9909b70f0e67fe629d84458ea449dfb535d09`.
+The temporary fixture and tunnel are retained for this precise handoff and must
+be removed after acceptance or cancellation. They are not production services.
 
 ### 2026-09-18 Live Acceptance And Webhook WAF Repair
 
@@ -2595,12 +2634,12 @@ Passing fix regressions are not substituted for the unperformed human workflows.
 
 | Requirement | Evidence and current result | Remaining gate |
 | --- | --- | --- |
-| Finish workflow coverage and triage source concerns | C-01..C-07 triaged; ordinary rendered workflows, native print preview, token/webhook credential ceremonies and all confirmed fixes have recorded acceptance | AUDIT-00 remains open for A-03/A-04 |
+| Finish workflow coverage and triage source concerns | C-01..C-07 triaged; ordinary rendered workflows, native print preview, credential ceremonies, real session revocation/recovery and all confirmed fixes have recorded acceptance | AUDIT-00 remains open for A-03 |
 | Desktop/mobile, true zoom, keyboard, focus and reduced motion | UX-001/002/003/008/010/021/022 and their named browser suites record measured layouts, focus, motion and real 200/400% zoom | User-assisted workflows remain unverified; no all-workflows accessibility claim |
 | Names, landmarks, errors, status and modal semantics | UX-001/005/008/009/011/014 include rendered semantics, error recovery, focus and dialog tests; A-02 credential ceremonies passed | Permanent-deletion UI ceremony remains A-03 |
 | Contrast and interactive target geometry | UX-002/003/010/021/022 record measured colors, bounds and hit regions rather than screenshots alone | Evidence is limited to the reviewed states, not exhaustive accessibility conformance |
-| Empty/populated/paginated/long-data, slow/offline/error and stale edits | Workflow matrix and UX-004/006/013/014/015/017/018/019 cover these states, including real independent-client conflicts; real expired Authentik session recovery passed on .38 | User-assisted real session revocation remains A-04 |
-| Admin, ordinary user, owner/editor/viewer and outsider boundaries | Recorded rendered role transitions plus full authorization regressions; stale edits cannot regain revoked access; user token create/copy/revoke and live webhook rotation/copy passed | Real session revocation remains A-04; protocol tests do not replace it |
+| Empty/populated/paginated/long-data, slow/offline/error and stale edits | Workflow matrix and UX-004/006/013/014/015/017/018/019 cover these states, including real independent-client conflicts; real expired and revoked-session SSO recovery passed | Initial live native-confirmation delay has no established cause; do not claim it was repaired |
+| Admin, ordinary user, owner/editor/viewer and outsider boundaries | Recorded rendered role transitions plus full authorization regressions; stale edits cannot regain revoked access; user token create/copy/revoke, live webhook rotation/copy and session revocation passed | Live ceremony did not replay old cookies; stale-cookie denial is supported by separate exact-image tests |
 | Existing APIs, filters, public redirects and migrations | Full source/exact-wrapper/public WAF regressions passed; original data fingerprints, integrity and foreign keys preserved | SQLite verified; no new PostgreSQL/MariaDB parity claim |
 | Close fixes only after publication/deployment/recovery | UX-001..UX-025 each have versioned-release, test, live and recovery evidence | All 25 confirmed defects closed through .39.2; broader audit remains open |
 | Final regression and security review | Full final regression passed; bounded source-diff review covered 124 source/config/test files; image scan found zero critical/high and three medium BusyBox matches without a listed fix | Security report finalization blocked by missing tool-issued scan identity; no sealed security verdict |
@@ -2616,6 +2655,7 @@ classifying a standards failure.
 
 | Date | IDs | Change | Validation and outstanding gates |
 | --- | --- | --- | --- |
+| 2026-09-19 | A-04, A-03 | Verified user-confirmed live sign-out and ordinary Authentik recovery; staged exact-image isolated deletion fixture and signed retention preview | Edge POST 200, rendered Log in, existing link restored, zero browser warnings/errors. Native-confirmation delay remains unexplained. A-03 deletions await exact approval; fixture backup hash matches locally/remotely. Earlier A-02 documentation CI passed in run 35410788687. No runtime change. |
 | 2026-09-19 | A-02 | Verified user-performed live webhook rotation, fresh Copy byte equality/adjacent feedback and Dismiss clearing | Disabled webhook, no deliveries, no recorded secrets. Initial clipboard mismatch resolved by fresh Copy; cause not established. A-03/A-04 and the security report identity limitation remain. Documentation only, no runtime change. |
 | 2026-09-19 | UX-023/024, A-04 | Reconciled .37.1/.38 publication, deployment and pre/post writable recovery; confirmed naturally expired live session recovers through ordinary Authentik SSO | Fresh ten-hour follow-up: same healthy image, zero restarts/alerts, three probes passed. Homelab deployment/hygiene CI passed. Webhook credential rotation, permanent-deletion UI, real session revocation and the missing security-tool report identity remain explicit limits. |
 | 2026-09-17 | UX-015, remediation sequencing | User requested starting all fixes. Began expiry intent/concurrency remediation; preserved A-01..A-04 as outstanding acceptance, not a start blocker | Source work in progress. No release/deployment/closure claimed; next checks cover stale personal/admin saves, explicit expiry changes and independent drafts. |
