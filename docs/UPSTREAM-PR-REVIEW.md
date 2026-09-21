@@ -1,5 +1,10 @@
 # Community contribution review
 
+The approved September 22 implementation is tracked in
+[Community Feature Delivery](COMMUNITY-FEATURE-ROADMAP.md), including English,
+French and Spanish localization. The release records below are historical;
+their deferred wording does not override the current work list.
+
 Reviewed 2026-09-15: 12 then-open PRs and 40 recent closed PRs. Selected
 proposals were reviewed at patch level, not blindly merged. The original
 roadmap is separately submitted as upstream PR #1046; this follow-up is not

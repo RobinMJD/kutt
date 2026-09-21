@@ -362,7 +362,7 @@ function sleep(ms) {
 }
 
 function removeWww(host) {
-  return host?.replace("www.", "");
+  return host?.replace(/^www\./, "");
 };
 
 /**
@@ -380,6 +380,8 @@ function getUseragentBrowser(agent) {
     return "opera";
   else if (agent.isEdge)
     return "edge";
+  else if (agent.isSafari)
+    return "safari";
   else
     return "other";
 }

@@ -25,7 +25,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
     const page = await context.newPage(); page.setDefaultTimeout(12000);
     page.on("pageerror", error => errors.push(error.message));
     for (const width of [1440, 390, 320]) {
-      const address = "ownership-" + width + ".example.invalid";
+      const address = (width === 1440 ? "notwww." : width === 390 ? "sub.www." : "") + "ownership-" + width + ".example.invalid";
       await page.setViewportSize({ width, height: 900 }); await page.goto(origin + "/settings");
       await page.locator(".show-domain-form").click();
       await page.locator('#add-domain input[name="address"]').fill(address);

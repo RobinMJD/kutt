@@ -295,3 +295,12 @@ intermediate delayed logout page would miss that regression.
 checks the Alpine production image only: no APK tools/system zlib, retained
 CA/TLS dependencies, Node compression and native SQLite. The Dockerfile also
 runs it during the build. Do not run it on a developer host.
+# Community regression coverage
+
+`community-correctness.cjs` checks the installed user-agent parser (including
+desktop/mobile Safari) and hostname normalization. `community-hostnames.cjs`
+exercises actual HTTP create/edit/import/routing, moderation, DNS proof identity,
+public Host routing and persisted Safari counts on the disposable smoke database.
+Both run in the full container suite. Browser analytics and domain-proof tests
+also verify these changes at desktop/mobile widths; Host routing uses Node HTTP
+instead of relying on Fetch implementations preserving a supplied Host header.

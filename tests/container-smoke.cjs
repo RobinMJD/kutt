@@ -64,6 +64,7 @@ async function main() {
     `], { cwd: directory, env, encoding: "utf8", timeout: 10000 });
     assert.equal(native.status, 0, `SQLite cleanup failed: ${native.stderr}`);
     require("./configuration.cjs")({ root, directory, env });
+    await require("./community-correctness.cjs")({ root, directory, env });
     require("./redis-fixture-cleanup.cjs")({ root });
 
     server = spawn(process.execPath, [path.join(root, "server/server.js")], {
@@ -151,6 +152,7 @@ async function main() {
       await require("./" + process.env.KUTT_TEST_ONLY + ".cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, root, directory, env });
       return;
     }
+    await require("./community-hostnames.cjs")({ request, session: token, database: env.DB_FILENAME, account, env });
     await require("./token-domains-idempotency.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart });
     await require("./link-lifecycle.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, idempotencySecret: env.JWT_SECRET });
     await require("./expiry-edit.cjs")({ request, session: token, database: env.DB_FILENAME, restart });

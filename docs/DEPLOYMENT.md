@@ -6,6 +6,22 @@ its hardened wrapper, WAF/Authentik routing, monitoring and private backup paths
 in its separate deployment repository. This public repository contains no real
 secrets, provider bindings or user data.
 
+### Browser and hostname correctness (3.2.6-sr94.41)
+
+Safari visits now enter the existing Safari bucket. Historical aggregated visits
+cannot be reliably reclassified and are not rewritten. Host normalization removes
+only one leading lowercase `www.`; names such as `notwww.example.com` and
+`sub.www.example.com` retain their identity in moderation, routing, registration,
+imports and DNS proofs. Existing records are not renamed, re-proved or merged.
+Before upgrading, review domain/host records and any affected configured URLs;
+irreversible old normalization requires operator-led correction with fresh DNS
+proof, not a guessed migration or fallback to the old ambiguous lookup.
+
+There is no migration, dependency, token, WAF, SSO or public-route policy change.
+Back up and verify restore as above. Image-only rollback keeps current data but
+restores the two defects. Delivery gates and exact release/deployment evidence are
+tracked in [Community Feature Delivery](COMMUNITY-FEATURE-ROADMAP.md).
+
 ### Security boundary upgrade (3.2.6-sr94.40)
 
 Before deploying, take a consistent database/configuration/secret backup, copy it

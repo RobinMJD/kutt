@@ -16,7 +16,7 @@ the upstream hosted service.
 
 ## Project status
 
-As of **19 September 2026**, the current published application version is
+As of **22 September 2026**, the current deployed application version is
 [3.2.6-sr94.40](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.40).
 All 16 original roadmap features, the selected community improvements and 25
 confirmed UI/UX fixes have passed their recorded release and homelab deployment
@@ -24,8 +24,14 @@ gates. The latest release adds DNS ownership verification and closes seven
 security findings across recovery, authorization, domain races, URL parsing and
 webhook admission. Exact-image tests and pre/post off-host writable restores passed.
 
+The next community work list is approved and in progress, including full English,
+French and Spanish translations. Candidate `.41` corrects Safari analytics and
+hostname normalization. See the delivery ledger for its separate publication and
+deployment gates; the remaining additions are not yet claimed as complete.
+
 - [Feature roadmap](docs/FEATURE-ROADMAP.md): completed features and release evidence.
 - [Community contribution review](docs/UPSTREAM-PR-REVIEW.md): selected proposals, attribution and deferred ideas.
+- [Community delivery ledger](docs/COMMUNITY-FEATURE-ROADMAP.md): approved additions and current validation status.
 - [UI/UX review](docs/UI-UX-REVIEW.md): fixes, completed human acceptance and the final security remediation gates.
 - [Custom domain ownership](docs/CUSTOM-DOMAINS.md): DNS proof, client compatibility and recovery for new claims.
 - [Upstream PR #1046](https://github.com/thedevs-network/kutt/pull/1046): submitted changes; still awaiting upstream review/merge at the status date above.
