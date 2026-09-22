@@ -32,7 +32,7 @@ automatic domain renaming, historical analytics rewriting or data deletion.
 | C11 | Complete English (default), French and Spanish localization | In progress | Isolated catalog/template/browser implementation; integration and release gates pending |
 | C12 | Stable allowlisted sorting in personal, admin and workspace tables/API | Complete | `.44`; evidence below |
 | C13 | Branded QR logos embedded in validated PNG/SVG exports | In progress | Isolated implementation and decoder validation; release gates pending |
-| C14 | Accessible dark/system/light theme | Pending | Pending |
+| C14 | Accessible dark/system/light theme | Implemented; release gates pending | Candidate `.47`; full source regression and rendered theme/contrast/storage checks passed; publication and deployment pending |
 | C15 | Optional explicit OIDC role mapping and safe demotion/recovery | Pending | Pending |
 | C16 | Optional separate management hostname and explicit shared-domain grants | Pending | Pending |
 | C17 | Optional consistent destination-domain policy | Pending | Pending |
@@ -209,3 +209,19 @@ review complete while required work remains.
 - CI now runs the real-database and browser companions. Full regression,
   release publication, recoverable backup/deployment and public acceptance
   remain pending; this entry is not a completion claim.
+
+## Evidence: C14
+
+- Validated browser-local System/Light/Dark preference initializes before styles,
+  follows OS changes only in System, synchronizes tabs and retains an in-memory
+  choice when storage is unavailable. No credential, account or API change.
+- Full container regression passed. Chromium checks cover 15 routes at
+  1440/390/320px in both themes, keyboard selection, computed text contrast,
+  rendered chart pixels and live recoloring, QR quiet zones and print output.
+- Screenshot review found tiled select arrows and low-contrast legacy button
+  icons; scoped styles and rendered assertions now cover those cases. Static
+  assets resolve relative to the application rather than its launch directory,
+  preserving custom asset precedence and isolated-start compatibility.
+- Custom templates, native Safari/Firefox and physical assistive technology
+  remain separate acceptance surfaces. Publication, exact-wrapper deployment,
+  backup/recovery and public acceptance are pending. See [appearance](THEMES.md).

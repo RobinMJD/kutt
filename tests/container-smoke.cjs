@@ -9,7 +9,7 @@ const net = require("node:net");
 const { setTimeout: delay } = require("node:timers/promises");
 
 async function main() {
-  assert([undefined, "dotted-aliases", "moderation", "list-sorting", "security-boundaries", "workspaces", "workspace-edit", "routing", "analytics", "privacy", "webhooks", "forwarding", "link-health", "shortcuts", "security-regressions", "admin-user-filter", "admin-edit", "accessibility", "dialogs", "library-ux", "validation", "transfer", "login-copy", "contrast", "copy", "responses", "login-navigation", "unavailable", "header", "campaign", "expiry-edit"].includes(process.env.KUTT_TEST_ONLY), "Unknown focused test selection");
+  assert([undefined, "theme", "dotted-aliases", "moderation", "list-sorting", "security-boundaries", "workspaces", "workspace-edit", "routing", "analytics", "privacy", "webhooks", "forwarding", "link-health", "shortcuts", "security-regressions", "admin-user-filter", "admin-edit", "accessibility", "dialogs", "library-ux", "validation", "transfer", "login-copy", "contrast", "copy", "responses", "login-navigation", "unavailable", "header", "campaign", "expiry-edit"].includes(process.env.KUTT_TEST_ONLY), "Unknown focused test selection");
   const root = path.resolve(__dirname, "..");
   assert(!existsSync(path.join(root, ".env")), "Run in a clean checkout without a .env file");
   const directory = mkdtempSync(path.join(tmpdir(), "kutt-smoke-"));
@@ -171,6 +171,7 @@ async function main() {
     await require("./validation.cjs")({ request, session: token, account });
     await require("./login-copy.cjs")({ request, session: token, root, directory, env });
     await require("./contrast.cjs")({ root });
+    await require("./theme.cjs")({ root, request, session: token });
     await require("./copy.cjs")({ root });
     await require("./responses.cjs")({ root, request, session: token });
     await require("./login-navigation.cjs")({ root, request, account });

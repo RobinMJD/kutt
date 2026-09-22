@@ -49,9 +49,9 @@ if (env.OIDC_ENABLED) {
 }
 
 // serve static
-app.use("/images", express.static("custom/images"));
-app.use("/css", express.static("custom/css", { extensions: ["css"] }));
-app.use(express.static("static"));
+app.use("/images", express.static(path.join(__dirname, "../custom/images")));
+app.use("/css", express.static(path.join(__dirname, "../custom/css"), { extensions: ["css"] }));
+app.use(express.static(path.join(__dirname, "../static")));
 
 app.use(passport.initialize());
 app.use(locals.isHTML);

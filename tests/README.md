@@ -1,5 +1,11 @@
 # Container smoke test
 
+Appearance preferences are covered by `KUTT_TEST_ONLY=theme` and the full suite.
+`sh tests/browser-theme.sh IMAGE` checks System/Light/Dark, browser storage and
+cross-tab behavior, real rendered contrast, chart colors/pixels and QR print
+preservation on desktop/mobile. See [themes](../docs/THEMES.md) for test runtime,
+evidence and custom-layout requirements.
+
 Safe dotted aliases are covered by `dotted-alias-unit.cjs` and
 `dotted-aliases.cjs`. The latter runs in the normal smoke suite or with
 `KUTT_TEST_ONLY=dotted-aliases`: create/edit/admin/workspace/import paths,

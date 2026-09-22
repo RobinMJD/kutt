@@ -53,6 +53,8 @@ jobs:
         run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/kutt-browser/node_modules/playwright" KUTT_EVIDENCE_DIR="$RUNNER_TEMP/kutt-moderation-evidence" sh tests/browser-moderation.sh kutt-tested
       - name: Browser dotted alias and draft recovery regression
         run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/kutt-browser/node_modules/playwright" KUTT_EVIDENCE_DIR="$RUNNER_TEMP/kutt-alias-evidence" sh tests/browser-dotted-aliases.sh kutt-tested
+      - name: Browser theme, contrast and storage recovery regression
+        run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/kutt-browser/node_modules/playwright" KUTT_EVIDENCE_DIR="$RUNNER_TEMP/kutt-theme-evidence" sh tests/browser-theme.sh kutt-tested
       - name: Authenticate to GitHub Container Registry
         if: startsWith(github.ref, 'refs/tags/')
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0

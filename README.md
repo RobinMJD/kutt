@@ -30,6 +30,8 @@ The next community work list is approved and in progress, including full English
 French and Spanish translations. Verified database/Redis TLS in `.43` passed
 deployment/recovery gates; stable table sorting `.44` has passed them too.
 Transactional moderation `.45` is implemented and in release validation.
+Dotted aliases `.46` and System/Light/Dark appearance `.47` are also implemented;
+their release and deployment gates remain pending.
 See the
 delivery ledger for publication and deployment gates; pending additions are
 not yet claimed as complete.
@@ -70,6 +72,7 @@ visit statistics, local accounts and administrator tools. It adds:
 | Link availability | [Pause, scheduled start/end and maximum visits](docs/LINK-LIFECYCLE.md), enforced when a redirect is requested |
 | Recovery | [Change history, trash and restore](docs/LINK-HISTORY.md), with protection against silently reusing retired aliases |
 | Moderation (candidate) | [Atomic administrative bans, explicit recovery and audit](docs/MODERATION.md), with permanent credential revocation and final-administrator protection; release gates pending |
+| Appearance (candidate) | [System, Light and Dark](docs/THEMES.md), persistent browser preference, readable charts and unchanged white QR exports; release gates pending |
 | Sign-in | [Stable OIDC identity binding, session revocation, signed back-channel logout and diagnostics](docs/OIDC-SECURITY.md) |
 | Organization | [Tags, collections, saved filters and bulk actions](docs/LIBRARY.md) |
 | Data transfer | [CSV/JSON import and export](docs/TRANSFER.md), templates, dry-run previews and explicit conflict handling |
