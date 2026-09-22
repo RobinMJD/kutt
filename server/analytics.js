@@ -38,13 +38,23 @@ async function access(req, db = knex) {
     const token = await db("api_tokens").where({ id: req.apiToken, user_id: user.id }).first();
     if (!token || token.revoked_at != null || (token.expires_at != null && Number(token.expires_at) <= Date.now()) ||
         !JSON.parse(token.scopes).includes("stats:read")) fail(i18n.t("messages.api_token_is_no_longer_authorized"), 403);
-    if (req.apiTokenDomain != null && !await db("domains").where({ id: req.apiTokenDomain, user_id: user.id, banned: false }).first()) fail(i18n.t("messages.token_domain_is_no_longer_available"), 403);
+    if (req.apiTokenDomain != null && !await require("./domain-access").find(db, user.id, { id: req.apiTokenDomain })) fail(i18n.t("messages.token_domain_is_no_longer_available"), 403);
   }
 }
 
 function owned(req, db = knex) {
   const query = db("links").where("links.user_id", req.user.id);
   if (req.apiTokenDomain !== undefined) query.where("links.domain_id", req.apiTokenDomain).whereNull("links.archived_domain");
+  return query;
+}
+
+// A revoked grant does not remove a creator's historical records. This filter
+// lookup is read-only; it must never be used to authorize link/domain mutations.
+function recordDomains(req, db = knex) {
+  const available = require("./domain-access").available(db, req.user.id).clearSelect().select("d.id");
+  const recorded = owned(req, db).whereNull("links.archived_domain").whereNotNull("links.domain_id").select("links.domain_id");
+  const query = db("domains").where("banned", false).where(function () { this.whereIn("id", available).orWhereIn("id", recorded); });
+  if (req.apiTokenDomain !== undefined) query.where("id", req.apiTokenDomain);
   return query;
 }
 
@@ -55,7 +65,7 @@ async function selection(req, input) {
     query.where("links.uuid", input.link);
   }
   if (input.domain) {
-    const domain = input.domain === "default" ? null : await knex("domains").where({ uuid: input.domain, user_id: req.user.id, banned: false }).first();
+    const domain = input.domain === "default" ? null : await recordDomains(req).where({ uuid: input.domain }).first();
     if (input.domain !== "default" && !domain) fail(i18n.t("messages.domain_was_not_found"), 404);
     const id = domain?.id || null;
     if (req.apiTokenDomain !== undefined && req.apiTokenDomain !== id) fail(i18n.t("messages.domain_was_not_found"), 404);
@@ -133,8 +143,7 @@ async function report(req) {
   const labelsQuery = knex("library_labels").where({ user_id: req.user.id, kind: "tag" });
   if (req.apiTokenDomain !== undefined) labelsQuery.whereIn("id", knex("library_link_labels").select("label_id").whereIn("link_id", owned(req).select("links.id")));
   const labels = await labelsQuery.select("id", "name").orderBy("name_key");
-  const domainsQuery = knex("domains").where({ user_id: req.user.id, banned: false });
-  if (req.apiTokenDomain !== undefined) domainsQuery.where("id", req.apiTokenDomain);
+  const domainsQuery = recordDomains(req);
   const domains = await domainsQuery.select("uuid as id", "address as name").orderBy("address");
   if (req.apiTokenDomain === undefined || req.apiTokenDomain === null) domains.unshift({ id: "default", name: require("./env").DEFAULT_DOMAIN });
   await access(req);

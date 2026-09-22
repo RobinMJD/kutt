@@ -12,6 +12,7 @@ KUTT_EVIDENCE_DIR="$evidence/qr" sh "$root/tests/browser-qr-branding-locales.sh"
 KUTT_EVIDENCE_DIR="$evidence/policy" sh "$root/tests/browser-destination-policy.sh" "$image"
 KUTT_EVIDENCE_DIR="$evidence/policy-edit" sh "$root/tests/browser-destination-policy-edit.sh" "$image"
 KUTT_EVIDENCE_DIR="$evidence/oidc-roles" sh "$root/tests/browser-oidc-roles.sh" "$image"
+KUTT_EVIDENCE_DIR="$evidence/domain-grants" sh "$root/tests/browser-domain-grants.sh" "$image"
 for locale in en fr es; do
   KUTT_TEST_LOCALE="$locale" KUTT_EVIDENCE_DIR="$evidence/geography-$locale" sh "$root/tests/browser-geography.sh" "$image"
 done

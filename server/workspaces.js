@@ -136,7 +136,7 @@ async function membership(userId, id, memberId, role) {
 async function domain(db, link, ownerId) {
   if (link.archived_domain) fail(i18n.t("messages.the_original_domain_is_retired"), 409);
   if (link.domain_id == null) return null;
-  const found = await db("domains").where({ id: link.domain_id, user_id: ownerId, banned: false }).first();
+  const found = await require("./domain-access").find(db, ownerId, { id: link.domain_id });
   if (!found) fail(i18n.t("messages.the_link_s_domain_is_unavailable_to_this_workspace"), 409);
   return found;
 }
@@ -172,18 +172,20 @@ async function detail(userId, id, input = {}, editId) {
     }
     const members = space.role === "owner" ? await db("workspace_members as m").join("users as u", "u.id", "m.user_id")
       .where({ "m.workspace_id": id }).select("m.id", "m.role", "m.accepted_at", "u.email", "u.banned", "u.verified").orderBy("u.email") : [];
-    const domains = space.role !== "viewer" ? await db("domains").where({ user_id: space.owner_id, banned: false }).select("address").orderBy("address") : [];
+    const availableDomains = await require("./domain-access").available(db, space.owner_id).orderBy("d.address");
+    const domains = space.role !== "viewer" ? availableDomains.map(({ address }) => ({ address })) : [];
     return { ...publicSpace(space), membership_id: space.membership_id, members: members.map(m => ({ id: m.id, email: m.email, role: m.role, accepted: m.accepted_at != null, unavailable: !!m.banned || !m.verified })),
       domains, page, limit: 50, total: Number(n), q: search, state, ...sorting,
       data: links.map(({ domain_owner, domain_banned, ...link }) => ({ ...utils.sanitize.link(link),
         edit_revision: editing.revision(link),
-        editable: !link.banned && !link.archived_domain && (link.domain_id == null || domain_owner === space.owner_id && !domain_banned) })) };
+        editable: !link.banned && !link.archived_domain && (link.domain_id == null || availableDomains.some(domain => domain.id === link.domain_id)) })) };
   });
 }
 
 async function share(userId, id, linkId, remove = false) {
   if (!uuid(linkId)) fail(i18n.t("messages.link_was_not_found"), 404);
   return knex.transaction(async db => {
+    await require("./domain-access").lock(db);
     const space = await access(db, userId, id, "owner", true);
     const link = await db("links").where({ uuid: linkId, user_id: space.owner_id }).first();
     if (!link) fail(i18n.t("messages.link_was_not_found"), 404);
@@ -204,7 +206,7 @@ async function candidates(userId, id, search = "") {
   await access(knex, userId, id, "owner");
   const query = knex("links as l").leftJoin("domains as d", "d.id", "l.domain_id")
     .where({ "l.user_id": userId, "l.banned": false }).whereNull("l.deleted_at").whereNull("l.archived_domain")
-    .where(function () { this.whereNull("l.domain_id").orWhere(function () { this.where({ "d.user_id": userId, "d.banned": false }); }); })
+    .where(function () { this.whereNull("l.domain_id").orWhereIn("l.domain_id", require("./domain-access").available(knex, userId).clearSelect().select("d.id")); })
     .whereNotIn("l.id", knex("workspace_links").select("link_id").where({ workspace_id: id }));
   if (search) query.where(function () {
     const pattern = "%" + search.toLowerCase().replace(/[!%_]/g, "!$&") + "%";
@@ -213,7 +215,7 @@ async function candidates(userId, id, search = "") {
   return query.select("l.uuid as id", "l.address", "d.address as domain").orderBy("l.id", "desc").limit(50);
 }
 
-async function changeLink(userId, id, action, linkId, input, actor) {
+async function changeLink(userId, id, action, linkId, input, actor, request) {
   await access(knex, userId, id, "editor");
   if (!["create", "edit", "trash", "restore"].includes(action)) fail(i18n.t("messages.invalid_link_action"));
   if (action !== "create" && !uuid(linkId)) fail(i18n.t("messages.link_was_not_found"), 404);
@@ -228,6 +230,8 @@ async function changeLink(userId, id, action, linkId, input, actor) {
     await require("./handlers/validators.handler").bannedHost(host);
   }
   const changed = await knex.transaction(async db => {
+    await require("./domain-access").lock(db);
+    if (request) await require("./domain-access").request(db, request, null, "workspaces:write");
     const space = await access(db, userId, id, "editor", true);
     let link;
     if (action !== "create") {
@@ -237,7 +241,7 @@ async function changeLink(userId, id, action, linkId, input, actor) {
       link = await selection.select("l.*").first();
       if (!link) fail(i18n.t("messages.link_was_not_found"), 404);
       if (link.banned) fail(i18n.t("messages.banned_links_cannot_be_changed"), 409);
-      await domain(db, link, space.owner_id);
+      if (action !== "trash") await domain(db, link, space.owner_id);
     }
     if (action === "trash") { await history.trash(db, link, actor); return link; }
     if (action === "restore") {
@@ -262,7 +266,7 @@ async function changeLink(userId, id, action, linkId, input, actor) {
     const policy = lifecycle.parse(input, link || {});
     let domainId = link?.domain_id ?? null;
     if (!link && normalized.domain !== env.DEFAULT_DOMAIN.toLowerCase()) {
-      const owned = await db("domains").where({ address: normalized.domain, user_id: space.owner_id, banned: false }).first();
+      const owned = await require("./domain-access").find(db, space.owner_id, { address: normalized.domain });
       if (!owned) fail(i18n.t("messages.domain_unavailable_to_this_workspace"), 403);
       domainId = owned.id;
     }

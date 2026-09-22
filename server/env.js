@@ -35,6 +35,7 @@ const spec = {
   PORT: num({ default: 3000 }),
   SITE_NAME: str({ example: "Kutt", default: "Kutt" }),
   DEFAULT_DOMAIN: str({ example: "kutt.to", default: "localhost:3000" }),
+  MANAGEMENT_ORIGIN: str({ default: "" }),
   LINK_LENGTH: num({ default: 6 }),
   LINK_CUSTOM_ALPHABET: str({ default: "abcdefghkmnpqrstuvwxyzABCDEFGHKLMNPQRSTUVWXYZ23456789" }),
   TRUST_PROXY: proxyTrust({ default: true }),
@@ -110,6 +111,7 @@ const env = cleanEnv(process.env, spec);
 require("./transport-tls").validate(env);
 require("./destination-policy").compile(env.DESTINATION_ALLOWED_HOSTS);
 require("./metrics").validate(env);
+require("./management-origin").parse(env.MANAGEMENT_ORIGIN, env);
 require("./oidc-role-config").parse(env);
 
 module.exports = env;

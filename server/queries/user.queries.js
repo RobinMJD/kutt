@@ -66,6 +66,7 @@ async function add(params, user) {
 
 async function update(match, update, methods) {
   const { user, updated_user } = await knex.transaction(async function(trx) {
+    if (update.banned !== undefined) await require("../domain-access").lock(trx);
     const query = trx("users");
     Object.entries(match).forEach(([key, value]) => {
       query.andWhere(key, ...(Array.isArray(value) ? value : [value]));
@@ -94,6 +95,7 @@ async function update(match, update, methods) {
     const changed = await updateQuery.update({ ...update,
       ...(invalidates ? require("../account-tokens") : {}), updated_at: utils.dateToUTC(new Date()) });
     if (!changed) return {};
+    if (update.banned === true) await require("../domain-access").invalidateUser(trx, user.id);
     const updated_user = await trx("users").where("id", user.id).first();
 
     return { user, updated_user };

@@ -51,7 +51,7 @@
       </label>
       <label>{{t "ui.domain"}}
         <select name="domain_scope" aria-label="{{t 'ui.domain'}}">
-          <option value="all">{{t "ui.all_owned_domains"}}</option>
+          <option value="all">{{t "domain_grants.all_available"}}</option>
           <option value="default">{{default_domain}}</option>
           {{#each tokenDomains}}<option value="{{uuid}}">{{address}}</option>{{/each}}
         </select>

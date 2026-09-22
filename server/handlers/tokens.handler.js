@@ -6,6 +6,10 @@ const { CustomError } = require("../utils");
 
 // New API routes are unavailable to scoped tokens unless explicitly allowlisted.
 const routes = [
+  ["GET", /^\/domains\/available\/?$/i, "links:create"],
+  ["GET", /^\/domains\/[a-f0-9-]{36}\/grants\/?$/i, "domains:share"],
+  ["POST", /^\/domains\/[a-f0-9-]{36}\/grants\/?$/i, "domains:share"],
+  ["DELETE", /^\/domains\/[a-f0-9-]{36}\/grants\/[a-f0-9-]{36}\/?$/i, "domains:share"],
   ["GET", /^\/destination-policy\/?$/i, "links:read"],
   ["GET", /^\/links\/health\/?$/i, "links:read"],
   ["GET", /^\/links\/([a-f0-9-]{36})\/health\/?$/i, "links:read"],
@@ -51,6 +55,7 @@ const routes = [
 ];
 
 async function authenticate(req, res, next) {
+  if (req.publicHost) return next();
   const supplied = [req.get("X-API-Key"), req.body?.apikey, req.query.apikey]
     .filter(value => value !== undefined);
   if (!supplied.length) return next();
@@ -103,23 +108,17 @@ function sessionOnly(req, res, next) {
     throw new CustomError(i18n.t("messages.use_your_signed_in_session_for_this_operation"), 403);
   }
   if (req.method !== "GET" && req.method !== "HEAD") {
-    if (req.get("Sec-Fetch-Site") === "cross-site") throw new CustomError(i18n.t("messages.invalid_request_origin"), 403);
-    const origin = req.get("Origin");
-    if (origin) {
-      let host;
-      try { host = new URL(origin).host; } catch {}
-      if (host !== env.DEFAULT_DOMAIN) throw new CustomError(i18n.t("messages.invalid_request_origin"), 403);
-    }
+    require("../management-origin").sameOrigin(req);
   }
   return next();
 }
 
 async function load(req, res, next) {
-  const domains = await knex("domains").where({ user_id: req.user.id, banned: false });
+  const domains = await require("../domain-access").available(knex, req.user.id).orderBy("d.address");
   res.locals.tokenDomains = domains;
   res.locals.apiTokens = (await tokens.list(req.user.id)).map(token => ({
     ...token, active: token.status === "Active", status: i18n.t("token.status." + token.status), scopesLabel: token.scopes.map(scope => i18n.t(tokens.SCOPES[scope])).join(", "),
-    domainLabel: token.domain_scope === "all" ? i18n.t("ui.all_owned_domains") :
+    domainLabel: token.domain_scope === "all" ? i18n.t("domain_grants.all_available") :
       token.domain_scope === "default" ? env.DEFAULT_DOMAIN :
         domains.find(domain => domain.uuid === token.domain_scope)?.address || i18n.t("messages.unavailable_domain_access_denied")
   }));

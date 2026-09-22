@@ -131,7 +131,7 @@ async function plan(db, req, input, id, fixedAliases) {
       for (const target of [row.target, ...row.routing_rules.map(rule => rule.target)]) require("./destination-policy").requireAllowed(target);
       let domainId = null;
       if (row.domain !== env.DEFAULT_DOMAIN.toLowerCase()) {
-        const domain = await db("domains").where({ user_id: req.user.id, address: row.domain, banned: false }).first();
+        const domain = await require("./domain-access").find(db, req.user.id, { address: row.domain });
         if (!domain) fail(i18n.t("messages.domain_is_unavailable_to_this_account"), 403);
         domainId = domain.id;
       }
@@ -223,6 +223,7 @@ async function commit(req) {
     }
   }
   return knex.transaction(async db => {
+    await require("./domain-access").lock(db);
     const user = await db("users").where({ id: req.user.id }).first();
     if (!user || user.banned || !user.verified || Number(user.auth_version || 0) !== Number(req.user.auth_version || 0)) fail(i18n.t("messages.account_authorization_changed_sign_in_again"), 401);
     if (req.apiToken) {
@@ -230,7 +231,7 @@ async function commit(req) {
       if (!token || token.revoked_at != null || (token.expires_at != null && Number(token.expires_at) <= Date.now()) || !JSON.parse(token.scopes).includes("links:create")) fail(i18n.t("messages.import_token_is_no_longer_authorized"), 403);
       let currentScope = token.domain_scope;
       if (!["all", "default"].includes(currentScope)) {
-        const domain = await db("domains").where({ uuid: currentScope, user_id: user.id, banned: false }).first();
+        const domain = await require("./domain-access").find(db, user.id, { uuid: currentScope });
         currentScope = domain?.id;
       }
       if (currentScope !== scope(req)) fail(i18n.t("messages.token_domain_authorization_changed"), 403);
@@ -242,6 +243,7 @@ async function commit(req) {
       for (const row of result.created) {
         const link = await db("links").where({ uuid: row.id, user_id: req.user.id }).first();
         if (!link || link.banned || (link.deleted_at != null && !row.trashed) || (req.apiTokenDomain !== undefined && (link.archived_domain || link.domain_id !== req.apiTokenDomain))) fail(i18n.t("messages.previously_imported_link_is_no_longer_available"), 409);
+        await require("./domain-access").link(db, link);
       }
       return { ...result, replayed: true };
     }

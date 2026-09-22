@@ -27,6 +27,7 @@ function flags(entity, input = {}) {
 // Serialize administrative removals/bans so two administrators cannot remove
 // the final active administrator concurrently, including on SQLite.
 async function lock(db, actor, admin = true) {
+  await require("./domain-access").lock(db);
   await db("admin_mutation_state").where({ id: 1 }).increment("sequence", 1);
   const current = actor && await db("users").where({ id: actor.id }).forUpdate().first();
   if (!current || current.banned || !current.verified || Number(current.auth_version) !== Number(actor.auth_version) ||
@@ -58,6 +59,8 @@ async function apply(db, entity, row, banned, actor, changed) {
   changed.push({ entity, row });
   if (!!row.banned === banned) return;
   if (entity === "user" && banned) await protectAdmin(db, row, actor);
+  if (banned && entity === "domain") await require("./domain-access").invalidate(db, row);
+  if (banned && entity === "user") await require("./domain-access").invalidateUser(db, row.id);
   const update = { banned, banned_by_id: banned ? actor.id : null, updated_at: utils.dateToUTC(new Date()) };
   if (entity === "user") {
     Object.assign(update, require("./account-tokens"), { apikey: null, auth_version: Number(row.auth_version) + 1 });
@@ -130,6 +133,7 @@ async function removeUser(user, actor = user, administrative = false) {
     if (!administrative && Number(row.id) !== Number(actor.id)) fail(i18n.t("messages.unauthorized"), 403);
     // Self-service deletion may remove an administrator only when another remains.
     await protectAdmin(db, row, administrative ? actor : { id: -1 });
+    await require("./domain-access").invalidateUser(db, row.id);
     if (await db("workspaces").where({ owner_id: row.id }).first()) fail(i18n.t("messages.close_owned_workspaces_before_deleting_this_account_shared_links_must_remain"));
     changed.push({ entity: "user", row });
     for (const link of await db("links").where({ user_id: row.id })) changed.push({ entity: "link", row: link });
@@ -146,6 +150,7 @@ async function removeUser(user, actor = user, administrative = false) {
 
 async function addDomain(input, actor) {
   const address = input.address.toLowerCase(), changed = [];
+  if (require("./management-origin").reserved(address)) fail(i18n.t("domain_grants.management_reserved"), 400);
   const result = await knex.transaction(async db => {
     await lock(db, actor);
     if (await db("domains").where({ address }).first()) fail(i18n.t("moderation.domain_exists"));

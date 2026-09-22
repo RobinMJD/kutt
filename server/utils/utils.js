@@ -57,13 +57,14 @@ function setToken(res, token) {
   res.cookie("token", token, {
     maxAge: 1000 * 60 * 60 * 24 * 7, // expire after seven days
     httpOnly: true,
-    secure: env.isProd,
-    sameSite: "Lax"
+    secure: require("../management-origin").secureCookie(),
+    sameSite: "Lax",
+    path: "/"
   });
 }
 
 function deleteCurrentToken(res) {
-  res.clearCookie("token", { httpOnly: true, secure: env.isProd });
+  res.clearCookie("token", { httpOnly: true, secure: require("../management-origin").secureCookie(), sameSite: "Lax", path: "/" });
 }
 
 function generateRandomPassword() {
@@ -88,8 +89,7 @@ function addProtocol(url) {
 }
 
 function getSiteURL() {
-  const protocol = !env.isDev ? "https://" : "http://";
-  return `${protocol}${env.DEFAULT_DOMAIN}`;
+  return require("../management-origin").origin();
 }
 
 function getShortURL(address, domain) {

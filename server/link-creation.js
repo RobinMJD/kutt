@@ -7,8 +7,12 @@ const { CustomError } = require("./utils");
 const RETENTION_MS = 24 * 60 * 60 * 1000;
 
 async function run(req, operation) {
+  const authorize = async db => {
+    await require("./domain-access").lock(db);
+    await require("./domain-access").request(db, req, req.body.fetched_domain?.id ?? null, "links:create");
+  };
   const key = req.get("Idempotency-Key");
-  if (key === undefined) return knex.transaction(operation);
+  if (key === undefined) return knex.transaction(async db => { await authorize(db); return operation(db); });
   if (!req.user || req.isHTML || !/^[A-Za-z0-9._:-]{8,128}$/.test(key)) {
     throw new CustomError(i18n.t("messages.idempotency_key_requires_an_authenticated_json_request_and_8_128_safe"), 400);
   }
@@ -24,6 +28,7 @@ async function run(req, operation) {
   const requestHash = createHmac("sha256", env.JWT_SECRET).update(JSON.stringify(input)).digest("hex");
   const match = { user_id: req.user.id, key_hash: createHash("sha256").update(key).digest("hex") };
   return knex.transaction(async db => {
+    await authorize(db);
     await db("link_creation_requests").where({ user_id: req.user.id })
       .where("created_at", "<", Date.now() - RETENTION_MS).delete();
     // Reserving the key and inserting the link share one commit. A competing

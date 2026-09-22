@@ -6,6 +6,7 @@ const policy = config.parse(env);
 
 // Use the same first lock as moderation: role changes cannot race the last-admin guard.
 async function lock(db) {
+  await require("./domain-access").lock(db);
   await db("admin_mutation_state").where({ id: 1 }).increment("sequence", 1);
 }
 

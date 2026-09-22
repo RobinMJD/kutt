@@ -42,7 +42,7 @@ async function mutate(req, operation) {
   const id = req.params.id || input.id;
   if (id !== undefined && (typeof id !== "string" || !/^[a-f0-9-]{36}$/i.test(id))) throw new CustomError(i18n.t("messages.invalid_identifier"), 400);
   if (operation.startsWith("remove_") && !id) throw new CustomError(i18n.t("messages.an_identifier_is_required"), 400);
-  if (operation === "bulk") return library.bulk(req.user.id, input, { id: req.user.id, apiToken: req.apiToken }, req.apiTokenDomain);
+  if (operation === "bulk") return library.bulk(req.user.id, input, { id: req.user.id, apiToken: req.apiToken }, req.apiTokenDomain, req);
   metadataAccess(req);
   switch (operation) {
     case "save_label": return library.saveLabel(req.user.id, input, id);

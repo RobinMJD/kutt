@@ -5,6 +5,8 @@ const tokens = require("../api-tokens");
 const { CustomError } = require("../utils");
 
 function endpoint() {
+  const management = require("../management-origin").configured();
+  if (management) return management.origin + "/api/v2/links";
   // Never derive the credential destination from Host/Forwarded headers.
   const host = env.DEFAULT_DOMAIN;
   let url;

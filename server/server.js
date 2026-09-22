@@ -37,6 +37,8 @@ app.use(metrics.middleware);
 app.set("trust proxy", env.TRUST_PROXY);
 
 app.use(helmet({ contentSecurityPolicy: false }));
+const management = require("./management-origin");
+app.use(management.boundary);
 app.use(cookieParser());
 app.use(i18n.middleware);
 app.use(csp.middleware(env.CSP_MODE));
@@ -59,10 +61,12 @@ app.use(express.urlencoded({ extended: true }));
 // use cookie sessions only when OIDC is enabled
 // because only OIDC is using it
 if (env.OIDC_ENABLED) {
-  app.use(session({
+  const oidcSession = session({
     keys: [env.JWT_SECRET],
     maxAge: 1000 * 60 * 60 * 24 * 7, // expire after seven days
-  }));
+    ...(management.configured() && { secure: management.secureCookie(), sameSite: "lax", httpOnly: true, path: "/" })
+  });
+  app.use((req, res, next) => req.publicHost ? next() : oidcSession(req, res, next));
 }
 
 // serve static
@@ -106,11 +110,11 @@ app.get("*", renders.notFound);
 // handle errors coming from above routes
 app.use(helpers.error);
   
-templatesReady.then(() => require("./oidc-roles").initialize()).then(() => metrics.start()).then(() => {
+templatesReady.then(() => management.validateDatabase()).then(() => require("./oidc-roles").initialize()).then(() => metrics.start()).then(() => {
   app.listen(env.PORT, () => {
     console.log(`> Ready on http://localhost:${env.PORT}`);
   });
 }).catch(() => {
-  console.error("Application initialization failed. Check templates, private metrics configuration and, when configured, the protected local OIDC recovery administrator.");
+  console.error("Application initialization failed. Check templates, management origin, private metrics configuration and, when configured, the protected local OIDC recovery administrator.");
   process.exit(1);
 });

@@ -91,6 +91,7 @@ async function policy(linkId, db = knex) {
   return storedPolicy(await db("link_routing").where({ link_id: linkId }).first());
 }
 async function owned(req, db = knex, write = false) {
+  if (write) await require("./domain-access").lock(db);
   if (!/^[a-f0-9-]{36}$/i.test(req.params.id)) fail(i18n.t("messages.link_was_not_found"), 404);
   if (write) await db("links").where({ uuid: req.params.id, user_id: req.user.id }).update({ target: db.ref("target") });
   const link = await db("links").where({ uuid: req.params.id, user_id: req.user.id }).first();
@@ -98,7 +99,7 @@ async function owned(req, db = knex, write = false) {
   if (link.deleted_at || link.archived_domain) fail(i18n.t("messages.restore_this_link_and_domain_before_managing_its_settings"), 410);
   const user = await db("users").where({ id: req.user.id, verified: true, banned: false }).first();
   if (!user || Number(user.auth_version || 0) !== Number(req.user.auth_version || 0)) fail(i18n.t("messages.sign_in_again"), 401);
-  if (link.domain_id && !await db("domains").where({ id: link.domain_id, user_id: user.id, banned: false }).first()) fail(i18n.t("messages.short_domain_is_unavailable"), 410);
+  if (link.domain_id && !await require("./domain-access").find(db, user.id, { id: link.domain_id })) fail(i18n.t("messages.short_domain_is_unavailable"), 410);
   if (req.apiToken) {
     const token = await db("api_tokens").where({ id: req.apiToken, user_id: user.id }).first();
     if (!token || token.revoked_at != null || (token.expires_at != null && Number(token.expires_at) <= Date.now()) ||

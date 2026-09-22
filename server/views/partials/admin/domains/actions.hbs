@@ -1,4 +1,5 @@
 <td class="actions domains-actions">
+  <a class="button action" href="/settings/domain-sharing/{{uuid}}" aria-label="{{t 'domain_grants.manage_for' domain=address}}" title="{{t 'domain_grants.title'}}">{{> icons/key}}</a>
   {{#if banned}}
     <a class="button action banned" href="/admin/moderation/domain/{{id}}" aria-label="{{t 'moderation.remove_for' value=address}}" title="{{t 'moderation.remove'}}">
       {{> icons/stop}}

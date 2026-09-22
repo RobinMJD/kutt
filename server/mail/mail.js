@@ -11,7 +11,8 @@ const transporter = nodemailer.createTransport({
 
 async function send(kind, to, token) {
   if (!env.MAIL_ENABLED) throw new Error("Email is not enabled.");
-  const content = render(kind, { domain: env.DEFAULT_DOMAIN, site_name: env.SITE_NAME, token });
+  const management = require("../management-origin").configured();
+  const content = render(kind, { domain: management?.host || env.DEFAULT_DOMAIN, origin: management?.origin, site_name: env.SITE_NAME, token });
   const mail = await transporter.sendMail({ from: env.MAIL_FROM || env.MAIL_USER, to, ...content });
   if (!mail.accepted.length) throw new CustomError(i18n.t(kind === "reset" ?
     "messages.couldn_t_send_reset_password_email_try_again_later" : "messages.couldn_t_send_verification_email_try_again_later"));
