@@ -30,7 +30,7 @@ automatic domain renaming, historical analytics rewriting or data deletion.
 | C09 | Configurable asymmetric OIDC signing algorithm | Complete | `.42`; evidence below |
 | C10 | Custom-domain API routing without homepage interception | Complete | `.42`; evidence below |
 | C11 | Complete English (default), French and Spanish localization | In progress | Isolated catalog/template/browser implementation; integration and release gates pending |
-| C12 | Stable allowlisted sorting in personal, admin and workspace tables/API | Implemented; release gates pending | Candidate `.44` |
+| C12 | Stable allowlisted sorting in personal, admin and workspace tables/API | Complete | `.44`; evidence below |
 | C13 | Branded QR logos embedded in validated PNG/SVG exports | Pending | Pending |
 | C14 | Accessible dark/system/light theme | Pending | Pending |
 | C15 | Optional explicit OIDC role mapping and safe demotion/recovery | Pending | Pending |
@@ -155,8 +155,20 @@ review complete while required work remains.
   including pagination/reset, independent inline drafts and delayed list/editor
   response races. Review-found refresh loss and disabled-select serialization
   problems were fixed and reproduced in the browser regression test.
-- No migration is required. Publication, final regression, exact-image recovery
-  and deployment remain separate gates. See [sorting](LIST-SORTING.md).
+- No migration is required. Main/tag CI `35674513731` / `35674513629`, full
+  exact-wrapper regression, fresh valid scan (zero Critical/High), public WAF
+  sorting/authorization tests and existing feature regression passed. Actual
+  Authentik-signed logout/replay, three fresh probes in two samples 65 seconds
+  apart and whole-lab validation passed without new restarts/alerts/failed units
+  or unhealthy containers. Original records/integrity/foreign keys unchanged.
+- Pre-change backup at September 22 01:27:13 UTC: local `76a4ebe3`, NAS
+  `4c004a82`, 63 verified files. Post-change 01:58:08 UTC: local `16bf1dff`, NAS
+  `974b293b`, 64 verified files including the added public sorting test. Both
+  off-host byte verification and exact-image writable SQLite recovery passed.
+  The first sorting fixture used an unsupported one-day token lifetime; retest
+  used the documented seven-day choice without weakening validation.
+- Deployed wrapper: `sha256:d145f7159eae58227e6e5dd35e45b52dfc58080c79a1df6dd8592f4ee3a5a483`.
+  Private report: `2026-09-22-kutt-community-44`. See [sorting](LIST-SORTING.md).
 
 ## Evidence: C03
 

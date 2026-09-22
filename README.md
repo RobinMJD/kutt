@@ -17,7 +17,7 @@ the upstream hosted service.
 ## Project status
 
 As of **22 September 2026**, the current deployed application version is
-[3.2.6-sr94.43](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.43).
+[3.2.6-sr94.44](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.44).
 All 16 original roadmap features, the selected community improvements and 25
 confirmed UI/UX fixes have passed their recorded release and homelab deployment
 gates. Release `.40` added DNS ownership verification and closed seven security
@@ -28,7 +28,8 @@ Exact-image tests, public WAF regression and pre/post off-host writable restores
 
 The next community work list is approved and in progress, including full English,
 French and Spanish translations. Verified database/Redis TLS in `.43` passed
-deployment/recovery gates; stable table sorting `.44` is under deployment validation.
+deployment/recovery gates; stable table sorting `.44` has passed them too.
+Transactional moderation `.45` is implemented and in release validation.
 See the
 delivery ledger for publication and deployment gates; pending additions are
 not yet claimed as complete.
@@ -97,7 +98,7 @@ checked-out source, persists SQLite and custom assets in named volumes, and
 publishes only `127.0.0.1:3000` on the Docker host.
 
 ```sh
-git clone --branch v3.2.6-sr94.43 --depth 1 https://github.com/RobinMJD/kutt.git
+git clone --branch v3.2.6-sr94.44 --depth 1 https://github.com/RobinMJD/kutt.git
 cd kutt
 cp .example.env .env
 chmod 600 .env
