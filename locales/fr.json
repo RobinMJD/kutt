@@ -1451,5 +1451,12 @@
   "theme.appearance": "Apparence",
   "theme.system": "Système",
   "theme.light": "Clair",
-  "theme.dark": "Sombre"
+  "theme.dark": "Sombre",
+  "destination_policy.title": "Politique des destinations",
+  "destination_policy.denied": "Cette destination n'est pas autorisée par la politique du serveur.",
+  "destination_policy.enabled": "Les destinations sont limitées aux hôtes ci-dessous.",
+  "destination_policy.disabled": "Aucune liste d'hôtes autorisés n'est configurée. Les autres règles de sécurité restent applicables.",
+  "destination_policy.deny_all": "Aucun hôte n'est autorisé. Toutes les redirections vers les destinations sont bloquées.",
+  "destination_policy.rules": "Un hôte exact et ses sous-domaines sont distincts. Une règle *.domaine autorise les sous-domaines, mais pas le domaine lui-même. Elle couvre les destinations HTTP et HTTPS sur tous les ports.",
+  "destination_policy.operator": "L'administrateur du serveur gère cette politique. Les liens existants sont conservés, mais les destinations interdites ne peuvent plus être ouvertes par redirection."
 }

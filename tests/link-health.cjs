@@ -15,8 +15,11 @@ module.exports = async ({ request, session, database, account, restart, root, di
       let r=await h.probe({name:'Default',target:'https://example.com/path#part'});assert.equal(r.code,'REDIRECT');assert.equal(calls.length,1);assert.equal(calls[0][1].method,'HEAD');assert.equal(calls[0][1].body,undefined);assert(!JSON.stringify(calls).includes('Cookie'));
       for(const [s,c] of [[204,'OK'],[401,'ACCESS_RESTRICTED'],[403,'ACCESS_RESTRICTED'],[429,'ACCESS_RESTRICTED'],[405,'HEAD_UNSUPPORTED'],[501,'HEAD_UNSUPPORTED'],[503,'HTTP_ERROR']])assert.equal(h.classification(s),c);
       for(const c of ['ADDRESS_DENIED','DNS_FAILED','TIMEOUT','CONNECTION_FAILED','UNEXPECTED']){safe.send=async()=>{throw Object.assign(new Error('secret destination body'),{code:c})};r=await h.probe({name:'Default',target:'https://example.com/'});assert.equal(r.code,c==='UNEXPECTED'?'CHECK_FAILED':c);assert(!JSON.stringify(r).includes('secret destination'));}`);
-    const link = await check(request("POST", "/api/links", { customurl: "health-" + randomUUID(), target: "https://example.com/health#fragment" }, session), 201);
+    // Create offline without DNS, then seed the public hostname exercised by probe stubs.
+    const link = await check(request("POST", "/api/links", { customurl: "health-" + randomUUID(), target: "https://192.0.2.1/health#fragment" }, session), 201);
     const id = db.prepare("SELECT id FROM links WHERE uuid=?").get(link.id).id, endpoint = "/api/links/" + link.id + "/health";
+    link.target = "https://example.com/health#fragment";
+    db.prepare("UPDATE links SET target=? WHERE id=?").run(link.target, id);
     const config = { enabled: true, interval_hours: 24, revision: 0 };
     const initial = await check(request("GET", endpoint, undefined, session)); assert.equal(initial.enabled, false); assert.equal(initial.revision, 0);
     await check(request("GET", endpoint), 401); await check(request("GET", "/api/links/health"), 401);

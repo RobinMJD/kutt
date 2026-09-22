@@ -1451,5 +1451,12 @@
   "theme.appearance": "Appearance",
   "theme.system": "System",
   "theme.light": "Light",
-  "theme.dark": "Dark"
+  "theme.dark": "Dark",
+  "destination_policy.title": "Destination policy",
+  "destination_policy.denied": "This destination is not permitted by the server's destination policy.",
+  "destination_policy.enabled": "Destinations are restricted to the hosts below.",
+  "destination_policy.disabled": "No destination host allowlist is configured. Other safety rules still apply.",
+  "destination_policy.deny_all": "No hosts are permitted. All destination redirects are blocked.",
+  "destination_policy.rules": "Exact hosts and subdomains are separate. A *.domain rule permits subdomains, not the domain itself. HTTP and HTTPS destinations on any port are covered.",
+  "destination_policy.operator": "The server operator manages this policy. Existing links are retained, but disallowed destinations cannot redirect."
 }

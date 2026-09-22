@@ -82,6 +82,7 @@ const spec = {
   OIDC_ALLOW_REGISTRATION: bool({ default: true }),
   OIDC_SESSION_MAX_SECONDS: num({ default: 3600, choices: [300, 900, 1800, 3600, 14400, 86400] }),
   ENABLE_RATE_LIMIT: bool({ default: false }),
+  DESTINATION_ALLOWED_HOSTS: str({ default: "" }),
   REPORT_EMAIL: str({ default: "" }),
   CONTACT_EMAIL: str({ default: "" }),
   NODE_APP_INSTANCE: num({ default: 0 }),
@@ -96,6 +97,7 @@ if (process.env.JWT_SECRET === "") delete process.env.JWT_SECRET;
 
 const env = cleanEnv(process.env, spec);
 require("./transport-tls").validate(env);
+require("./destination-policy").compile(env.DESTINATION_ALLOWED_HOSTS);
 require("./metrics").validate(env);
 
 module.exports = env;

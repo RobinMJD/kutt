@@ -1451,5 +1451,12 @@
   "theme.appearance": "Apariencia",
   "theme.system": "Sistema",
   "theme.light": "Claro",
-  "theme.dark": "Oscuro"
+  "theme.dark": "Oscuro",
+  "destination_policy.title": "Política de destinos",
+  "destination_policy.denied": "La política de destinos del servidor no permite este destino.",
+  "destination_policy.enabled": "Los destinos están restringidos a los hosts siguientes.",
+  "destination_policy.disabled": "No hay una lista de hosts permitidos configurada. Las demás reglas de seguridad siguen vigentes.",
+  "destination_policy.deny_all": "No hay hosts permitidos. Todas las redirecciones a destinos están bloqueadas.",
+  "destination_policy.rules": "Un host exacto y sus subdominios son distintos. Una regla *.dominio permite los subdominios, pero no el dominio en sí. Incluye destinos HTTP y HTTPS en cualquier puerto.",
+  "destination_policy.operator": "El administrador del servidor gestiona esta política. Los enlaces existentes se conservan, pero no se redirigen a destinos no permitidos."
 }
