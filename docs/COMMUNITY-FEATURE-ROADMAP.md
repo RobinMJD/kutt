@@ -82,7 +82,7 @@ reviews, reconcile source/release/deployed versions, confirm clean committed and
 pushed changes, and update the documented upstream contribution. Do not mark this
 review complete while required work remains.
 
-## Superseded Candidates: .50 / .51 / .52 / .53
+## Superseded Candidates: .50 / .51 / .52 / .53 / .54
 
 Release `.50` (`8b9afa3`) passed source/tag CI, exact-wrapper regression and a
 valid image scan with zero Critical/High findings. Its pre-release local/NAS
@@ -148,6 +148,22 @@ patch; focused red/green tests now pass while off-mode, JSON, static assets,
 redirects and QR attachment headers remain unchanged. Full-document nonces and
 script permissions are unchanged. Publication and live gates remain pending;
 this focused result is not deployment acceptance.
+
+The final bounded review of `.54` reproduced a separate authorization race:
+an OIDC-mapped administrator's grant could expire after request authentication,
+yet an in-flight cross-owner link edit still committed. Release and contribution
+CI were cancelled before image publication or deployment. Live `.49` remains
+unchanged with role mapping disabled. Candidate `.55` must check current owner or
+administrator authority inside the guarded write transaction and reproduce the
+expiry boundary in both edit routes before repeating all release gates.
+
+The fix also covers the affected delete path. Real HTTP fixtures under both API
+prefixes deterministically change expiry, role or session version between route
+authentication and the guarded mutation; rejected writes leave link/history
+unchanged. Red/green SQLite, MySQL and PostgreSQL checks and mapping-off controls
+passed. Ordinary owners, granted-domain creators and workspace collaborators
+retain their existing rights. These regressions are included in automated CI;
+candidate `.55` still requires full publication and deployment acceptance.
 
 ## Evidence: C01 / C02
 
