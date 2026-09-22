@@ -3,12 +3,7 @@
   hx-post="/api/domains"
   hx-sync="this:abort"
   hx-swap="outerHTML"
-  hx-on::after-request="
-    if (event.detail.successful && event.detail.xhr.getResponseHeader('HX-Reswap') === 'none') {
-      document.querySelector('.show-domain-form').classList.remove('hidden');
-      document.querySelector('#add-domain')?.remove();
-    }
-  "
+  data-ui-domain-save
 >
   <div class="inputs">
     <label class="{{#if errors.address}}error{{/if}}">
@@ -43,10 +38,10 @@
     <dl class="domain-verification">
       <dt>{{t "ui.dns_record_type"}}</dt><dd>{{t "ui.txt"}}</dd>
       <dt>{{t "ui.record_name"}}</dt><dd data-copy-container><code>{{domain_verification.record_name}}</code>
-        <button type="button" aria-label="{{t 'ui.copy_dns_record_name'}}" title="{{t 'ui.copy_dns_record_name'}}" data-url="{{domain_verification.record_name}}" hx-on:click="handleShortURLCopyLink(this)">{{> icons/copy}}</button>
+        <button type="button" aria-label="{{t 'ui.copy_dns_record_name'}}" title="{{t 'ui.copy_dns_record_name'}}" data-url="{{domain_verification.record_name}}" data-ui-copy>{{> icons/copy}}</button>
       </dd>
       <dt>{{t "ui.record_value"}}</dt><dd data-copy-container><code>{{domain_verification.record_value}}</code>
-        <button type="button" aria-label="{{t 'ui.copy_dns_record_value'}}" title="{{t 'ui.copy_dns_record_value'}}" data-url="{{domain_verification.record_value}}" hx-on:click="handleShortURLCopyLink(this)">{{> icons/copy}}</button>
+        <button type="button" aria-label="{{t 'ui.copy_dns_record_value'}}" title="{{t 'ui.copy_dns_record_value'}}" data-url="{{domain_verification.record_value}}" data-ui-copy>{{> icons/copy}}</button>
       </dd>
       <dt>{{t "ui.expires"}}</dt><dd>{{date domain_verification.expires_at}}</dd>
     </dl>
@@ -57,10 +52,7 @@
     </small>
   </p>
   <div class="buttons-wrapper">
-    <button type="button" onclick="
-      document.querySelector('.show-domain-form').classList.remove('hidden');
-      document.querySelector('#add-domain').remove();
-    ">
+    <button type="button" data-ui-domain-cancel>
       {{t "ui.cancel"}}
     </button>
     <button type="submit" class="primary">

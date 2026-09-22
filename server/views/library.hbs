@@ -83,5 +83,5 @@
   </form>
   <nav class="archive-nav" aria-label="{{t 'ui.library_pages'}}">{{#if previous}}<a href="{{previous}}">{{t "ui.previous"}}</a>{{/if}}<span>{{t "ui.page_value" value1=page}}</span>{{#if next}}<a href="{{next}}">{{t "ui.next"}}</a>{{/if}}</nav>
 </main>
-<script src="/scripts/library.js" defer></script>
+<script nonce="{{cspNonce}}" src="/scripts/library.js" defer></script>
 {{> footer}}

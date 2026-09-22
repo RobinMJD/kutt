@@ -10,42 +10,42 @@
             type="text" 
             placeholder="{{t 'ui.search_user'}}" aria-label="{{t 'ui.search_users'}}"
             class="table-input search admin" 
-            hx-on:input="onSearchChange(event)" 
-            hx-on:keyup="resetTableNav()"
+            data-ui-search
+            data-ui-reset-nav="keyup"
             value="{{query.search}}"
           />
           <button 
             type="button" 
             aria-label="{{t 'ui.clear_search'}}"
             class="clear" 
-            onclick="clearSeachInput(event)"
+            data-ui-clear-search
           >
             {{> icons/x}}
           </button>
         </div>
-        <select  id="users-select-verified" name="verified" class="table-input verification" hx-on:change="resetTableNav()" aria-label="{{t 'ui.verification_status'}}">
+        <select  id="users-select-verified" name="verified" class="table-input verification" data-ui-reset-nav="change" aria-label="{{t 'ui.verification_status'}}">
           <option value="">{{t "ui.verification"}}</option>
           <option value="true" {{#ifEquals query.verified 'true'}}selected{{/ifEquals}}>{{t "ui.verified"}}</option>
           <option value="false" {{#ifEquals query.verified 'false'}}selected{{/ifEquals}}>{{t "ui.not_verified"}}</option>
         </select>
-        <select id="users-select-banned" name="banned" class="table-input ban" hx-on:change="resetTableNav()" aria-label="{{t 'ui.banned_status'}}">
+        <select id="users-select-banned" name="banned" class="table-input ban" data-ui-reset-nav="change" aria-label="{{t 'ui.banned_status'}}">
           <option value="" selected>{{t "ui.banned_2"}}</option>
           <option value="true">{{t "ui.banned"}}</option>
           <option value="false">{{t "ui.not_banned"}}</option>
         </select>
-        <select id="users-select-role" name="role" class="table-input role" hx-on:change="resetTableNav()" aria-label="{{t 'ui.user_role'}}">
+        <select id="users-select-role" name="role" class="table-input role" data-ui-reset-nav="change" aria-label="{{t 'ui.user_role'}}">
           <option value="">{{t "ui.role_2"}}</option>
           <option value="USER" {{#ifEquals query.role 'USER'}}selected{{/ifEquals}}>{{t "ui.user"}}</option>
           <option value="ADMIN" {{#ifEquals query.role 'ADMIN'}}selected{{/ifEquals}}>{{t "ui.admin"}}</option>
         </select>
       </div>
       <div>
-        <select id="users-select-domain" name="domains" class="table-input domains" hx-on:change="resetTableNav()" aria-label="{{t 'ui.domain_ownership'}}">
+        <select id="users-select-domain" name="domains" class="table-input domains" data-ui-reset-nav="change" aria-label="{{t 'ui.domain_ownership'}}">
           <option value="">{{t "ui.domain_2"}}</option>
           <option value="true" {{#ifEquals query.domains 'true'}}selected{{/ifEquals}}>{{t "ui.with_domains"}}</option>
           <option value="false" {{#ifEquals query.domains 'false'}}selected{{/ifEquals}}>{{t "ui.no_domains_2"}}</option>
         </select>
-        <select id="users-select-links" name="links" class="table-input links" hx-on:change="resetTableNav()" aria-label="{{t 'ui.link_ownership'}}">
+        <select id="users-select-links" name="links" class="table-input links" data-ui-reset-nav="change" aria-label="{{t 'ui.link_ownership'}}">
           <option value="" selected>{{t "ui.links_2"}}</option>
           <option value="true" {{#ifEquals query.links 'true'}}selected{{/ifEquals}}>{{t "ui.with_links"}}</option>
           <option value="false" {{#ifEquals query.links 'true'}}selected{{/ifEquals}}>{{t "ui.no_links"}}</option>
@@ -56,7 +56,7 @@
         {{> list_sort profile='users' state=query}}
         <button 
           class="table primary"
-          hx-on::before-request='openDialog("admin-table-dialog", null, this)'
+          data-ui-open-dialog="admin-table-dialog"
           hx-get="/create-user" 
           hx-target="#admin-table-dialog .content-wrapper" 
           hx-indicator="#admin-table-dialog"

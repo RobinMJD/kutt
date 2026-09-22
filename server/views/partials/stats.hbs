@@ -24,10 +24,10 @@
         {{t "ui.total_views"}} <span class="total-number">{{link.visit_count}}</span>
       </p>
       <nav class="stats-nav">
-        <button type="button" class="nav" data-period="year" onclick="changeStatsPeriod(event)">{{t "ui.year"}}</button>
-        <button type="button" class="nav" data-period="month" onclick="changeStatsPeriod(event)">{{t "ui.month"}}</button>
-        <button type="button" class="nav" data-period="week" onclick="changeStatsPeriod(event)">{{t "ui.week"}}</button>
-        <button type="button" class="nav" data-period="day" onclick="changeStatsPeriod(event)" disabled="true">{{t "ui.day"}}</button>
+        <button type="button" class="nav" data-period="year" data-ui-stats-period>{{t "ui.year"}}</button>
+        <button type="button" class="nav" data-period="month" data-ui-stats-period>{{t "ui.month"}}</button>
+        <button type="button" class="nav" data-period="week" data-ui-stats-period>{{t "ui.week"}}</button>
+        <button type="button" class="nav" data-period="day" data-ui-stats-period disabled="true">{{t "ui.day"}}</button>
       </nav>
     </div>
 
@@ -72,10 +72,7 @@
             data-week="{{json stats.lastWeek.stats.country}}"
             data-month="{{json stats.lastMonth.stats.country}}"
             data-year="{{json stats.lastYear.stats.country}}"
-            onmouseout="mapTooltipHoverOut()"
-            onmousemove="mapTooltipHoverOver(event)"
-            onpointerdown="mapTooltipHoverOver(event)"
-            onpointerup="mapTooltipHoverOut()"
+            data-ui-map
           >
             {{#each map.layers}}
               <path data-id="{{id}}" aria-label="{{region id}}" d="{{d}}"></path>

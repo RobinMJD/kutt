@@ -74,7 +74,7 @@
     if (event.shiftKey && event.target === first) { event.preventDefault(); last.focus(); }
     else if (!event.shiftKey && event.target === last) { event.preventDefault(); first.focus(); }
   });
-  // hx-on::before-request opens the frame on the target before this event bubbles.
+  // ui-events opens the frame during capture before this event bubbles.
   document.addEventListener("htmx:before-request", event => {
     const dialog = event.detail.target?.closest("dialog.dialog"), state = states.get(dialog);
     if (!dialog || !state || !dialog.open || event.defaultPrevented) return;

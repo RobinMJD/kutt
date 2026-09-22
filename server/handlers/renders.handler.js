@@ -71,7 +71,8 @@ function admin(req, res) {
 
 function stats(req, res) {
   res.render("stats", {
-    title: i18n.t("messages.stats")
+    title: i18n.t("messages.stats"),
+    stats_id: typeof req.query.id === "string" ? req.query.id : ""
   });
 }
 

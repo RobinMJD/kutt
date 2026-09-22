@@ -34,13 +34,12 @@
         id="add-domain-banned" 
         name="banned"
         type="checkbox"
-        onchange="canSendVerificationEmail();" 
         hx-preserve="true"
       />
       {{t "ui.banned"}}
     </label>
     <div class="buttons">
-      <button type="button" hx-on:click="closeDialog()">{{t "ui.cancel"}}</button>
+      <button type="button" data-ui-close-dialog>{{t "ui.cancel"}}</button>
       <button type="submit" class="primary">
         <span>{{> icons/plus}}</span>
         {{t "ui.add"}}

@@ -28,6 +28,8 @@ module.exports = function({ root, directory, env }) {
   for (const OIDC_ID_TOKEN_SIGNING_ALG of ["RS256", "PS256", "ES256", "EdDSA"]) {
     assert.equal(runEnv({ OIDC_ID_TOKEN_SIGNING_ALG }).status, 0);
   }
+  for (const CSP_MODE of ["off", "report-only", "enforce"]) assert.equal(runEnv({ CSP_MODE }).status, 0);
+  for (const CSP_MODE of ["", "true", "ENFORCE", "enforce ", "report-only; script-src *"]) assert.notEqual(runEnv({ CSP_MODE }).status, 0);
   for (const OIDC_ID_TOKEN_SIGNING_ALG of ["", "none", "HS256", "HS384", "HS512", "rs256", "RS256,ES256"]) {
     assert.notEqual(runEnv({ OIDC_ID_TOKEN_SIGNING_ALG }).status, 0);
   }

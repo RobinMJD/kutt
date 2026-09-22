@@ -33,6 +33,7 @@ const spec = {
   LINK_LENGTH: num({ default: 6 }),
   LINK_CUSTOM_ALPHABET: str({ default: "abcdefghkmnpqrstuvwxyzABCDEFGHKLMNPQRSTUVWXYZ23456789" }),
   TRUST_PROXY: proxyTrust({ default: true }),
+  CSP_MODE: str({ choices: ["off", "report-only", "enforce"], default: "off" }),
   DB_CLIENT: str({ choices: supportedDBClients, default: "better-sqlite3" }),
   DB_FILENAME: str({ default: "db/data" }),
   DB_HOST: str({ default: "localhost" }),
