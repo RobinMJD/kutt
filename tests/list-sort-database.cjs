@@ -9,7 +9,7 @@ module.exports = async function (db) {
   const library = require("../server/library");
   const prefix = "sort-" + randomUUID().slice(0, 8);
   const owners = [];
-  for (const name of ["z", "a", "m"]) owners.push(await users.create({ email: prefix + name + "@example.invalid", password: "isolated-sort-fixture", verified: true }));
+  for (const name of ["z", "a", "m"]) owners.push(await users.add({ email: prefix + name + "@example.invalid", password: "isolated-sort-fixture", verified: true }));
   const domainRows = [];
   for (const [n, homepage] of [null, "https://example.org/z", "https://example.org/a"].entries()) {
     const address = prefix + n + ".example.invalid";

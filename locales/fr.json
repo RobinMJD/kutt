@@ -1,4 +1,5 @@
 {
+  "auth.provider_login": "Se connecter avec {{provider}}",
   "qr.logo_label": "Logo (PNG, 64 Kio max., 512 × 512)",
   "qr.selected_logo": "Logo sélectionné",
   "qr.remove_logo": "Retirer le logo",

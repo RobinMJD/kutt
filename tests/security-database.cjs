@@ -13,7 +13,7 @@ const knex = require("../server/knex");
   const users = require("../server/queries/user.queries"), domains = require("../server/queries/domain.queries");
   const hooks = require("../server/webhooks"), queue = require("../server/webhook-queue");
   const owners = [];
-  for (let i = 0; i < 2; i++) owners.push(await users.create({ email: randomUUID() + "@example.invalid", password: "fixture-not-a-login", verified: true }));
+  for (let i = 0; i < 2; i++) owners.push(await users.add({ email: randomUUID() + "@example.invalid", password: "fixture-not-a-login", verified: true }));
   const address = "racing.example.invalid";
   await knex("domains").insert({ address });
   const before = await knex("domains").where({ address }).first();

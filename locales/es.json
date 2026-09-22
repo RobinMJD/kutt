@@ -1,4 +1,5 @@
 {
+  "auth.provider_login": "Iniciar sesión con {{provider}}",
   "qr.logo_label": "Logotipo (PNG, máx. 64 KiB, 512 × 512)",
   "qr.selected_logo": "Logotipo seleccionado",
   "qr.remove_logo": "Quitar logotipo",

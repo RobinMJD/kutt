@@ -38,6 +38,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
         for (const mode of ["light", "dark"]) {
           await page.goto(origin + "/settings/security");
           await page.getByRole("radio", { name: catalog["theme." + mode], exact: true }).check();
+          await page.waitForFunction(() => getComputedStyle(document.querySelector('.site-header a.nav')).color === getComputedStyle(document.body).color);
           await page.getByRole("heading", { name: catalog["oidc_roles.title"], exact: true }).waitFor();
           assert.equal(await page.locator("html").getAttribute("lang"), locale);
           for (const key of ["state", "enabled", "claim", "values", "lease", "recovery"]) {
