@@ -1,3 +1,4 @@
+const i18n = require("../i18n");
 const query = require("../queries");
 const utils = require("../utils");
 const env = require("../env");
@@ -30,10 +31,10 @@ function config(req, res, next) {
   res.locals.disallow_login_form = env.DISALLOW_LOGIN_FORM;
   res.locals.login_disabled = env.DISALLOW_LOGIN_FORM && !env.OIDC_ENABLED;
   res.locals.registration_enabled = !env.DISALLOW_LOGIN_FORM && !env.DISALLOW_REGISTRATION && env.MAIL_ENABLED;
-  res.locals.login_label = res.locals.registration_enabled ? "Log in / Sign up" : "Log in";
-  res.locals.login_title = res.locals.login_disabled ? "Login is closed" : res.locals.registration_enabled ? "Log in or sign up" : "Log in";
+  res.locals.login_label = res.locals.registration_enabled ? i18n.t("messages.log_in_sign_up") : i18n.t("ui.log_in");
+  res.locals.login_title = res.locals.login_disabled ? i18n.t("messages.login_is_closed") : res.locals.registration_enabled ? i18n.t("messages.log_in_or_sign_up") : i18n.t("ui.log_in");
   res.locals.oidc_enabled = env.OIDC_ENABLED;
-  res.locals.oidc_button_text = env.OIDC_BUTTON_TEXT;
+  res.locals.oidc_button_text = env.OIDC_BUTTON_TEXT === "Log in with OIDC" ? i18n.t("auth.oidc_login") : env.OIDC_BUTTON_TEXT;
   res.locals.mail_enabled = env.MAIL_ENABLED;
   res.locals.report_email = env.REPORT_EMAIL;
   res.locals.custom_styles = utils.getCustomCSSFileNames();

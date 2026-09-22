@@ -1,3 +1,4 @@
+const i18n = require("../i18n");
 const { Router } = require("express");
 const auth = require("../handlers/auth.handler");
 const handlers = require("../handlers/moderation.handler");
@@ -17,8 +18,8 @@ pages.use((error, req, res, next) => {
   if (!req.isHTML) return next(error);
   const known = error instanceof require("../utils").CustomError;
   res.status(known ? error.statusCode : 500).set("Cache-Control", "no-store").render("error", {
-    title: "Moderation failed",
-    message: known ? error.message : "Moderation could not be completed. Review the current state before retrying."
+    title: i18n.t("moderation.failed"),
+    message: known ? error.message : i18n.t("moderation.retry")
   });
 });
 module.exports = { api, pages };

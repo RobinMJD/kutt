@@ -47,8 +47,18 @@ module.exports = async ({ root, request, session }) => {
   assert.equal(page.status, 200); const html = await page.text();
   assert(html.includes('data-theme-picker hidden')); assert(html.includes('value="system"'));
   assert(html.indexOf('/scripts/theme.js') < html.indexOf('/css/styles.css'), "Initialize before rendering styles");
+  for (const locale of ["en", "fr", "es"]) {
+    const catalog = require(path.join(root, "locales", locale + ".json"));
+    const localized = await request("GET", "/", undefined, session, { Accept: "text/html", "Accept-Language": locale });
+    assert.equal(localized.status, 200);
+    const body = await localized.text();
+    assert(body.includes(`<legend>${catalog["theme.appearance"]}</legend>`));
+    for (const value of ["system", "light", "dark"]) {
+      assert(body.includes(`name="theme" value="${value}">${catalog["theme." + value]}</label>`), locale + " keeps theme values stable");
+    }
+  }
   for (const asset of ["/scripts/theme.js", "/scripts/chart-theme.js", "/css/theme.css"]) {
     const response = await request("GET", asset); assert.equal(response.status, 200);
   }
-  console.log("PASS: strict local theme preferences, early initialization, system changes, cross-tab isolation, storage denial, safe assets and rendered selector");
+  console.log("PASS: strict local theme preferences, early initialization, system changes, cross-tab isolation, storage denial, safe assets and EN/FR/ES selectors with unchanged machine values");
 };

@@ -10,7 +10,7 @@
     all.disabled = !boxes.length;
     all.checked = !!count && count === boxes.length;
     all.indeterminate = count > 0 && count < boxes.length;
-    document.getElementById("library-selection").textContent = `${count} selected`;
+    document.getElementById("library-selection").textContent = window.KuttI18n.t("library.selected", {count});
     document.getElementById("library-apply").disabled = submitting || !count;
     const labels = action.value.endsWith("label");
     const field = document.getElementById("library-label-field");
@@ -20,7 +20,7 @@
   all.addEventListener("change", () => { for (const box of boxes) box.checked = all.checked; update(); });
   form.addEventListener("change", update);
   form.addEventListener("submit", event => {
-    if (action.value === "trash" && !window.confirm("Move the selected links to trash? Their short links will stop redirecting.")) event.preventDefault();
+    if (action.value === "trash" && !window.confirm(window.KuttI18n.t("ui.move_the_selected_links_to_trash_their_short_links_will_stop"))) event.preventDefault();
   });
   document.querySelectorAll(".library form").forEach(item => item.addEventListener("submit", event => {
     const message = event.submitter?.dataset.confirm;

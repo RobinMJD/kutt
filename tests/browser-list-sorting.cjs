@@ -1,4 +1,5 @@
 const assert = require("node:assert/strict");
+const { locale, t } = require("./browser-locale.cjs");
 const { randomBytes } = require("node:crypto");
 const { mkdirSync } = require("node:fs");
 const path = require("node:path");
@@ -10,7 +11,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
   assert(evidence); mkdirSync(evidence, { recursive: true });
   const browser = await chromium.launch({ headless: true });
   try {
-    const context = await browser.newContext();
+    const context = await browser.newContext({ locale, extraHTTPHeaders: { "Accept-Language": locale } });
     const call = async (method, route, data, expected = 200) => {
       const response = await context.request.fetch(origin + route, { method, data, headers: { Accept: "application/json" }, maxRedirects: 0 });
       assert.equal(response.status(), expected, route + ": " + await response.text());
@@ -54,38 +55,38 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
       await page.setViewportSize({ width, height: 900 });
       await page.goto(origin + "/"); await settle();
       await page.screenshot({ path: path.join(evidence, "initial-" + width + ".png"), fullPage: true });
-      await tableChange(() => page.getByLabel("Sort by", { exact: true }).selectOption("address"));
-      await tableChange(() => page.getByLabel("Direction", { exact: true }).selectOption("asc"));
+      await tableChange(() => page.getByLabel(t("sorting.field"), { exact: true }).selectOption("address"));
+      await tableChange(() => page.getByLabel(t("sorting.direction"), { exact: true }).selectOption("asc"));
       assert.equal(await rows().first().getAttribute("id"), "tr-" + links.at(-1).id);
-      await tableChange(() => page.getByRole("button", { name: "Next page", exact: true }).first().click());
+      await tableChange(() => page.getByRole("button", { name: t("ui.next_page"), exact: true }).first().click());
       assert.equal(await rows().count(), 2);
-      await tableChange(() => page.getByLabel("Direction", { exact: true }).selectOption("desc"));
+      await tableChange(() => page.getByLabel(t("sorting.direction"), { exact: true }).selectOption("desc"));
       assert.equal(await page.locator("#skip").inputValue(), "0");
       assert.equal(await rows().first().getAttribute("id"), "tr-" + links[0].id);
       await shot("personal-" + width);
       await page.goto(origin + "/admin"); await settle();
-      for (const tab of ["Users", "Domains", "Links"]) {
+      for (const tab of [t("ui.users"), t("ui.domains"), t("ui.links")]) {
         await tableChange(() => page.getByRole("tab", { name: tab, exact: true }).click());
-        assert.equal(await page.getByLabel("Sort by", { exact: true }).inputValue(), "id");
-        await tableChange(() => page.getByLabel("Sort by", { exact: true }).selectOption(tab === "Links" ? "visit_count" : "links_count"));
+        assert.equal(await page.getByLabel(t("sorting.field"), { exact: true }).inputValue(), "id");
+        await tableChange(() => page.getByLabel(t("sorting.field"), { exact: true }).selectOption(tab === t("ui.links") ? "visit_count" : "links_count"));
         await shot("admin-" + tab.toLowerCase() + "-" + width);
       }
-      for (const [route, form, list] of [["/settings/library", "Filter links", ".library-links > li"],
-        ["/settings/workspaces/" + workspace.id, "Filter shared links", ".workspace-links > li"]]) {
+      for (const [route, form, list] of [["/settings/library", t("ui.filter_links"), ".library-links > li"],
+        ["/settings/workspaces/" + workspace.id, t("ui.filter_shared_links"), ".workspace-links > li"]]) {
         await page.goto(origin + route); await settle();
         const filter = page.getByRole("form", { name: form, exact: true });
-        await filter.getByLabel("Sort by", { exact: true }).selectOption("address");
-        await filter.getByLabel("Direction", { exact: true }).selectOption("asc");
-        await filter.getByRole("button", { name: "Filter", exact: true }).click(); await settle();
+        await filter.getByLabel(t("sorting.field"), { exact: true }).selectOption("address");
+        await filter.getByLabel(t("sorting.direction"), { exact: true }).selectOption("asc");
+        await filter.getByRole("button", { name: t("ui.filter"), exact: true }).click(); await settle();
         assert.equal(new URL(page.url()).searchParams.get("sort"), "address");
         assert.equal(new URL(page.url()).searchParams.get("direction"), "asc");
         assert((await page.locator(list).first().textContent()).includes("sort-ui-00"));
-        await shot((form === "Filter links" ? "library-" : "workspace-") + width);
-        if (form === "Filter shared links") {
-          await page.getByText("Workspace and members", { exact: true }).click();
-          const candidates = page.getByRole("form", { name: "Find personal link", exact: true });
+        await shot((form === t("ui.filter_links") ? "library-" : "workspace-") + width);
+        if (form === t("ui.filter_shared_links")) {
+          await page.getByText(t("ui.workspace_and_members"), { exact: true }).click();
+          const candidates = page.getByRole("form", { name: t("ui.find_personal_link"), exact: true });
           await candidates.getByRole("searchbox").fill("sort-ui");
-          await candidates.getByRole("button", { name: "Search", exact: true }).click(); await settle();
+          await candidates.getByRole("button", { name: t("ui.search"), exact: true }).click(); await settle();
           assert.equal(new URL(page.url()).searchParams.get("sort"), "address");
           assert.equal(new URL(page.url()).searchParams.get("direction"), "asc");
         }
@@ -93,19 +94,20 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
     }
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(origin + "/"); await settle();
-    await tableChange(() => page.getByLabel("Sort by", { exact: true }).selectOption("address"));
-    await tableChange(() => page.getByLabel("Direction", { exact: true }).selectOption("asc"));
-    for (const alias of ["sort-ui-00", "sort-ui-01"]) { await page.getByRole("button", { name: "Edit " + alias, exact: true }).click(); await settle(); }
-    assert(await page.getByLabel("Sort by", { exact: true }).isDisabled());
+    await tableChange(() => page.getByLabel(t("sorting.field"), { exact: true }).selectOption("address"));
+    await tableChange(() => page.getByLabel(t("sorting.direction"), { exact: true }).selectOption("asc"));
+    for (const alias of ["sort-ui-00", "sort-ui-01"]) { await page.getByRole("button", { name: t("ui.edit_value", { value1: alias }), exact: true }).click(); await settle(); }
+    assert(await page.getByLabel(t("sorting.field"), { exact: true }).isDisabled());
+    assert.equal(await page.getByLabel(t("sorting.field"), { exact: true }).getAttribute("title"), t("sorting.close_editors"));
     const zero = page.locator("#edit-form-" + links.at(-1).id), one = page.locator("#edit-form-" + links.at(-2).id);
     await one.locator('[name="description"]').fill("An unsaved draft");
     await zero.locator('[name="address"]').fill("sort-ui-zz");
-    await zero.getByRole("button", { name: "Update", exact: true }).click(); await settle();
+    await zero.getByRole("button", { name: t("ui.update"), exact: true }).click(); await settle();
     assert.equal(await one.locator('[name="description"]').inputValue(), "An unsaved draft");
-    await zero.getByRole("button", { name: "Close", exact: true }).click(); await settle();
+    await zero.getByRole("button", { name: t("ui.close"), exact: true }).click(); await settle();
     assert.equal(await one.locator('[name="description"]').inputValue(), "An unsaved draft");
-    await tableChange(() => one.getByRole("button", { name: "Close", exact: true }).click());
-    assert(!(await page.getByLabel("Sort by", { exact: true }).isDisabled()));
+    await tableChange(() => one.getByRole("button", { name: t("ui.close"), exact: true }).click());
+    assert(!(await page.getByLabel(t("sorting.field"), { exact: true }).isDisabled()));
     assert.equal(await rows().first().getAttribute("id"), "tr-" + links.at(-2).id);
     // A list already in flight must not overwrite a newly opened editor or its draft.
     for (const delayedEditor of [false, true]) {
@@ -125,7 +127,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
       });
       await page.evaluate(() => htmx.trigger(document.querySelector("table[hx-get]"), "reloadMainTable"));
       await listReady;
-      await page.getByRole("button", { name: "Edit sort-ui-01", exact: true }).click();
+      await page.getByRole("button", { name: t("ui.edit_value", { value1: "sort-ui-01" }), exact: true }).click();
       if (delayedEditor) await editorReady;
       else await one.locator('[name="description"]').fill("A draft opened after refresh");
       const listResponse = page.waitForResponse(r => new URL(r.url()).pathname === "/api/links" && r.request().method() === "GET");
@@ -134,10 +136,10 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
       await settle();
       assert.equal(await one.locator('[name="description"]').inputValue(), "A draft opened after refresh");
       // Search while an editor is open is deferred, with the selected sort retained.
-      await page.getByRole("textbox", { name: "Search links", exact: true }).fill("sort-ui");
+      await page.getByRole("textbox", { name: t("ui.search_links"), exact: true }).fill("sort-ui");
       await page.waitForTimeout(650);
       assert.equal(await one.locator('[name="description"]').inputValue(), "A draft opened after refresh");
-      await tableChange(() => one.getByRole("button", { name: "Close", exact: true }).click());
+      await tableChange(() => one.getByRole("button", { name: t("ui.close"), exact: true }).click());
       assert.equal(await rows().first().getAttribute("id"), "tr-" + links.at(-2).id);
       await page.unroute("**/api/links?**");
       if (delayedEditor) await page.unroute("**/link/edit/**");

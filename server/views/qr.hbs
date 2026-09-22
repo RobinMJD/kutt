@@ -1,19 +1,19 @@
 {{> header}}
 <main class="link-archive qr-page">
-  <header class="archive-heading"><h1>QR code</h1><a href="/settings/library">Library</a><a href="/">Links</a></header>
+  <header class="archive-heading"><h1>{{t "ui.qr_code"}}</h1><a href="/settings/library">{{t "ui.library"}}</a><a href="/">{{t "ui.links"}}</a></header>
   <div class="qr-controls">
-    <form method="get" action="/link/qr/{{id}}" aria-label="QR settings">
-      <label>Size (px)<input type="number" name="size" min="128" max="1024" step="1" value="{{size}}" required /></label>
-      <label>Error correction<select name="level">{{#each levels}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{value}}</option>{{/each}}</select></label>
-      <button type="submit">Apply</button>
+    <form method="get" action="/link/qr/{{id}}" aria-label="{{t 'ui.qr_settings'}}">
+      <label>{{t "ui.size_px"}}<input type="number" name="size" min="128" max="1024" step="1" value="{{size}}" required /></label>
+      <label>{{t "ui.error_correction"}}<select name="level">{{#each levels}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{value}}</option>{{/each}}</select></label>
+      <button type="submit">{{t "ui.apply"}}</button>
     </form>
-    <div class="qr-actions"><a class="button primary" href="{{image_url}}" download>Download PNG</a><a class="button" href="{{svg_url}}" download>Download SVG</a><button id="qr-copy" type="button" aria-label="Copy QR image" title="Copy QR image" disabled>{{> icons/copy}}</button><button id="qr-print" type="button" disabled>Print</button></div>
+    <div class="qr-actions"><a class="button primary" href="{{image_url}}" download>{{t "ui.download_png"}}</a><a class="button" href="{{svg_url}}" download>{{t "ui.download_svg"}}</a><button id="qr-copy" type="button" aria-label="{{t 'ui.copy_qr_image'}}" title="{{t 'ui.copy_qr_image'}}" disabled>{{> icons/copy}}</button><button id="qr-print" type="button" disabled>{{t "ui.print"}}</button></div>
     <p id="qr-copy-status" role="status" aria-live="polite"></p>
-    <p class="qr-state">{{lifecycle_status}}{{#if protected}} &middot; Password protected{{/if}}</p>
-    <p id="qr-error" role="alert" hidden>QR image could not load. Sign in again or retry.</p>
+    <p class="qr-state">{{lifecycle_label}}{{#if protected}} {{t "ui.password_protected_2"}}{{/if}}</p>
+    <p id="qr-error" role="alert" hidden>{{t "ui.qr_image_could_not_load_sign_in_again_or_retry"}}</p>
   </div>
   <figure class="qr-sheet">
-    <img id="qr-preview" src="{{image_url}}" alt="QR code for {{short_url}}" width="512" height="512" />
+    <img id="qr-preview" src="{{image_url}}" alt="{{t 'ui.qr_code_for_value' value1=short_url}}" width="512" height="512" />
     <figcaption>{{short_url}}</figcaption>
   </figure>
 </main>

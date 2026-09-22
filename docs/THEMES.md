@@ -8,6 +8,11 @@ values fall back to System. If storage is denied, the current page still applies
 the choice; persistence cannot be guaranteed. Without JavaScript, the existing
 light layout remains usable and the inactive selector is hidden.
 
+The four footer labels use the English/French/Spanish catalogs (`theme.*` keys).
+The radio values and stored preferences remain `system`, `light` and `dark` in
+every language. Native language changes retain the current theme preference.
+See [Localization](LOCALIZATION.md) for catalog conventions and locale selection.
+
 The tiny same-origin `/scripts/theme.js` initializes before styles to avoid a
 light flash. It sets only validated root attributes, never evaluates stored text,
 does not read credentials or contact a network service. `/css/theme.css` keeps
@@ -31,10 +36,13 @@ Public short links and management authorization are unaffected.
 early initialization, unrelated storage isolation, blocked storage, media and
 cross-tab changes, public static assets and the authenticated selector. Run it
 with `KUTT_TEST_ONLY=theme` against a disposable image.
+The HTTP selector assertions cover all three catalogs and unchanged radio values.
 
 `sh tests/browser-theme.sh IMAGE` creates a fresh loopback-only temporary app and
 removes only its own container. It accepts `NODE_BINARY`, `PLAYWRIGHT_MODULE`,
 `KUTT_BROWSER_PORT` (default `31122`) and `KUTT_EVIDENCE_DIR` outside the checkout.
+Use `KUTT_TEST_LOCALE=fr` or `es` for translated labels; omission preserves the
+default English baseline. Each language run checks 90 management-page layouts.
 Chromium checks cover 1440/390/320px management pages in both themes, persisted
 and live OS changes, cross-tab state, unavailable storage, computed text contrast,
 rendered chart pixels/colors and white QR print sheets. Screenshot inspection

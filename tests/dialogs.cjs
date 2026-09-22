@@ -30,11 +30,13 @@ module.exports = async ({ request, session }) => {
     assert.equal(denied.status, 401, route);
     assert.equal((await denied.json()).error, "Unauthorized");
     const html = await (await request("GET", route, undefined, ordinaryToken, headers)).text();
-    assert(!/<form\b|hx-(post|put|delete|patch)=/.test(html), "Denied HTML has no actionable form");
+    assert(!/hx-(post|put|delete|patch)=/.test(html), "Denied HTML has no privileged HTMX action");
+    const forms = [...html.matchAll(/<form\b[^>]*>/g)].map(match => match[0]);
+    assert(forms.length <= 1 && forms.every(form => form === '<form action="/language" method="post" class="language-selector">'), "Only the public language preference form is allowed on denied HTML");
   }
 
   // Deterministic request-state tests complement the real native-modal browser suite.
-  const listeners = new Map(), window = {};
+  const listeners = new Map(), window = { KuttI18n: require("../server/i18n").current() };
   const document = {
     activeElement: null,
     addEventListener(name, listener) { listeners.set(name, listener); },

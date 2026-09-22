@@ -11,6 +11,7 @@ on:
       - ".example.env"
       - "tests/**"
       - "static/**"
+      - "locales/**"
       - "examples/**"
       - "scripts/**"
       - ".dockerignore"
@@ -54,3 +55,5 @@ jobs:
           npm install --prefix "$RUNNER_TEMP/kutt-browser" --no-audit --no-fund --package-lock=false playwright@1.62.1
           node "$RUNNER_TEMP/kutt-browser/node_modules/playwright/cli.js" install --with-deps chromium
           PLAYWRIGHT_MODULE="$RUNNER_TEMP/kutt-browser/node_modules/playwright" KUTT_EVIDENCE_DIR="$RUNNER_TEMP/kutt-browser-evidence" sh tests/browser-list-sorting.sh kutt-smoke
+      - name: English French Spanish workflows
+        run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/kutt-browser/node_modules/playwright" KUTT_EVIDENCE_DIR="$RUNNER_TEMP/kutt-i18n-evidence" sh tests/browser-i18n.sh kutt-smoke

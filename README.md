@@ -17,7 +17,7 @@ the upstream hosted service.
 ## Project status
 
 As of **22 September 2026**, the current deployed application version is
-[3.2.6-sr94.45](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.45).
+[3.2.6-sr94.46](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.46).
 All 16 original roadmap features, the selected community improvements and 25
 confirmed UI/UX fixes have passed their recorded release and homelab deployment
 gates. Release `.40` added DNS ownership verification and closed seven security
@@ -30,8 +30,9 @@ The next community work list is approved and in progress, including full English
 French and Spanish translations. Verified database/Redis TLS in `.43` passed
 deployment/recovery gates; stable table sorting `.44` has passed them too.
 Transactional moderation `.45` has also passed deployment/recovery gates.
-Dotted aliases `.46` and System/Light/Dark appearance `.47` are also implemented;
-their release and deployment gates remain pending.
+Dotted aliases `.46` have passed deployment/recovery gates too.
+System/Light/Dark appearance `.47`, private metrics `.48` and localization `.49`
+are implemented; their complete release/deployment gates remain pending.
 See the
 delivery ledger for publication and deployment gates; pending additions are
 not yet claimed as complete.
@@ -73,6 +74,7 @@ visit statistics, local accounts and administrator tools. It adds:
 | Recovery | [Change history, trash and restore](docs/LINK-HISTORY.md), with protection against silently reusing retired aliases |
 | Moderation | [Atomic administrative bans, explicit recovery and audit](docs/MODERATION.md), with permanent credential revocation and final-administrator protection |
 | Appearance (candidate) | [System, Light and Dark](docs/THEMES.md), persistent browser preference, readable charts and unchanged white QR exports; release gates pending |
+| Languages (candidate) | [English (default), French and Spanish](docs/LOCALIZATION.md), separate extensible catalogs, request-local translation and localized UI, feedback, email, dates and numbers; release gates pending |
 | Sign-in | [Stable OIDC identity binding, session revocation, signed back-channel logout and diagnostics](docs/OIDC-SECURITY.md) |
 | Organization | [Tags, collections, saved filters and bulk actions](docs/LIBRARY.md) |
 | Data transfer | [CSV/JSON import and export](docs/TRANSFER.md), templates, dry-run previews and explicit conflict handling |
@@ -102,7 +104,7 @@ checked-out source, persists SQLite and custom assets in named volumes, and
 publishes only `127.0.0.1:3000` on the Docker host.
 
 ```sh
-git clone --branch v3.2.6-sr94.45 --depth 1 https://github.com/RobinMJD/kutt.git
+git clone --branch v3.2.6-sr94.46 --depth 1 https://github.com/RobinMJD/kutt.git
 cd kutt
 cp .example.env .env
 chmod 600 .env
@@ -139,7 +141,7 @@ whose data you intend to keep.
 ### Published images and alternative examples
 
 Fork images are published as
-`ghcr.io/robinmjd/kutt:v3.2.6-sr94.43`. For an image-based deployment, replace
+`ghcr.io/robinmjd/kutt:v3.2.6-sr94.46`. For an image-based deployment, replace
 the Compose service's `build` section with an `image` reference, retaining its
 environment and persistent volumes. Pin the tested image digest in production.
 The upstream `kutt/kutt` Docker Hub image does **not** contain these fork changes.

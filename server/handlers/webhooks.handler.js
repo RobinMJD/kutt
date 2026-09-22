@@ -1,3 +1,4 @@
+const i18n = require("../i18n");
 const hooks = require("../webhooks");
 const knex = require("../knex");
 const { validSession } = require("../oidc-security");
@@ -7,19 +8,19 @@ const connections = new Map();
 const assetVersion = encodeURIComponent(require("../../package.json").version);
 async function page(req, res) {
   await hooks.authorized(req);
-  res.render("webhooks", { title: "Integrations", event_types: hooks.TYPES, asset_version: assetVersion,
+  res.render("webhooks", { title: i18n.t("ui.integrations"), event_types: hooks.TYPES, asset_version: assetVersion,
     custom_styles: [...(res.locals.custom_styles || []), `webhooks.css?v=${assetVersion}`] });
 }
 async function stream(req, res) {
-  if (req.method !== "GET") throw new CustomError("Live updates require GET.", 405);
+  if (req.method !== "GET") throw new CustomError(i18n.t("messages.live_updates_require_get"), 405);
   await hooks.authorized(req);
-  if (req.get("Sec-Fetch-Site") === "cross-site") throw new CustomError("Invalid request origin.", 403);
+  if (req.get("Sec-Fetch-Site") === "cross-site") throw new CustomError(i18n.t("messages.invalid_request_origin"), 403);
   const userId = req.user.id;
   let total = 0; for (const count of connections.values()) total += count;
-  if ((connections.get(userId) || 0) >= 4 || total >= 100) throw new CustomError("Too many live connections.", 429);
+  if ((connections.get(userId) || 0) >= 4 || total >= 100) throw new CustomError(i18n.t("messages.too_many_live_connections"), 429);
   let after = String(hooks.cursor(req.get("Last-Event-ID") || req.query.after));
   const auth = req.authInfo;
-  if (!auth?.exp || auth.exp * 1000 <= Date.now()) throw new CustomError("Sign in again.", 401);
+  if (!auth?.exp || auth.exp * 1000 <= Date.now()) throw new CustomError(i18n.t("messages.sign_in_again"), 401);
   let active = true, pending = false, interval, deadline;
   const close = () => {
     if (!active) return; active = false;
@@ -74,7 +75,7 @@ module.exports = Object.fromEntries(Object.entries(handlers).map(([name, handler
     catch (error) {
       if (error instanceof CustomError) throw error;
       console.error("Integration operation failed.");
-      throw new CustomError("Integrations are temporarily unavailable. Retry shortly.", 503);
+      throw new CustomError(i18n.t("messages.integrations_are_temporarily_unavailable_retry_shortly"), 503);
     }
   }
 ]));

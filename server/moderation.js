@@ -1,3 +1,4 @@
+const i18n = require("./i18n");
 const dns = require("node:dns/promises");
 const knex = require("./knex");
 const utils = require("./utils");
@@ -8,17 +9,17 @@ const fail = (message, status = 409) => { throw new utils.CustomError(message, s
 function identity(entity, id) {
   if (!Object.hasOwn(tables, entity) || typeof id !== "string" ||
       !(entity === "link" ? /^[a-f0-9-]{36}$/i : /^[1-9]\d{0,14}$/).test(id)) {
-    fail("Invalid moderation target.", 400);
+    fail(i18n.t("moderation.invalid_target"), 400);
   }
   return { [entity === "link" ? "uuid" : "id"]: id };
 }
 
 function flags(entity, input = {}) {
   const allowed = { user: ["links", "domains"], domain: ["links", "user"], link: ["host", "domain", "user", "userLinks"], host: [] }[entity];
-  if (!allowed || !input || Array.isArray(input) || Object.keys(input).some(key => !allowed.includes(key))) fail("Invalid moderation option.", 400);
+  if (!allowed || !input || Array.isArray(input) || Object.keys(input).some(key => !allowed.includes(key))) fail(i18n.t("moderation.invalid_option"), 400);
   return Object.fromEntries(allowed.map(key => {
     const value = input[key];
-    if (![undefined, null, true, false, "true", "false", "on", "1", "0", 1, 0].includes(value)) fail("Moderation options must be booleans.", 400);
+    if (![undefined, null, true, false, "true", "false", "on", "1", "0", 1, 0].includes(value)) fail(i18n.t("moderation.boolean_options"), 400);
     return [key, [true, "true", "on", "1", 1].includes(value)];
   }));
 }
@@ -29,15 +30,15 @@ async function lock(db, actor, admin = true) {
   await db("admin_mutation_state").where({ id: 1 }).increment("sequence", 1);
   const current = actor && await db("users").where({ id: actor.id }).forUpdate().first();
   if (!current || current.banned || !current.verified || Number(current.auth_version) !== Number(actor.auth_version) ||
-      (admin && current.role !== ROLES.ADMIN)) fail("Sign in again with an authorized account.", 403);
+      (admin && current.role !== ROLES.ADMIN)) fail(i18n.t("moderation.sign_in"), 403);
   return current;
 }
 
 async function protectAdmin(db, row, actor) {
-  if (Number(row.id) === Number(actor.id)) fail("You cannot ban or administratively delete your own account.");
+  if (Number(row.id) === Number(actor.id)) fail(i18n.t("moderation.self_protected"));
   if (row.role === ROLES.ADMIN && !row.banned && row.verified) {
     const count = await db("users").where({ role: ROLES.ADMIN, banned: false, verified: true }).count({ total: "id" }).first();
-    if (Number(count.total) <= 1) fail("The last active administrator must be retained.");
+    if (Number(count.total) <= 1) fail(i18n.t("moderation.last_admin"));
   }
 }
 
@@ -68,28 +69,28 @@ async function apply(db, entity, row, banned, actor, changed) {
 
 async function moderate(entity, id, banned, actor, input = {}) {
   const match = identity(entity, id), options = flags(entity, input);
-  if (typeof banned !== "boolean") fail("Invalid moderation action.", 400);
-  if (!banned && Object.values(options).some(Boolean)) fail("Remove each ban explicitly; cascade restoration is not supported.", 400);
+  if (typeof banned !== "boolean") fail(i18n.t("moderation.invalid_action"), 400);
+  if (!banned && Object.values(options).some(Boolean)) fail(i18n.t("moderation.no_cascade"), 400);
   // DNS is external and may fail or stall. Resolve it before any database write.
   let observed, host;
   if (entity === "link" && options.host) {
     observed = await knex("links").where(match).first();
-    if (!observed) fail("Moderation target was not found.", 404);
+    if (!observed) fail(i18n.t("moderation.not_found"), 404);
     let timeout;
     try {
       host = (await Promise.race([
         dns.lookup(utils.removeWww(new URL(observed.target).hostname)),
         new Promise((resolve, reject) => { timeout = setTimeout(() => reject(new Error("DNS timeout")), 3000); })
       ])).address;
-    } catch { fail("Couldn't fetch DNS info. Nothing was changed.", 400); }
+    } catch { fail(i18n.t("moderation.dns_unchanged"), 400); }
     finally { clearTimeout(timeout); }
   }
   const changed = [];
   const result = await knex.transaction(async db => {
     await lock(db, actor);
     const row = await db(tables[entity]).where(match).forUpdate().first();
-    if (!row) fail("Moderation target was not found.", 404);
-    if (observed && observed.target !== row.target) fail("The destination changed. Review the link and retry.");
+    if (!row) fail(i18n.t("moderation.not_found"), 404);
+    if (observed && observed.target !== row.target) fail(i18n.t("moderation.destination_changed"));
     const applyRows = async (kind, predicate) => {
       const rows = await db(tables[kind]).where(predicate).orderBy("id").forUpdate();
       for (const child of rows) await apply(db, kind, child, true, actor, changed);
@@ -124,11 +125,11 @@ async function removeUser(user, actor = user, administrative = false) {
   const result = await knex.transaction(async db => {
     await lock(db, actor, administrative);
     const row = await db("users").where({ id: user.id }).forUpdate().first();
-    if (!row) fail("User was not found.", 404);
-    if (!administrative && Number(row.id) !== Number(actor.id)) fail("Unauthorized.", 403);
+    if (!row) fail(i18n.t("moderation.user_not_found"), 404);
+    if (!administrative && Number(row.id) !== Number(actor.id)) fail(i18n.t("messages.unauthorized"), 403);
     // Self-service deletion may remove an administrator only when another remains.
     await protectAdmin(db, row, administrative ? actor : { id: -1 });
-    if (await db("workspaces").where({ owner_id: row.id }).first()) fail("Close owned workspaces before deleting this account. Shared links must remain recoverable.");
+    if (await db("workspaces").where({ owner_id: row.id }).first()) fail(i18n.t("messages.close_owned_workspaces_before_deleting_this_account_shared_links_must_remain"));
     changed.push({ entity: "user", row });
     for (const link of await db("links").where({ user_id: row.id })) changed.push({ entity: "link", row: link });
     for (const domain of await db("domains").where({ user_id: row.id })) changed.push({ entity: "domain", row: domain });
@@ -146,10 +147,10 @@ async function addDomain(input, actor) {
   const address = input.address.toLowerCase(), changed = [];
   const result = await knex.transaction(async db => {
     await lock(db, actor);
-    if (await db("domains").where({ address }).first()) fail("Domain already exists.");
+    if (await db("domains").where({ address }).first()) fail(i18n.t("moderation.domain_exists"));
     try { await db("domains").insert({ address, homepage: input.homepage || null, banned: false }); }
     catch (error) {
-      if (["23505", "ER_DUP_ENTRY", "SQLITE_CONSTRAINT_UNIQUE"].includes(error.code)) fail("Domain already exists.");
+      if (["23505", "ER_DUP_ENTRY", "SQLITE_CONSTRAINT_UNIQUE"].includes(error.code)) fail(i18n.t("moderation.domain_exists"));
       throw error;
     }
     const row = await db("domains").where({ address }).first();

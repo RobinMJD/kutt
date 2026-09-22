@@ -1,3 +1,4 @@
+const i18n = require("../i18n");
 const bcrypt = require("bcryptjs");
 
 const utils = require("../utils");
@@ -244,7 +245,7 @@ async function remove(match, actor = {}) {
     if (link) await history.trash(db, link, actor);
     return link;
   });
-  if (!link) return { isRemoved: false, error: "Could not find the link.", link: null };
+  if (!link) return { isRemoved: false, error: i18n.t("messages.could_not_find_the_link"), link: null };
 
   if (env.REDIS_ENABLED) {
     redis.remove.link(link);

@@ -52,14 +52,14 @@
     (item.http_status === null || Number.isInteger(item.http_status) && item.http_status >= 100 && item.http_status <= 599));
   const hookSecret = value => hook(value) && text(value.secret) && /^whsec_[A-Za-z0-9_-]+$/.test(value.secret);
   const deliveryQueued = value => object(value) && text(value.delivery_id) && text(value.event_id);
-  const unexpected = () => new Error("Unexpected server response. Your changes were not confirmed. Check your session, then reload or retry.");
+  const unexpected = () => new Error(window.KuttI18n.t("ui.unexpected_server_response_your_changes_were_not_confirmed_check_your_session"));
   async function read(response, validate, conflict) {
     if (response.redirected || !/^application\/json(?:\s*;|$)/i.test(response.headers.get("content-type") || "")) throw unexpected();
     let data;
     try { data = await response.json(); } catch { throw unexpected(); }
     if (!response.ok) {
       const message = response.status === 409 && conflict ? conflict :
-        object(data) && text(data.error) && data.error.length <= 500 ? data.error : "Request failed (" + response.status + "). Check your session or retry.";
+        object(data) && text(data.error) && data.error.length <= 500 ? data.error : window.KuttI18n.t("common.response_failed", { status: response.status });
       throw Object.assign(new Error(message), { status: response.status });
     }
     if (!validate(data)) throw unexpected();

@@ -4,7 +4,7 @@ const path = require("node:path");
 const vm = require("node:vm");
 
 module.exports = async ({ root, request, session }) => {
-  const context = vm.createContext({ window: {} });
+  const context = vm.createContext({ window: { KuttI18n: require("../server/i18n").current() } });
   vm.runInContext(readFileSync(path.join(root, "static/scripts/responses.js"), "utf8"), context);
   const { read, ...schemas } = context.window.KuttResponses;
   const response = (data, overrides = {}) => ({ ok: true, status: 200, redirected: false,

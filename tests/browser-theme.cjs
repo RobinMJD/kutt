@@ -3,6 +3,8 @@ const { randomBytes } = require("node:crypto");
 const { mkdirSync, writeFileSync } = require("node:fs");
 const path = require("node:path");
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
+const { locale, t } = require("./browser-locale.cjs");
+const labels = { System: t("theme.system"), Light: t("theme.light"), Dark: t("theme.dark") };
 
 (async () => {
   assert.equal(process.env.KUTT_BROWSER_DISPOSABLE, "1");
@@ -11,7 +13,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
   const browser = await chromium.launch({ headless: true });
   let page;
   try {
-    const context = await browser.newContext({ colorScheme: "dark", reducedMotion: "reduce" });
+    const context = await browser.newContext({ locale, colorScheme: "dark", reducedMotion: "reduce" });
     const errors = [], measurements = [];
     const bootstrap = await context.request.post(origin + "/api/auth/create-admin", {
       headers: { Accept: "application/json" }, data: { email: "theme@example.invalid", password: randomBytes(32).toString("hex") }
@@ -26,8 +28,9 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
     page = await context.newPage(); page.on("pageerror", err => errors.push(err.message));
     page.on("console", message => { if (["error", "warning"].includes(message.type())) errors.push(message.text()); });
     const theme = async (name, effective) => {
-      await page.getByRole("radio", { name, exact: true }).check();
+      await page.getByRole("radio", { name: labels[name], exact: true }).check();
       assert.equal(await page.locator("html").getAttribute("data-theme"), effective);
+      assert.equal(await page.evaluate(() => localStorage.getItem("kutt.theme")), name.toLowerCase());
     };
     const capture = async name => {
       assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), "Overflow: " + name);
@@ -57,15 +60,17 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
       }
     };
     await page.goto(origin + "/"); assert(await page.title());
+    assert.equal(await page.locator("html").getAttribute("lang"), locale);
+    assert.equal(await page.locator(".theme-picker legend").textContent(), t("theme.appearance"));
     assert.equal(await page.locator("html").getAttribute("data-theme"), "dark");
-    assert(await page.getByRole("radio", { name: "System", exact: true }).isChecked());
+    assert(await page.getByRole("radio", { name: labels.System, exact: true }).isChecked());
     await page.emulateMedia({ colorScheme: "light" });
     await page.waitForFunction(() => document.documentElement.dataset.theme === "light");
     await theme("Dark", "dark"); await page.reload();
     assert.equal(await page.locator("html").getAttribute("data-theme"), "dark");
-    await page.getByRole("radio", { name: "Dark", exact: true }).focus();
+    await page.getByRole("radio", { name: labels.Dark, exact: true }).focus();
     await page.keyboard.press("ArrowLeft");
-    assert(await page.getByRole("radio", { name: "Light", exact: true }).isChecked());
+    assert(await page.getByRole("radio", { name: labels.Light, exact: true }).isChecked());
     await theme("Dark", "dark");
     const other = await context.newPage(); await other.goto(origin + "/settings");
     await theme("Light", "light");
@@ -77,6 +82,8 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
         for (const route of ["/", "/admin", "/admin/moderation", "/settings", "/settings/library", "/settings/workspaces", "/settings/integrations", "/settings/health", "/settings/security", "/settings/retention", "/settings/analytics", "/settings/shortcuts", "/link/routing/" + link.id, "/link/forwarding/" + link.id, "/link/qr/" + link.id]) {
           await page.goto(origin + route); assert.equal(new URL(page.url()).pathname, route);
           await page.waitForLoadState("networkidle");
+          assert.equal(await page.locator("html").getAttribute("lang"), locale);
+          assert.equal(await page.locator(".theme-picker legend").textContent(), t("theme.appearance"));
           assert.equal(await page.locator("html").getAttribute("data-theme"), mode.toLowerCase());
           const label = `${width}-${mode}-${route.replace(/\W+/g, "-") || "home"}`;
           await contrast(page.locator('main h1, section h1, main h2, section h2, main label, #settings label, main input:not([type=hidden]):not([type=checkbox]), main button, #settings button, .site-header a:not(.button), footer label, footer a'), label);
@@ -115,17 +122,17 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
     }
     await theme("System", "light");
     await page.emulateMedia({ colorScheme: "dark" }); await page.waitForFunction(() => document.documentElement.dataset.theme === "dark");
-    const denied = await browser.newContext({ colorScheme: "dark" });
+    const denied = await browser.newContext({ locale, colorScheme: "dark" });
     await denied.addInitScript(() => Object.defineProperty(window, "localStorage", { get() { throw new DOMException("Disabled", "SecurityError"); } }));
     const blocked = await denied.newPage(); blocked.on("pageerror", err => errors.push(err.message));
     await blocked.goto(origin + "/login");
     assert.equal(await blocked.locator("html").getAttribute("data-theme"), "dark");
-    await blocked.getByRole("radio", { name: "Light", exact: true }).check();
+    await blocked.getByRole("radio", { name: labels.Light, exact: true }).check();
     assert.equal(await blocked.locator("html").getAttribute("data-theme"), "light");
     await blocked.close(); await denied.close();
     assert.deepEqual(errors, []); assert(measurements.length > 200);
     writeFileSync(path.join(evidence, "contrast.json"), JSON.stringify(measurements, null, 2));
-    console.log("PASS: system/light/dark, persistence, cross-tab/media changes, storage denial, rendered text contrast, charts, QR/print and 1440/390/320px workflows");
+    console.log("PASS (" + locale + "): system/light/dark, persistence, cross-tab/media changes, storage denial, rendered text contrast, charts, QR/print and 90 layouts at 1440/390/320px");
   } catch (error) { if (page) await page.screenshot({ path: path.join(evidence, "failure.png"), fullPage: true }); throw error; }
   finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

@@ -29,7 +29,7 @@ automatic domain renaming, historical analytics rewriting or data deletion.
 | C08 | Consistent verified Redis TLS for cache, queues and limiting | Complete | `.43`; evidence below |
 | C09 | Configurable asymmetric OIDC signing algorithm | Complete | `.42`; evidence below |
 | C10 | Custom-domain API routing without homepage interception | Complete | `.42`; evidence below |
-| C11 | Complete English (default), French and Spanish localization | In progress | Isolated catalog/template/browser implementation; integration and release gates pending |
+| C11 | Complete English (default), French and Spanish localization | Implemented; release gates pending | Candidate `.49`, integrated with `.48` metrics; 198 combined desktop/mobile layouts passed; see `LOCALIZATION.md` |
 | C12 | Stable allowlisted sorting in personal, admin and workspace tables/API | Complete | `.44`; evidence below |
 | C13 | Branded QR logos embedded in validated PNG/SVG exports | In progress | Isolated implementation and decoder validation; release gates pending |
 | C14 | Accessible dark/system/light theme | Implemented; release gates pending | Candidate `.47`; full source regression and rendered theme/contrast/storage checks passed; publication and deployment pending |
@@ -37,7 +37,7 @@ automatic domain renaming, historical analytics rewriting or data deletion.
 | C16 | Optional separate management hostname and explicit shared-domain grants | Pending | Pending |
 | C17 | Optional consistent destination-domain policy | Pending | Pending |
 | C18 | Private authenticated performance metrics with bounded labels | Implemented; release gates pending | Candidate `.48`; focused and full isolated regression passed; publication/deployment pending |
-| C19 | Safe dotted aliases with reserved-path protections | Implemented; [rules and tests](LINK-ALIASES.md) | Candidate `.46`; combined browser/MySQL/PostgreSQL checks passed, full release gates pending |
+| C19 | Safe dotted aliases with reserved-path protections | Complete | `.46`; [rules and tests](LINK-ALIASES.md), evidence below |
 | C20 | Accessible interactive geography chart and text alternative | Pending | Pending |
 | C21 | Profile visit aggregation; safely batch only where warranted | Pending | Pending |
 
@@ -219,9 +219,23 @@ review complete while required work remains.
 - Combined-source Playwright workflows at 1440/390/320px passed create, edit,
   rejected-input draft retention, rename/reload and actual public redirect
   responses. Screenshots were reviewed; the browser plugin is unavailable.
-- CI now runs the real-database and browser companions. Full regression,
-  release publication, recoverable backup/deployment and public acceptance
-  remain pending; this entry is not a completion claim.
+- Main/tag CI `35679048427` / `35679070941`, publication, exact-wrapper
+  regression and a fresh valid scan (zero Critical/High) passed. The wrapper
+  regression required the corrected HTTP test client that drains non-SSE bodies;
+  it did not change the runtime image or discard an application assertion.
+- Public WAF feature regression, real Authentik-signed logout and whole-lab
+  validation passed. Two samples 65 seconds apart had three fresh probes and
+  zero restarts, alerts, failed units or unhealthy containers. Original records,
+  integrity and foreign keys remain unchanged.
+- Pre-change 02:52:44 UTC backup: local `dbcc3ed4`, NAS `472914ac`, 66 files.
+  Post-change 03:38:01 UTC: local `c74d0da4`, NAS `37511925`, 68 files.
+  Byte restoration and exact-image writable recovery passed. Validated wrapper:
+  `sha256:81527b086a7328b1a2b53b13b641a38321416f64f6733e268d35cb66751775cd`.
+- The first public test confused legacy flat missing-alias redirects with
+  nested tombstones and tried to reclaim a retired name. Its dedicated nested
+  fixture now requires 410 for retired paths and 409 for reclamation, and the
+  complete suite passed. No reservation or WAF rule was relaxed. Private report:
+  `2026-09-22-kutt-community-46`, including the test-correction record.
 
 ## Evidence: C14
 
@@ -256,3 +270,26 @@ review complete while required work remains.
 - There is no migration or account change. Publication, exact-wrapper scan,
   private collector integration, recoverable deployment and live acceptance are
   still pending. See [metrics](METRICS.md).
+
+## Evidence: C11
+
+- Candidate `.49` integrates 1,442 stable keys in each English/French/Spanish
+  catalog, shared Node/browser formatting and request-scoped translations.
+  Existing IDs, roles, URLs, signed inputs and API machine fields remain literal.
+  Public management/redirect authorization is unchanged; there is no migration.
+- The combined full container suite passed, including metrics, moderation,
+  aliases, OIDC, privacy, concurrency and guarded rollback/reapply. Catalog
+  parity/placeholder validation, hostile-value escaping, mail rendering,
+  custom partial precedence and 90 concurrent locale contexts passed.
+- Chromium passed 198 localized layouts at 1440/390/320px and 270 themed
+  layouts across the three languages. Native language selection, strict Origin,
+  theme persistence, HTMX validation, plural bulk feedback, charts, print and
+  denied storage passed. Screenshot review found clipped Spanish sorting labels
+  and low-contrast dark Library icons; scoped styles and rendered assertions
+  now cover both. The final 198-layout run passed after these corrections.
+- Browser plugin unavailable; regular Playwright used disposable loopback-only
+  instances. SMTP delivery, physical devices, native Safari/Firefox and custom
+  operator layouts remain unverified. The signed iOS Shortcut's embedded prompts
+  remain English; its downloadable guides are localized without altering signed
+  bytes. Publication, exact-wrapper deployment/recovery and live language
+  acceptance remain pending. See [localization](LOCALIZATION.md).

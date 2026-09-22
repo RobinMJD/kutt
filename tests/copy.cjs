@@ -24,7 +24,7 @@ module.exports = async ({ root }) => {
   const host = Object.assign(element(), { isConnected: true, querySelector: () => clipboard });
   const button = { closest: () => host, dataset: { url: "synthetic-value-not-in-status" } };
   const navigator = {};
-  const context = vm.createContext({ document, navigator });
+  const context = vm.createContext({ document, navigator, window: { KuttI18n: require("../server/i18n").current() } });
   vm.runInContext(source, context);
   const copy = context.handleShortURLCopyLink;
   const status = () => host.children[0].children[0];

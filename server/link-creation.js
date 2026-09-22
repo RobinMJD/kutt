@@ -1,3 +1,4 @@
+const i18n = require("./i18n");
 const { createHash, createHmac } = require("node:crypto");
 const knex = require("./knex");
 const env = require("./env");
@@ -9,7 +10,7 @@ async function run(req, operation) {
   const key = req.get("Idempotency-Key");
   if (key === undefined) return knex.transaction(operation);
   if (!req.user || req.isHTML || !/^[A-Za-z0-9._:-]{8,128}$/.test(key)) {
-    throw new CustomError("Idempotency-Key requires an authenticated JSON request and 8-128 safe characters.", 400);
+    throw new CustomError(i18n.t("messages.idempotency_key_requires_an_authenticated_json_request_and_8_128_safe"), 400);
   }
   const body = req.body;
   const { expire_in: ignoredLegacyExpiry, ...lifecycle } = req.linkLifecycle || {};
@@ -32,17 +33,17 @@ async function run(req, operation) {
     }).onConflict(["user_id", "key_hash"]).ignore();
     const row = await db("link_creation_requests").where(match).first();
     if (row.request_hash !== requestHash) {
-      throw new CustomError("Idempotency-Key was already used with a different request.", 409);
+      throw new CustomError(i18n.t("messages.idempotency_key_was_already_used_with_a_different_request"), 409);
     }
     if (row.response) {
       const link = await db("links").where({ uuid: row.link_uuid, user_id: req.user.id }).first();
       if (!link || link.deleted_at != null || link.banned || (req.apiTokenDomain !== undefined && link.domain_id !== req.apiTokenDomain)) {
-        throw new CustomError("The original link is no longer available. This key cannot recreate it.", 409);
+        throw new CustomError(i18n.t("messages.the_original_link_is_no_longer_available_this_key_cannot_recreate"), 409);
       }
       return { data: JSON.parse(row.response), status: row.status, replayed: true };
     }
     const { count } = await db("link_creation_requests").where({ user_id: req.user.id }).count("* as count").first();
-    if (Number(count) > 1000) throw new CustomError("Daily idempotency key limit reached.", 429);
+    if (Number(count) > 1000) throw new CustomError(i18n.t("messages.daily_idempotency_key_limit_reached"), 429);
     const result = await operation(db);
     await db("link_creation_requests").where(match).update({
       link_uuid: result.data.id, response: JSON.stringify(result.data), status: result.status
