@@ -8,7 +8,7 @@ Original records and three monitored routes remained healthy after deployment.
 See the roadmap's eleventh deployment evidence and homelab recovery runbook.
 That historical record does not cover later geography, shared-domain analytics
 or full-value filter text. Their current source and release status are tracked
-in [Community Feature Delivery](COMMUNITY-FEATURE-ROADMAP.md#candidate-58-analytics-export-contrast).
+in [Community Feature Delivery](COMMUNITY-FEATURE-ROADMAP.md#release-58-accepted-community-closure).
 
 ## Reports
 
@@ -27,12 +27,15 @@ assistive technology. No tooltip or smaller font is needed to read long values.
 The displayed value updates on selection, resizing and report reload; Clear
 removes it along with the filter. Filtering and export semantics are unchanged.
 
-The `.58` candidate applies existing theme-button styling to the CSV/JSON export
+Accepted release `.58` applies existing theme-button styling to the CSV/JSON export
 links while preserving their current-color icons, URLs and download formats.
-This corrects the confirmed dark-theme contrast defect in deployed `.57`.
-Focused local checks passed 18 language/theme/width layouts, normal/hover/focus
-contrast above 4.5:1 and actual keyboard downloads; `.58` public and release gates
-remain pending in the delivery ledger.
+This corrects the confirmed dark-theme contrast defect found in `.57`.
+Both focused local and enhanced public checks passed 18 EN/FR/ES,
+light/dark, 1440/390/320 layouts. The public run verified 108 normal/hover/focus
+contrast states (minimum 7.891:1 against 4.5:1 required) and 36 actual keyboard
+downloads, preserving filters, filenames and CSV/JSON report data. Release,
+deployment, health and writable-recovery gates passed; the delivery ledger
+links current main CI and separately tracks blocked homelab hosted CI.
 
 Both `GET /api/analytics` and `GET /api/v2/analytics` accept:
 
@@ -82,16 +85,14 @@ remain active. These limits do not change the legacy stats response.
 
 ## Geography (C20)
 
-C20 geography is included in the current source. The `.56` enforced public
-community matrix passed all 18 language/theme/width combinations; `.57` only
-polishes its French/Spanish percentage explanation without changing the data or
-denominator. Its local rendered checks, CI, exact-wrapper regression and
-candidate restore passed. `.57` is deployed healthy; its fresh public community
-run passed all 18 layouts, including denominator assertions and screenshot review.
-Its three-layout shared-domain smoke passed with Spanish analytics reviewed.
-Full public API/real OIDC, post-change health/lab and writable recovery passed.
-The later export-contrast finding keeps final closure pending for `.58`; none of
-these results is relabeled as `.58` public coverage.
+C20 is Complete in accepted `.58`. Its enhanced enforced public community run
+passed all 18 language/theme/width combinations, including geography assertions;
+Spanish/light/320 geography was visually reviewed. The `.57` French/Spanish
+percentage copy keeps the same data and denominator and is unchanged in `.58`.
+Shared-domain authorization coverage remains explicitly versioned: `.56` full
+C16 matrices and `.57` smoke3/full public API/real OIDC are reused preceding
+functional proof, not a new `.58` full API or C16 run. The `.58` delta is confined
+to export-control HTML/CSS, tests and version metadata.
 The historical `.11` evidence above does not cover this chart.
 
 The range-report page includes an interactive geography view in English, French

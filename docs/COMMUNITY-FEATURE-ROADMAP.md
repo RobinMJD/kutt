@@ -15,14 +15,16 @@ Public short-link redirects remain public. Management retains WAF and Authentik.
 Optional integrations do not alter existing deployment policy by default. No
 automatic domain renaming, historical analytics rewriting or data deletion.
 
-Current checkpoint: `.57` is deployed healthy; its public community18, C16 smoke3,
-full public API/real OIDC, post-health/lab and writable-recovery gates passed.
-Visual review nevertheless confirmed low-contrast analytics exports. The narrow
-`.58` correction passed focused local checks but still needs release validation.
-The seven pending entries below remain pending until the
-[.58 gates](#candidate-58-analytics-export-contrast) are explicitly completed.
-`.56` and `.57` remain preceding functional evidence, not separate accepted
-GitHub releases. Green CI or partial gates do not establish final acceptance.
+Current release: `.58` is accepted, published and deployed healthy after its
+exact-image, enhanced public browser, health and writable-recovery gates passed.
+All C01-C21 entries are Complete; C05/C13/C15/C16/C17/C20/C21 close in
+[.58](#release-58-accepted-community-closure). The actual upstream PR now contains
+the tested contribution at `32aaeea`; upstream review/merge remains pending.
+`.56` and `.57` retain their distinct preceding functional evidence, not separate
+accepted GitHub releases. This documentation-only closure records the accepted
+immutable release without changing its runtime image. Current main CI is available
+at [Fork release](https://github.com/RobinMJD/kutt/actions/workflows/fork-release.yaml?query=branch%3Amain);
+homelab publication CI has the explicit Actions-budget blocker recorded below.
 
 ## Work List
 
@@ -32,7 +34,7 @@ GitHub releases. Green CI or partial gates do not establish final acceptance.
 | C02 | Prefix-only hostname normalization | Complete | `.41`; evidence below |
 | C03 | Transactional, reversible administrative moderation and session safety | Complete | `.45`; evidence below |
 | C04 | Strict peer/CIDR/hop reverse-proxy trust | Complete | `.42`; evidence below |
-| C05 | Compatible staged and enforced Content Security Policy | Implemented; release gates pending | `.56` full public matrices and `.57` enforced community18/C16 smoke3 passed; `.58` closure pending; see `CSP.md` |
+| C05 | Compatible staged and enforced Content Security Policy | Complete | `.58` enforced public community18 and release/recovery gates passed; `.56` full C16 and `.57` smoke3 remain distinct preceding proof; see `CSP.md` |
 | C06 | MySQL utf8mb4 search compatibility and real database tests | Complete | `.42`; evidence below |
 | C07 | Verified remote database TLS and credential-file configuration | Complete | `.43`; evidence below |
 | C08 | Consistent verified Redis TLS for cache, queues and limiting | Complete | `.43`; evidence below |
@@ -40,15 +42,15 @@ GitHub releases. Green CI or partial gates do not establish final acceptance.
 | C10 | Custom-domain API routing without homepage interception | Complete | `.42`; evidence below |
 | C11 | Complete English (default), French and Spanish localization | Complete | `.49`; 198 source layouts, 18 public layouts, authenticated locale/API, CI/wrapper, restore and stable health gates passed; see `LOCALIZATION.md` |
 | C12 | Stable allowlisted sorting in personal, admin and workspace tables/API | Complete | `.44`; evidence below |
-| C13 | Branded QR logos embedded in validated PNG/SVG exports | Implemented; release gates pending | Bounded PNG validation/decoding and `.57` public enforced community18 passed; `.58` closure pending; see `QR-BRANDING.md` |
+| C13 | Branded QR logos embedded in validated PNG/SVG exports | Complete | `.58`; bounded PNG validation/decoding, enforced public community18 and release/recovery gates passed; see `QR-BRANDING.md` |
 | C14 | Accessible dark/system/light theme | Complete | `.47`; full source/wrapper regression, 90 layouts, public theme selection, WAF/SSO and backup/restore gates passed; evidence below |
-| C15 | Optional explicit OIDC role mapping and safe demotion/recovery | Implemented; release gates pending | Isolated role/session/write-race gates passed; live mapping remains disabled; `.58` closure pending; see `OIDC-SECURITY.md` |
-| C16 | Optional separate management hostname and explicit shared-domain grants | Implemented; release gates pending | Real SQL/isolated split-host checks, both `.56` public 18-layout matrices and `.57` public smoke3 passed; `.58` closure pending; see `DOMAIN-SHARING.md` |
-| C17 | Optional consistent destination-domain policy | Implemented; release gates pending | Source edit/race checks and `.57` public policy views passed; live restrictions remain disabled; `.58` closure pending |
+| C15 | Optional explicit OIDC role mapping and safe demotion/recovery | Complete | `.58`; isolated role/session/write-race and release gates passed, with `.57` real OIDC proof reused; live mapping remains disabled; see `OIDC-SECURITY.md` |
+| C16 | Optional separate management hostname and explicit shared-domain grants | Complete | `.58` closure; real SQL/isolated split-host, `.56` full public C16 and `.57` smoke3/API checks passed; no new split-host cutover or `.58` full C16 claim; see `DOMAIN-SHARING.md` |
+| C17 | Optional consistent destination-domain policy | Complete | `.58`; source edit/race checks, public policy views and release/recovery gates passed; live restrictions remain disabled |
 | C18 | Private authenticated performance metrics with bounded labels | Complete | `.48`; source/wrapper/CI, private Prometheus scrapes, WAF/SSO, backup/restore and stable health gates passed |
 | C19 | Safe dotted aliases with reserved-path protections | Complete | `.46`; [rules and tests](LINK-ALIASES.md), evidence below |
-| C20 | Accessible interactive geography chart and text alternative | Implemented; release gates pending | `.57` copy/rendered checks and public community18, including denominator assertions and screenshot review, passed; final release gates pending; see `ANALYTICS.md` |
-| C21 | Profile visit aggregation; safely batch only where warranted | Implemented; release gates pending | Indexed synchronous SQLite lookup, real SQL and rollback checks passed; `.58` closure pending; see `VISIT-PERFORMANCE.md` |
+| C20 | Accessible interactive geography chart and text alternative | Complete | `.58`; localized denominator checks, public community18 and screenshot review passed with release/recovery gates; see `ANALYTICS.md` |
+| C21 | Profile visit aggregation; safely batch only where warranted | Complete | `.58`; indexed synchronous SQLite lookup, real SQL/rollback checks and release/recovery gates passed; see `VISIT-PERFORMANCE.md` |
 
 ## Evidence: C14
 
@@ -91,10 +93,49 @@ reviews, reconcile source/release/deployed versions, confirm clean committed and
 pushed changes, and update the documented upstream contribution. Do not mark this
 review complete while required work remains.
 
-This review and final accepted-release publication are **pending**. Completed
-`.56` public evidence is retained below; it is not relabeled as `.57` coverage.
-The actual upstream PR remains at its earlier head until a separately authorized
-update after acceptance.
+Functional acceptance, bounded regression/review, source/runtime reconciliation,
+deployment/recovery and release publication passed for `.58`. The actual upstream
+PR was fast-forwarded to the tested `32aaeea` contribution and its body/title were
+updated. Upstream maintainer review/merge remains external and pending, not an
+unfulfilled publication authorization. Earlier `.56`/`.57` results retain their
+versioned scope below.
+
+This documentation-only closure records the accepted immutable release without
+changing the runtime image or version. Current main CI is available at
+[Fork release](https://github.com/RobinMJD/kutt/actions/workflows/fork-release.yaml?query=branch%3Amain);
+no future documentation-run result is claimed here. The private wrapper/deployment documentation and
+homelab main publication completed in scoped commit
+[`cb7c19abbade25f21e857738d88fad1097dc15de`](https://github.com/RobinMJD/homelab/commit/cb7c19abbade25f21e857738d88fad1097dc15de),
+preserving the final gates, snapshot identities and recovery guidance without
+staging unrelated live changes. The documentation-only follow-up
+[`94f8faabc3d6c471947b6c77ab9357139743265c`](https://github.com/RobinMJD/homelab/commit/94f8faabc3d6c471947b6c77ab9357139743265c)
+published the explicit hosted-CI budget residual in the final private README.
+
+**Operational residual:** homelab hosted CI
+[Kutt deployment checks 35747646157](https://github.com/RobinMJD/homelab/actions/runs/35747646157)
+and [Repo Hygiene 35747646024](https://github.com/RobinMJD/homelab/actions/runs/35747646024)
+were refused before any job steps ran. Their API annotation states: "The job was
+not started because an Actions budget is preventing further use." GitHub records
+these runs as failures; they are budget-blocked, not passed checks or demonstrated
+deployment/test failures. The same existing budget condition affected an earlier
+homelab main run. On the clean `cb7c19a` publication checkout,
+`validate-change --static` and the exact Kutt workflow commands `test-config.py`,
+`test_release_health.py` plus health/metrics tests passed locally. Repo Hygiene's
+unrelated application jobs were **not** rerun locally. Those checks do not imply
+that either hosted workflow ran or passed. Source/main/tag/contribution and
+Shortcut CI passed, as did the
+exact wrapper/configuration, live health and public checks; those results do not
+substitute for the blocked homelab workflows. Final operational closure retains
+this residual until the user enables the budget and the checks can run. The
+budget request is pending; no billing, runner or check-policy change is authorized
+by this documentation update. This is bounded validation, not an exhaustive
+security or accessibility certification.
+
+Guarded closure cleanup archived the verified complete evidence bundle, removed
+ten task-handoff branches and four clean stale worktrees, and preserved main,
+the current curated checkout, actual-PR local refs and private evidence. Only
+main and curated worktrees remain. The temporary remote validation branch was
+deleted with a lease for `32aaeea`; the actual PR retains that same CI-tested head.
 
 ## Superseded Candidates: .50 / .51 / .52 / .53 / .54 / .55
 
@@ -278,13 +319,13 @@ wording and geography percentage explanations.
   Private evidence: `Work/kutt-community-20260922/backup57-pre.log`.
 - Contribution parity against `.57` passed for 585 files with zero byte/mode
   mismatches under the documented curated/redacted-doc exclusions. Its
-  temporary validation branch is not the actual upstream PR, which remains at
-  `e0ad948`.
+  temporary validation branch was not the actual upstream PR, which at that
+  checkpoint remained at `e0ad948`; final publication is recorded under `.58`.
 
 ### Deployed .57 Checkpoint
 
 The exact hardened wrapper passed full container regression and candidate
-writable restore, and is deployed healthy with zero restarts:
+writable restore, and was deployed healthy with zero restarts:
 `sha256:5da46d1488092a6022e5fe857213edaf7ef96f0da3e5233e1aec9dc8099b1fe7`.
 These passes alone do not establish final release acceptance.
 
@@ -324,21 +365,22 @@ Whole-lab validation passed with its existing environment warnings. Evidence:
 Post-change backup at 14:16:38 UTC on September 22: local `6d2d3904`, NAS
 `38e3ef87`. All 75 files and writable restore passed; the pre-change backup was
 13:28:13 UTC. Evidence: `Work/kutt-community-20260922/backup57-post.log`.
-These records establish preceding functional/recovery proof, not release closure:
-the confirmed export-contrast defect requires the `.58` follow-up below.
+These records establish preceding functional/recovery proof, not a separate
+accepted `.57` release: the export-contrast defect required the subsequently
+accepted `.58` follow-up below.
 
 ### Recorded .57 Gates
 
 | Gate | Current status |
 | --- | --- |
 | Final hardened-wrapper full regression and exact candidate writable restore | **Passed** |
-| Exact `.57` deployment with the hardened configuration and CSP enforced | **Deployed; healthy, zero restarts**; final acceptance remains pending |
+| Exact `.57` deployment with the hardened configuration and CSP enforced | **Passed at that checkpoint:** healthy, zero restarts; subsequently replaced by accepted `.58` |
 | Public community QR/policy/geography matrix | **Passed: fresh 18-layout run**, EN/FR/ES, light/dark, 1440/390/320; QR decoding, denominator assertions and screenshot review passed; no JavaScript/CSP/network errors |
 | Public C16 post-copy smoke | **Passed: 3 layouts**, EN/FR/ES, dark, 390px only; 1,147 requests, cleanup two users/one domain/four links; every per-layout workflow/auth assertion retained; not a `.57` full-18 claim |
 | Full public HTTP/API/SSO regression and its fixture cleanup | **Passed**, including real Authentik-signed logout/replay |
 | Post-change original-data/integrity/FK checks, stable health and lab validation | **Passed**; two samples 65 seconds apart, three probes and zero restarts/alerts; existing lab environment warnings retained |
 | Fresh post-change local/NAS backup, byte verification and writable restore | **Passed**; 75 files, local `6d2d3904`, NAS `38e3ef87`, 14:16:38 UTC |
-| Final feature closure, accepted GitHub release and actual PR update | **Not closed: .58 UI correction and acceptance required** |
+| Final feature closure, accepted GitHub release and actual PR update | **Deferred at .57; completed with .58** after the export-contrast correction |
 
 Keep `.56` full public C16 coverage distinct from the passed `.57` three-layout
 smoke complement and `.57` full automated CI. Smoke receipts record the selected
@@ -354,7 +396,17 @@ contain outbound workers during isolated recovery, and never downgrade used
 authorization state or revive revoked credentials. Historical `.49` rollbacks
 were individually guarded recoveries, not general downgrade authorization.
 
-## Candidate .58: Analytics Export Contrast
+<a id="candidate-58-analytics-export-contrast"></a>
+
+## Release .58: Accepted Community Closure
+
+Release [v3.2.6-sr94.58](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.58)
+is published and accepted. Immutable source/tag commit:
+`9360e913bbc2e9ace4f39688569dc5dab7a799e1`.
+Published source-image digest:
+`sha256:5a3c2efa558b2d915e41210060612971ead7463d65428869102e7656974d356b`.
+Deployed exact hardened wrapper:
+`sha256:38f8d33def9ab6541a95103ce44d771c4927c1b9d9085e74b9e5d72992bcec04`.
 
 Visual review of `.57` Spanish/dark/390 recipient analytics found a real UI
 defect despite passing functional assertions: CSV/JSON export anchors inherited
@@ -380,25 +432,53 @@ unchanged. There are no catalog, dependency, schema or policy changes.
   `Work/kutt-community-20260922/export58-proof`. Tests use disposable loopback
   containers; no public acceptance is inferred from them.
 
-### Pending .58 Gates
+### Accepted .58 Gates
 
 | Gate | Current status |
 | --- | --- |
-| Immutable source/tag CI and contribution validation | **Pending** |
-| Exact hardened wrapper, valid image scan, full regression and candidate writable restore | **Pending** |
-| Fresh pre-change local/NAS backup and verified recovery | **Pending** |
-| Exact `.58` deployment with unchanged hardened configuration | **Pending**; live remains healthy `.57` |
-| Enhanced public community matrix | **Pending: 18 layouts**, including export contrast and actual CSV/JSON downloads |
-| Post-change original-data/integrity/FK, stable health and lab validation | **Pending** |
-| Fresh post-change local/NAS backup and verified writable restore | **Pending** |
-| Seven feature closures, accepted release, final docs reconciliation and actual upstream PR update | **Pending; not authorized by focused local tests** |
+| Immutable source/tag CI and contribution validation | **Passed:** main [35740453470](https://github.com/RobinMJD/kutt/actions/runs/35740453470), tag [35740453869](https://github.com/RobinMJD/kutt/actions/runs/35740453869), contribution [35741346684](https://github.com/RobinMJD/kutt/actions/runs/35741346684), plus Shortcut checks |
+| Exact hardened wrapper, valid image scan, full regression and candidate writable restore | **Passed:** zero Critical/High; three Medium BusyBox matches, no listed fix versions; full regression and exact candidate writable restore passed |
+| Fresh pre-change local/NAS backup and verified recovery | **Passed:** 15:03:14 UTC, local `81fe5274` / NAS `e65d9004`, 75 files byte-verified and writable restore passed |
+| Exact `.58` deployment with unchanged hardened configuration | **Passed:** accepted wrapper above, enforced CSP, healthy with zero restarts |
+| Enhanced public community matrix | **Passed:** 18 layouts, 108 contrast states (minimum 7.891:1), 36 actual keyboard downloads, 1,494 requests, zero recorded errors and fixture cleanup |
+| Post-change original-data/integrity/FK, stable health and lab validation | **Passed:** originals unchanged, integrity/FKs valid; two samples 65 seconds apart, three fresh probes and zero alerts/restarts/failed units/unhealthy containers; existing unrelated lab environment warnings retained |
+| Fresh post-change local/NAS backup and verified writable restore | **Passed:** 15:25:12 UTC, local `57c9bc28` / NAS `d3e5a862`, 75 files byte-verified and exact writable restore passed |
+| Seven feature closures, accepted release and actual upstream PR update | **Complete:** C05/C13/C15/C16/C17/C20/C21, published `.58`, PR #1046 updated to tested `32aaeea`; maintainer review/merge pending |
+| Documentation-only closure | Records this accepted immutable release without changing its runtime image; [current main CI](https://github.com/RobinMJD/kutt/actions/workflows/fork-release.yaml?query=branch%3Amain) is tracked separately, not presumed passed |
+| Final homelab publication hosted CI | **Blocked before execution by Actions budget:** deployment-check and hygiene runs linked in Final Review; deployment publication `cb7c19a` and residual-documentation follow-up `94f8faa` completed, operational CI closure remains outstanding |
+
+The public run lasted 15:16:35-15:23:33 UTC on September 22. It covered EN/FR/ES,
+light/dark and 1440/390/320px, with normal/hover/focus contrast checks, real
+CSV/JSON keyboard downloads, decoded QR exports and geography assertions. The
+parent reviewed French/dark/320 and Spanish/dark/320 export controls plus
+Spanish/light/320 geography. All 1,494 requests received responses and completed;
+all 132 scheduled drains completed. No JavaScript, CSP or network errors were
+recorded, and the disposable fixture was cleaned.
+
+Private evidence: `Work/kutt-community-20260922/public-community58-enforce/receipt.json`,
+`Work/kutt-community-20260922/backup58-pre.log` and
+`Work/kutt-community-20260922/postbrowser58-and-backup.log`. Full snapshot IDs:
+
+| Snapshot | Local | NAS |
+| --- | --- | --- |
+| Pre-change, 15:03:14 UTC | `81fe52745f0f564820084f7227085821b596d0f5981e14fed19bdf2eaeeb8362` | `e65d90042a37981e6cd256a083b41a91817f3aa163efbe2a84d6e17bfd6d204e` |
+| Post-change, 15:25:12 UTC | `57c9bc284bb2dce7529bedd3ce7fcb0419900bf387cb46ef353cae0a1bde8ea1` | `d3e5a8626dcd0466cab684afc4cbf409aed24f2199e45eb998e6e0e91efdecc6` |
+
+The actual [upstream PR #1046](https://github.com/thedevs-network/kutt/pull/1046)
+was fast-forwarded to `32aaeeadd2888b3de566550e3f25ff0515c7b2a8`, the exact head
+that passed contribution CI; its title/body were updated. Parity against the
+immutable `.58` source passed for 584 files with zero byte/mode mismatches outside
+eight explicit curated/redacted guides and the excluded private artifact tree.
+Upstream branding and README body remain preserved; localization omits private
+paths/release chronology. This is contribution publication, not upstream merge.
 
 Coverage stays explicit: `.56` supplies full public C16 matrices, `.57` supplies
 C16 smoke3 plus full public API/real OIDC and functional/recovery checks, and
-`.58` requires its own enhanced public community18 and release gates. The narrow
+`.58` passed its own enhanced public community18 and release gates. The narrow
 HTML/CSS change does not imply a `.58` rerun of all preceding API/C16 coverage;
 reuse of that functional evidence is recorded as preceding-version proof, not
-relabeled as a new run. No feature is marked complete until final acceptance.
+relabeled as a new run. Final acceptance authorizes all seven remaining feature
+closures; it does not claim a new `.58` full public API/OIDC or full C16 rerun.
 
 ## Evidence: C01 / C02
 

@@ -15,9 +15,9 @@ not establish a completed rollout.
 
 ## Catalogs And Loading
 
-As of source `v3.2.6-sr94.57`, unchanged by the `.58` UI correction, English,
-French and Spanish each contain **1,519**
-stable keys with identical key sets and placeholder names/multiplicities. English
+Accepted source `v3.2.6-sr94.58` retains the `.57` catalogs: English, French and
+Spanish each contain **1,519** stable keys with identical key sets and placeholder
+names/multiplicities. English
 remains the default. Older counts in the integration history describe their dated
 snapshots, not the current catalog. Structural parity is not a substitute for
 translation-quality review.
@@ -215,7 +215,7 @@ screenshots were reviewed for readable wrapping. Private focused proof is under
 `Work/kutt-community-20260922/copy57-proof`.
 
 Main/tag/contribution and Shortcut CI passed for `.57`. Exact-wrapper regression
-and candidate writable restore passed, and `.57` is deployed healthy with zero
+and candidate writable restore passed, and `.57` was deployed healthy with zero
 restarts. Its fresh public community run passed 18 language/theme/width layouts
 with QR decoding, geography denominator assertions and screenshot review, without
 JavaScript/CSP/network errors. Its C16 smoke passed three EN/FR/ES dark/390 layouts,
@@ -223,12 +223,17 @@ retaining every per-layout workflow assertion; Spanish analytics and the earlier
 French confirmation screenshot were reviewed. Full public C16 matrices belong to
 verified candidate `.56`, not `.57`; interrupted-run evidence stays in the ledger.
 Broader `.57` public API/real OIDC, post-change health/lab and writable recovery
-also passed. The confirmed analytics export-contrast defect requires a narrow
-`.58` HTML/CSS correction, with no new or changed translations. Its focused local
-18-layout contrast/download checks passed, but `.58` CI, deployment, public,
-recovery and final publication gates remain pending in
-[the release checklist](COMMUNITY-FEATURE-ROADMAP.md#candidate-58-analytics-export-contrast).
-This is not a claim that `.57` has passed a full public C16 matrix.
+also passed. The subsequent `.58` HTML/CSS correction fixes export contrast with
+no new or changed translations. Its main/tag/contribution and Shortcut CI,
+exact-wrapper regression, deployment, enhanced public18 and pre/post writable
+recovery passed; `.58` is accepted and published. The public run verified 108
+contrast states and 36 actual CSV/JSON keyboard downloads; French/dark/320 and
+Spanish/dark/320 exports and Spanish/light/320 geography were visually reviewed.
+The full C16 matrices remain `.56` evidence, and the smoke3/full API/real OIDC
+checks remain `.57` evidence; neither is relabeled as a `.58` rerun. This
+documentation-only closure does not change the runtime image. Current main CI
+and the separate Actions-budget-blocked homelab CI residual are tracked in
+[the ledger](COMMUNITY-FEATURE-ROADMAP.md#release-58-accepted-community-closure).
 
 ## Integration History
 

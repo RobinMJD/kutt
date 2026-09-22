@@ -7,34 +7,42 @@ their deferred wording does not override the current work list.
 
 ## Current Contribution Status (2026-09-22)
 
-The prepared contribution contains the original managed-link workflows and all
-C01-C21 source implementations, with curated upstream branding, proposal credits
-and generic guides rather than private deployment artifacts. Its `.57` head was
-`454d2e3d03505cc89896ab6c946ff7be232b0b97`; temporary branch
-`codex/community-validation-53` passed
-[CI 35729573223](https://github.com/RobinMJD/kutt/actions/runs/35729573223).
-Parity against `v3.2.6-sr94.57` passed for 585 files with zero byte/mode mismatches
-under the documented curated/redacted-doc exclusions. Reviewed copy
-retains 1,519 keys per locale and unchanged placeholder contracts.
+The actual [PR #1046](https://github.com/thedevs-network/kutt/pull/1046) was
+fast-forwarded to **`32aaeeadd2888b3de566550e3f25ff0515c7b2a8`** and its title/body
+were updated. This is the exact contribution head that passed
+[CI 35741346684](https://github.com/RobinMJD/kutt/actions/runs/35741346684), not a
+new untested revision. Upstream maintainer review/merge remains pending;
+contribution publication itself is complete.
 
-The local `.58` follow-up is now prepared at
-`d8a92cd5126be8339d04d167d75a425c2fce5cc2`, with runtime/test commit
-`54cc6b14d681305ed55f4d103d01f472ccfd6248` for analytics export contrast and a
-separate version-only commit. Focused local 18-layout contrast/download checks
-passed; `.58` push/CI and final release acceptance are not established by the
-earlier `.57` parity or CI results.
+The contribution contains all original managed-link workflows and C01-C21,
+including reviewed EN/FR/ES copy and the bounded analytics export-contrast fix.
+It preserves upstream branding, the original README body, proposal attribution
+and 1,519 keys per locale with unchanged placeholders. Public guides omit private
+paths, snapshots and deployment chronology, including the localization guide.
+Parity against immutable `v3.2.6-sr94.58` source
+`9360e913bbc2e9ace4f39688569dc5dab7a799e1` passed for 584 files with zero byte/mode
+mismatches outside eight explicit curated/redacted documents and the excluded
+private artifact tree; links/test references passed and credentials were absent.
 
-**The actual [PR #1046](https://github.com/thedevs-network/kutt/pull/1046) remains
-at its earlier head `e0ad948`; the expanded contribution has not updated that
-review branch.** The successful temporary-branch workflow does not imply PR
-publication or maintainer approval. `.56` supplies verified full public candidate
-evidence. `.57` passed exact-wrapper regression and candidate restore and is
-deployed healthy. Its public community18/C16 smoke3, full public API/real OIDC,
-post-change health/lab and writable recovery passed. The later confirmed export
-contrast defect requires the `.58` correction and its release gates before
-accepted-release publication. Only after those gates and separate
-authorization should the actual PR be updated. Keep its curated README/guides
-separate from this fork's private release chronology.
+[Release v3.2.6-sr94.58](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.58)
+is published, deployed and accepted. Main/tag/contribution and Shortcut CI,
+exact-wrapper regression/scan, enhanced public community18, stable health and
+pre/post writable recovery passed. Coverage remains versioned: full C16 is `.56`
+evidence; C16 smoke3 and full public API/real OIDC are `.57` evidence reused for
+the HTML/CSS-only `.58` delta. They are not claimed as fresh `.58` runs.
+
+This documentation-only closure records the accepted immutable release without
+changing the runtime image. Current main CI is available at
+[Fork release](https://github.com/RobinMJD/kutt/actions/workflows/fork-release.yaml?query=branch%3Amain);
+no future documentation-run result is claimed here. Homelab deployment/docs
+publication completed at `cb7c19a`, followed by the budget-residual documentation
+at `94f8faa`. Its hosted deployment/hygiene workflows were blocked before
+execution by an Actions budget. Local static and exact Kutt-workflow checks
+passed; unrelated Repo Hygiene application jobs were not rerun locally. That
+operational CI residual remains explicit in
+[the final review](COMMUNITY-FEATURE-ROADMAP.md#final-review); it does not change
+the passed Kutt release gates or authorize billing/runner/check-policy changes.
+Keep curated contribution guides separate from this fork's private chronology.
 
 ## Historical Proposal Assessment
 

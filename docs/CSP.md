@@ -184,7 +184,7 @@ No parent checkout, live WAF/SSO, release version, dependency lock, schema or
 catalog was changed. Publication/deployment and custom/Safari/native acceptance
 remain separate gates; the unrelated full theme matrix was not rerun.
 
-## Public Candidate Evidence (.56 / .57)
+## Public Release Evidence (.56 / .57 / .58)
 
 The `.56` deployment passed both report-only and enforced public C16 matrices,
 18 layouts each. The enforced run completed with 6,877 requests, no JavaScript/
@@ -204,7 +204,7 @@ original timeout. Keep that failed evidence alongside the retest.
 `.56` is verified functional candidate evidence, not a separate accepted GitHub
 release. The `.57` source keeps identical CSP/application logic and changes only
 16 translated values, version metadata and focused tests. Its CI, exact-wrapper
-regression and candidate writable restore passed; `.57` is deployed with CSP
+regression and candidate writable restore passed; `.57` was deployed with CSP
 enforced, healthy with zero restarts. Its first community run stopped after 3/18
 layouts with explicit local Mac network-change/disconnection errors, not evidence
 of an application or WAF failure. The fresh public community run passed all 18
@@ -215,12 +215,20 @@ links. That smoke complements `.56`'s full matrix; it must not be described as
 `.57` full-18 C16 coverage. Broader `.57` public API/real OIDC, post-change
 data/health/lab and writable recovery passed.
 
-Final release closure remains pending because `.57` visual review confirmed
-low-contrast analytics export controls. The `.58` HTML/CSS-only correction does
+C05 is Complete in accepted, published `.58`, which corrects the low-contrast
+analytics exports confirmed during `.57` visual review. Its HTML/CSS-only change does
 not change CSP, `no-transform`, scripts, authorization or deployment defaults.
-Its focused 18-layout local contrast/keyboard-download checks passed with CSP
-enforced; its own public and release gates remain pending in
-[Community Feature Delivery](COMMUNITY-FEATURE-ROADMAP.md#candidate-58-analytics-export-contrast).
-The application still defaults to CSP `off`; the deployed candidate explicitly
-opts into enforcement. These results do not certify other custom templates or
-proxy deployments.
+Both focused local and enhanced public checks passed 18 EN/FR/ES, light/dark,
+1440/390/320 layouts under enforcement. The public run completed 1,494 requests,
+108 normal/hover/focus contrast states and 36 actual keyboard downloads, with
+zero recorded JavaScript/CSP/network errors and fixture cleanup. Exact-wrapper,
+application CI, health, recovery and release-publication gates passed.
+
+Full public C16 remains `.56` evidence; smoke3/full public API/real OIDC remains
+`.57` evidence reused for the unchanged authorization/script paths, not a `.58`
+rerun. This documentation-only closure does not change the runtime image.
+Current main CI and the separate budget-blocked homelab hosted CI residual are tracked in
+[Community Feature Delivery](COMMUNITY-FEATURE-ROADMAP.md#release-58-accepted-community-closure).
+The application still defaults to CSP `off`; this accepted deployment explicitly
+opts into enforcement. No script exception, WAF or Cloudflare relaxation was
+introduced. These results do not certify other custom templates or proxy deployments.

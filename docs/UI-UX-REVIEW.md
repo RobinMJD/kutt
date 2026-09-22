@@ -6,8 +6,12 @@ Last updated: 2026-09-22 (Europe/Paris).
 
 The statement above closes the original review, not every later feature. Current
 community releases and live acceptance are tracked in
-[Community Feature Delivery](COMMUNITY-FEATURE-ROADMAP.md); the September 19
-deployment references below are historical.
+[Community Feature Delivery](COMMUNITY-FEATURE-ROADMAP.md#release-58-accepted-community-closure).
+Release `.58` is now accepted, published and deployed; all 21 community features
+are Complete with the bounded, versioned coverage below. This documentation-only
+closure does not change the runtime image; current main CI is linked in the
+ledger. Homelab hosted CI has an explicit Actions-budget blocker. The
+September 19 deployment references below are historical.
 
 ### September 22 community follow-up
 
@@ -17,7 +21,8 @@ deployment references below are historical.
   the recipient and domain, explaining permanent token revocation and disabled
   monitoring. Cancel is non-mutating; stale confirmations cannot revoke a new
   grant. Both report-only and enforced `.56` public C16 matrices passed all 18
-  layouts; the `.57` smoke3 also passed, while final `.58` closure remains pending.
+  layouts; the `.57` smoke3 also passed. C16 closes in accepted `.58` using that
+  preceding proof, not a newly claimed `.58` full C16 run.
 - The final token-domain selector review found clipped translated labels even
   without page-level overflow. Labels are now concise in all three catalogs.
   A selected-option canvas text measurement reproduces the defect in `.52` and
@@ -39,7 +44,7 @@ deployment references below are historical.
   decoder blocked by strict CSP. The fixture was cleaned and deployment rolled
   back to `.49`. The correction adds `private, no-store, no-transform` to rendered
   HTML in active CSP modes, including fragments, without authorizing the injected
-  script. The failed-candidate evidence remains; final `.58` acceptance is open.
+  script. The failed-candidate evidence remains alongside accepted `.58` evidence.
 - The `.55` public grant workflow exposed a clipped analytics domain selection.
   `.56` gives domain/tag filters wider responsive rows and shows overflowing
   selected values as associated, wrapping text. Source checks cover common and
@@ -59,7 +64,7 @@ deployment references below are historical.
   more natural. Catalog/HTTP checks, 18 local geography layouts and EN/FR/ES
   moderation/sorting at 1440/390/320 passed; compact screenshots were reviewed.
   Main/tag/contribution CI, exact-wrapper regression and candidate writable
-  restore passed; `.57` is deployed healthy with zero restarts. Its fresh public
+  restore passed; `.57` was deployed healthy with zero restarts. Its fresh public
   community run passed all 18 layouts, with QR decoding, geography denominator
   assertions and screenshots reviewed, and no JavaScript/CSP/network errors.
   Its C16 smoke passed three EN/FR/ES dark/390 layouts: 1,147 requests, cleanup of
@@ -81,14 +86,29 @@ deployment references below are historical.
   measurements, 36 real keyboard downloads, exact filter/format/filename checks
   and screenshot review. No API, authorization, catalog or policy change.
   This confirmed defect is separate from the earlier network interruption.
+- The exact `.58` deployment passed enhanced public community18 under enforced
+  CSP from 15:16:35 to 15:23:33 UTC: 108 normal/hover/focus contrast states,
+  minimum 7.891:1, 36 actual keyboard downloads and 1,494 completed requests.
+  All recorded JavaScript/CSP/network error counts were zero; the fixture was
+  cleaned. French/dark/320 and Spanish/dark/320 export controls plus
+  Spanish/light/320 geography were visually reviewed. Source/main/tag/contribution
+  CI, full exact-wrapper regression, scan and pre/post writable recovery passed.
 
 The `.57` broader public API/real OIDC, original-data/integrity/FK, stable health,
-lab and 75-file post-backup writable recovery checks passed. Live `.57` remains
-healthy. The [.58 release checklist](COMMUNITY-FEATURE-ROADMAP.md#candidate-58-analytics-export-contrast)
-still requires CI, exact-image, deployment, enhanced public community18 and
-post-change recovery/acceptance. `.56`/`.57` are preceding functional evidence,
-not separate accepted GitHub releases; the original 25 findings and human gates
-above are not being reopened or substituted for these new-feature gates.
+lab and writable recovery remain preceding functional proof. Live `.58` passed
+unchanged-original-data/integrity/FK checks, two healthy samples 65 seconds apart
+with three fresh probes and zero alerts/restarts/failed units/unhealthy containers,
+lab validation with existing unrelated environment warnings, and 75-file
+pre/post byte verification and exact writable restores. The
+[accepted .58 ledger](COMMUNITY-FEATURE-ROADMAP.md#release-58-accepted-community-closure)
+records release/actual PR publication. `.56`/`.57` are not separate accepted
+GitHub releases; their C16/API coverage is not relabeled as a `.58` rerun.
+This documentation-only closure records the accepted immutable release; the
+ledger links current main CI without presuming its result. Homelab documentation
+publication completed, but its hosted deployment/hygiene jobs were budget-blocked before
+execution, an explicit operational residual rather than a passed CI claim.
+The original 25 findings and human gates above are not reopened or substituted
+for these new-feature gates.
 
 These are bounded Chromium desktop/mobile-width checks. Native Safari/Firefox,
 physical QR printing/scanning and operator-specific custom templates remain

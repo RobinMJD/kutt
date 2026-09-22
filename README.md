@@ -16,24 +16,25 @@ the upstream hosted service.
 
 ## Project status
 
-As of **22 September 2026**, candidate `3.2.6-sr94.58` fixes analytics export
-contrast; all 18 focused local language/theme/width layouts passed. Its CI,
-exact-image, deployment, public and recovery gates remain pending. Live `.57`
-is healthy with enforced CSP and passed its recorded public, API/OIDC, health
-and writable-recovery checks; final acceptance awaits the `.58` UI correction.
+As of **22 September 2026**, [3.2.6-sr94.58](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.58)
+is accepted, published and deployed. Application CI, exact-image regression,
+public browser checks, stable health and verified writable recovery passed.
+Final homelab publication CI is blocked before execution by an Actions budget;
+this operational residual is tracked in the delivery ledger below.
 
 The source includes all 16 original roadmap features and all 21 community
-features, with English (default), French and Spanish catalogs of 1,519 stable
-keys each. Seven community features still await final release closure. See the
-[delivery ledger](docs/COMMUNITY-FEATURE-ROADMAP.md#candidate-58-analytics-export-contrast)
-for exact coverage, completed and pending gates, historical releases and incidents.
+features, all complete. English (default), French and Spanish use
+[separate catalogs](docs/LOCALIZATION.md) with 1,519 stable keys each. See the
+[delivery ledger](docs/COMMUNITY-FEATURE-ROADMAP.md#release-58-accepted-community-closure)
+for exact versioned coverage and historical evidence, and the
+[regression guide](tests/README.md) for reproducible checks.
 
 - [Feature roadmap](docs/FEATURE-ROADMAP.md): completed features and release evidence.
 - [Community contribution review](docs/UPSTREAM-PR-REVIEW.md): selected proposals, attribution and deferred ideas.
 - [Community delivery ledger](docs/COMMUNITY-FEATURE-ROADMAP.md): approved additions and current validation status.
 - [UI/UX review](docs/UI-UX-REVIEW.md): fixes, completed human acceptance and the final security remediation gates.
 - [Custom domain ownership](docs/CUSTOM-DOMAINS.md): DNS proof, client compatibility and recovery for new claims.
-- [Upstream PR #1046](https://github.com/thedevs-network/kutt/pull/1046): still at the earlier contribution head `e0ad948`; the expanded contribution has passing temporary-branch CI but has not updated the actual PR.
+- [Upstream PR #1046](https://github.com/thedevs-network/kutt/pull/1046): updated with the tested expanded contribution at `32aaeea`; upstream review/merge remains pending.
 
 SQLite is the fully exercised database engine. PostgreSQL 17 and MySQL 8.4 have
 targeted security/concurrency tests; MariaDB remains configuration-only. These
@@ -99,7 +100,7 @@ checked-out source, persists SQLite and custom assets in named volumes, and
 publishes only `127.0.0.1:3000` on the Docker host.
 
 ```sh
-git clone --branch v3.2.6-sr94.49 --depth 1 https://github.com/RobinMJD/kutt.git
+git clone --branch v3.2.6-sr94.58 --depth 1 https://github.com/RobinMJD/kutt.git
 cd kutt
 cp .example.env .env
 chmod 600 .env
@@ -135,9 +136,8 @@ whose data you intend to keep.
 
 ### Published images and alternative examples
 
-The last fully closed fork release image is
-`ghcr.io/robinmjd/kutt:v3.2.6-sr94.49`; newer candidate tags do not imply final
-acceptance. For an image-based deployment, replace
+The accepted fork release image is
+`ghcr.io/robinmjd/kutt:v3.2.6-sr94.58`. For an image-based deployment, replace
 the Compose service's `build` section with an `image` reference, retaining its
 environment and persistent volumes. Pin the tested image digest in production.
 The upstream `kutt/kutt` Docker Hub image does **not** contain these fork changes.
