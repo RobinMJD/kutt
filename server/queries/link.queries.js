@@ -242,10 +242,14 @@ async function create(params, db = knex, actor = {}) {
   return link;
 }
 
-async function remove(match, actor = {}) {
+async function remove(match, actor = {}, request) {
   const link = await knex.transaction(async db => {
+    await require("../domain-access").lock(db);
     const link = await db("links").where(match).first();
-    if (link) await history.trash(db, link, actor);
+    if (link) {
+      if (request) await require("../domain-access").writeLink(db, request, link, "links:delete");
+      await history.trash(db, link, actor);
+    }
     return link;
   });
   if (!link) return { isRemoved: false, error: i18n.t("messages.could_not_find_the_link"), link: null };
@@ -296,7 +300,7 @@ async function update(match, update, actor = {}, { expiryExpected, request } = {
     for (const link of current) {
       await require("../domain-access").link(db, link);
       await require("../domain-access").link(db, { ...link, ...update });
-      if (request) await require("../domain-access").request(db, request, link.domain_id, "links:update", link.user_id);
+      if (request) await require("../domain-access").writeLink(db, request, link, "links:update");
     }
     for (const link of current) require("../link-expiry-edit").check(link, expiryExpected);
     for (const link of current) {

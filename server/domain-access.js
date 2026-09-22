@@ -49,8 +49,9 @@ async function link(db, row) {
   return row.domain_id == null ? null : requireDomain(db, row.user_id, { id: row.domain_id });
 }
 async function request(db, req, domainId, scope, ownerId = req.user?.id) {
+  let user;
   if (req.user) {
-    const user = await current(db, db("users").where({ id: req.user.id, verified: true, banned: false })).first();
+    user = await current(db, db("users").where({ id: req.user.id, verified: true, banned: false })).first();
     if (!user || Number(user.auth_version) !== Number(req.user.auth_version)) fail("messages.sign_in_again", 401);
   }
   if (domainId != null && ownerId !== null) await requireDomain(db, ownerId, { id: domainId });
@@ -61,6 +62,16 @@ async function request(db, req, domainId, scope, ownerId = req.user?.id) {
     const domain = token.domain_scope === "all" || token.domain_scope === "default" ? null :
       await requireDomain(db, req.user.id, { uuid: token.domain_scope });
     if (token.domain_scope !== "all" && (domain?.id ?? null) !== domainId) fail("messages.token_does_not_permit_this_domain");
+  }
+  return user;
+}
+async function writeLink(db, req, row, scope) {
+  // The caller holds the domain guard. Deletion needs no continuing domain
+  // entitlement, but never inherits a stale administrator or token permission.
+  const user = await request(db, req, row.domain_id, scope, scope === "links:delete" ? null : row.user_id);
+  const administrative = row.user_id !== user?.id || req.user.admin && !req.apiToken;
+  if (!user || administrative && (req.apiToken || !await require("./oidc-roles").allowsAdmin(db, user))) {
+    fail("messages.administrator_access_is_no_longer_available", 403);
   }
 }
 async function invalidate(db, domain, userId) {
@@ -131,4 +142,4 @@ async function revoke(req, id, grantId) {
     await invalidate(db, domain, row.user_id);
   });
 }
-module.exports = { lock, available, find, requireDomain, link, request, invalidate, invalidateUser, manage, list, grant, revoke };
+module.exports = { lock, available, find, requireDomain, link, request, writeLink, invalidate, invalidateUser, manage, list, grant, revoke };

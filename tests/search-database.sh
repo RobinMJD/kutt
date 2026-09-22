@@ -3,7 +3,7 @@ set -eu
 image=${1:?candidate image required}
 engine=${2:?mysql2 or pg required}
 suite=${3:-tests/search-database.cjs}
-case "$suite" in tests/search-database.cjs|tests/oidc-roles-database.cjs|tests/management-domain-grants.cjs) ;; *) exit 2;; esac
+case "$suite" in tests/search-database.cjs|tests/oidc-roles-database.cjs|tests/oidc-role-writes.cjs|tests/management-domain-grants.cjs) ;; *) exit 2;; esac
 case "$engine" in mysql2|pg) ;; *) exit 2;; esac
 private_dir=$(mktemp -d)
 cidfile="$private_dir/container.id"
