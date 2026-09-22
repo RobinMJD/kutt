@@ -30,6 +30,8 @@ require("./passport");
 
 // create express app
 const app = express();
+const metrics = require("./metrics").create(env);
+app.use(metrics.middleware);
 
 app.set("trust proxy", env.TRUST_PROXY);
 
@@ -90,9 +92,11 @@ app.get("*", renders.notFound);
 // handle errors coming from above routes
 app.use(helpers.error);
   
-templatesReady.then(() => app.listen(env.PORT, () => {
-  console.log(`> Ready on http://localhost:${env.PORT}`);
-})).catch(() => {
-  console.error("Template initialization failed.");
+templatesReady.then(() => metrics.start()).then(() => {
+  app.listen(env.PORT, () => {
+    console.log(`> Ready on http://localhost:${env.PORT}`);
+  });
+}).catch(() => {
+  console.error("Application initialization failed. Check templates and the private metrics listener configuration.");
   process.exit(1);
 });

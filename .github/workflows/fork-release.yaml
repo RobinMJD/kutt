@@ -55,6 +55,12 @@ jobs:
         run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/kutt-browser/node_modules/playwright" KUTT_EVIDENCE_DIR="$RUNNER_TEMP/kutt-alias-evidence" sh tests/browser-dotted-aliases.sh kutt-tested
       - name: Browser theme, contrast and storage recovery regression
         run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/kutt-browser/node_modules/playwright" KUTT_EVIDENCE_DIR="$RUNNER_TEMP/kutt-theme-evidence" sh tests/browser-theme.sh kutt-tested
+      - name: English French Spanish workflows
+        run: |
+          PLAYWRIGHT_MODULE="$RUNNER_TEMP/kutt-browser/node_modules/playwright" KUTT_EVIDENCE_DIR="$RUNNER_TEMP/kutt-i18n-evidence" sh tests/browser-i18n.sh kutt-tested
+          for locale in fr es; do
+            KUTT_TEST_LOCALE="$locale" PLAYWRIGHT_MODULE="$RUNNER_TEMP/kutt-browser/node_modules/playwright" KUTT_EVIDENCE_DIR="$RUNNER_TEMP/kutt-theme-$locale" sh tests/browser-theme.sh kutt-tested
+          done
       - name: Authenticate to GitHub Container Registry
         if: startsWith(github.ref, 'refs/tags/')
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0

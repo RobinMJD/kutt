@@ -119,6 +119,22 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
           assert.equal(await page.locator(".language-selector option:checked").textContent(), ({ en: "English", fr: "Français", es: "Español" })[locale]);
           assert.equal(await page.evaluate(() => window.injected || false), false);
           assert.equal(await page.locator('img[onerror]').count(), 0);
+          const clippedSortLabels = await page.locator('.list-sort-controls select:visible').evaluateAll(nodes => {
+            const context = document.createElement('canvas').getContext('2d');
+            return nodes.filter(node => {
+              const style = getComputedStyle(node);
+              context.font = style.font;
+              return context.measureText(node.selectedOptions[0].textContent.trim()).width >
+                node.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+            }).map(node => node.name);
+          });
+          assert.deepEqual(clippedSortLabels, [], locale + ' selected sorting labels fit');
+          for (const icon of await page.locator('.library-link-meta a svg[fill=none]').all()) {
+            if (await page.locator('html').getAttribute('data-theme') === 'dark') {
+              assert(await icon.evaluate(node => getComputedStyle(node).stroke === getComputedStyle(node.closest('a')).color),
+                locale + ' dark library icons inherit readable link color');
+            }
+          }
           const geometry = await page.evaluate(() => ({ viewport: innerWidth, content: document.documentElement.scrollWidth }));
           assert(geometry.content <= width + 1, locale + " " + width + " " + route + " overflow: " + JSON.stringify(geometry));
           if (width <= 600 && route === "/settings/library") {

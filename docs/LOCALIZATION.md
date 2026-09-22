@@ -1,11 +1,11 @@
 # Localization
 
 C11 provides English (`en`, default), French (`fr`) and Spanish (`es`) for the
-bundled web UI, email and user-facing server/browser feedback. The isolated C11
-branch incorporates release `.46` (`f85ce35`), including C03 moderation,
-C12 sorting and C19 dotted aliases, and release `.47` (`741cece`) with C14 theme
-preferences. Its package version remains `.47`. No publication or deployment
-is part of this work.
+bundled web UI, email and user-facing server/browser feedback. The candidate
+release is `.49`, integrating moderation, sorting, dotted aliases, themes and
+the private metrics listener. Consult [the delivery ledger](COMMUNITY-FEATURE-ROADMAP.md)
+for publication, deployment and live acceptance status; source tests alone do
+not establish a completed rollout.
 
 ## Catalogs And Loading
 
@@ -174,10 +174,19 @@ compilation, escaping, custom precedence, 90 concurrent locale contexts,
 Node/browser formatter parity, plural categories, mail rendering, concurrent
 localized requests, cookie negotiation, null/foreign-origin rejection,
 open-redirect rejection, allowlisted assets and locale-independent edit signatures.
-SMTP delivery, physical mobile devices, native Safari/Firefox, production custom
-layouts and live parent integration/release acceptance remain separate gates.
+SMTP delivery, physical mobile devices, native Safari/Firefox and production
+custom layouts remain separate acceptance surfaces. Use
+`sh tests/browser-i18n.sh IMAGE` to start and remove a guarded disposable container automatically, with
+`NODE_BINARY` and `PLAYWRIGHT_MODULE` overrides when needed.
 
-## Release 46 Integration
+## Integration History
+
+The following dated checks describe isolated integration checkpoints, not the
+current release version or deployment state. Their image names, package versions
+and catalog counts are historical. Current combined `.49` acceptance is tracked
+in the delivery ledger and release evidence, rather than inferred from these runs.
+
+### Release 46 Integration
 
 The merge retains transactional moderation, independent unban, revoked-credential
 invalidation, last-administrator protection, exact sort profiles and pagination,
@@ -208,7 +217,7 @@ and removes its own fresh container and refuses initialized application data.
 These browser runs use regular Playwright because the Browser plugin is not
 available. Catalog-only changes now trigger the Docker smoke workflow too.
 
-### Release 46 Validation (2026-09-22)
+#### Release 46 Validation (2026-09-22)
 
 - Image `kutt-i18n-test:c11-46`: build/hardening and full container regression
   passed, including C03/C12/C19, localization HTTP tests, OIDC and rollback/reapply.
@@ -234,7 +243,7 @@ No production/provider/SMTP acceptance, physical-device or Safari/Firefox runs,
 new TLS handshake runs, remote CI, publication or deployment were performed.
 Custom-layout review and release acceptance remain the parent's responsibility.
 
-## Release 47 Integration
+### Release 47 Integration
 
 C14 (`741cece`) is merged after the release 46 integration. Its runtime
 `theme.js`, `chart-theme.js` and `theme.css` are unchanged. Both localization and
@@ -255,7 +264,7 @@ plus System mode, keyboard selection, cross-tab/media changes, storage denial,
 rendered contrast, chart pixels and QR print preservation. These checks complement
 the 198 localized page layouts and native locale/theme interaction gate.
 
-### Release 47 Validation (2026-09-22)
+#### Release 47 Validation (2026-09-22)
 
 - Image `kutt-i18n-test:c11-47`: build/hardening and the full combined container
   regression passed, including localization/theme HTTP checks, C03/C12/C19,

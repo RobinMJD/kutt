@@ -23,5 +23,6 @@ button, .button, label, summary { overflow-wrap: anywhere; }
   .library .library-filters > label,
   .library .library-filters > label:first-child,
   .library-toolbar > label:not(.library-checkbox) { flex-basis: 100%; }
+  .list-sort-controls label { flex-basis: 100%; }
 }
 .destination-policy code { overflow-wrap: anywhere; }

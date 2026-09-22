@@ -374,6 +374,15 @@ CA/TLS dependencies, Node compression and native SQLite. The Dockerfile also
 runs it during the build. Do not run it on a developer host.
 ## Community regression coverage
 
+The shared HTTP test helper uses fresh connections without automatic retries,
+then drains ordinary responses before returning a buffered `Response`. This
+prevents synchronous child fixtures from reusing stale sockets and avoids the
+unread-body close crash in Node's bundled client (`nodejs/undici#5360`). SSE
+responses remain streamed. No application behavior or assertions are replaced;
+browser, Redis and public smoke tests still exercise their normal transports.
+Offline response-schema fixtures use reserved literal addresses instead of
+depending on public DNS availability.
+
 `community-correctness.cjs` checks the installed user-agent parser (including
 desktop/mobile Safari) and hostname normalization. `community-hostnames.cjs`
 exercises actual HTTP create/edit/import/routing, moderation, DNS proof identity,
@@ -425,3 +434,9 @@ afterward; do not run it against retained configuration.
 container with a loopback-only port and no real mounts. Set `NODE_BINARY` for an
 alternate Node runtime and `KUTT_BROWSER_PORT` when port 31119 is occupied.
 CI runs the same helper with isolated, version-pinned Playwright tooling.
+## Private performance metrics
+
+`tests/metrics.cjs` is part of the isolated full regression suite. Set
+`KUTT_TEST_ONLY=metrics` for configuration/listener/authentication, bounded-label
+privacy, timing/counter, secret-file rotation, restart and public-route isolation
+checks. Only disposable loopback listeners and generated credentials are used.

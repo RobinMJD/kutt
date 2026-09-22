@@ -53,6 +53,7 @@ footer > p { max-width: 100%; margin: 0; text-align: center; }
 :root[data-theme=dark] select:not([multiple]) { background-repeat: no-repeat; background-position: right .75rem center; background-size: 18px 18px; padding-right: 2.5rem; }
 :root[data-theme=dark] select[multiple] { background-image: none; }
 :root[data-theme=dark] :is(button, a.button) svg[fill=none] { stroke: currentColor; }
+:root[data-theme=dark] .library-link-meta a svg[fill=none] { stroke: currentColor; }
 :root[data-theme=dark] :is(table, #stats, .dialog .box) { background-color: #262a2d; }
 :root[data-theme=dark] .library { color: var(--text-color); }
 :root[data-theme=dark] :is(.library-target, #events-status) { color: var(--secondary-text-color); }
