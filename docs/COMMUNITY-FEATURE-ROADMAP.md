@@ -32,14 +32,34 @@ automatic domain renaming, historical analytics rewriting or data deletion.
 | C11 | Complete English (default), French and Spanish localization | Implemented; release gates pending | Candidate `.49`, integrated with `.48` metrics; 198 combined desktop/mobile layouts passed; see `LOCALIZATION.md` |
 | C12 | Stable allowlisted sorting in personal, admin and workspace tables/API | Complete | `.44`; evidence below |
 | C13 | Branded QR logos embedded in validated PNG/SVG exports | In progress | Isolated implementation and decoder validation; release gates pending |
-| C14 | Accessible dark/system/light theme | Implemented; release gates pending | Candidate `.47`; full source regression and rendered theme/contrast/storage checks passed; publication and deployment pending |
+| C14 | Accessible dark/system/light theme | Complete | `.47`; full source/wrapper regression, 90 layouts, public theme selection, WAF/SSO and backup/restore gates passed; evidence below |
 | C15 | Optional explicit OIDC role mapping and safe demotion/recovery | Pending | Pending |
 | C16 | Optional separate management hostname and explicit shared-domain grants | Pending | Pending |
-| C17 | Optional consistent destination-domain policy | Pending | Pending |
+| C17 | Optional consistent destination-domain policy | In progress | Isolated implementation; 18 translated desktop/mobile workflows passed; combined regression/publication/deployment pending |
 | C18 | Private authenticated performance metrics with bounded labels | Implemented; release gates pending | Candidate `.48`; focused and full isolated regression passed; publication/deployment pending |
 | C19 | Safe dotted aliases with reserved-path protections | Complete | `.46`; [rules and tests](LINK-ALIASES.md), evidence below |
 | C20 | Accessible interactive geography chart and text alternative | Pending | Pending |
-| C21 | Profile visit aggregation; safely batch only where warranted | Pending | Pending |
+| C21 | Profile visit aggregation; safely batch only where warranted | In progress | Synthetic profile identified hourly SQLite lookup; preserving transactions and testing expression index, with SQL-engine compatibility gates |
+
+## Evidence: C14
+
+- Published/deployed `.47`, source `741cece`; main/tag CI `35680493811` /
+  `35680493815` and full exact-wrapper regression passed. Fresh valid Grype
+  scan: zero Critical/High. No new secret, schema, WAF or SSO change.
+- Rendered tests cover 15 routes at 1440/390/320px in both themes, keyboard,
+  media preference, cross-tab persistence, storage denial, text contrast, chart
+  pixels and printing. Public HTTPS login passed all three theme modes and
+  reload persistence at all widths; this is Chromium evidence, not physical
+  Safari/mobile-device acceptance.
+- Full public feature regression, real Authentik-signed logout/replay, original
+  record/integrity/FK checks and whole-lab validation passed. Two samples 65s
+  apart: healthy, zero restarts/alerts/failed units/unhealthy containers, three
+  fresh probes. Wrapper `sha256:e493ab6cd653539feebec7e862197dfa61adfb002db85bb0349e6d9297218427`.
+- Pre-release local/NAS `94bbab75` / `30665118` at September 22 03:41:08 UTC;
+  post-release `c7463d86` / `3d68a579` at 03:57:42 UTC. Both 68-file byte
+  verification and exact-image writable SQLite restore passed. No USB SSD claim.
+  Private evidence: homelab `security-reports/2026-09-22-kutt-community-47` and
+  local `Work/kutt-community-20260922/public-theme47`.
 
 ## Localization Contract
 
