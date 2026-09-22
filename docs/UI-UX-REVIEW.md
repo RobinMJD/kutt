@@ -1,8 +1,38 @@
 # UI/UX Review And Remediation Ledger
 
-Last updated: 2026-09-19 (Europe/Paris).
+Last updated: 2026-09-22 (Europe/Paris).
 
 **Status: all 25 UI findings and four explicit user-assisted acceptance gates are closed. Release .40 also fixes the seven finalized security findings and has passed exact-image, public deployment and pre/post writable-recovery validation.**
+
+The statement above closes the original review, not every later feature. Current
+community releases and live acceptance are tracked in
+[Community Feature Delivery](COMMUNITY-FEATURE-ROADMAP.md); the September 19
+deployment references below are historical.
+
+### September 22 community follow-up
+
+- English, French and Spanish, theme, table sorting and moderation have their
+  own rendered keyboard/compact-width matrices and deployed release evidence.
+- New domain-grant revocation uses a native, localized confirmation page naming
+  the recipient and domain, explaining permanent token revocation and disabled
+  monitoring. Cancel is non-mutating; stale confirmations cannot revoke a new
+  grant. Publication and live acceptance remain in the community ledger.
+- The final token-domain selector review found clipped translated labels even
+  without page-level overflow. Labels are now concise in all three catalogs.
+  A selected-option canvas text measurement reproduces the defect in `.52` and
+  passes the corrected 18 language/theme/viewport combinations. Actual screenshot
+  inspection confirms the compact Spanish control is readable. Final release
+  deployment is pending; this is source/browser evidence, not live acceptance.
+- Branded QR tests decode actual PNG/SVG output, cover input rejection and
+  delayed-render races, and preserve plain white exports across themes. The
+  `.50` public WAF gate exposed a data-URI transport rejection; its deployment
+  was rolled back. Browser uploads now use canonical plain PNG base64 while
+  keeping bounded legacy API decoding. The WAF was not weakened.
+
+These are bounded Chromium desktop/mobile-width checks. Native Safari/Firefox,
+physical QR printing/scanning and operator-specific custom templates remain
+separate acceptance surfaces; the old human gates are not automatically reused
+to claim new-feature acceptance.
 
 ### September 19 security follow-up
 
