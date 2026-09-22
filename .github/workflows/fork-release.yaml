@@ -39,6 +39,10 @@ jobs:
         run: |
           sh tests/search-database.sh kutt-tested mysql2 tests/oidc-roles-database.cjs
           sh tests/search-database.sh kutt-tested pg tests/oidc-roles-database.cjs
+      - name: Shared-domain grants on real MySQL and PostgreSQL
+        run: |
+          sh tests/search-database.sh kutt-tested mysql2 tests/management-domain-grants.cjs
+          sh tests/search-database.sh kutt-tested pg tests/management-domain-grants.cjs
       - name: Alias claims on real MySQL and PostgreSQL
         run: |
           sh tests/dotted-alias-database.sh kutt-tested mysql2

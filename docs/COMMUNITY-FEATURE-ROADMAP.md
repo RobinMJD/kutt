@@ -34,7 +34,7 @@ automatic domain renaming, historical analytics rewriting or data deletion.
 | C13 | Branded QR logos embedded in validated PNG/SVG exports | Implemented; release gates pending | Integrated; bounded PNG validation, independent decoding and 18 enforced-CSP layouts passed; see `QR-BRANDING.md` |
 | C14 | Accessible dark/system/light theme | Complete | `.47`; full source/wrapper regression, 90 layouts, public theme selection, WAF/SSO and backup/restore gates passed; evidence below |
 | C15 | Optional explicit OIDC role mapping and safe demotion/recovery | Implemented; release gates pending | Integrated; see `OIDC-SECURITY.md` |
-| C16 | Optional separate management hostname and explicit shared-domain grants | In progress | Isolated implementation and authorization/transaction review; not deployed |
+| C16 | Optional separate management hostname and explicit shared-domain grants | Implemented; release gates pending | Integrated; SQLite/MySQL/PostgreSQL, revocation, creator-only analytics and translated split-host browser workflows passed; see `DOMAIN-SHARING.md` |
 | C17 | Optional consistent destination-domain policy | Implemented; release gates pending | Integrated with authorized unchanged-target metadata repair and race coverage; translated desktop/mobile workflows passed; publication/deployment pending |
 | C18 | Private authenticated performance metrics with bounded labels | Complete | `.48`; source/wrapper/CI, private Prometheus scrapes, WAF/SSO, backup/restore and stable health gates passed |
 | C19 | Safe dotted aliases with reserved-path protections | Complete | `.46`; [rules and tests](LINK-ALIASES.md), evidence below |
