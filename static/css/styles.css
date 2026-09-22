@@ -2581,11 +2581,21 @@ svg.map path.active { stroke: hsl(261, 46%, 50%); stroke-width: 1.5; }
 .qr-controls button:disabled { opacity: 0.5; cursor: not-allowed; }
 .qr-controls button, .qr-controls .button:not(.primary) { background: #fff; color: #243f49; border: 1px solid #a8b8bf; box-shadow: none; }
 .qr-actions, .qr-state { margin-top: 1rem; }
+.qr-branding { display: flex; flex-wrap: wrap; align-items: end; gap: .75rem; margin-top: 1rem; text-align: left; }
+.qr-branding label { width: min(100%, 320px); }
+.qr-branding input { height: auto; min-height: 42px; font-size: 14px; }
+.qr-branding img { width: 48px; height: 48px; object-fit: contain; background: white; }
+#qr-logo-remove { width: 42px; height: 42px; padding: 10px; flex: 0 0 42px; }
+#qr-logo-remove svg { width: 20px; height: 20px; }
+.qr-page [hidden] { display: none !important; }
+.qr-actions a[aria-disabled="true"] { opacity: .5; cursor: not-allowed; }
+.qr-controls select:disabled { opacity: 1; background: #edf0f2; }
 #qr-error { color: #a4262c; }
 #qr-copy { width: 42px; height: 42px; flex: 0 0 42px; padding: 10px; }
 #qr-copy svg { width: 20px; height: 20px; }
 #qr-copy-status { min-height: 24px; margin: 0.5rem 0 0; font-size: 14px; }
 .qr-sheet { margin: 2rem auto; width: min(100%, 512px); text-align: center; overflow-wrap: anywhere; }
+.qr-preview-frame { width: 100%; aspect-ratio: 1; background: #fff; }
 .qr-sheet img { display: block; width: 100%; height: auto; aspect-ratio: 1; background: #fff; }
 .qr-sheet figcaption { margin-top: 1rem; font-size: 16px; }
 .library-link-meta a[aria-label] { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; flex: 0 0 40px; }
