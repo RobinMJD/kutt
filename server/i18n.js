@@ -43,10 +43,12 @@ function change(req, res) {
   // This preference is not an authentication token, but do not allow cross-origin preference changes.
   let origin;
   try { origin = new URL(req.get("origin")); } catch {}
-  if (!origin || origin.origin !== `${req.protocol}://${req.get("host")}` || !supported(req.body?.locale)) {
+  const management = require("./management-origin");
+  const expected = req.managementHost ? management.origin() : `${req.protocol}://${req.get("host")}`;
+  if (!origin || origin.origin !== expected || !supported(req.body?.locale)) {
     return res.status(400).send(current().t("locale.invalid"));
   }
-  res.cookie("kutt_locale", req.body.locale, { httpOnly: true, sameSite: "lax", secure: req.secure, path: "/", maxAge: 31536000000 });
+  res.cookie("kutt_locale", req.body.locale, { httpOnly: true, sameSite: "lax", secure: req.managementHost ? management.secureCookie() : req.secure, path: "/", maxAge: 31536000000 });
   res.set("Cache-Control", "no-store");
   res.redirect(303, safeReturn(req.body.return_to));
 }

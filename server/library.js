@@ -146,6 +146,7 @@ async function bulk(userId, input, actor, domainId) {
   if (!Array.isArray(ids) || !ids.length || ids.length > 100 || ids.some(id => !uuid(id)) || new Set(ids).size !== ids.length) fail(i18n.t("messages.select_1_to_100_distinct_links"));
   if (!["add_label", "remove_label", "pause", "resume", "trash"].includes(action)) fail(i18n.t("messages.invalid_bulk_action"));
   const links = await knex.transaction(async db => {
+    await require("./domain-access").lock(db);
     const rows = await owned(db, userId, domainId).whereIn("links.uuid", ids).whereNull("links.deleted_at").orderBy("links.id");
     if (rows.length !== ids.length) fail(i18n.t("messages.one_or_more_links_are_unavailable_no_links_were_changed"), 404);
     if (rows.some(row => row.banned)) fail(i18n.t("messages.selection_contains_a_banned_link_no_links_were_changed"), 409);
@@ -153,6 +154,7 @@ async function bulk(userId, input, actor, domainId) {
       if (!uuid(labelId) || !await db("library_labels").where({ id: labelId, user_id: userId }).first()) fail(i18n.t("messages.label_was_not_found"), 404);
     }
     for (const row of rows) {
+      if (action !== "trash") await require("./domain-access").link(db, row);
       if (action === "trash") await history.trash(db, row, actor);
       else if (action === "pause" || action === "resume") {
         const paused = action === "pause";

@@ -47,7 +47,7 @@ async function mutate(req, operation, res) {
     case "share": case "unshare": return spaces.share(req.user.id, id, req.params.linkId || body.link_id, operation === "unshare");
     case "create_link": case "edit_link": case "trash_link": case "restore_link": {
       const input = operation === "trash_link" || operation === "restore_link" ? {} : req.isHTML ? formLink(body) : body;
-      return spaces.changeLink(req.user.id, id, operation.replace("_link", ""), req.params.linkId || body.link_id, input, actor);
+      return spaces.changeLink(req.user.id, id, operation.replace("_link", ""), req.params.linkId || body.link_id, input, actor, req);
     }
     default: throw new CustomError(i18n.t("messages.invalid_workspace_action"), 400);
   }

@@ -28,7 +28,9 @@ function get(match) {
 // Claims must not overwrite an owner or a ban acquired while DNS was checked.
 async function claim({ address, homepage, user }) {
   address = address.toLowerCase();
+  if (require("../management-origin").reserved(address)) throw new utils.CustomError(i18n.t("domain_grants.management_reserved"), 400);
   const domain = await knex.transaction(async db => {
+    await require("../domain-access").lock(db);
     const current = await db("users").where({ id: user.id }).forUpdate().first();
     if (!current || current.banned || !current.verified || Number(current.auth_version) !== Number(user.auth_version)) {
       throw new utils.CustomError(i18n.t("messages.sign_in_again"), 401);
@@ -37,7 +39,9 @@ async function claim({ address, homepage, user }) {
     const changed = await db("domains").where({ address, user_id: null, banned: false })
       .update({ user_id: user.id, homepage, updated_at: utils.dateToUTC(new Date()) });
     if (!changed) throw new utils.CustomError(i18n.t("messages.domain_is_already_owned_or_unavailable"), 409);
-    return db("domains").where({ address, user_id: user.id }).first();
+    const claimed = await db("domains").where({ address, user_id: user.id }).first();
+    await require("../domain-access").invalidate(db, claimed);
+    return claimed;
   });
   if (env.REDIS_ENABLED) redis.remove.domain(domain);
   return domain;
@@ -45,8 +49,11 @@ async function claim({ address, homepage, user }) {
 
 async function release(id, userId) {
   const domain = await knex.transaction(async db => {
+    await require("../domain-access").lock(db);
     const changed = await db("domains").where({ id, user_id: userId }).update({ user_id: null, updated_at: utils.dateToUTC(new Date()) });
-    return changed ? db("domains").where({ id }).first() : null;
+    const released = changed ? await db("domains").where({ id }).first() : null;
+    if (released) await require("../domain-access").invalidate(db, released);
+    return released;
   });
   if (domain && env.REDIS_ENABLED) redis.remove.domain(domain);
   return domain;
@@ -227,6 +234,8 @@ async function totalAdmin(match, params) {
 
 async function remove(domain, { trashLinks = false, actor = {} } = {}) {
   const deletedDomain = await knex.transaction(async db => {
+    await require("../domain-access").lock(db);
+    await require("../domain-access").invalidate(db, domain);
     const links = await db("links").where({ domain_id: domain.id });
     if (links.some(link => link.deleted_at == null) && !trashLinks) {
       throw new utils.CustomError(i18n.t("messages.this_domain_has_active_links_select_link_deletion_to_move_them"), 409);

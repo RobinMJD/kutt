@@ -25,7 +25,7 @@ async function load(req, res) {
     throw new CustomError(i18n.t("messages.link_was_not_found"), 404);
   }
   if (link.deleted_at || link.archived_domain) throw new CustomError(i18n.t("messages.restore_the_link_and_its_domain_before_exporting_a_qr_code"), 410);
-  if (link.domain_id && !await knex("domains").where({ id: link.domain_id, user_id: req.user.id, banned: false }).first()) {
+  if (link.domain_id && !await require("../domain-access").find(knex, req.user.id, { id: link.domain_id })) {
     throw new CustomError(i18n.t("messages.the_short_domain_is_unavailable"), 410);
   }
   const url = getShortURL(link.address, link.domain).url;

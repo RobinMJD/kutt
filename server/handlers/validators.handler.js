@@ -90,11 +90,7 @@ const createLink = [
     .withMessage(() => i18n.t("messages.domain_should_be_string"))
     .customSanitizer(value => value.toLowerCase())
     .custom(async (address, { req }) => {
-      const domain = await knex("domains").where({
-        address,
-        user_id: req.user.id,
-        banned: false
-      }).first();
+      const domain = await require("../domain-access").find(knex, req.user.id, { address });
       req.body.fetched_domain = domain || null;
 
       if (!domain) return Promise.reject();
@@ -185,6 +181,8 @@ const addDomain = [
     })
     .custom(value => value !== env.DEFAULT_DOMAIN)
     .withMessage(() => i18n.t("messages.you_can_t_use_the_default_domain"))
+    .custom(value => !require("../management-origin").reserved(value))
+    .withMessage(() => i18n.t("domain_grants.management_reserved"))
     .custom(async value => {
       const domain = await query.domain.find({ address: value });
       if (domain?.user_id || domain?.banned) return Promise.reject();
@@ -214,6 +212,8 @@ const addDomainAdmin = [
     })
     .custom(value => value !== env.DEFAULT_DOMAIN)
     .withMessage(() => i18n.t("messages.you_can_t_add_the_default_domain"))
+    .custom(value => !require("../management-origin").reserved(value))
+    .withMessage(() => i18n.t("domain_grants.management_reserved"))
     .custom(async value => {
       const domain = await query.domain.find({ address: value });
       if (domain) return Promise.reject();

@@ -202,6 +202,9 @@ async function find(match, { fresh = false, includeTrash = false } = {}) {
 }
 
 async function create(params, db = knex, actor = {}) {
+  if (!db.isTransaction) return knex.transaction(transaction => create(params, transaction, actor));
+  await require("../domain-access").lock(db);
+  await require("../domain-access").link(db, params);
   let encryptedPassword = null;
   
   if (params.password) {
@@ -272,7 +275,7 @@ async function batchRemove(match) {
   }
 }
 
-async function update(match, update, actor = {}, { expiryExpected } = {}) {
+async function update(match, update, actor = {}, { expiryExpected, request } = {}) {
   if (update.password) {
     const salt = await bcrypt.genSalt(12);
     update.password = await bcrypt.hash(update.password, salt);
@@ -286,9 +289,15 @@ async function update(match, update, actor = {}, { expiryExpected } = {}) {
   }
   
   await knex.transaction(async db => {
+    await require("../domain-access").lock(db);
     const selection = db("links").where(match);
     if (expiryExpected !== undefined && !knex.client.config.client.includes("sqlite")) selection.forUpdate();
     const current = await selection;
+    for (const link of current) {
+      await require("../domain-access").link(db, link);
+      await require("../domain-access").link(db, { ...link, ...update });
+      if (request) await require("../domain-access").request(db, request, link.domain_id, "links:update", link.user_id);
+    }
     for (const link of current) require("../link-expiry-edit").check(link, expiryExpected);
     for (const link of current) await history.beforeUpdate(db, link, update, actor);
     await db("links").where(match).update({ ...update, updated_at: utils.dateToUTC(new Date()) });

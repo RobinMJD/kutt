@@ -7,11 +7,7 @@ const env = require("../env");
 const { CustomError, sanitize } = require("../utils");
 
 function sameOrigin(req) {
-  let host;
-  try { if (req.get("Origin")) host = new URL(req.get("Origin")).host; } catch { host = "invalid"; }
-  if (req.get("Sec-Fetch-Site") === "cross-site" || (host && host !== env.DEFAULT_DOMAIN)) {
-    throw new CustomError(i18n.t("messages.invalid_request_origin"), 403);
-  }
+  require("../management-origin").sameOrigin(req);
 }
 
 function page(req) {

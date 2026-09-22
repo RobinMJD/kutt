@@ -45,6 +45,7 @@ async function user(req, res, next) {
   const user = req.user;
   res.locals.user = user;
   res.locals.domains = user && (await query.domain.get({ user_id: user.id })).map(utils.sanitize.domain);
+  res.locals.linkDomains = user && (await require("../domain-access").available(require("../knex"), user.id).orderBy("d.address")).map(utils.sanitize.domain);
   next();
 }
 

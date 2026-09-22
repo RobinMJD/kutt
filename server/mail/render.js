@@ -8,14 +8,14 @@ const kinds = Object.freeze({
   "change-email": { route: "verify-email", subject: "messages.verify_your_new_email_address", text: "mail.change_text" },
   reset: { route: "reset-password", subject: "messages.reset_your_password", text: "mail.reset_text" }
 });
-function render(kind, { domain, site_name, token }, translator = i18n.current()) {
+function render(kind, { domain, site_name, token, origin = `https://${domain}` }, translator = i18n.current()) {
   if (!Object.hasOwn(kinds, kind)) throw new Error("Invalid email template.");
   if (!templates.has(kind)) templates.set(kind, handlebars.compile(fs.readFileSync(path.join(__dirname, "template-" + kind + ".html"), "utf8")));
   const info = kinds[kind];
-  const values = { domain, site_name, verification: token, resetpassword: token, locale: translator.locale };
+  const values = { domain, origin, site_name, verification: token, resetpassword: token, locale: translator.locale };
   return {
     subject: translator.t(info.subject),
-    text: translator.t(info.text, { site: site_name, url: `https://${domain}/${info.route}/${token}` }),
+    text: translator.t(info.text, { site: site_name, url: `${origin}/${info.route}/${token}` }),
     html: templates.get(kind)(values, { helpers: { t: (key, options) => translator.t(key, options.hash) } })
   };
 }

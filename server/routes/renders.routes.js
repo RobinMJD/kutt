@@ -8,6 +8,13 @@ const auth = require("../handlers/auth.handler");
 const env = require("../env");
 
 const router = Router();
+const domainGrants = require("../handlers/domain-grants.handler");
+router.get(["/settings/domain-sharing", "/settings/domain-sharing/:id"], require("../handlers/tokens.handler").sessionOnly,
+  asyncHandler(auth.jwtPage), asyncHandler(locals.user), domainGrants.boundary, asyncHandler((req, res) => domainGrants.page(req, res)));
+router.post("/settings/domain-sharing/:id", require("../handlers/tokens.handler").sessionOnly,
+  asyncHandler(auth.jwtPage), asyncHandler(locals.user), domainGrants.boundary,
+  helpers.rateLimit({ window: 60, limit: 30, always: true, key: "domain-grants" }), asyncHandler(domainGrants.submit));
+router.use("/settings/domain-sharing", domainGrants.pageError);
 const destinationHealth = require("../handlers/link-health.handler");
 router.get("/link/health/:id", require("../handlers/tokens.handler").sessionOnly,
   asyncHandler(auth.jwtPage), asyncHandler(locals.user), destinationHealth.boundary, asyncHandler(destinationHealth.page));

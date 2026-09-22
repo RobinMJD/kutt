@@ -4,6 +4,7 @@ const knex = require("./knex");
 const { CustomError } = require("./utils");
 
 const SCOPES = Object.freeze({
+  "domains:share": "domain_grants.token_scope",
   "links:read": "messages.list_links",
   "links:create": "messages.create_links",
   "links:update": "messages.edit_links",
@@ -50,7 +51,7 @@ async function create(userId, input, authVersion) {
     throw new CustomError(i18n.t("messages.select_a_valid_domain_restriction"), 400);
   }
   if (domainScope !== "all" && domainScope !== "default") {
-    const domain = await knex("domains").where({ uuid: domainScope, user_id: userId, banned: false }).first();
+    const domain = await require("./domain-access").find(knex, userId, { uuid: domainScope });
     if (!domain) throw new CustomError(i18n.t("messages.domain_was_not_found"), 400);
   }
   let expires = null;
@@ -81,12 +82,13 @@ async function create(userId, input, authVersion) {
     created_at: Date.now(), expires_at: expires, revoked_at: null, last_used_at: null
   };
   await knex.transaction(async db => {
+    await require("./domain-access").lock(db);
     const owner = await db("users").where({ id: userId }).forUpdate().first();
     if (!owner || owner.banned || !owner.verified || authVersion === undefined || Number(owner.auth_version) !== Number(authVersion)) {
       throw new CustomError(i18n.t("moderation.token_sign_in"), 401);
     }
     if (domainScope !== "all" && domainScope !== "default" &&
-        !await db("domains").where({ uuid: domainScope, user_id: userId, banned: false }).first()) {
+        !await require("./domain-access").find(db, userId, { uuid: domainScope })) {
       throw new CustomError(i18n.t("messages.domain_was_not_found"), 400);
     }
     await db("api_tokens").insert(row);
@@ -119,7 +121,7 @@ async function resolve(value) {
   let domainId;
   if (row.domain_scope === "default") domainId = null;
   else if (row.domain_scope !== "all") {
-    const domain = await knex("domains").where({ uuid: row.domain_scope, user_id: user.id, banned: false }).first();
+    const domain = await require("./domain-access").find(knex, user.id, { uuid: row.domain_scope });
     if (!domain) return null;
     domainId = domain.id;
   }

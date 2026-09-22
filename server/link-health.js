@@ -58,7 +58,7 @@ async function eligible(row, db = knex) {
   const link = await db("links").where({ id: row.link_id, user_id: row.user_id }).first();
   const user = link && await db("users").where({ id: row.user_id, verified: true, banned: false }).first();
   if (!user || Number(user.auth_version) !== Number(row.auth_version) || link.banned || link.deleted_at || link.archived_domain) return null;
-  if (link.domain_id && !await db("domains").where({ id: link.domain_id, user_id: user.id, banned: false }).first()) return null;
+  if (link.domain_id && !await require("./domain-access").find(db, user.id, { id: link.domain_id })) return null;
   return link;
 }
 async function view(link, user, db = knex) {
@@ -170,6 +170,7 @@ async function run(row) {
     seen.set(item.target, result); results.push({ ...result, name: item.name });
   }
   await knex.transaction(async db => {
+    await require("./domain-access").lock(db);
     const current = await db("link_health").where(match).first();
     if (!current) return;
     link = await eligible(row, db);

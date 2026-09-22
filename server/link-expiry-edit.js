@@ -43,7 +43,7 @@ async function prepare(req, res, next) {
 async function save(req, res, link, values) {
   try {
     const [updated] = await require("./queries").link.update({ id: link.id, uuid: link.uuid, user_id: link.user_id ?? null, deleted_at: null }, values,
-      { id: req.user.id, apiToken: req.apiToken }, { expiryExpected: req.expiryExpected });
+      { id: req.user.id, apiToken: req.apiToken }, { expiryExpected: req.expiryExpected, request: req });
     if (!updated) throw new (require("./utils").CustomError)(i18n.t("messages.link_changed_ownership_or_is_no_longer_available_reload_the_editor"), 409);
     return updated;
   } catch (error) {

@@ -147,11 +147,7 @@ async function create(req, res) {
 }
 
 async function lifecycle(req, res) {
-  let originHost;
-  try { if (req.get("Origin")) originHost = new URL.URL(req.get("Origin")).host; } catch { originHost = "invalid"; }
-  if (req.get("Sec-Fetch-Site") === "cross-site" || (originHost && originHost !== env.DEFAULT_DOMAIN)) {
-    throw new CustomError(i18n.t("messages.invalid_request_origin"), 403);
-  }
+  require("../management-origin").sameOrigin(req);
   const link = await query.link.find({ uuid: req.params.id, user_id: req.user.id }, { fresh: true });
   if (!link) throw new CustomError(i18n.t("messages.link_was_not_found"), 404);
   res.locals.id = link.uuid;
@@ -532,6 +528,13 @@ async function redirectProtected(req, res) {
   // 1. Get link
   const uuid = req.params.id;
   const link = await query.link.find({ uuid }, { fresh: true, includeTrash: true });
+  if (require("../management-origin").configured()) {
+    const domain = link?.domain_id == null ? null : await require("../knex")("domains").where({ id: link.domain_id }).first();
+    const host = utils.removeWww(require("../management-origin").requestHost(req) || "");
+    if (req.managementHost || !link || host !== (domain?.address || env.DEFAULT_DOMAIN)) {
+      throw new CustomError(i18n.t("messages.couldn_t_find_the_link"), 404);
+    }
+  }
 
   // 2. Throw error if no link
   if (!link || !link.password) {
@@ -568,10 +571,12 @@ async function redirectProtected(req, res) {
 };
 
 async function redirectCustomDomainHomepage(req, res, next) {
+  if (req.managementHost) return next();
   // Keep API requests in the authenticated router, even on a custom homepage host.
   if (/^\/api(?:\/|$)/i.test(req.path)) return next();
   const host = utils.removeWww(req.headers.host);
   if (host === env.DEFAULT_DOMAIN) {
+    if (req.publicHost && req.path === "/") return res.status(404).set("Cache-Control", "no-store").end();
     next();
     return;
   }
@@ -589,6 +594,7 @@ async function redirectCustomDomainHomepage(req, res, next) {
     }
   }
 
+  if (req.publicHost && req.path === "/") return res.status(404).set("Cache-Control", "no-store").end();
   next();
 };
 
