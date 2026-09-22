@@ -35,7 +35,7 @@ automatic domain renaming, historical analytics rewriting or data deletion.
 | C14 | Accessible dark/system/light theme | Complete | `.47`; full source/wrapper regression, 90 layouts, public theme selection, WAF/SSO and backup/restore gates passed; evidence below |
 | C15 | Optional explicit OIDC role mapping and safe demotion/recovery | Implemented; release gates pending | Integrated; see `OIDC-SECURITY.md` |
 | C16 | Optional separate management hostname and explicit shared-domain grants | In progress | Isolated implementation and authorization/transaction review; not deployed |
-| C17 | Optional consistent destination-domain policy | In progress | Isolated implementation; 18 translated desktop/mobile workflows passed; combined regression/publication/deployment pending |
+| C17 | Optional consistent destination-domain policy | Implemented; release gates pending | Integrated with authorized unchanged-target metadata repair and race coverage; translated desktop/mobile workflows passed; publication/deployment pending |
 | C18 | Private authenticated performance metrics with bounded labels | Complete | `.48`; source/wrapper/CI, private Prometheus scrapes, WAF/SSO, backup/restore and stable health gates passed |
 | C19 | Safe dotted aliases with reserved-path protections | Complete | `.46`; [rules and tests](LINK-ALIASES.md), evidence below |
 | C20 | Accessible interactive geography chart and text alternative | Implemented; release gates pending | Integrated; see `ANALYTICS.md` |
