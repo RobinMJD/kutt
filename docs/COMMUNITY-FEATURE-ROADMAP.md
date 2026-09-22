@@ -29,7 +29,7 @@ automatic domain renaming, historical analytics rewriting or data deletion.
 | C08 | Consistent verified Redis TLS for cache, queues and limiting | Complete | `.43`; evidence below |
 | C09 | Configurable asymmetric OIDC signing algorithm | Complete | `.42`; evidence below |
 | C10 | Custom-domain API routing without homepage interception | Complete | `.42`; evidence below |
-| C11 | Complete English (default), French and Spanish localization | Implemented; release gates pending | Candidate `.49`, integrated with `.48` metrics; 198 combined desktop/mobile layouts passed; see `LOCALIZATION.md` |
+| C11 | Complete English (default), French and Spanish localization | Complete | `.49`; 198 source layouts, 18 public layouts, authenticated locale/API, CI/wrapper, restore and stable health gates passed; see `LOCALIZATION.md` |
 | C12 | Stable allowlisted sorting in personal, admin and workspace tables/API | Complete | `.44`; evidence below |
 | C13 | Branded QR logos embedded in validated PNG/SVG exports | Implemented; release gates pending | Integrated; bounded PNG validation, independent decoding and 18 enforced-CSP layouts passed; see `QR-BRANDING.md` |
 | C14 | Accessible dark/system/light theme | Complete | `.47`; full source/wrapper regression, 90 layouts, public theme selection, WAF/SSO and backup/restore gates passed; evidence below |
@@ -301,12 +301,28 @@ review complete while required work remains.
   no failed application assertion was removed. An unrelated offline schema
   fixture now uses a reserved literal address instead of depending on DNS.
 - There is no migration or account change. Publication, exact-wrapper scan,
-  private collector integration, recoverable deployment and live acceptance are
-  still pending. See [metrics](METRICS.md).
+  private collector integration, recoverable deployment and live acceptance
+  passed as recorded above. See [metrics](METRICS.md).
 
 ## Evidence: C11
 
-- Candidate `.49` integrates 1,442 stable keys in each English/French/Spanish
+- Deployed `.49` (`4e787b0`); main/tag CI `35684020728` / `35684020727`,
+  exact-wrapper regression and valid Grype scan (zero Critical/High) passed.
+  Public HTTPS native language selection passed 18 EN/FR/ES light/dark layouts
+  at 1440/390/320px. Authenticated localization, stable API identifiers, secure
+  preference cookies, English fallback, existing feature regression and real
+  Authentik-signed logout/replay passed. Original records/integrity/FKs are intact.
+- Pre local/NAS `6f9c9b9d` / `f9e10035` (04:35:02 UTC, 69 files) and post
+  `1e2766ef` / `d7b2169f` (04:50:11 UTC, 71 files, September 22) passed byte
+  verification and exact-image writable SQLite recovery. No USB SSD claim.
+  Wrapper `sha256:df68249b8512e3adcf5f13fdfa15a1376af0dc3f8fff6e41de0e8c22a49afce1`.
+  Private report `2026-09-22-kutt-community-49` retains a first failed health
+  sample caused by shared probe DNS latency (8.004s versus 0.007s from Synology;
+  application processing 0.092s). Three subsequent samples 65s apart passed with
+  three fresh probes, zero restarts/scoped alerts/failed units/unhealthy
+  containers. Lab configuration validation passed without changing thresholds.
+  The shared-resolver incident and unrelated lab alerts are not claimed fixed.
+- Release `.49` integrates 1,442 stable keys in each English/French/Spanish
   catalog, shared Node/browser formatting and request-scoped translations.
   Existing IDs, roles, URLs, signed inputs and API machine fields remain literal.
   Public management/redirect authorization is unchanged; there is no migration.
@@ -325,7 +341,7 @@ review complete while required work remains.
   operator layouts remain unverified. The signed iOS Shortcut's embedded prompts
   remain English; its downloadable guides are localized without altering signed
   bytes. Publication, exact-wrapper deployment/recovery and live language
-  acceptance remain pending. See [localization](LOCALIZATION.md).
+  acceptance passed as recorded above. See [localization](LOCALIZATION.md).
 
 ## Evidence: C15
 
