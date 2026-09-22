@@ -30,11 +30,11 @@
     dialog.querySelector(".content-wrapper").replaceChildren();
     dialog.querySelector(".dialog-close").disabled = false;
     dialog.removeAttribute("aria-labelledby");
-    dialog.setAttribute("aria-label", name === "qrcode" ? "QR code" :
-      opener?.getAttribute?.("aria-label") || opener?.textContent?.trim() || "Dialog");
+    dialog.setAttribute("aria-label", name === "qrcode" ? window.KuttI18n.t("ui.qr_code") :
+      opener?.getAttribute?.("aria-label") || opener?.textContent?.trim() || window.KuttI18n.t("ui.dialog"));
     dialog.className = "dialog open";
     if (name) dialog.classList.add(name);
-    status(dialog, name === "qrcode" ? "" : "Loading...");
+    status(dialog, name === "qrcode" ? "" : window.KuttI18n.t("ui.loading"));
     dialog.showModal();
     dialog.querySelector(".dialog-close").focus();
   };
@@ -43,7 +43,7 @@
     if (!dialog) return true;
     const state = states.get(dialog);
     // Closing an in-flight write must not imply that the server operation was cancelled.
-    if (state?.mutations) { status(dialog, "Saving changes. Please wait."); return false; }
+    if (state?.mutations) { status(dialog, window.KuttI18n.t("ui.saving_changes_please_wait")); return false; }
     states.delete(dialog);
     for (const request of state?.requests || []) if (!request.mutation) request.xhr.abort();
     dialog.close();
@@ -84,7 +84,7 @@
     requests.set(request.xhr, request); state.requests.add(request);
     if (request.mutation) state.mutations++;
     dialog.querySelector(".dialog-close").disabled = state.mutations > 0;
-    status(dialog, request.mutation ? "Saving changes..." : "Loading...");
+    status(dialog, request.mutation ? window.KuttI18n.t("ui.saving_changes") : window.KuttI18n.t("ui.loading"));
   });
   // Ignore a response from a cancelled or superseded opening, including OOB swaps.
   document.addEventListener("htmx:beforeOnLoad", event => {
@@ -100,7 +100,7 @@
     if (states.get(request.dialog) !== request.state || !request.dialog.open) return;
     request.dialog.querySelector(".dialog-close").disabled = request.state.mutations > 0;
     status(request.dialog, event.detail.successful ? "" :
-      request.mutation ? "Request failed. Check the saved state before retrying." : "Could not load this dialog. Close it and try again.");
+      request.mutation ? window.KuttI18n.t("ui.request_failed_check_the_saved_state_before_retrying") : window.KuttI18n.t("ui.could_not_load_this_dialog_close_it_and_try_again"));
     if (update(request.dialog, request.state.initial)) request.state.initial = false;
   });
   document.addEventListener("htmx:afterSettle", event => {

@@ -1,3 +1,4 @@
+const i18n = require("./i18n");
 const { createHmac, timingSafeEqual } = require("node:crypto");
 const env = require("./env");
 const { CustomError } = require("./utils");
@@ -14,10 +15,10 @@ function revision(link) {
 function check(link, expected) {
   if (expected === undefined) return; // Legacy partial-update API compatibility.
   if (typeof expected !== "string" || !/^[a-f0-9]{64}$/.test(expected)) {
-    throw new CustomError("Reload the editor before saving this link.", 409);
+    throw new CustomError(i18n.t("messages.reload_the_editor_before_saving_this_link"), 409);
   }
   if (!timingSafeEqual(Buffer.from(expected), Buffer.from(revision(link)))) {
-    const error = new CustomError("This link changed elsewhere. Review the saved values and your draft before saving again.", 409);
+    const error = new CustomError(i18n.t("messages.this_link_changed_elsewhere_review_the_saved_values_and_your_draft"), 409);
     error.workspaceEditConflict = true;
     throw error;
   }

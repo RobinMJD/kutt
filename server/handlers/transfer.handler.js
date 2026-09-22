@@ -1,3 +1,4 @@
+const i18n = require("../i18n");
 const transfer = require("../link-transfer");
 const { sameOrigin } = require("./link-history.handler");
 async function preview(req, res) {
@@ -16,7 +17,7 @@ async function download(req, res) {
 }
 function page(req, res) {
   res.set("Cache-Control", "no-store");
-  res.render("transfer", { title: "Import and export" });
+  res.render("transfer", { title: i18n.t("ui.import_and_export") });
 }
 function template(req, res) {
   const { format, body } = transfer.template(req.query.format);

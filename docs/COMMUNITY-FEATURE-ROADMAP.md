@@ -29,7 +29,7 @@ automatic domain renaming, historical analytics rewriting or data deletion.
 | C08 | Consistent verified Redis TLS for cache, queues and limiting | Implemented; release gates pending | Candidate `.43` |
 | C09 | Configurable asymmetric OIDC signing algorithm | Implemented; release gates pending | Candidate `.42` |
 | C10 | Custom-domain API routing without homepage interception | Implemented; release gates pending | Candidate `.42` |
-| C11 | Complete English (default), French and Spanish localization | Pending | Pending |
+| C11 | Complete English (default), French and Spanish localization | Implemented in isolated `44656a3` slice; integration/release gates pending | Parent integration pending; see `LOCALIZATION.md` |
 | C12 | Stable allowlisted sorting in personal, admin and workspace tables/API | Pending | Pending |
 | C13 | Branded QR logos embedded in validated PNG/SVG exports | Pending | Pending |
 | C14 | Accessible dark/system/light theme | Pending | Pending |

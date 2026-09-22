@@ -4,7 +4,8 @@ const path = require("node:path");
 
 module.exports = async ({ root, request, session }) => {
   const hbs = require("hbs").create().handlebars;
-  for (const icon of ["cog", "shield"]) hbs.registerPartial("icons/" + icon, "<svg></svg>");
+  require("../server/i18n").register(hbs);
+  for (const icon of ["cog", "shield", "check"]) hbs.registerPartial("icons/" + icon, "<svg></svg>");
   const render = hbs.compile(readFileSync(path.join(root, "server/views/partials/header.hbs"), "utf8"));
   for (const role of ["anonymous", "user", "admin"]) {
     const html = render({ site_name: '<script>alert("brand")</script>', user: role !== "anonymous", isAdmin: role === "admin", login_label: "Log in", login_title: "Log in" });

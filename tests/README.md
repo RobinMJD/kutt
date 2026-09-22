@@ -16,6 +16,15 @@ file settings from its caller. Run only in a disposable build/container.
 
 Coverage:
 
+- C11 localization: English/French/Spanish key and placeholder parity, fail-closed
+  catalog loading, hostile interpolation, custom view/partial precedence,
+  Node/browser formatter parity, mail rendering, 90 concurrent locale contexts,
+  localized HTTP errors, cookie/header negotiation, null/foreign-origin denial,
+  safe return paths, localized assets and unchanged signed expiry inputs.
+  `tests/browser-i18n.cjs` uses a fresh loopback fixture for actual native language
+  form submissions (including their Origin header), login errors, HTMX editing,
+  plural feedback and 20 management views in three languages at 1440/390/320px.
+  See `docs/LOCALIZATION.md` for commands and explicit acceptance limits.
 - Campaign URL parameters: encoded bounds, explicit clears, API aliases,
   idempotency, public/protected/Basic and routing/forwarding precedence,
   import/export, history, restart, owner/admin/scoped/CSRF and workspace roles.

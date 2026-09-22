@@ -1,3 +1,4 @@
+const i18n = require("../i18n");
 const { RedisStore: RateLimitRedisStore } = require("rate-limit-redis");
 const { rateLimit: expressRateLimit } = require("express-rate-limit");
 const { validationResult } = require("express-validator");
@@ -14,7 +15,7 @@ function error(error, req, res, _next) {
     console.error(error.message);
   }
 
-  const message = error instanceof CustomError ? error.message : "An error occurred.";
+  const message = error instanceof CustomError ? error.message : i18n.t("messages.an_error_occurred");
   const statusCode = error.statusCode ?? 500;
 
   if (req.isHTML && req.viewTemplate) {
@@ -25,7 +26,7 @@ function error(error, req, res, _next) {
 
   if (req.isHTML) {
     res.render("error", {
-      message: "An error occurred. Please try again later."
+      message: i18n.t("messages.an_error_occurred_please_try_again_later")
     });
     return;
   }
@@ -58,21 +59,21 @@ function parseQuery(req, res, next) {
     typeof req.query.limit !== "undefined" &&
     typeof req.query.limit !== "string"
   ) {
-    return res.status(400).json({ error: "limit query is not valid." });
+    return res.status(400).json({ error: i18n.t("messages.limit_query_is_not_valid") });
   }
 
   if (
     typeof req.query.skip !== "undefined" &&
     typeof req.query.skip !== "string"
   ) {
-    return res.status(400).json({ error: "skip query is not valid." });
+    return res.status(400).json({ error: i18n.t("messages.skip_query_is_not_valid") });
   }
 
   if (
     typeof req.query.search !== "undefined" &&
     typeof req.query.search !== "string"
   ) {
-    return res.status(400).json({ error: "search query is not valid." });
+    return res.status(400).json({ error: i18n.t("messages.search_query_is_not_valid") });
   }
 
   const limit = parseInt(req.query.limit) || 10;
@@ -123,7 +124,7 @@ function rateLimit(params) {
     },
     handler: function (req, res, next, options) {
       res.status(options.statusCode).set("Cache-Control", "no-store");
-      throw new CustomError(options.message, options.statusCode);
+      throw new CustomError(i18n.t("auth.rate_limit"), options.statusCode);
     },
   });
 }

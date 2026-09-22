@@ -10,7 +10,7 @@
       const values = core.read(target.value);
       widget.querySelectorAll("[data-campaign-field]").forEach(input => { input.value = values[input.dataset.campaignField]; });
       output.textContent = "";
-    } catch (error) { output.textContent = error.message; }
+    } catch (error) { output.textContent = window.KuttI18n.failure(error); }
   }
   document.addEventListener("toggle", event => {
     const widget = event.target;
@@ -38,7 +38,7 @@
       const values = Object.fromEntries([...widget.querySelectorAll("[data-campaign-field]")].map(input => [input.dataset.campaignField, clear ? "" : input.value]));
       target.value = core.apply(target.value, values);
       target.dispatchEvent(new Event("input", { bubbles: true }));
-      output.textContent = clear ? "Campaign parameters removed from destination. Changes not saved yet." : "Campaign parameters applied to destination. Changes not saved yet.";
-    } catch (error) { output.textContent = error.message; }
+      output.textContent = clear ? window.KuttI18n.t("ui.campaign_parameters_removed_from_destination_changes_not_saved_yet") : window.KuttI18n.t("ui.campaign_parameters_applied_to_destination_changes_not_saved_yet");
+    } catch (error) { output.textContent = window.KuttI18n.failure(error); }
   });
 })();

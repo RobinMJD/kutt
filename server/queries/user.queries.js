@@ -1,3 +1,4 @@
+const i18n = require("../i18n");
 const { addMinutes } = require("date-fns");
 const { randomUUID } = require("node:crypto");
 
@@ -50,7 +51,7 @@ async function add(params, user) {
     const changed = await knex("users")
       .where({ id: user.id, verified: false, auth_version: user.auth_version }).increment("auth_version", 1)
       .update({ ...data, ...require("../account-tokens"), updated_at: utils.dateToUTC(new Date()) });
-    if (!changed) throw new utils.CustomError("Account changed. Please sign in or request account recovery.", 409);
+    if (!changed) throw new utils.CustomError(i18n.t("messages.account_changed_please_sign_in_or_request_account_recovery"), 409);
   } else {
     await knex("users").insert(data);
   }
@@ -109,7 +110,7 @@ async function update(match, update, methods) {
 async function remove(user) {
   const deletedUser = await knex.transaction(async db => {
     if (await db("workspaces").where({ owner_id: user.id }).first()) {
-      throw new utils.CustomError("Close owned workspaces before deleting this account. Shared links must remain recoverable.", 409);
+      throw new utils.CustomError(i18n.t("messages.close_owned_workspaces_before_deleting_this_account_shared_links_must_remain"), 409);
     }
     return db("users").where("id", user.id).delete();
   });

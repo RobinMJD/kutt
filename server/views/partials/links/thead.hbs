@@ -1,7 +1,7 @@
 <thead>
   <tr class="controls links-controls">
     <th class="search">
-      <input class="table-input search" id="search" name="search" type="text" placeholder="Search..." aria-label="Search links" hx-on:keyup="resetTableNav()" />
+      <input class="table-input search" id="search" name="search" type="text" placeholder="{{t 'ui.search_2'}}" aria-label="{{t 'ui.search_links'}}" hx-on:keyup="resetTableNav()" />
       <input id="total" name="total" type="hidden" value="{{total}}" />
       <input id="limit" name="limit" type="hidden" value="10" />
       <input id="skip" name="skip" type="hidden" value="0" />
@@ -9,10 +9,10 @@
     {{> links/nav}}
   </tr>
   <tr class="table-columns">
-    <th class="original-url" scope="col">Original URL</th>
-    <th class="created-at" scope="col">Created at</th>
-    <th class="short-link" scope="col">Short link</th>
-    <th class="views" scope="col">Views</th>
+    <th class="original-url" scope="col">{{t "ui.original_url"}}</th>
+    <th class="created-at" scope="col">{{t "ui.created_at"}}</th>
+    <th class="short-link" scope="col">{{t "ui.short_link"}}</th>
+    <th class="views" scope="col">{{t "ui.views"}}</th>
     <th class="actions" scope="col"></th>
   </tr>
 </thead>

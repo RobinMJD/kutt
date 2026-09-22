@@ -1,3 +1,4 @@
+const i18n = require("../i18n");
 const env = require("../env");
 const { CustomError } = require("../utils");
 
@@ -11,7 +12,7 @@ module.exports = function loginOrigin(req, res, next) {
   const origin = req.get("Origin");
   if (req.get("Sec-Fetch-Site") === "cross-site" || (origin && !allowed.has(origin))) {
     res.status(403).set("Cache-Control", "no-store");
-    return next(new CustomError("Invalid request origin.", 403));
+    return next(new CustomError(i18n.t("messages.invalid_request_origin"), 403));
   }
   // API clients without browser Origin/Fetch-Metadata remain supported.
   next();

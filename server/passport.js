@@ -1,3 +1,4 @@
+const i18n = require("./i18n");
 const { Strategy: LocalAPIKeyStrategy } = require("passport-localapikey-update");
 const { Strategy: JwtStrategy, ExtractJwt } = require("passport-jwt");
 const { Strategy: LocalStrategy } = require("passport-local");
@@ -96,7 +97,7 @@ async function prepareOIDC(req, res, next) {
   } catch (error) {
     require("./oidc-client").failure(error.message);
     res.status(503).set("Cache-Control", "no-store");
-    next(new utils.CustomError("OIDC provider unavailable. Try signing in again shortly.", 503));
+    next(new utils.CustomError(i18n.t("messages.oidc_provider_unavailable_try_signing_in_again_shortly"), 503));
   }
 }
 

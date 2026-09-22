@@ -8,25 +8,25 @@
     // The file reader owns its status; the bubbling change must not erase a load error.
     if (event.target.id === "transfer-file") return;
     invalidate(); form.elements.content.removeAttribute("aria-invalid");
-    message("Draft changed. Run a new dry run before confirming.");
+    message(window.KuttI18n.t("ui.draft_changed_run_a_new_dry_run_before_confirming"));
   };
   form.addEventListener("input", edited); form.addEventListener("change", edited);
   const lock = value => { busy = value; for (const control of form.elements) control.disabled = value; commit.disabled = value || !pending; };
   const api = async (path, payload) => {
     const response = await fetch("/api/v2/transfer/" + path, { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(payload) });
     const result = await response.json().catch(() => null);
-    if (!response.ok) throw Object.assign(new Error(result?.error || `Request failed (${response.status}).`), { status: response.status });
+    if (!response.ok) throw Object.assign(new Error(result?.error || window.KuttI18n.t("ui.request_failed_value", {value1: response.status})), { status: response.status });
     return result;
   };
   document.querySelector("#transfer-file").addEventListener("change", async event => {
     const file = event.target.files[0]; if (!file) return;
     invalidate();
     try {
-      if (file.size > 900000) throw new Error("File exceeds 900 KB. Split it into smaller batches.");
+      if (file.size > 900000) throw new Error(window.KuttI18n.t("ui.file_exceeds_900_kb_split_it_into_smaller_batches"));
       const content = await file.text();
       form.elements.format.value = file.name.toLowerCase().endsWith(".csv") ? "csv" : "json";
       form.elements.content.value = content; form.elements.content.removeAttribute("aria-invalid"); message("");
-    } catch (error) { message(error.message + " Current content was not replaced.", true); }
+    } catch (error) { message(window.KuttI18n.failure(error) + " " + window.KuttI18n.t("ui.current_content_was_not_replaced"), true); }
   });
   form.addEventListener("submit", async event => {
     event.preventDefault(); if (busy) return;
@@ -34,21 +34,21 @@
     const observe = event => { if (event.target !== document.body && !form.contains(event.target)) moved = true; };
     document.addEventListener("focusin", observe);
     const payload = Object.fromEntries(new FormData(form));
-    invalidate(); lock(true); message("Validating import...");
+    invalidate(); lock(true); message(window.KuttI18n.t("ui.validating_import"));
     try {
       const result = await api("preview", payload), body = document.querySelector("#transfer-rows"); body.replaceChildren();
       for (const row of result.rows) {
         const tr = document.createElement("tr");
-        for (const [index, value] of [row.row, row.address || "", row.domain || "", row.action, row.message || ""].entries()) {
-          const td = document.createElement("td"); td.dataset.label = ["Row", "Alias", "Domain", "Action", "Issue"][index]; td.textContent = String(value); tr.append(td);
+        for (const [index, value] of [row.row, row.address || "", row.domain || "", window.KuttI18n.label("action", row.action), row.message || ""].entries()) {
+          const td = document.createElement("td"); td.dataset.label = [window.KuttI18n.t("ui.row"), window.KuttI18n.t("ui.alias"), window.KuttI18n.t("ui.domain"), window.KuttI18n.t("ui.action"), window.KuttI18n.t("ui.issue")][index]; td.textContent = String(value); tr.append(td);
         }
         body.append(tr);
       }
-      document.querySelector("#transfer-counts").textContent = `${result.rows.filter(row => row.action === "create").length} new, ${result.rows.filter(row => row.action === "skip").length} skipped, ${result.rows.filter(row => row.action === "error").length} errors`;
+      document.querySelector("#transfer-counts").textContent = window.KuttI18n.t("ui.value_new_value_skipped_value_errors", {value1: result.rows.filter(row => row.action === "create").length, value2: result.rows.filter(row => row.action === "skip").length, value3: result.rows.filter(row => row.action === "error").length});
       preview.hidden = false; pending = result.valid ? { ...payload, preview_token: result.preview_token } : null;
       error = invalidContent = !result.valid;
-      message(result.valid ? "Dry run complete. No links were changed. Confirmation expires in 20 minutes." : "Correct the reported errors and run a new dry run.", !result.valid);
-    } catch (failure) { error = true; invalidContent = failure.status === 400; message(failure.message, true); }
+      message(result.valid ? window.KuttI18n.t("ui.dry_run_complete_no_links_were_changed_confirmation_expires_in_20") : window.KuttI18n.t("ui.correct_the_reported_errors_and_run_a_new_dry_run"), !result.valid);
+    } catch (failure) { error = true; invalidContent = failure.status === 400; message(window.KuttI18n.failure(failure), true); }
     finally {
       lock(false); document.removeEventListener("focusin", observe);
       if (invalidContent) form.elements.content.setAttribute("aria-invalid", "true");
@@ -58,11 +58,11 @@
   });
   commit.addEventListener("click", async () => {
     if (busy || !pending) return;
-    lock(true); message("Importing...");
+    lock(true); message(window.KuttI18n.t("ui.importing"));
     try {
       const result = await api("commit", pending); pending = null;
-      message(`Import complete: ${result.created.length} created, ${result.skipped} skipped${result.replayed ? " (verified retry)" : ""}.`);
-    } catch (error) { message(error.message + " Retry confirmation after a connection error; run a new dry run if availability changed.", true); }
+      message(window.KuttI18n.t("ui.import_complete_value_created_value_skipped_value", {value1: window.KuttI18n.number(result.created.length), value2: window.KuttI18n.number(result.skipped), value3: result.replayed ? window.KuttI18n.t("transfer.verified_retry") : ""}));
+    } catch (error) { message(window.KuttI18n.failure(error) + " " + window.KuttI18n.t("ui.retry_confirmation_after_a_connection_error_run_a_new_dry_run"), true); }
     finally { lock(false); }
   });
   document.querySelector("#transfer-export").addEventListener("submit", async event => {
@@ -70,11 +70,11 @@
     try {
       const params = new URLSearchParams(new FormData(form));
       const response = await fetch("/api/v2/transfer/export?" + params, { credentials: "same-origin", headers: { Accept: "application/json" } });
-      if (!response.ok) { const error = await response.json().catch(() => null); throw new Error(error?.error || `Export failed (${response.status}).`); }
+      if (!response.ok) { const error = await response.json().catch(() => null); throw new Error(error?.error || window.KuttI18n.t("ui.export_failed_value", {value1: response.status})); }
       const url = URL.createObjectURL(await response.blob()), link = document.createElement("a");
       link.href = url; link.download = "kutt-links." + params.get("format"); link.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000); message("Export downloaded.");
-    } catch (error) { message(error.message, true); }
+      setTimeout(() => URL.revokeObjectURL(url), 1000); message(window.KuttI18n.t("ui.export_downloaded"));
+    } catch (error) { message(window.KuttI18n.failure(error), true); }
     finally { button.disabled = false; }
   });
   form.querySelector("button[type=submit]").disabled = false;

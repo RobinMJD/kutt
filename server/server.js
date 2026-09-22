@@ -15,6 +15,7 @@ const locals = require("./handlers/locals.handler");
 const links = require("./handlers/links.handler");
 const routes = require("./routes");
 const utils = require("./utils");
+const i18n = require("./i18n");
 
 
 // run the cron jobs
@@ -34,6 +35,7 @@ app.set("trust proxy", env.TRUST_PROXY);
 
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cookieParser());
+app.use(i18n.middleware);
 // Bounded transfer payloads only; retain default limits on every other route.
 app.use(/^\/api\/(?:v2\/)?transfer\/(?:preview|commit)\/?$/i, express.json({ limit: "1mb" }));
 app.use(express.json());
@@ -64,7 +66,10 @@ app.set("views", [
   path.join(__dirname, "../custom/views"),
   path.join(__dirname, "views"),
 ]);
-utils.registerHandlebarsHelpers();
+const templatesReady = utils.registerHandlebarsHelpers();
+i18n.register(hbs);
+i18n.assets(app, env.SITE_NAME);
+app.post("/language", i18n.change);
 
 // if is custom domain, redirect to the set homepage
 app.use(asyncHandler(links.redirectCustomDomainHomepage));
@@ -85,6 +90,9 @@ app.get("*", renders.notFound);
 // handle errors coming from above routes
 app.use(helpers.error);
   
-app.listen(env.PORT, () => {
+templatesReady.then(() => app.listen(env.PORT, () => {
   console.log(`> Ready on http://localhost:${env.PORT}`);
+})).catch(() => {
+  console.error("Template initialization failed.");
+  process.exit(1);
 });

@@ -1,3 +1,4 @@
+const i18n = require("../i18n");
 const forwarding = require("../link-forwarding");
 const routing = require("../link-routing");
 const { CustomError, getShortURL } = require("../utils");
@@ -11,7 +12,7 @@ async function get(req, res) {
 async function save(req, res) { res.json(await forwarding.save(req)); }
 async function preview(req, res) {
   const link = await routing.owned(req), body = req.body;
-  if (!body || Array.isArray(body) || Object.keys(body).some(key => !["policy", "context", "path"].includes(key))) throw new CustomError("Invalid preview field.", 400);
+  if (!body || Array.isArray(body) || Object.keys(body).some(key => !["policy", "context", "path"].includes(key))) throw new CustomError(i18n.t("messages.invalid_preview_field"), 400);
   const config = body.policy === undefined ? await forwarding.policy(link.id) : forwarding.normalize(body.policy);
   const context = routing.previewContext(body.context || {});
   const result = routing.choose((await routing.policy(link.id)).rules, context, link.target);
@@ -19,7 +20,7 @@ async function preview(req, res) {
 }
 async function page(req, res) {
   const link = await routing.owned(req);
-  res.render("forwarding", { title: "Path and query forwarding", id: link.uuid,
+  res.render("forwarding", { title: i18n.t("ui.path_and_query_forwarding"), id: link.uuid,
     short_url: getShortURL(link.address, await history.domainName(knex, link)).url, target: link.target,
     custom_styles: [...(res.locals.custom_styles || []), "forwarding.css"] });
 }

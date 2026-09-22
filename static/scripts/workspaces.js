@@ -11,7 +11,7 @@
   }));
   document.querySelectorAll(".workspaces [data-copy]").forEach(button => button.addEventListener("click", async () => {
     const notice = document.getElementById("workspace-notice");
-    try { await navigator.clipboard.writeText(button.dataset.copy); notice.textContent = "Short link copied."; }
-    catch { notice.textContent = "Copy failed. Select and copy the short link."; }
+    try { await navigator.clipboard.writeText(button.dataset.copy); notice.textContent = window.KuttI18n.t("ui.short_link_copied"); }
+    catch { notice.textContent = window.KuttI18n.t("ui.copy_failed_select_and_copy_the_short_link"); }
   }));
 })();

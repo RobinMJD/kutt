@@ -1,3 +1,4 @@
+const i18n = require("../i18n");
 const redis = require("../redis");
 const utils = require("../utils");
 const knex = require("../knex");
@@ -30,12 +31,12 @@ async function claim({ address, homepage, user }) {
   const domain = await knex.transaction(async db => {
     const current = await db("users").where({ id: user.id }).forUpdate().first();
     if (!current || current.banned || !current.verified || Number(current.auth_version) !== Number(user.auth_version)) {
-      throw new utils.CustomError("Sign in again.", 401);
+      throw new utils.CustomError(i18n.t("messages.sign_in_again"), 401);
     }
     await db("domains").insert({ address, user_id: null, banned: false }).onConflict("address").ignore();
     const changed = await db("domains").where({ address, user_id: null, banned: false })
       .update({ user_id: user.id, homepage, updated_at: utils.dateToUTC(new Date()) });
-    if (!changed) throw new utils.CustomError("Domain is already owned or unavailable.", 409);
+    if (!changed) throw new utils.CustomError(i18n.t("messages.domain_is_already_owned_or_unavailable"), 409);
     return db("domains").where({ address, user_id: user.id }).first();
   });
   if (env.REDIS_ENABLED) redis.remove.domain(domain);
@@ -228,7 +229,7 @@ async function remove(domain, { trashLinks = false, actor = {} } = {}) {
   const deletedDomain = await knex.transaction(async db => {
     const links = await db("links").where({ domain_id: domain.id });
     if (links.some(link => link.deleted_at == null) && !trashLinks) {
-      throw new utils.CustomError("This domain has active links. Select link deletion to move them to trash.", 409);
+      throw new utils.CustomError(i18n.t("messages.this_domain_has_active_links_select_link_deletion_to_move_them"), 409);
     }
     for (const link of links) {
       await require("../link-history").trash(db, link, actor);

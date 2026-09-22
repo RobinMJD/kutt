@@ -80,8 +80,7 @@ function formatDateHour(selector) {
   if (!element) return;
   const dateString = element.dataset.date;
   if (!dateString) return;
-  const date = new Date(dateString);
-  element.textContent = date.getHours() + ":" + date.getMinutes();
+  element.textContent = window.KuttI18n.date(dateString, { timeStyle: "short" });
 }
 
 // show QR code

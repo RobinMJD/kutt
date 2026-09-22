@@ -1,27 +1,27 @@
 <td class="actions">
   {{#if password}}
-    <button class="action password" disabled="true" aria-label="Password protected" data-tooltip="Password protected">
+    <button class="action password" disabled="true" aria-label="{{t 'ui.password_protected'}}" data-tooltip="{{t 'ui.password_protected'}}">
       {{> icons/key}}
     </button>
   {{/if}}
   {{#if banned}}
-    <button class="action banned" disabled="true" aria-label="Banned" data-tooltip="Banned">
+    <button class="action banned" disabled="true" aria-label="{{t 'ui.banned'}}" data-tooltip="{{t 'ui.banned'}}">
       {{> icons/stop}}
     </button>
   {{/if}}
   <a
     class="button action stats"
     href="/stats?id={{id}}"
-    title="Statistics"
-    aria-label="Statistics for {{link.address}}"
+    title="{{t 'ui.statistics'}}"
+    aria-label="{{t 'ui.statistics_for_value' value1=link.address}}"
   >
     {{> icons/chart}}
   </a>
   <button
     class="action qrcode"
     type="button"
-    aria-label="QR code for {{link.address}}"
-    title="QR code"
+    aria-label="{{t 'ui.qr_code_for_value' value1=link.address}}"
+    title="{{t 'ui.qr_code'}}"
     hx-on:click="handleQRCode(this, 'admin-table-dialog')"
     data-url="{{link.url}}"
   >
@@ -31,8 +31,8 @@
     class="action edit"
     id="edit-opener-{{id}}"
     type="button"
-    aria-label="Edit {{link.address}}"
-    title="Edit link"
+    aria-label="{{t 'ui.edit_value' value1=link.address}}"
+    title="{{t 'ui.edit_link'}}"
     hx-trigger="click queue:none"
     hx-ext="path-params"
     hx-get="/admin/link/edit/{id}" 
@@ -57,8 +57,8 @@
     <button 
       class="action ban"
       type="button"
-      aria-label="Ban {{link.address}}"
-      title="Ban link"
+      aria-label="{{t 'ui.ban_value' value1=link.address}}"
+      title="{{t 'ui.ban_link'}}"
       hx-on::before-request='openDialog("admin-table-dialog", null, this)'
       hx-get="/confirm-link-ban" 
       hx-target="#admin-table-dialog .content-wrapper" 
@@ -71,8 +71,8 @@
   <button 
     class="action delete"
     type="button"
-    aria-label="Move {{link.address}} to trash"
-    title="Move to trash"
+    aria-label="{{t 'ui.move_value_to_trash' value1=link.address}}"
+    title="{{t 'ui.move_to_trash'}}"
     hx-on::before-request='openDialog("admin-table-dialog", null, this)'
     hx-get="/confirm-link-delete" 
     hx-target="#admin-table-dialog .content-wrapper" 

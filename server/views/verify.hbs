@@ -1,12 +1,12 @@
 {{> header}}
 <section id="verify" class="section-container verify-page">
   {{#if token_verified}}
-    <h2>Your account has been verified.</h2>
-    <a href="/login">Continue to sign in</a>
+    <h2>{{t "ui.your_account_has_been_verified"}}</h2>
+    <a href="/login">{{t "ui.continue_to_sign_in"}}</a>
   {{else}}
     <h2>
       {{> icons/x}}
-      Invalid verification. Please try again.
+      {{t "ui.invalid_verification_please_try_again"}}
     </h2>
     {{#unless login_disabled}}<a href="/login" title="{{login_title}}">{{login_label}} →</a>{{/unless}}
   {{/if}}

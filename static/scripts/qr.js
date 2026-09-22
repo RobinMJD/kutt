@@ -7,7 +7,7 @@
   const supported = window.isSecureContext && typeof window.ClipboardItem === "function" &&
     typeof navigator.clipboard?.write === "function";
   let copying = false;
-  if (!supported) copy.title = "Image copying unavailable; download PNG instead";
+  if (!supported) copy.title = window.KuttI18n.t("ui.image_copying_unavailable_download_png_instead");
   const update = () => {
     const ready = image.complete && image.naturalWidth > 0;
     print.disabled = !ready;
@@ -22,7 +22,7 @@
     if (copy.disabled || copying) return;
     copying = true;
     copy.setAttribute("aria-busy", "true");
-    status.textContent = "Copying...";
+    status.textContent = window.KuttI18n.t("ui.copying");
     update();
     try {
       const canvas = document.createElement("canvas");
@@ -31,15 +31,15 @@
       canvas.getContext("2d").drawImage(image, 0, 0);
       const png = new Promise((resolve, reject) => canvas.toBlob(blob => {
         if (blob?.type === "image/png") resolve(blob);
-        else reject(new Error("PNG conversion failed"));
+        else reject(new Error(window.KuttI18n.t("ui.png_conversion_failed")));
       }, "image/png"));
       // Safari requires write() during the click, before awaiting PNG encoding.
       // Handle conversion rejection even if ClipboardItem construction fails.
       png.catch(() => {});
       await navigator.clipboard.write([new ClipboardItem({ "image/png": png })]);
-      status.textContent = "QR image copied.";
+      status.textContent = window.KuttI18n.t("ui.qr_image_copied");
     } catch {
-      status.textContent = "Could not copy image. Retry or download PNG.";
+      status.textContent = window.KuttI18n.t("ui.could_not_copy_image_retry_or_download_png");
     } finally {
       copying = false;
       copy.removeAttribute("aria-busy");

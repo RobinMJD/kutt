@@ -1,18 +1,19 @@
+const i18n = require("./i18n");
 const { createHash, randomBytes, randomUUID } = require("node:crypto");
 const knex = require("./knex");
 const { CustomError } = require("./utils");
 
 const SCOPES = Object.freeze({
-  "links:read": "List links",
-  "links:create": "Create links",
-  "links:update": "Edit links",
-  "links:delete": "Delete links",
-  "stats:read": "Read statistics",
-  "workspaces:read": "Read joined workspaces",
-  "workspaces:write": "Manage shared workspace links",
-  "webhooks:read": "Read owner-wide webhook configuration and deliveries",
-  "webhooks:write": "Manage owner-wide signed webhooks",
-  "events:read": "Read owner-wide management events"
+  "links:read": "messages.list_links",
+  "links:create": "messages.create_links",
+  "links:update": "messages.edit_links",
+  "links:delete": "messages.delete_links",
+  "stats:read": "messages.read_statistics",
+  "workspaces:read": "messages.read_joined_workspaces",
+  "workspaces:write": "messages.manage_shared_workspace_links",
+  "webhooks:read": "messages.read_owner_wide_webhook_configuration_and_deliveries",
+  "webhooks:write": "messages.manage_owner_wide_signed_webhooks",
+  "events:read": "messages.read_owner_wide_management_events"
 });
 
 const hash = value => createHash("sha256").update(value).digest("hex");
@@ -39,32 +40,32 @@ async function list(userId) {
 async function create(userId, input) {
   const name = typeof input.name === "string" ? input.name.trim() : "";
   const scopes = typeof input.scopes === "string" ? [input.scopes] : input.scopes;
-  if (!name || name.length > 80) throw new CustomError("Name must be 1 to 80 characters.", 400);
+  if (!name || name.length > 80) throw new CustomError(i18n.t("messages.name_must_be_1_to_80_characters"), 400);
   if (!Array.isArray(scopes) || !scopes.length || scopes.length > Object.keys(SCOPES).length ||
       scopes.some(scope => typeof scope !== "string" || !Object.hasOwn(SCOPES, scope))) {
-    throw new CustomError("Select at least one valid permission.", 400);
+    throw new CustomError(i18n.t("messages.select_at_least_one_valid_permission"), 400);
   }
   const domainScope = input.domain_scope === undefined ? "all" : input.domain_scope;
   if (typeof domainScope !== "string" || !/^(all|default|[a-f0-9-]{36})$/.test(domainScope)) {
-    throw new CustomError("Select a valid domain restriction.", 400);
+    throw new CustomError(i18n.t("messages.select_a_valid_domain_restriction"), 400);
   }
   if (domainScope !== "all" && domainScope !== "default") {
     const domain = await knex("domains").where({ uuid: domainScope, user_id: userId, banned: false }).first();
-    if (!domain) throw new CustomError("Domain was not found.", 400);
+    if (!domain) throw new CustomError(i18n.t("messages.domain_was_not_found"), 400);
   }
   let expires = null;
   if (input.expires_at != null) {
     if (typeof input.expires_at !== "string" ||
         !/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,3})?Z$/.test(input.expires_at)) {
-      throw new CustomError("Expiry must be an ISO 8601 UTC date.", 400);
+      throw new CustomError(i18n.t("messages.expiry_must_be_an_iso_8601_utc_date"), 400);
     }
     expires = Date.parse(input.expires_at);
     if (!Number.isFinite(expires) || expires <= Date.now()) {
-      throw new CustomError("Expiry must be in the future.", 400);
+      throw new CustomError(i18n.t("messages.expiry_must_be_in_the_future"), 400);
     }
   } else if (input.expires_in_days !== undefined) {
     if (!["7", "30", "90", "365", "never"].includes(String(input.expires_in_days))) {
-      throw new CustomError("Select a valid expiry.", 400);
+      throw new CustomError(i18n.t("messages.select_a_valid_expiry"), 400);
     }
     if (input.expires_in_days !== "never") expires = Date.now() + Number(input.expires_in_days) * 86400000;
   } else {
@@ -85,7 +86,7 @@ async function create(userId, input) {
 
 async function revoke(userId, id) {
   const row = await knex("api_tokens").where({ id, user_id: userId }).first();
-  if (!row) throw new CustomError("Token was not found.", 404);
+  if (!row) throw new CustomError(i18n.t("messages.token_was_not_found"), 404);
   if (row.revoked_at == null) {
     await knex("api_tokens").where({ id, user_id: userId }).update({ revoked_at: Date.now() });
   }

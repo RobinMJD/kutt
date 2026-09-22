@@ -25,7 +25,7 @@
   async function work(action) {
     if (busy) return; busy = true;
     const controls = [...root.querySelectorAll("button, input")]; controls.forEach(control => { control.disabled = true; });
-    try { await action(); } catch (error) { resetPreview(); message(error.message, true); }
+    try { await action(); } catch (error) { resetPreview(); message(window.KuttI18n.failure(error), true); }
     finally {
       busy = false; controls.forEach(control => { control.disabled = false; });
       if (retention) form.elements.days.disabled = form.elements.mode.value !== "expire";
@@ -35,35 +35,35 @@
     resetPreview(); revision = data.revision;
     if (retention) {
       form.elements.mode.value = data.days ? "expire" : "keep"; form.elements.days.value = data.days || 365; resetPreview();
-      document.querySelector("#retention-last").textContent = data.last_run ? new Date(data.last_run).toLocaleString() : "Not run";
-      document.querySelector("#retention-deleted").textContent = data.deleted_buckets.toLocaleString();
-      document.querySelector("#retention-error").textContent = data.last_error || (data.days ? "Scheduled" : "Disabled");
+      document.querySelector("#retention-last").textContent = data.last_run ? window.KuttI18n.date(new Date(data.last_run)) : window.KuttI18n.t("ui.not_run");
+      document.querySelector("#retention-deleted").textContent = window.KuttI18n.number(data.deleted_buckets);
+      document.querySelector("#retention-error").textContent = data.last_error || (data.days ? window.KuttI18n.t("messages.scheduled") : window.KuttI18n.t("ui.disabled"));
       document.querySelector("#retention-state").hidden = false;
     } else document.querySelector("#tracking-enabled").checked = data.enabled;
-    form.hidden = false; message(saved || "Settings loaded");
+    form.hidden = false; message(saved || window.KuttI18n.t("ui.settings_loaded"));
   }
   async function load() { render(await api(endpoint)); }
   document.querySelector("#privacy-reload").onclick = () => work(() => load());
   if (retention) {
     form.addEventListener("input", () => {
-      resetPreview(); message("Draft changed. Preview again before applying.");
+      resetPreview(); message(window.KuttI18n.t("ui.draft_changed_preview_again_before_applying"));
     });
     form.onsubmit = event => { event.preventDefault(); work(async () => {
       const data = await api(endpoint + "/preview", "POST", { days: form.elements.mode.value === "keep" ? 0 : Number(form.elements.days.value), revision });
       confirmation = data.confirmation; previewDays = data.days;
-      document.querySelector("#retention-cutoff").textContent = data.cutoff ? "Delete hourly analytics before " + data.cutoff + " UTC" : "Keep all analytics";
-      document.querySelector("#retention-count").textContent = "Eligible hourly buckets: " + data.eligible_buckets.toLocaleString();
+      document.querySelector("#retention-cutoff").textContent = data.cutoff ? window.KuttI18n.t("privacy.cutoff", { date: window.KuttI18n.date(data.cutoff, { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" }) }) : window.KuttI18n.t("ui.keep_all_analytics");
+      document.querySelector("#retention-count").textContent = window.KuttI18n.t("privacy.eligible_buckets", { count: data.eligible_buckets });
       document.querySelector("#retention-ack-label").hidden = !data.days;
-      document.querySelector("#retention-preview").hidden = false; message("Preview ready");
+      document.querySelector("#retention-preview").hidden = false; message(window.KuttI18n.t("ui.preview_ready"));
     }); };
     document.querySelector("#retention-save").onclick = () => work(async () => {
-      if (!confirmation) throw new Error("Preview changes first.");
-      if (previewDays && !document.querySelector("#retention-ack").checked) throw new Error("Acknowledge permanent deletion before applying retention.");
+      if (!confirmation) throw new Error(window.KuttI18n.t("ui.preview_changes_first"));
+      if (previewDays && !document.querySelector("#retention-ack").checked) throw new Error(window.KuttI18n.t("ui.acknowledge_permanent_deletion_before_applying_retention"));
       const data = await api(endpoint, "PUT", { confirmation, acknowledge_deletion: document.querySelector("#retention-ack").checked });
-      render(data, "Retention saved");
+      render(data, window.KuttI18n.t("ui.retention_saved"));
     });
   } else form.onsubmit = event => { event.preventDefault(); work(async () => {
-    const data = await api(endpoint, "PUT", { enabled: document.querySelector("#tracking-enabled").checked, revision }); render(data, "Tracking saved");
+    const data = await api(endpoint, "PUT", { enabled: document.querySelector("#tracking-enabled").checked, revision }); render(data, window.KuttI18n.t("ui.tracking_saved"));
   }); };
   work(() => load());
 })();

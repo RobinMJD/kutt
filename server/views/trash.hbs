@@ -1,13 +1,13 @@
 {{> header}}
 <main class="link-archive">
-  <div class="archive-heading"><h1>Trash</h1><a href="/">Links</a></div>
-  <p>Links: {{total}}</p>
+  <div class="archive-heading"><h1>{{t "ui.trash"}}</h1><a href="/">{{t "ui.links"}}</a></div>
+  <p>{{t "ui.links_value" value1=total}}</p>
   <div class="archive-list">
-    {{#each links}}{{> links/trash_item}}{{else}}<p>Trash is empty.</p>{{/each}}
+    {{#each links}}{{> links/trash_item}}{{else}}<p>{{t "ui.trash_is_empty"}}</p>{{/each}}
   </div>
-  <nav class="archive-nav" aria-label="Trash pages">
-    {{#if previous}}<a href="{{previous}}">Previous</a>{{/if}}
-    {{#if next}}<a href="{{next}}">Next</a>{{/if}}
+  <nav class="archive-nav" aria-label="{{t 'ui.trash_pages'}}">
+    {{#if previous}}<a href="{{previous}}">{{t "ui.previous"}}</a>{{/if}}
+    {{#if next}}<a href="{{next}}">{{t "ui.next"}}</a>{{/if}}
   </nav>
 </main>
 {{> footer}}
