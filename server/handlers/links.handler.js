@@ -359,7 +359,7 @@ async function remove(req, res) {
   const { error, isRemoved, link } = await query.link.remove({
     uuid: req.params.id,
     ...(!req.user.admin && { user_id: req.user.id })
-  }, { id: req.user.id, apiToken: req.apiToken });
+  }, { id: req.user.id, apiToken: req.apiToken }, req);
 
   if (!isRemoved) {
     const messsage = error || i18n.t("messages.could_not_delete_the_link");

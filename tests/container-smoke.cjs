@@ -228,6 +228,12 @@ async function main() {
     assert.equal((await request("GET", "/api/v2/tokens", undefined, token)).status, 200);
     await require("./oidc-security.cjs")({ root, directory, env });
     await require("./oidc-roles.cjs")({ root, directory, env });
+    for (const args of [[], ["--mapping-off"]]) {
+      const writes = spawnSync(process.execPath, [path.join(root, "tests/oidc-role-writes.cjs"), ...args],
+        { cwd: directory, env, encoding: "utf8", timeout: 60000 });
+      assert.equal(writes.status, 0, writes.stdout + writes.stderr);
+      console.log(writes.stdout.trim());
+    }
     await require("./management-domain-grants.cjs")();
     await require("./oidc-security.cjs")({ root, directory, env, management: true });
     console.log("PASS: additive migration rollback and reapply preserve existing accounts and links");

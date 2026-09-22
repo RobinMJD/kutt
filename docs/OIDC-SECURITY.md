@@ -196,6 +196,14 @@ token still cannot use administrator endpoints, even when owned by an ADMIN.
 An expired grant is demoted on the next authenticated request; no background
 polling or external map/group service is used.
 
+Personal/admin link edits and link deletion recheck the current account, session
+version and any required administrator grant inside the domain-guarded write
+transaction. Expiry or role loss after route authentication cannot authorize a
+cross-owner write. Named tokens never inherit administrator access. This does
+not replace workspace membership checks or transfer ownership: collaborators
+still act through workspace routes using the workspace owner's domain access.
+Creators can still trash their own links after a domain grant is revoked.
+
 **Revocation bound:** Kutt cannot observe an IdP group removal until a new signed
 login assertion, relevant signed logout, local ban, policy change, or grant expiry.
 The maximum residual privilege window is the configured grant age (plus up to
@@ -257,6 +265,8 @@ docker run --rm --network none --read-only --tmpfs /tmp:rw,nosuid,nodev \
 # Also run oidc-roles.cjs with PS256 and EdDSA; the combined suite includes RS256.
 sh tests/search-database.sh IMAGE pg tests/oidc-roles-database.cjs
 sh tests/search-database.sh IMAGE mysql2 tests/oidc-roles-database.cjs
+sh tests/search-database.sh IMAGE pg tests/oidc-role-writes.cjs
+sh tests/search-database.sh IMAGE mysql2 tests/oidc-role-writes.cjs
 sh tests/browser-oidc-roles.sh IMAGE
 ```
 
@@ -269,3 +279,11 @@ Origin, all three locales, both themes and 320/390/1440px diagnostics, including
 Signature and code-exchange fixtures run separately against a real local signed
 provider, not a browser-mocked authentication response. Native Safari/Firefox,
 physical assistive technology and custom templates are separate acceptance gates.
+
+`node tests/oidc-role-writes.cjs` runs a fresh disposable SQLite HTTP fixture
+with deterministic expiry, role and session-version changes between real route
+authentication and mutation. Both edit routes and deletion are checked under
+both API prefixes, including unchanged denied destinations and no history writes
+on rejection. `--mapping-off` checks never-enabled local-admin compatibility.
+The full container suite runs both modes. Owner, granted-domain and workspace
+editor/revocation controls verify that ordinary permissions remain unchanged.
