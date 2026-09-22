@@ -51,6 +51,11 @@ automatic domain renaming, historical analytics rewriting or data deletion.
   pixels and printing. Public HTTPS login passed all three theme modes and
   reload persistence at all widths; this is Chromium evidence, not physical
   Safari/mobile-device acceptance.
+- Preference initializes before styles, follows the OS only in System mode,
+  synchronizes tabs and retains an in-memory choice if storage is unavailable.
+  Screenshot review corrected tiled select arrows and low-contrast legacy
+  icons. Static assets resolve relative to the application, preserving custom
+  precedence and isolated-start compatibility. See [appearance](THEMES.md).
 - Full public feature regression, real Authentik-signed logout/replay, original
   record/integrity/FK checks and whole-lab validation passed. Two samples 65s
   apart: healthy, zero restarts/alerts/failed units/unhealthy containers, three
@@ -257,22 +262,6 @@ review complete while required work remains.
   complete suite passed. No reservation or WAF rule was relaxed. Private report:
   `2026-09-22-kutt-community-46`, including the test-correction record.
 
-## Evidence: C14
-
-- Validated browser-local System/Light/Dark preference initializes before styles,
-  follows OS changes only in System, synchronizes tabs and retains an in-memory
-  choice when storage is unavailable. No credential, account or API change.
-- Full container regression passed. Chromium checks cover 15 routes at
-  1440/390/320px in both themes, keyboard selection, computed text contrast,
-  rendered chart pixels and live recoloring, QR quiet zones and print output.
-- Screenshot review found tiled select arrows and low-contrast legacy button
-  icons; scoped styles and rendered assertions now cover those cases. Static
-  assets resolve relative to the application rather than its launch directory,
-  preserving custom asset precedence and isolated-start compatibility.
-- Custom templates, native Safari/Firefox and physical assistive technology
-  remain separate acceptance surfaces. Publication, exact-wrapper deployment,
-  backup/recovery and public acceptance are pending. See [appearance](THEMES.md).
-
 ## Evidence: C18
 
 - Deployed `.48` (`cbb8473`); main/tag CI `35682493053` / `35682492877`,
@@ -364,10 +353,12 @@ review complete while required work remains.
   real local-login clicks and native locale-form Origin/303 checks, with screenshot
   review, no overflow, no external requests and no JavaScript errors. The read-only
   diagnostics reveal neither tokens nor configured group values.
-- Parent checkout, QR files and package `.47` are unchanged. Real provider/WAF
-  claims and logout, operator-tested recovery credentials, backup/restore, native
-  Safari/Firefox, physical assistive technology and custom templates remain
-  separate acceptance gates. See [mapping and recovery](OIDC-SECURITY.md#optional-administrator-mapping-c15).
+- These changes are integrated in the combined source. Live deployment keeps
+  role mapping disabled; enabling it requires operator-tested recovery access
+  and a matching identity-provider claim policy. Release/deployment gates are
+  tracked separately above. Native Safari/Firefox, physical assistive technology
+  and custom templates remain unverified. See
+  [mapping and recovery](OIDC-SECURITY.md#optional-administrator-mapping-c15).
 
 ## Evidence: C20
 
@@ -384,8 +375,8 @@ review complete while required work remains.
   keyboard interaction, hostile text, zero external traffic and unchanged visits.
   The existing English analytics browser filter/export workflow passed too.
 - Screenshot review and native Tab tests found and corrected inherited masthead
-  spacing and an implicit extra SVG tab stop. Geometry, API/routes, QR files and
-  package `.47` remain unchanged. No parent checkout files were edited.
+  spacing and an implicit extra SVG tab stop. Geometry and API routes remain
+  unchanged. The changes are integrated in the combined source.
 - Physical devices, Safari/Firefox, assistive technology, custom layouts and
   live release/deployment acceptance remain separate gates. See
   [analytics geography](ANALYTICS.md#geography-c20).
