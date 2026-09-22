@@ -82,6 +82,28 @@ reviews, reconcile source/release/deployed versions, confirm clean committed and
 pushed changes, and update the documented upstream contribution. Do not mark this
 review complete while required work remains.
 
+## Superseded Candidates: .50 / .51
+
+Release `.50` (`8b9afa3`) passed source/tag CI, exact-wrapper regression and a
+valid image scan with zero Critical/High findings. Its pre-release local/NAS
+backup (`b5a7b669` / `b2b20178`, 05:05:28 UTC) passed byte verification and
+writable recovery with both the previous and candidate images. The first live
+report-only CSP browser gate then found BunkerWeb rejecting branded QR requests:
+the JSON logo's `data:image/png;base64,...` URI triggered several CRS injection
+rules. Local tests had not exercised that external WAF response.
+
+The deployment was rolled back to the exact `.49` image and configuration,
+preserving the database and secrets; original records, integrity and foreign
+keys were verified unchanged. WAF/SSO/TLS were not weakened. `.50` is not an
+accepted deployment. `.51` (`d6ae152`) added domain sharing but was superseded
+before deployment; its release CI was deliberately cancelled rather than
+publishing another candidate with the known upload issue. Immutable tags remain
+available for evidence. The corrected candidate must repeat all live gates.
+
+Private evidence is retained under `2026-09-22-kutt-community-50`, including
+the failed public browser check and rollback. No completed feature is inferred
+from these candidate publications.
+
 ## Evidence: C01 / C02
 
 - Regression reproduced Safari misclassification before the patch. Installed
