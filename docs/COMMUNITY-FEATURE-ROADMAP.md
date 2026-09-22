@@ -15,6 +15,15 @@ Public short-link redirects remain public. Management retains WAF and Authentik.
 Optional integrations do not alter existing deployment policy by default. No
 automatic domain renaming, historical analytics rewriting or data deletion.
 
+Current checkpoint: `.57` is deployed healthy; its public community18, C16 smoke3,
+full public API/real OIDC, post-health/lab and writable-recovery gates passed.
+Visual review nevertheless confirmed low-contrast analytics exports. The narrow
+`.58` correction passed focused local checks but still needs release validation.
+The seven pending entries below remain pending until the
+[.58 gates](#candidate-58-analytics-export-contrast) are explicitly completed.
+`.56` and `.57` remain preceding functional evidence, not separate accepted
+GitHub releases. Green CI or partial gates do not establish final acceptance.
+
 ## Work List
 
 | ID | Scope | State | Publication / deployment evidence |
@@ -23,7 +32,7 @@ automatic domain renaming, historical analytics rewriting or data deletion.
 | C02 | Prefix-only hostname normalization | Complete | `.41`; evidence below |
 | C03 | Transactional, reversible administrative moderation and session safety | Complete | `.45`; evidence below |
 | C04 | Strict peer/CIDR/hop reverse-proxy trust | Complete | `.42`; evidence below |
-| C05 | Compatible staged and enforced Content Security Policy | Implemented; release gates pending | Integrated; strict nonce policy and translated browser checks passed; see `CSP.md` |
+| C05 | Compatible staged and enforced Content Security Policy | Implemented; release gates pending | `.56` full public matrices and `.57` enforced community18/C16 smoke3 passed; `.58` closure pending; see `CSP.md` |
 | C06 | MySQL utf8mb4 search compatibility and real database tests | Complete | `.42`; evidence below |
 | C07 | Verified remote database TLS and credential-file configuration | Complete | `.43`; evidence below |
 | C08 | Consistent verified Redis TLS for cache, queues and limiting | Complete | `.43`; evidence below |
@@ -31,15 +40,15 @@ automatic domain renaming, historical analytics rewriting or data deletion.
 | C10 | Custom-domain API routing without homepage interception | Complete | `.42`; evidence below |
 | C11 | Complete English (default), French and Spanish localization | Complete | `.49`; 198 source layouts, 18 public layouts, authenticated locale/API, CI/wrapper, restore and stable health gates passed; see `LOCALIZATION.md` |
 | C12 | Stable allowlisted sorting in personal, admin and workspace tables/API | Complete | `.44`; evidence below |
-| C13 | Branded QR logos embedded in validated PNG/SVG exports | Implemented; release gates pending | Integrated; bounded PNG validation, independent decoding and 18 enforced-CSP layouts passed; see `QR-BRANDING.md` |
+| C13 | Branded QR logos embedded in validated PNG/SVG exports | Implemented; release gates pending | Bounded PNG validation/decoding and `.57` public enforced community18 passed; `.58` closure pending; see `QR-BRANDING.md` |
 | C14 | Accessible dark/system/light theme | Complete | `.47`; full source/wrapper regression, 90 layouts, public theme selection, WAF/SSO and backup/restore gates passed; evidence below |
-| C15 | Optional explicit OIDC role mapping and safe demotion/recovery | Implemented; release gates pending | Integrated; see `OIDC-SECURITY.md` |
-| C16 | Optional separate management hostname and explicit shared-domain grants | Implemented; release gates pending | Integrated; SQLite/MySQL/PostgreSQL, revocation, creator-only analytics and translated split-host browser workflows passed; see `DOMAIN-SHARING.md` |
-| C17 | Optional consistent destination-domain policy | Implemented; release gates pending | Integrated with authorized unchanged-target metadata repair and race coverage; translated desktop/mobile workflows passed; publication/deployment pending |
+| C15 | Optional explicit OIDC role mapping and safe demotion/recovery | Implemented; release gates pending | Isolated role/session/write-race gates passed; live mapping remains disabled; `.58` closure pending; see `OIDC-SECURITY.md` |
+| C16 | Optional separate management hostname and explicit shared-domain grants | Implemented; release gates pending | Real SQL/isolated split-host checks, both `.56` public 18-layout matrices and `.57` public smoke3 passed; `.58` closure pending; see `DOMAIN-SHARING.md` |
+| C17 | Optional consistent destination-domain policy | Implemented; release gates pending | Source edit/race checks and `.57` public policy views passed; live restrictions remain disabled; `.58` closure pending |
 | C18 | Private authenticated performance metrics with bounded labels | Complete | `.48`; source/wrapper/CI, private Prometheus scrapes, WAF/SSO, backup/restore and stable health gates passed |
 | C19 | Safe dotted aliases with reserved-path protections | Complete | `.46`; [rules and tests](LINK-ALIASES.md), evidence below |
-| C20 | Accessible interactive geography chart and text alternative | Implemented; release gates pending | Integrated; see `ANALYTICS.md` |
-| C21 | Profile visit aggregation; safely batch only where warranted | Implemented; release gates pending | Indexed SQLite hourly lookup preserves synchronous transactions; SQLite/MySQL/PostgreSQL and rollback checks passed; see `VISIT-PERFORMANCE.md` |
+| C20 | Accessible interactive geography chart and text alternative | Implemented; release gates pending | `.57` copy/rendered checks and public community18, including denominator assertions and screenshot review, passed; final release gates pending; see `ANALYTICS.md` |
+| C21 | Profile visit aggregation; safely batch only where warranted | Implemented; release gates pending | Indexed synchronous SQLite lookup, real SQL and rollback checks passed; `.58` closure pending; see `VISIT-PERFORMANCE.md` |
 
 ## Evidence: C14
 
@@ -81,6 +90,11 @@ After all delivery gates pass: run full regression/security and desktop/mobile
 reviews, reconcile source/release/deployed versions, confirm clean committed and
 pushed changes, and update the documented upstream contribution. Do not mark this
 review complete while required work remains.
+
+This review and final accepted-release publication are **pending**. Completed
+`.56` public evidence is retained below; it is not relabeled as `.57` coverage.
+The actual upstream PR remains at its earlier head until a separately authorized
+update after acceptance.
 
 ## Superseded Candidates: .50 / .51 / .52 / .53 / .54 / .55
 
@@ -180,14 +194,211 @@ revocation offline, then repeat the public and recovery gates. Private evidence:
 `2026-09-22-kutt-community-55` and
 `Work/kutt-community-20260922/public-domain-grants-de5b6161e6c5`.
 
-Candidate `.56` gives analytics domain/tag selectors a dedicated, wider desktop
-row and full-width mobile controls. Values too long for a native selector are
+## Verified Candidate .56
+
+Candidate `.56` (`2377f506569d25797834d433fdb8b86e19a9a0e5`) gives analytics
+domain/tag selectors a dedicated, wider desktop row and full-width mobile
+controls. Values too long for a native selector are
 also displayed as associated, wrapping text below it, never just a tooltip.
 Red/green rendered checks reproduce `.55` clipping and cover common and maximum
 length names, hostile text escaping, keyboard selection, Apply/reload/Clear and
 creator-only analytics before and after domain-grant revocation. All 18 translated
 theme/viewport combinations and the existing analytics/browser suite passed.
-This is source evidence; publication, public-edge and recovery gates remain pending.
+Its full source/main/tag/contribution CI, hardened-wrapper regression, scan and
+pre-change/candidate recovery checks passed. It is verified functional candidate
+evidence for the final `.57` follow-up, not a separate accepted GitHub release.
+
+- Public report-only C16 passed all 18 EN/FR/ES, light/dark, 1440/390/320 layouts,
+  with 6,877 requests and complete disposable-fixture cleanup.
+- The enforced public community rerun passed all 18 QR/policy/geography layouts:
+  1,494 browser requests/responses/completions, 132 completed drains, and no
+  recorded network failures, CSP violations or JavaScript errors. Its fixture
+  was removed.
+- Enforced public C16 completed all 18 layouts at 13:06:43 UTC on September 22,
+  with 6,877 requests, no JavaScript/CSP errors and cleanup of two users, one
+  domain and 19 links. Native grant/cancel/confirm, creator-only analytics,
+  revoked mutations/tokens and regrant behavior passed. These are synthetic
+  shared-domain workflows, not real split-host DNS/IdP cutover acceptance.
+- Public HTTP/API and real Authentik-signed logout/replay checks passed. After
+  browser cleanup, original records were unchanged, integrity/FKs passed, and
+  two health samples 65 seconds apart showed three probes and zero restarts,
+  alerts, failed units or unhealthy containers. Whole-lab validation passed.
+  Deployed wrapper ID:
+  `sha256:9c593cdfcaa879eb6490512d67d8ec0e22caf838bc198ec5c5ea74b0711bbe9b`.
+
+Private evidence: `Work/kutt-community-20260922/live56-enforce-rerun.log`,
+`public-community56-enforce-rerun/network.jsonl`,
+`live56-domain-grants-report-only.log`, `live56-domain-grants-enforce.log`,
+`public-domain-grants-d64dc1383d90/receipt.json` and `postbrowser56.log`.
+
+### First Enforced Run And Retest
+
+The first `.56` enforced community run timed out waiting for HTMX/localization
+on Spanish/dark/390 analytics; its screenshot showed incomplete assets. Its
+fixture was cleaned. Request-level diagnostics were absent, so the triggering
+cause remains **unproven**. A transient route/connection or harness failure is
+a hypothesis, not a confirmed production regression or WAF block.
+
+A pure fake-task test reproduced an external Work-runner defect: one rejected
+route task poisoned its promise chain and prevented later tasks from running.
+The runner now recovers scheduling but keeps failures fatal, drains fonts/network/
+queue activity between transitions and records sanitized path/status diagnostics.
+All assertions were retained; there are no automatic WAF/network retries.
+The successful fresh 18-layout rerun is not retrospective proof that this defect
+caused the original timeout. Application code, CSP and edge controls were not
+changed for this repair. The original log/screenshot and offline red/green proof
+remain under `Work/kutt-community-20260922`, alongside the successful rerun.
+
+## Candidate .57: Copy-Only Follow-Up
+
+The `.57` source is `5a82edcbcfa842101ca08abfa657d4e989c35ac6`, tag
+`v3.2.6-sr94.57`. Application logic, schema, dependencies and hardened policy
+configuration are unchanged from `.56`; the follow-up changes 16 catalog values,
+version metadata and focused regression assertions. All three catalogs retain
+1,519 keys and the same placeholder contracts. English is unchanged; 15 Spanish
+values and one French value improve formal management prompts, moderation entity
+wording and geography percentage explanations.
+
+- Main CI [35729518615](https://github.com/RobinMJD/kutt/actions/runs/35729518615),
+  tag CI [35729518448](https://github.com/RobinMJD/kutt/actions/runs/35729518448),
+  contribution CI [35729573223](https://github.com/RobinMJD/kutt/actions/runs/35729573223)
+  and signed Shortcut checks passed. Source image digest:
+  `sha256:a03e783d174675df31a3b06c7c085e4788a6de801f28511ccc65ff65222c268b`.
+  Its valid Grype scan reports zero Critical/High and three Medium BusyBox
+  package matches for `CVE-2025-60876`; that scan lists no fixed versions.
+  Source-image scanning is distinct from hardened-wrapper and final release
+  acceptance; the exact-wrapper progress is recorded below.
+- Focused copy red/green, catalog/placeholder/escaped-interpolation and localized
+  JSON/HTML HTTP checks passed. Local geography passed 18 language/theme/width
+  layouts; moderation and sorting passed EN/FR/ES at 1440/390/320, with screenshots
+  reviewed for wrapping and clipping. These are local source checks, not `.57`
+  public results. Private evidence: `Work/kutt-community-20260922/copy57-proof`.
+- Fresh pre-change backup at 13:28:13 UTC: local `0f2fbfdc`, NAS `94f25caa`.
+  All 75 files were byte-verified and writable recovery with prior `.56` passed.
+  Private evidence: `Work/kutt-community-20260922/backup57-pre.log`.
+- Contribution parity against `.57` passed for 585 files with zero byte/mode
+  mismatches under the documented curated/redacted-doc exclusions. Its
+  temporary validation branch is not the actual upstream PR, which remains at
+  `e0ad948`.
+
+### Deployed .57 Checkpoint
+
+The exact hardened wrapper passed full container regression and candidate
+writable restore, and is deployed healthy with zero restarts:
+`sha256:5da46d1488092a6022e5fe857213edaf7ef96f0da3e5233e1aec9dc8099b1fe7`.
+These passes alone do not establish final release acceptance.
+
+The first `.57` public community run passed 3/18 layouts before explicit local
+Mac `ERR_NETWORK_CHANGED` and `ERR_INTERNET_DISCONNECTED` asset failures stopped
+it. Its fixture was cleaned; the service remained healthy and a public curl
+check returned HTTP 302. This is recorded as a client connectivity interruption,
+not an application regression or WAF failure. A fresh full public run subsequently
+passed, as recorded below; the interrupted run is retained as evidence in
+`Work/kutt-community-20260922/live57-enforce.log` and
+`Work/kutt-community-20260922/public-community57-enforce/failure-network.json`.
+The `.56` first-run cause remains separately unproven.
+
+### Public .57 Browser Follow-Up
+
+- The fresh enforced public community run passed all 18 EN/FR/ES, light/dark,
+  1440/390/320 layouts, with no JavaScript, CSP or network errors. QR exports
+  decoded correctly; geography denominator assertions and screenshot review
+  passed. Evidence: `Work/kutt-community-20260922/live57-enforce-rerun.log` and
+  `Work/kutt-community-20260922/public-community57-enforce-rerun`.
+- The explicit C16 smoke matrix passed all three EN/FR/ES dark/390 layouts with
+  every per-layout workflow/auth assertion retained: 1,147 requests and cleanup
+  of two users, one domain and four links. The parent reviewed Spanish analytics
+  and the earlier French confirmation screenshot. Evidence:
+  `Work/kutt-community-20260922/live57-domain-grants-smoke.log` and
+  `Work/kutt-community-20260922/public-domain-grants-6a162642447e/receipt.json`.
+  This is `.57` smoke3, not another full C16 matrix; `.56` supplies full18 evidence.
+
+Full public API regression for existing/new features and fixture cleanup passed,
+as did real Authentik-signed logout/replay. Original records were unchanged;
+integrity/FKs passed. Two health samples 65 seconds apart showed healthy state,
+zero restarts/alerts/failed units/unhealthy containers and three fresh probes.
+Whole-lab validation passed with its existing environment warnings. Evidence:
+`Work/kutt-community-20260922/postvalidate57.log` and
+`Work/kutt-community-20260922/final57-browser-health-passed.json`.
+
+Post-change backup at 14:16:38 UTC on September 22: local `6d2d3904`, NAS
+`38e3ef87`. All 75 files and writable restore passed; the pre-change backup was
+13:28:13 UTC. Evidence: `Work/kutt-community-20260922/backup57-post.log`.
+These records establish preceding functional/recovery proof, not release closure:
+the confirmed export-contrast defect requires the `.58` follow-up below.
+
+### Recorded .57 Gates
+
+| Gate | Current status |
+| --- | --- |
+| Final hardened-wrapper full regression and exact candidate writable restore | **Passed** |
+| Exact `.57` deployment with the hardened configuration and CSP enforced | **Deployed; healthy, zero restarts**; final acceptance remains pending |
+| Public community QR/policy/geography matrix | **Passed: fresh 18-layout run**, EN/FR/ES, light/dark, 1440/390/320; QR decoding, denominator assertions and screenshot review passed; no JavaScript/CSP/network errors |
+| Public C16 post-copy smoke | **Passed: 3 layouts**, EN/FR/ES, dark, 390px only; 1,147 requests, cleanup two users/one domain/four links; every per-layout workflow/auth assertion retained; not a `.57` full-18 claim |
+| Full public HTTP/API/SSO regression and its fixture cleanup | **Passed**, including real Authentik-signed logout/replay |
+| Post-change original-data/integrity/FK checks, stable health and lab validation | **Passed**; two samples 65 seconds apart, three probes and zero restarts/alerts; existing lab environment warnings retained |
+| Fresh post-change local/NAS backup, byte verification and writable restore | **Passed**; 75 files, local `6d2d3904`, NAS `38e3ef87`, 14:16:38 UTC |
+| Final feature closure, accepted GitHub release and actual PR update | **Not closed: .58 UI correction and acceptance required** |
+
+Keep `.56` full public C16 coverage distinct from the passed `.57` three-layout
+smoke complement and `.57` full automated CI. Smoke receipts record the selected
+matrix, explicit expected layouts/count and actual completed list/count; they
+must not be summarized as a full matrix.
+
+Application defaults remain unchanged: CSP defaults to `off`; this installation
+explicitly selected `enforce`. Management origin remains unset, live OIDC role
+mapping and destination restrictions remain disabled, and domain sharing requires
+explicit grants. No new DNS, certificate, IdP callback or global domain sharing
+is implied. Preserve database and original secrets together, prefer fix-forward,
+contain outbound workers during isolated recovery, and never downgrade used
+authorization state or revive revoked credentials. Historical `.49` rollbacks
+were individually guarded recoveries, not general downgrade authorization.
+
+## Candidate .58: Analytics Export Contrast
+
+Visual review of `.57` Spanish/dark/390 recipient analytics found a real UI
+defect despite passing functional assertions: CSV/JSON export anchors inherited
+near-white text over a hardcoded pale background. The unchanged source fails a
+new rendered assertion at **1.092:1** text contrast, below the 4.5:1 requirement.
+This is distinct from the earlier local network interruption, not a WAF incident.
+
+The runtime change adds the existing `button` class to the two export anchors.
+One scoped CSS rule preserves their 18px current-color icons without inheriting
+the general button rule's white stroke/margin. URLs, localized titles, filenames,
+download behavior, CSV/JSON formats, authorization and all application logic are
+unchanged. There are no catalog, dependency, schema or policy changes.
+
+- Contribution runtime/test commit: `54cc6b14d681305ed55f4d103d01f472ccfd6248`.
+  Separate version-only commit: `d8a92cd5126be8339d04d167d75a425c2fce5cc2`.
+- Focused regular Playwright checks passed all 18 EN/FR/ES, light/dark,
+  1440/390/320 layouts under enforced CSP: 108 normal/hover/focus contrast
+  measurements and 36 actual keyboard-triggered CSV/JSON downloads. Ratios are
+  **7.891:1 light** and **9.883:1 dark**. Filters, report content, localized titles,
+  download filenames, icons and existing geography/error/stale-response checks
+  passed. Compact screenshots were inspected. Browser plugin was unavailable.
+- Private red/green proof: `Work/kutt-community-20260922/export58-red.log` and
+  `Work/kutt-community-20260922/export58-proof`. Tests use disposable loopback
+  containers; no public acceptance is inferred from them.
+
+### Pending .58 Gates
+
+| Gate | Current status |
+| --- | --- |
+| Immutable source/tag CI and contribution validation | **Pending** |
+| Exact hardened wrapper, valid image scan, full regression and candidate writable restore | **Pending** |
+| Fresh pre-change local/NAS backup and verified recovery | **Pending** |
+| Exact `.58` deployment with unchanged hardened configuration | **Pending**; live remains healthy `.57` |
+| Enhanced public community matrix | **Pending: 18 layouts**, including export contrast and actual CSV/JSON downloads |
+| Post-change original-data/integrity/FK, stable health and lab validation | **Pending** |
+| Fresh post-change local/NAS backup and verified writable restore | **Pending** |
+| Seven feature closures, accepted release, final docs reconciliation and actual upstream PR update | **Pending; not authorized by focused local tests** |
+
+Coverage stays explicit: `.56` supplies full public C16 matrices, `.57` supplies
+C16 smoke3 plus full public API/real OIDC and functional/recovery checks, and
+`.58` requires its own enhanced public community18 and release gates. The narrow
+HTML/CSS change does not imply a `.58` rerun of all preceding API/C16 coverage;
+reuse of that functional evidence is recorded as preceding-version proof, not
+relabeled as a new run. No feature is marked complete until final acceptance.
 
 ## Evidence: C01 / C02
 

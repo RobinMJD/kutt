@@ -1,10 +1,14 @@
 # Analytics ranges and exports
 
-Released and deployed as `v3.2.6-sr94.11`, verified 2026-09-14. Release CI,
+The original range reports and exports were released and deployed as
+`v3.2.6-sr94.11`, verified 2026-09-14. Release CI,
 exact hardened-image regressions, desktop/mobile workflows, fresh NAS restore
 and write test, public WAF checks and real Authentik-signed logout/replay passed.
 Original records and three monitored routes remained healthy after deployment.
 See the roadmap's eleventh deployment evidence and homelab recovery runbook.
+That historical record does not cover later geography, shared-domain analytics
+or full-value filter text. Their current source and release status are tracked
+in [Community Feature Delivery](COMMUNITY-FEATURE-ROADMAP.md#candidate-58-analytics-export-contrast).
 
 ## Reports
 
@@ -15,6 +19,20 @@ browser/OS/country/referrer breakdowns and current tag summaries are available
 in the UI and JSON/CSV exports. Tables are paginated; exports include all rows.
 Empty ranges, request errors and retry are distinct states. Date/filter values
 are preserved in the page URL. No visitor IPs or user agents are exported.
+
+Domain and tag filters retain native keyboard-selectable controls in a responsive
+layout. When the selected text cannot fit inside its control, the full value is
+shown directly below as wrapping plain text and associated with the control for
+assistive technology. No tooltip or smaller font is needed to read long values.
+The displayed value updates on selection, resizing and report reload; Clear
+removes it along with the filter. Filtering and export semantics are unchanged.
+
+The `.58` candidate applies existing theme-button styling to the CSV/JSON export
+links while preserving their current-color icons, URLs and download formats.
+This corrects the confirmed dark-theme contrast defect in deployed `.57`.
+Focused local checks passed 18 language/theme/width layouts, normal/hover/focus
+contrast above 4.5:1 and actual keyboard downloads; `.58` public and release gates
+remain pending in the delivery ledger.
 
 Both `GET /api/analytics` and `GET /api/v2/analytics` accept:
 
@@ -64,8 +82,17 @@ remain active. These limits do not change the legacy stats response.
 
 ## Geography (C20)
 
-C20 is an unreleased source change. The historical deployment evidence at the
-top of this document does not cover this chart.
+C20 geography is included in the current source. The `.56` enforced public
+community matrix passed all 18 language/theme/width combinations; `.57` only
+polishes its French/Spanish percentage explanation without changing the data or
+denominator. Its local rendered checks, CI, exact-wrapper regression and
+candidate restore passed. `.57` is deployed healthy; its fresh public community
+run passed all 18 layouts, including denominator assertions and screenshot review.
+Its three-layout shared-domain smoke passed with Spanish analytics reviewed.
+Full public API/real OIDC, post-change health/lab and writable recovery passed.
+The later export-contrast finding keeps final closure pending for `.58`; none of
+these results is relabeled as `.58` public coverage.
+The historical `.11` evidence above does not cover this chart.
 
 The range-report page includes an interactive geography view in English, French
 and Spanish. Country labels use the selected locale's `Intl.DisplayNames`.

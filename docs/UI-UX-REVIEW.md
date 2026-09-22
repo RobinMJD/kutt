@@ -16,13 +16,14 @@ deployment references below are historical.
 - New domain-grant revocation uses a native, localized confirmation page naming
   the recipient and domain, explaining permanent token revocation and disabled
   monitoring. Cancel is non-mutating; stale confirmations cannot revoke a new
-  grant. Publication and live acceptance remain in the community ledger.
+  grant. Both report-only and enforced `.56` public C16 matrices passed all 18
+  layouts; the `.57` smoke3 also passed, while final `.58` closure remains pending.
 - The final token-domain selector review found clipped translated labels even
   without page-level overflow. Labels are now concise in all three catalogs.
   A selected-option canvas text measurement reproduces the defect in `.52` and
   passes the corrected 18 language/theme/viewport combinations. Actual screenshot
-  inspection confirms the compact Spanish control is readable. Final release
-  deployment is pending; this is source/browser evidence, not live acceptance.
+  inspection confirms the compact Spanish control is readable. That checkpoint
+  was source/browser evidence; subsequent `.56` public coverage is recorded below.
 - Branded QR tests decode actual PNG/SVG output, cover input rejection and
   delayed-render races, and preserve plain white exports across themes. The
   `.50` public WAF gate exposed a data-URI transport rejection; its deployment
@@ -36,8 +37,58 @@ deployment references below are historical.
 - The `.53` public QR, policy and geography checks passed in all 18 layouts,
   but the first grant page exposed Cloudflare email rewriting and an injected
   decoder blocked by strict CSP. The fixture was cleaned and deployment rolled
-  back to `.49`; final acceptance remains open. The corrective response contract
-  must prevent intermediary HTML transforms, not authorize the injected script.
+  back to `.49`. The correction adds `private, no-store, no-transform` to rendered
+  HTML in active CSP modes, including fragments, without authorizing the injected
+  script. The failed-candidate evidence remains; final `.58` acceptance is open.
+- The `.55` public grant workflow exposed a clipped analytics domain selection.
+  `.56` gives domain/tag filters wider responsive rows and shows overflowing
+  selected values as associated, wrapping text. Source checks cover common and
+  maximum-length values, keyboard/Apply/reload/Clear and creator-only reports
+  before/after grant revocation. Public `.56` enforced C16 passed all 18 layouts,
+  6,877 requests and complete cleanup, with no JavaScript/CSP errors.
+- The first `.56` enforced community run showed partially loaded assets and
+  timed out on Spanish/dark/390 analytics. Its initiating cause is unproven.
+  A fake-task test separately reproduced promise-queue poisoning in the external
+  Work runner. Scheduling recovery, strict drains and sanitized diagnostics keep
+  errors fatal and add no retries. The fresh public rerun passed all 18 layouts
+  and completed 1,494 browser requests without network/JavaScript/CSP errors.
+  This does not establish the earlier failure's cause or imply a WAF relaxation.
+- `.57` changes 16 catalog values, version metadata and focused tests, not
+  application behavior: reviewed Spanish prompts use formal address, moderation
+  errors name the affected entry, and French/Spanish percentage explanations are
+  more natural. Catalog/HTTP checks, 18 local geography layouts and EN/FR/ES
+  moderation/sorting at 1440/390/320 passed; compact screenshots were reviewed.
+  Main/tag/contribution CI, exact-wrapper regression and candidate writable
+  restore passed; `.57` is deployed healthy with zero restarts. Its fresh public
+  community run passed all 18 layouts, with QR decoding, geography denominator
+  assertions and screenshots reviewed, and no JavaScript/CSP/network errors.
+  Its C16 smoke passed three EN/FR/ES dark/390 layouts: 1,147 requests, cleanup of
+  two users, one domain and four links, and unchanged per-layout assertions.
+  Spanish analytics and the earlier French confirmation screenshot were reviewed.
+  Do not label this `.57` smoke as a full C16 run.
+- The first `.57` community run passed 3/18 layouts before explicit local Mac
+  `ERR_NETWORK_CHANGED` and `ERR_INTERNET_DISCONNECTED` asset failures. The fixture
+  was cleaned, the service stayed healthy and a public curl check returned 302.
+  This is not recorded as an application regression or WAF failure. The fresh
+  full run passed as recorded above; the separate `.56` first-run cause remains
+  unproven.
+- Later visual review of `.57` Spanish/dark/390 recipient analytics found a real
+  CSV/JSON export-contrast defect that the functional tests had not measured.
+  The `.58` correction adds existing theme-button classes and preserves the
+  original current-color icon styling with one scoped rule. Red evidence is
+  1.092:1 contrast; green is 7.891:1 light and 9.883:1 dark. All 18 local
+  language/theme/width layouts passed, including 108 normal/hover/focus contrast
+  measurements, 36 real keyboard downloads, exact filter/format/filename checks
+  and screenshot review. No API, authorization, catalog or policy change.
+  This confirmed defect is separate from the earlier network interruption.
+
+The `.57` broader public API/real OIDC, original-data/integrity/FK, stable health,
+lab and 75-file post-backup writable recovery checks passed. Live `.57` remains
+healthy. The [.58 release checklist](COMMUNITY-FEATURE-ROADMAP.md#candidate-58-analytics-export-contrast)
+still requires CI, exact-image, deployment, enhanced public community18 and
+post-change recovery/acceptance. `.56`/`.57` are preceding functional evidence,
+not separate accepted GitHub releases; the original 25 findings and human gates
+above are not being reopened or substituted for these new-feature gates.
 
 These are bounded Chromium desktop/mobile-width checks. Native Safari/Firefox,
 physical QR printing/scanning and operator-specific custom templates remain

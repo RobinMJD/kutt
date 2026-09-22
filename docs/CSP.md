@@ -156,7 +156,7 @@ Primary references: [CSP specification](https://www.w3.org/TR/CSP/),
 [HTMX configuration and scripting](https://htmx.org/docs/), and
 [HTMX indicator styles and nonces](https://htmx.org/attributes/hx-indicator/).
 
-## Candidate verification (2026-09-22)
+## Initial C05 source verification (2026-09-22)
 
 - Full offline `tests/container-smoke.cjs`: passed through the final RS256 OIDC
   protocol/session checks and migration rollback/reapply. The later strengthened
@@ -183,3 +183,44 @@ All containers used fresh synthetic data and were removed by their runners.
 No parent checkout, live WAF/SSO, release version, dependency lock, schema or
 catalog was changed. Publication/deployment and custom/Safari/native acceptance
 remain separate gates; the unrelated full theme matrix was not rerun.
+
+## Public Candidate Evidence (.56 / .57)
+
+The `.56` deployment passed both report-only and enforced public C16 matrices,
+18 layouts each. The enforced run completed with 6,877 requests, no JavaScript/
+CSP errors and removal of its two users, domain and 19 links. Rendered grant
+and native confirmation flows operated with `no-transform` and the unchanged
+nonce policy; no Cloudflare configuration, script exception or WAF relaxation
+was used. The enforced public QR/policy/geography rerun also passed all 18
+layouts, completing 1,494 browser requests without recorded network/CSP errors.
+
+The first `.56` community run timed out with incomplete assets. Its initiating
+cause remains unproven. An offline fake-task test reproduced an independent
+Work-runner queue-poisoning defect; the runner was corrected with failure-retaining
+scheduling recovery, strict drains and sanitized diagnostics, not automatic
+network/WAF retries. The successful rerun does not prove what triggered the
+original timeout. Keep that failed evidence alongside the retest.
+
+`.56` is verified functional candidate evidence, not a separate accepted GitHub
+release. The `.57` source keeps identical CSP/application logic and changes only
+16 translated values, version metadata and focused tests. Its CI, exact-wrapper
+regression and candidate writable restore passed; `.57` is deployed with CSP
+enforced, healthy with zero restarts. Its first community run stopped after 3/18
+layouts with explicit local Mac network-change/disconnection errors, not evidence
+of an application or WAF failure. The fresh public community run passed all 18
+layouts without JavaScript, CSP or network errors, with QR decoding and geography
+denominator/screenshot checks. The **three-layout C16 smoke** (EN/FR/ES, dark,
+390px) passed with 1,147 requests and cleanup of two users, one domain and four
+links. That smoke complements `.56`'s full matrix; it must not be described as
+`.57` full-18 C16 coverage. Broader `.57` public API/real OIDC, post-change
+data/health/lab and writable recovery passed.
+
+Final release closure remains pending because `.57` visual review confirmed
+low-contrast analytics export controls. The `.58` HTML/CSS-only correction does
+not change CSP, `no-transform`, scripts, authorization or deployment defaults.
+Its focused 18-layout local contrast/keyboard-download checks passed with CSP
+enforced; its own public and release gates remain pending in
+[Community Feature Delivery](COMMUNITY-FEATURE-ROADMAP.md#candidate-58-analytics-export-contrast).
+The application still defaults to CSP `off`; the deployed candidate explicitly
+opts into enforcement. These results do not certify other custom templates or
+proxy deployments.

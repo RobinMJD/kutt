@@ -16,36 +16,24 @@ the upstream hosted service.
 
 ## Project status
 
-As of **22 September 2026**, the current deployed application version is
-[3.2.6-sr94.49](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.49).
-All 16 original roadmap features, the earlier selected community improvements and 25
-confirmed UI/UX fixes have passed their recorded release and homelab deployment
-gates. Release `.40` added DNS ownership verification and closed seven security
-findings; `.41` corrects Safari analytics and prefix-only hostname normalization.
-Release `.42` adds proxy-trust, database-search, OIDC-algorithm and custom-host
-API correctness, preserving management authorization and public redirects.
-Exact-image tests, public WAF regression and pre/post off-host writable restores passed.
+As of **22 September 2026**, candidate `3.2.6-sr94.58` fixes analytics export
+contrast; all 18 focused local language/theme/width layouts passed. Its CI,
+exact-image, deployment, public and recovery gates remain pending. Live `.57`
+is healthy with enforced CSP and passed its recorded public, API/OIDC, health
+and writable-recovery checks; final acceptance awaits the `.58` UI correction.
 
-The expanded community work list is approved and in progress. Complete English
-(default), French and Spanish localization is deployed in `.49`, using separate
-extensible catalogs. Verified database/Redis TLS in `.43` passed
-deployment/recovery gates; stable table sorting `.44` has passed them too.
-Transactional moderation `.45` has also passed deployment/recovery gates.
-Dotted aliases `.46` have passed deployment/recovery gates too.
-System/Light/Dark appearance `.47`, private metrics `.48` and localization `.49`
-have also passed their recorded release/deployment gates. Staged/enforced CSP,
-branded QR exports, optional OIDC roles, destination policy, interactive geography
-and indexed visit aggregation are integrated candidates. Separate management
-hosting and explicit shared-domain grants are integrated and undergoing final
-release validation. See the
-delivery ledger for current evidence; pending additions are not yet complete.
+The source includes all 16 original roadmap features and all 21 community
+features, with English (default), French and Spanish catalogs of 1,519 stable
+keys each. Seven community features still await final release closure. See the
+[delivery ledger](docs/COMMUNITY-FEATURE-ROADMAP.md#candidate-58-analytics-export-contrast)
+for exact coverage, completed and pending gates, historical releases and incidents.
 
 - [Feature roadmap](docs/FEATURE-ROADMAP.md): completed features and release evidence.
 - [Community contribution review](docs/UPSTREAM-PR-REVIEW.md): selected proposals, attribution and deferred ideas.
 - [Community delivery ledger](docs/COMMUNITY-FEATURE-ROADMAP.md): approved additions and current validation status.
 - [UI/UX review](docs/UI-UX-REVIEW.md): fixes, completed human acceptance and the final security remediation gates.
 - [Custom domain ownership](docs/CUSTOM-DOMAINS.md): DNS proof, client compatibility and recovery for new claims.
-- [Upstream PR #1046](https://github.com/thedevs-network/kutt/pull/1046): submitted changes; still awaiting upstream review/merge at the status date above.
+- [Upstream PR #1046](https://github.com/thedevs-network/kutt/pull/1046): still at the earlier contribution head `e0ad948`; the expanded contribution has passing temporary-branch CI but has not updated the actual PR.
 
 SQLite is the fully exercised database engine. PostgreSQL 17 and MySQL 8.4 have
 targeted security/concurrency tests; MariaDB remains configuration-only. These
@@ -147,8 +135,9 @@ whose data you intend to keep.
 
 ### Published images and alternative examples
 
-Fork images are published as
-`ghcr.io/robinmjd/kutt:v3.2.6-sr94.49`. For an image-based deployment, replace
+The last fully closed fork release image is
+`ghcr.io/robinmjd/kutt:v3.2.6-sr94.49`; newer candidate tags do not imply final
+acceptance. For an image-based deployment, replace
 the Compose service's `build` section with an `image` reference, retaining its
 environment and persistent volumes. Pin the tested image digest in production.
 The upstream `kutt/kutt` Docker Hub image does **not** contain these fork changes.

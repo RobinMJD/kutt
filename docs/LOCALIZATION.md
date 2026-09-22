@@ -15,6 +15,13 @@ not establish a completed rollout.
 
 ## Catalogs And Loading
 
+As of source `v3.2.6-sr94.57`, unchanged by the `.58` UI correction, English,
+French and Spanish each contain **1,519**
+stable keys with identical key sets and placeholder names/multiplicities. English
+remains the default. Older counts in the integration history describe their dated
+snapshots, not the current catalog. Structural parity is not a substitute for
+translation-quality review.
+
 - `locales/languages.json` is the allowlisted locale-to-native-name registry.
 - `locales/en.json`, `fr.json` and `es.json` contain flat, stable message keys.
 - `server/i18n-catalogs.js` loads once at startup and rejects invalid registrations,
@@ -187,11 +194,47 @@ custom layouts remain separate acceptance surfaces. Use
 `sh tests/browser-i18n.sh IMAGE` to start and remove a guarded disposable container automatically, with
 `NODE_BINARY` and `PLAYWRIGHT_MODULE` overrides when needed.
 
+## Copy-Only .57 Follow-Up
+
+The `.57` candidate changed 16 reviewed values: 15 Spanish and one French.
+Selected Spanish management confirmations, moderation feedback and the
+disabled-editor sorting hint now use formal address consistently. Moderation
+errors refer to an affected entry rather than ambiguously calling it a link
+destination. French/Spanish geography copy states that percentages use all
+recorded visits in the active report, including visits without a mapped country.
+English text, stable keys, escaped placeholders, machine identifiers, status
+codes and application logic are unchanged.
+
+`tests/i18n.cjs` pins the reviewed wording and nonrecursive escaped interpolation;
+`tests/i18n-community.cjs` checks EN/FR/ES errors under both API prefixes and native
+HTML pages. The old Spanish confirmation fails the new assertion; the corrected
+catalogs pass parity, formatter/plural/mail/concurrent-locale and HTTP checks.
+Existing local browser suites passed 18 geography light/dark layouts and
+moderation/sorting in all three languages at 1440/390/320. French/Spanish compact
+screenshots were reviewed for readable wrapping. Private focused proof is under
+`Work/kutt-community-20260922/copy57-proof`.
+
+Main/tag/contribution and Shortcut CI passed for `.57`. Exact-wrapper regression
+and candidate writable restore passed, and `.57` is deployed healthy with zero
+restarts. Its fresh public community run passed 18 language/theme/width layouts
+with QR decoding, geography denominator assertions and screenshot review, without
+JavaScript/CSP/network errors. Its C16 smoke passed three EN/FR/ES dark/390 layouts,
+retaining every per-layout workflow assertion; Spanish analytics and the earlier
+French confirmation screenshot were reviewed. Full public C16 matrices belong to
+verified candidate `.56`, not `.57`; interrupted-run evidence stays in the ledger.
+Broader `.57` public API/real OIDC, post-change health/lab and writable recovery
+also passed. The confirmed analytics export-contrast defect requires a narrow
+`.58` HTML/CSS correction, with no new or changed translations. Its focused local
+18-layout contrast/download checks passed, but `.58` CI, deployment, public,
+recovery and final publication gates remain pending in
+[the release checklist](COMMUNITY-FEATURE-ROADMAP.md#candidate-58-analytics-export-contrast).
+This is not a claim that `.57` has passed a full public C16 matrix.
+
 ## Integration History
 
 The following dated checks describe isolated integration checkpoints, not the
 current release version or deployment state. Their image names, package versions
-and catalog counts are historical. Current combined `.49` acceptance is tracked
+and catalog counts are historical. Initial `.49` acceptance is tracked
 in the delivery ledger and release evidence, rather than inferred from these runs.
 
 ### Release 46 Integration
