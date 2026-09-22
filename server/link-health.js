@@ -9,6 +9,7 @@ const iso = value => value == null ? null : new Date(Number(value)).toISOString(
 const fail = (message, status = 400) => { throw new CustomError(message, status); };
 const sensitive = /(?:token|password|secret|signature|credential|api[_-]?key|authorization|^code$|^state$)/i;
 const actions = {
+  DESTINATION_POLICY_DENIED: "destination_policy.denied",
   OK: "messages.no_action_needed", REDIRECT: "messages.review_the_destination_redirect_its_final_page_was_not_checked",
   ACCESS_RESTRICTED: "messages.check_destination_authentication_or_bot_restrictions_no_credentials_were_sent",
   HEAD_UNSUPPORTED: "messages.the_destination_does_not_support_head_verify_it_manually_no_get",
@@ -35,6 +36,7 @@ async function currentTargets(link, db = knex) { try { return await targets(link
 function probeURL(value) {
   // Fragments never reach HTTP. Never send embedded credentials or bearer-like
   // query parameters to a background destination request.
+  if (!require("./destination-policy").current().allows(value)) throw Object.assign(new Error("DESTINATION_POLICY_DENIED"), { code: "DESTINATION_POLICY_DENIED" });
   if (typeof value !== "string" || /[\s\\\x00-\x1f\x7f]/.test(value)) throw Object.assign(new Error("URL_DENIED"), { code: "URL_DENIED" });
   let url; try { url = new URL(value); } catch { throw Object.assign(new Error("URL_DENIED"), { code: "URL_DENIED" }); }
   if ([...url.searchParams.keys()].some(key => sensitive.test(key))) throw Object.assign(new Error("URL_DENIED"), { code: "URL_DENIED" });

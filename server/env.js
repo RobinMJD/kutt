@@ -1,6 +1,11 @@
 require("dotenv").config();
 const { cleanEnv, num, str, bool, makeValidator } = require("envalid");
 const proxyTrust = makeValidator(require("./proxy-trust"));
+const strictBoolean = makeValidator(value => {
+  if (value === "true") return true;
+  if (value === "false") return false;
+  throw new Error("Expected true or false");
+});
 
 const supportedDBClients = [
   "pg",
@@ -34,6 +39,7 @@ const spec = {
   LINK_LENGTH: num({ default: 6 }),
   LINK_CUSTOM_ALPHABET: str({ default: "abcdefghkmnpqrstuvwxyzABCDEFGHKLMNPQRSTUVWXYZ23456789" }),
   TRUST_PROXY: proxyTrust({ default: true }),
+  CSP_MODE: str({ choices: ["off", "report-only", "enforce"], default: "off" }),
   DB_CLIENT: str({ choices: supportedDBClients, default: "better-sqlite3" }),
   DB_FILENAME: str({ default: "db/data" }),
   DB_HOST: str({ default: "localhost" }),
@@ -81,7 +87,13 @@ const spec = {
   OIDC_BUTTON_TEXT: str({ default: "Log in with OIDC" }),
   OIDC_ALLOW_REGISTRATION: bool({ default: true }),
   OIDC_SESSION_MAX_SECONDS: num({ default: 3600, choices: [300, 900, 1800, 3600, 14400, 86400] }),
+  OIDC_ADMIN_MAPPING_ENABLED: strictBoolean({ default: false }),
+  OIDC_ADMIN_CLAIM: str({ default: "" }),
+  OIDC_ADMIN_VALUES: str({ default: "" }),
+  OIDC_BREAK_GLASS_USER_ID: str({ default: "" }),
+  OIDC_ADMIN_MAX_AGE_SECONDS: num({ default: 300, choices: [300, 900, 1800, 3600] }),
   ENABLE_RATE_LIMIT: bool({ default: false }),
+  DESTINATION_ALLOWED_HOSTS: str({ default: "" }),
   REPORT_EMAIL: str({ default: "" }),
   CONTACT_EMAIL: str({ default: "" }),
   NODE_APP_INSTANCE: num({ default: 0 }),
@@ -96,7 +108,9 @@ if (process.env.JWT_SECRET === "") delete process.env.JWT_SECRET;
 
 const env = cleanEnv(process.env, spec);
 require("./transport-tls").validate(env);
+require("./destination-policy").compile(env.DESTINATION_ALLOWED_HOSTS);
 require("./metrics").validate(env);
 require("./management-origin").parse(env.MANAGEMENT_ORIGIN, env);
+require("./oidc-role-config").parse(env);
 
 module.exports = env;

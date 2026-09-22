@@ -18,7 +18,9 @@ async function preview(req, res) {
   const link = await routing.owned(req);
   if (!req.body || Object.keys(req.body).some(key => !["rules", "context"].includes(key))) throw new CustomError(i18n.t("messages.invalid_preview_field"), 400);
   const rules = req.body.rules === undefined ? (await routing.policy(link.id)).rules : routing.normalize(req.body.rules);
-  res.json({ ...routing.choose(rules, routing.previewContext(req.body.context), link.target), preview: true });
+  const selected = routing.choose(rules, routing.previewContext(req.body.context), link.target);
+  require("../destination-policy").requireAllowed(selected.target);
+  res.json({ ...selected, preview: true });
 }
 async function page(req, res) {
   const link = await routing.owned(req);

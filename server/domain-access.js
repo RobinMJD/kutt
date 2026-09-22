@@ -84,7 +84,7 @@ async function manage(db, req, id) {
   const domain = await db("domains").where({ uuid: id }).first();
   const actor = await db("users").where({ id: req.user.id, verified: true, banned: false }).first();
   if (!actor || Number(actor.auth_version) !== Number(req.user.auth_version)) fail("messages.sign_in_again", 401);
-  const admin = !req.apiToken && actor.role === require("./consts").ROLES.ADMIN;
+  const admin = !req.apiToken && await require("./oidc-roles").allowsAdmin(db, actor);
   if (!domain || !admin && domain.user_id !== actor.id) fail("messages.domain_was_not_found", 404);
   if (req.apiToken) await request(db, req, domain.id, "domains:share");
   return domain;

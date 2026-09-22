@@ -42,8 +42,7 @@
             hx-indicator="#login-signup" 
             hx-swap="outerHTML"
             hx-sync="closest form"
-            hx-on:htmx:before-request="htmx.addClass('#login-signup', 'signup')"
-            hx-on:htmx:after-request="htmx.removeClass('#login-signup', 'signup')"
+            data-ui-signup
           >
               <span>{{> icons/new_user}}</span>
               <span>{{> icons/spinner}}</span>

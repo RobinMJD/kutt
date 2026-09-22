@@ -12,28 +12,36 @@ const fail = (code, status = 401) => {
 };
 const string = (value, max = 255) => typeof value === "string" && value.length > 0 && value.length <= max;
 
-async function identity(issuer, claims, userinfo) {
+async function identity(issuer, claims, userinfo, verifiedToken) {
   if (!string(claims.sub) || claims.iss !== issuer || userinfo.sub !== claims.sub ||
       (claims.sid !== undefined && !string(claims.sid))) fail("OIDC_IDENTITY_INVALID");
   const id = identityKey(issuer, claims.sub);
-  return knex.transaction(async db => {
+  const roles = require("./oidc-roles");
+  const result = await knex.transaction(async db => {
+    await roles.lock(db);
     const existing = await db("oidc_identities").where({ id }).first();
     if (existing) {
       const user = await db("users").where({ id: existing.user_id }).first();
       if (!user || user.banned || !user.verified) fail("OIDC_ACCOUNT_DENIED");
-      return { user, id };
+      return { ...await roles.apply(db, user, id, claims, verifiedToken), id };
     }
     const email = userinfo[env.OIDC_EMAIL_CLAIM];
     if (userinfo.email_verified !== true || !string(email) || !require("validator").isEmail(email)) fail("OIDC_VERIFIED_EMAIL_REQUIRED");
     // Email may be reassigned at the provider. Never auto-link an existing account.
     if (await db("users").whereRaw("lower(email) = ?", [email.toLowerCase()]).first()) fail("OIDC_BINDING_REQUIRED");
     if (!env.OIDC_ALLOW_REGISTRATION) fail("OIDC_REGISTRATION_DISABLED");
+    if (roles.policy.enabled && require("./oidc-role-config").decision(roles.policy, claims) === null) fail("OIDC_ROLE_CLAIM_INVALID");
     const password = await bcrypt.hash(randomBytes(48).toString("hex"), 12);
     await db("users").insert({ email, password, role: "USER", verified: true });
     const user = await db("users").where({ email }).first();
     await db("oidc_identities").insert({ id, issuer, subject: claims.sub, user_id: user.id, created_at: Date.now() });
-    return { user, id };
+    const mapped = await roles.apply(db, user, id, claims, verifiedToken);
+    if (mapped.error) fail(mapped.error); // Do not provision an account from an unusable assertion.
+    return { ...mapped, id };
   });
+  // A malformed signed role claim must commit an existing account's demotion.
+  if (result.error) fail(result.error);
+  return result;
 }
 
 async function validSession(user, payload) {
@@ -61,11 +69,15 @@ async function recordLogout(payload) {
       typeof payload.events[event] !== "object" || Array.isArray(payload.events[event]) ||
       Object.keys(payload.events[event]).length) fail("OIDC_LOGOUT_INVALID", 400);
   await knex.transaction(async db => {
+    await require("./oidc-roles").lock(db);
     await db("oidc_logout_events").where("expires_at", "<=", Date.now()).delete();
+    const id = hash(payload.iss + "\0" + payload.jti);
+    if (await db("oidc_logout_events").where({ id }).first()) return;
     await db("oidc_logout_events").insert({
-      id: hash(payload.iss + "\0" + payload.jti), issuer: payload.iss, subject: payload.sub || null, sid: payload.sid || null,
+      id, issuer: payload.iss, subject: payload.sub || null, sid: payload.sid || null,
       received_at: Date.now(), expires_at: Date.now() + 7 * 86400000
     }).onConflict("id").ignore();
+    await require("./oidc-roles").logout(db, payload);
   });
 }
 

@@ -22,7 +22,7 @@
               class="action delete" 
               aria-label="{{t 'ui.delete_domain_value' value1=address}}"
               title="{{t 'ui.delete_domain_2'}}"
-              hx-on::before-request='openDialog("domain-dialog", null, this)'
+              data-ui-open-dialog="domain-dialog"
               hx-get="/confirm-domain-delete" 
               hx-target="#domain-dialog .content-wrapper" 
               hx-indicator="#domain-dialog" 

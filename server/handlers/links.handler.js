@@ -173,6 +173,7 @@ async function edit(req, res) {
   });
 
   if (!link) {
+    res.set("Cache-Control", "no-store");
     throw new CustomError(i18n.t("messages.link_was_not_found"));
   }
 
@@ -436,6 +437,8 @@ async function redirect(req, res, next) {
   // 3. When no link, if has domain redirect to domain's homepage
   // otherwise redirect to 404
   if (!link) {
+    res.set("Cache-Control", "no-store");
+    if (domain?.homepage) require("../destination-policy").requireAllowed(domain.homepage, 410);
     return res.redirect(domain?.homepage || "/404");
   }
 
@@ -589,6 +592,8 @@ async function redirectCustomDomainHomepage(req, res, next) {
   ) {
     const domain = await query.domain.find({ address: host });
     if (domain?.homepage) {
+      res.set("Cache-Control", "no-store");
+      require("../destination-policy").requireAllowed(domain.homepage, 410);
       res.redirect(302, domain.homepage);
       return;
     }

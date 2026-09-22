@@ -44,7 +44,8 @@ async function administrator(req, db = knex) {
       !req.user || req.authInfo?.sub !== req.user.id || !Number.isFinite(req.authInfo?.exp) ||
       req.authInfo.exp * 1000 <= Date.now()) fail(i18n.t("messages.an_administrator_browser_session_is_required"), 403);
   const user = await db("users").where({ id: req.user.id, role: "ADMIN", verified: true, banned: false }).first();
-  if (!user || Number(user.auth_version || 0) !== Number(req.user.auth_version || 0)) fail(i18n.t("messages.administrator_access_is_no_longer_available"), 403);
+  if (!user || Number(user.auth_version || 0) !== Number(req.user.auth_version || 0) ||
+      !await require("./oidc-roles").allowsAdmin(db, user)) fail(i18n.t("messages.administrator_access_is_no_longer_available"), 403);
 }
 async function retention(db = knex) {
   const row = await db("analytics_retention").where({ id: 1 }).first();

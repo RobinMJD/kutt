@@ -111,13 +111,14 @@ async function resolve(value) {
       (row.expires_at != null && Number(row.expires_at) <= Date.now())) return null;
   if (value.length === 50 && row.domain_scope === "all") return null;
   // Bypass the user cache so bans and verification changes apply immediately.
-  const user = await knex("users").where({ "users.id": row.user_id })
+  const original = await knex("users").where({ "users.id": row.user_id })
     .whereExists(db => db.select("api_tokens.id").from("api_tokens")
       .where({ "api_tokens.id": row.id, "api_tokens.token_hash": hash(value) }).whereNull("api_tokens.revoked_at")
       .whereColumn("api_tokens.user_id", "users.id")
       .where(expiry => expiry.whereNull("api_tokens.expires_at").orWhere("api_tokens.expires_at", ">", Date.now())))
     .first();
-  if (!user || user.banned || !user.verified) return null;
+  const user = await require("./oidc-roles").fresh(original);
+  if (!user || user.banned || !user.verified || Number(user.auth_version) !== Number(original.auth_version)) return null;
   let domainId;
   if (row.domain_scope === "default") domainId = null;
   else if (row.domain_scope !== "all") {

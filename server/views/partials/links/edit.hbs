@@ -83,13 +83,7 @@
       <div>
         <button 
           type="button"
-          onclick="
-            const tr = closest('tr');
-            if (!tr) return;
-            tr.classList.remove('show');
-            tr.removeChild(tr.querySelector('.content'));
-            document.getElementById('edit-opener-{{id}}')?.focus();
-          "
+          data-ui-edit-close="{{id}}"
         >
           {{t "ui.close"}}
         </button>

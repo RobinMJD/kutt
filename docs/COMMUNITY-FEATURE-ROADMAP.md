@@ -33,12 +33,12 @@ automatic domain renaming, historical analytics rewriting or data deletion.
 | C12 | Stable allowlisted sorting in personal, admin and workspace tables/API | Complete | `.44`; evidence below |
 | C13 | Branded QR logos embedded in validated PNG/SVG exports | In progress | Isolated implementation and decoder validation; release gates pending |
 | C14 | Accessible dark/system/light theme | Complete | `.47`; full source/wrapper regression, 90 layouts, public theme selection, WAF/SSO and backup/restore gates passed; evidence below |
-| C15 | Optional explicit OIDC role mapping and safe demotion/recovery | Pending | Pending |
+| C15 | Optional explicit OIDC role mapping and safe demotion/recovery | Implemented; release gates pending | Integrated; see `OIDC-SECURITY.md` |
 | C16 | Optional separate management hostname and explicit shared-domain grants | Pending | Pending |
 | C17 | Optional consistent destination-domain policy | In progress | Isolated implementation; 18 translated desktop/mobile workflows passed; combined regression/publication/deployment pending |
-| C18 | Private authenticated performance metrics with bounded labels | Implemented; release gates pending | Candidate `.48`; focused and full isolated regression passed; publication/deployment pending |
+| C18 | Private authenticated performance metrics with bounded labels | Complete | `.48`; source/wrapper/CI, private Prometheus scrapes, WAF/SSO, backup/restore and stable health gates passed |
 | C19 | Safe dotted aliases with reserved-path protections | Complete | `.46`; [rules and tests](LINK-ALIASES.md), evidence below |
-| C20 | Accessible interactive geography chart and text alternative | Pending | Pending |
+| C20 | Accessible interactive geography chart and text alternative | Implemented; release gates pending | Integrated; see `ANALYTICS.md` |
 | C21 | Profile visit aggregation; safely batch only where warranted | In progress | Synthetic profile identified hourly SQLite lookup; preserving transactions and testing expression index, with SQL-engine compatibility gates |
 
 ## Evidence: C14
@@ -275,6 +275,19 @@ review complete while required work remains.
 
 ## Evidence: C18
 
+- Deployed `.48` (`cbb8473`); main/tag CI `35682493053` / `35682492877`,
+  exact-wrapper regression, valid Grype scan (zero Critical/High), public feature
+  regression, real Authentik-signed logout/replay and lab validation passed.
+  Private Prometheus scrapes passed twice with the warning inactive. Initial
+  transient public-probe failures are retained; final two samples 65s apart
+  passed without threshold changes, with three fresh probes, zero restarts,
+  scoped alerts, failed units or unhealthy containers. Unrelated lab alerts
+  remain outside this acceptance claim.
+- Pre local/NAS `6ba7284b` / `a68a6284` (04:02:15 UTC); post `6e4d51a3` /
+  `175a373f` (04:29:57 UTC, September 22): 69 files byte-restored, credentials
+  compared without output, exact-image writable SQLite recovery passed.
+  Wrapper `sha256:ce3a552eec48c681dd6fd6649c9f0b855d4ab8e0c82b383c668a4fa456f9cc2a`.
+  No USB SSD claim. Private report `2026-09-22-kutt-community-48`.
 - Separate opt-in bearer-authenticated listener, no public application route,
   bounded route/method/status labels, cumulative duration histograms and process
   gauges. Missing credentials, bad bind/port/worker configuration and listener
@@ -313,3 +326,50 @@ review complete while required work remains.
   remain English; its downloadable guides are localized without altering signed
   bytes. Publication, exact-wrapper deployment/recovery and live language
   acceptance remain pending. See [localization](LOCALIZATION.md).
+
+## Evidence: C15
+
+- Mapping is default-off, uses only asymmetrically verified ID-token claims and
+  exact bounded configuration, and retains issuer/subject identity. Enabling or
+  changing policy revokes managed credentials; missing/nonmatching claims demote,
+  malformed claims deny login and commit existing-account demotion. Grant expiry
+  is bounded by signed issuance/expiry and the configured maximum age.
+- An explicitly configured, verified local recovery administrator is required
+  and protected against binding, ban and deletion. Mapped administrators cannot
+  create unmanaged ADMIN accounts. Sessions, scoped/legacy API keys, current-role
+  checks and open event streams observe revocation. Used migration state refuses
+  downgrade; disabling mapping does not restore removed privileges.
+- Full offline combined regression passed, including legacy-off OIDC behavior.
+  Real code/PKCE fixtures passed with RS256, PS256, ES256 and EdDSA. PostgreSQL and
+  MySQL checks passed migration, role transitions, revocation races and recovery
+  protections. Final canonical recovery-ID template formatting was additionally
+  checked in all three locales and the focused RSA suite.
+- Chromium passed 18 English/French/Spanish light/dark layouts at 1440/390/320px,
+  real local-login clicks and native locale-form Origin/303 checks, with screenshot
+  review, no overflow, no external requests and no JavaScript errors. The read-only
+  diagnostics reveal neither tokens nor configured group values.
+- Parent checkout, QR files and package `.47` are unchanged. Real provider/WAF
+  claims and logout, operator-tested recovery credentials, backup/restore, native
+  Safari/Firefox, physical assistive technology and custom templates remain
+  separate acceptance gates. See [mapping and recovery](OIDC-SECURITY.md#optional-administrator-mapping-c15).
+
+## Evidence: C20
+
+- Authenticated range analytics reuses the 177 bundled country shapes and the
+  existing authorized country aggregates. No new API, external map service,
+  visitor-location lookup or analytics write was added. Legacy stats is unchanged.
+- Country details support hover, click, roving keyboard focus and a native
+  selector, with a linked paginated country table. Counts and report-total shares
+  are localized in English/French/Spanish; names use `Intl.DisplayNames`.
+  Unknown/unmapped values stay in the table. Selection never changes filters.
+- Full combined container regression, focused geography/analytics tests and
+  catalog/template checks passed. Chromium passed 18 light/dark layouts across
+  1440/390/320px and all three locales, including stale/empty/error states,
+  keyboard interaction, hostile text, zero external traffic and unchanged visits.
+  The existing English analytics browser filter/export workflow passed too.
+- Screenshot review and native Tab tests found and corrected inherited masthead
+  spacing and an implicit extra SVG tab stop. Geometry, API/routes, QR files and
+  package `.47` remain unchanged. No parent checkout files were edited.
+- Physical devices, Safari/Firefox, assistive technology, custom layouts and
+  live release/deployment acceptance remain separate gates. See
+  [analytics geography](ANALYTICS.md#geography-c20).

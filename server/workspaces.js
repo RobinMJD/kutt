@@ -225,6 +225,7 @@ async function changeLink(userId, id, action, linkId, input, actor, request) {
   // Reuse import validation and the existing ban checks; no destination fetch.
   if (input.target !== undefined) {
     const checked = require("./link-transfer").normalized({ target: input.target, address: "validation-only" });
+    require("./destination-policy").requireAllowed(checked.target);
     const host = utils.removeWww(new URL(checked.target).hostname);
     await require("./handlers/validators.handler").bannedDomain(host);
     await require("./handlers/validators.handler").bannedHost(host);

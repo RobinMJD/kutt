@@ -19,8 +19,8 @@
     input changed from:[name='role'],
     input changed from:[name='domains'],
     input changed from:[name='links']"
-  hx-on:htmx:after-on-load="updateLinksNav()"
-  hx-on:htmx:after-settle="onSearchInputLoad();"
+  data-ui-table-nav
+  data-ui-table-search
 >
   {{> admin/users/thead}}
   {{> admin/users/tbody}}

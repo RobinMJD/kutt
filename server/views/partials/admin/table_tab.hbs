@@ -18,7 +18,7 @@
         hx-indicator="closest table"
         {{#ifEquals title 'links'}}
           class="active" aria-selected="true" tabindex="0"
-          hx-on:htmx:before-request="event.preventDefault()"
+          data-ui-no-request
         {{else}}
           aria-selected="false" tabindex="-1"
         {{/ifEquals}}
@@ -37,7 +37,7 @@
         hx-indicator="closest table"
         {{#ifEquals title 'users'}}
           class="active" aria-selected="true" tabindex="0"
-          hx-on:htmx:before-request="event.preventDefault()"
+          data-ui-no-request
         {{else}}
           aria-selected="false" tabindex="-1"
         {{/ifEquals}}
@@ -56,7 +56,7 @@
         hx-indicator="closest table"
         {{#ifEquals title 'domains'}}
           class="active" aria-selected="true" tabindex="0"
-          hx-on:htmx:before-request="event.preventDefault()"
+          data-ui-no-request
         {{else}}
           aria-selected="false" tabindex="-1"
         {{/ifEquals}}

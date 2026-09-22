@@ -177,6 +177,7 @@ an old full environment table from another Kutt version. Important settings:
 | `OIDC_ALLOW_REGISTRATION` | Controls new OIDC identities, not local signup; defaults to `true` |
 | `OIDC_SESSION_MAX_SECONDS` | Absolute OIDC session lifetime; defaults to 3,600 seconds |
 | `TRUST_PROXY` | Examples use `false`; the application's legacy default is `true`. Only trust proxies that are the exclusive backend path and replace untrusted forwarding headers |
+| `CSP_MODE` | Optional `off` (default), `report-only` or `enforce`; see [nonce policy and customization compatibility](docs/CSP.md) before enabling |
 | `DB_*`, `REDIS_*` | Must match the selected topology, persistent paths and existing credentials |
 | `ENABLE_RATE_LIMIT` | Optional management API limiting; protected-link password and report throttles remain enabled independently |
 | `CUSTOM_DOMAIN_USE_HTTPS` | Controls custom-domain link URLs; it does not provision DNS, TLS certificates or proxy routes |

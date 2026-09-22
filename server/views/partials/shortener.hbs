@@ -5,7 +5,7 @@
         <button 
           type="button"
           aria-label="{{t 'ui.copy'}}"
-          hx-on:click="handleShortURLCopyLink(this);" 
+          data-ui-copy
           data-url="{{url}}"
         >
         {{> icons/copy}}
@@ -13,7 +13,7 @@
         {{> icons/check}}
       </div>
       <h1 class="link"><button type="button" class="link-button" aria-label="{{t 'ui.copy_value' value1=link}}" title="{{t 'ui.copy_short_link'}}"
-        hx-on:click="handleShortURLCopyLink(this);" 
+        data-ui-copy
         data-url="{{url}}"
       >
         {{link}}
@@ -57,7 +57,7 @@
       <input 
         name="show_advanced" 
         type="checkbox" 
-        hx-on:change="htmx.toggleClass('#advanced-options', 'hidden')"
+        data-ui-advanced
         {{#if show_advanced}}checked="true"{{/if}}
       />
       {{t "ui.show_advanced_options"}}
@@ -70,11 +70,7 @@
             id="domain" 
             name="domain" 
             hx-preserve="true" 
-            hx-on:change="
-              const elm = document.querySelector('#customurl-label span');
-              if (!elm) return;
-              elm.textContent = event.target.value + '/';
-            "
+            data-ui-domain
           >
             <option value={{default_domain}}>{{default_domain}}</option>
             {{#each linkDomains}}

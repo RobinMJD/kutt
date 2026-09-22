@@ -1,5 +1,14 @@
 # Container smoke test
 
+Geography uses `KUTT_TEST_ONLY=geography` and the full container suite.
+`sh tests/browser-geography.sh IMAGE` checks the existing analytics contract,
+bundled SVG, count/share details, pointer/keyboard/native country selection,
+unknown and unmapped rows, table pages, filter preservation, stale/empty/error
+states, no external requests and zero analytics writes. Run with
+`KUTT_TEST_LOCALE=en|fr|es` for six light/dark layouts per locale at
+1440/390/320px. See [analytics geography](../docs/ANALYTICS.md#geography-c20)
+for fixture safety, API data usage and coverage limits.
+
 Appearance preferences are covered by `KUTT_TEST_ONLY=theme` and the full suite.
 `sh tests/browser-theme.sh IMAGE` checks System/Light/Dark, browser storage and
 cross-tab behavior, real rendered contrast, chart colors/pixels and QR print
@@ -210,6 +219,21 @@ optimistic concurrency, atomic rollback and guarded schema downgrade.
 revision recovery, clear/fallback, layout and browser errors.
 
 ## QR validation
+
+Branded exports add `qr-branding.cjs` to the full offline suite and the focused
+`KUTT_TEST_ONLY=qr-branding` selector. `qr-logo-unit.cjs --decode` uses the existing
+test-only jsQR dependency for actual raster decoding across size/alias cases;
+run with disposable app configuration (including SQLite under `/tmp`) and no
+real `.env`. `QR_DECODER_MODULE` may specify an installed test decoder.
+`NODE_BINARY`, `PLAYWRIGHT_MODULE` and `QR_DECODER_MODULE` can select host test
+runtimes for `sh tests/browser-qr-branding.sh IMAGE`. This runner creates/removes
+only its own fresh loopback fixture; evidence stays outside the checkout.
+`sh tests/browser-qr-branding-locales.sh IMAGE` runs the focused QR gate in
+EN/FR/ES and light/dark at 1440/390/320px, including contrast/overflow and
+localized browser/server error recovery. `qr-branding-i18n.cjs` additionally
+checks localized parser/auth/validation errors, concurrent cookie negotiation,
+source/catalog coverage and unchanged plain/branded artifact bytes.
+See [QR branding](../docs/QR-BRANDING.md) for limits and separate physical gates.
 
 `qr.cjs` runs in the standard offline hardened-image suite. For independent
 browser decoding install the isolated test-only dependency with
@@ -440,3 +464,33 @@ CI runs the same helper with isolated, version-pinned Playwright tooling.
 `KUTT_TEST_ONLY=metrics` for configuration/listener/authentication, bounded-label
 privacy, timing/counter, secret-file rotation, restart and public-route isolation
 checks. Only disposable loopback listeners and generated credentials are used.
+
+## Optional CSP
+
+`csp.cjs` is included in the full offline container suite; `KUTT_TEST_ONLY=csp`
+selects the focused mode/nonce/header/HTTP boundary gate. Configuration tests
+reject unknown and policy-valued modes. Source tests reject bundled executable
+attributes and unnonced/inline scripts; concurrent templates cannot override or
+share request nonces. APIs, fragments, public redirects and QR SVG retain their
+existing headers. Locale and theme catalogs are unchanged.
+
+`sh tests/browser-csp.sh IMAGE` creates a disposable loopback fixture and checks
+enforced login, copy, paging/edit, dialogs, chart pixels/map, settings, native
+locale forms and protected-link navigation in EN/FR/ES, light/dark, 1440/390/320px.
+It also verifies blocked inline/wrong-nonce/external scripts, event attributes and
+eval, with a trusted nonce control. Eval executes from a network-loaded script,
+not Playwright's privileged Runtime.evaluate stack. Set
+`KUTT_TEST_CSP_MODE=report-only` for a nonblocking diagnostic/control run.
+
+Pass `dialogs` or `list-sorting` as the runner's second argument for the existing
+modal, pending mutation and delayed list/editor regression suites under enforced
+CSP. Additional selections `logout-navigation`, `validation` and `domain-proof`
+cover revoked sessions, form failures/drafts and the full DNS ownership flow.
+`sh tests/browser-csp-oidc.sh IMAGE` checks enforced SSO-only outage/retry and
+top-level provider cancellation with a synthetic loopback development provider.
+The runner enables only the guarded offline domain-proof fixture, never
+real DNS. `KUTT_TEST_CSP_MODE=enforce sh tests/browser-qr-branding-locales.sh IMAGE`
+runs all 18 QR combinations with actual decoding, clipboard/print/races/cleanup.
+The QR harness reads captured Blob objects directly; it does not add a synthetic
+`fetch(blob:)` requirement to the production policy. See [CSP](../docs/CSP.md) for
+the bounded policy, custom-template compatibility and deployment limitations.

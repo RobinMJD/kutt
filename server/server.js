@@ -16,6 +16,7 @@ const links = require("./handlers/links.handler");
 const routes = require("./routes");
 const utils = require("./utils");
 const i18n = require("./i18n");
+const csp = require("./csp");
 
 
 // run the cron jobs
@@ -40,6 +41,18 @@ const management = require("./management-origin");
 app.use(management.boundary);
 app.use(cookieParser());
 app.use(i18n.middleware);
+app.use(csp.middleware(env.CSP_MODE));
+// Do not send ephemeral logo payloads to the global body-parser error logger.
+const qrJSON = express.json();
+app.use(/^\/api\/(?:v2\/)?links\/[^/]+\/qr\/?$/i, (req, res, next) => {
+  if (req.method !== "POST") return next();
+  res.set("Cache-Control", "private, no-store");
+  if (!req.is("application/json")) return res.status(400).json({ error: i18n.t("qr.json_required") });
+  qrJSON(req, res, error => {
+    if (!error) return next();
+    res.status(error.status === 413 ? 413 : 400).json({ error: i18n.t("qr.invalid_json") });
+  });
+});
 // Bounded transfer payloads only; retain default limits on every other route.
 app.use(/^\/api\/(?:v2\/)?transfer\/(?:preview|commit)\/?$/i, express.json({ limit: "1mb" }));
 app.use(express.json());
@@ -74,6 +87,7 @@ app.set("views", [
 ]);
 const templatesReady = utils.registerHandlebarsHelpers();
 i18n.register(hbs);
+csp.register(hbs);
 i18n.assets(app, env.SITE_NAME);
 app.post("/language", i18n.change);
 
@@ -96,11 +110,11 @@ app.get("*", renders.notFound);
 // handle errors coming from above routes
 app.use(helpers.error);
   
-templatesReady.then(() => management.validateDatabase()).then(() => metrics.start()).then(() => {
+templatesReady.then(() => management.validateDatabase()).then(() => require("./oidc-roles").initialize()).then(() => metrics.start()).then(() => {
   app.listen(env.PORT, () => {
     console.log(`> Ready on http://localhost:${env.PORT}`);
   });
 }).catch(() => {
-  console.error("Application initialization failed. Check templates and the private metrics listener configuration.");
+  console.error("Application initialization failed. Check templates, private metrics configuration and, when configured, the protected local OIDC recovery administrator.");
   process.exit(1);
 });

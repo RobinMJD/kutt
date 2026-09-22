@@ -42,6 +42,7 @@ function allows(config, suffix) {
   return !suffix || config.path_prefixes.some(prefix => suffix === prefix || suffix.startsWith(prefix + "/"));
 }
 function apply(config, destination, query = "", suffix = "") {
+  require("./destination-policy").requireAllowed(destination);
   if (!allows(config, suffix)) fail(i18n.t("messages.this_path_is_not_enabled_for_this_short_link"), 404);
   if (!config.query_keys.length && !suffix) return destination;
   // URL is only manipulated locally. No headers, cookies or HTTP requests are forwarded.
@@ -72,7 +73,9 @@ async function resolve(req, link, suppliedQuery, suppliedPath) {
     const match = await lookup(link.address + "/" + suppliedPath, link.domain_id);
     if (!match || match.link.uuid !== link.uuid) fail(i18n.t("messages.the_short_path_belongs_to_another_link"), 404);
   }
-  return apply(config, await routing.resolve(req, link, suppliedQuery),
+  const destination = await routing.resolve(req, link, suppliedQuery);
+  require("./destination-policy").requireAllowed(destination, 410);
+  return apply(config, destination,
     suppliedQuery === undefined ? new URL(req.originalUrl, "http://local.invalid").search : suppliedQuery,
     suppliedPath === undefined ? req.forwardPath || "" : suppliedPath);
 }
@@ -88,8 +91,12 @@ async function save(req) {
   return knex.transaction(async db => {
     const link = await routing.owned(req, db, true);
     if (config.query_keys.length || config.path_prefixes.length) {
+      require("./destination-policy").requireAllowed(link.target);
       routing.target(link.target);
-      for (const rule of (await routing.policy(link.id, db)).rules) routing.target(rule.target);
+      for (const rule of (await routing.policy(link.id, db)).rules) {
+        require("./destination-policy").requireAllowed(rule.target);
+        routing.target(rule.target);
+      }
     }
     const old = await db("link_forwarding").where({ link_id: link.id }).first();
     if (Number(old?.revision || 0) !== revision) fail(i18n.t("messages.forwarding_changed_elsewhere_reload_before_saving"), 409);

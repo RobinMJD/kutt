@@ -10,9 +10,9 @@
   <link rel="mask-icon" href="/images/icon.svg" color="blue" />
   <link rel="manifest" href="/locales/{{locale}}.webmanifest" />
   <meta name="theme-color" content="#f3f3f3" />
-  <script src="/scripts/theme.js"></script>
+  <script nonce="{{cspNonce}}" src="/scripts/theme.js"></script>
   <meta property="fb:app_id" content="123456789" />
-  <meta name="htmx-config" content='{"withCredentials":true}'>
+  <meta name="htmx-config" content='{"withCredentials":true,"allowEval":{{#if (cspEnforced)}}false{{else}}true{{/if}},"allowScriptTags":{{#if (cspEnforced)}}false{{else}}true{{/if}},"inlineStyleNonce":"{{cspNonce}}"{{#if (cspEnabled)}},"attributesToSettle":["class","width","height"]{{/if}} }'>
   <meta property="og:url" content="https://{{default_domain}}" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="{{site_name}}" />
@@ -38,21 +38,22 @@
     {{{body}}}
   </div>
 
-  <script src="/locales/i18next.js"></script>
-  <script src="/scripts/i18n-core.js"></script>
-  <script src="/locales/{{locale}}.js"></script>
+  <script nonce="{{cspNonce}}" src="/locales/i18next.js"></script>
+  <script nonce="{{cspNonce}}" src="/scripts/i18n-core.js"></script>
+  <script nonce="{{cspNonce}}" src="/locales/{{locale}}.js"></script>
   {{{block "scripts"}}}
-  <script src="/libs/htmx.min.js"></script>
-  <script src="/libs/qrcode.min.js"></script>
-  <script src="/scripts/focus.js"></script>
-  <script src="/scripts/validation.js"></script>
-  <script src="/scripts/dialogs.js"></script>
-  <script src="/scripts/copy.js"></script>
-  <script src="/scripts/token-secret.js"></script>
-  <script src="/scripts/responses.js"></script>
-  <script src="/scripts/main.js"></script>
-  <script src="/scripts/list-sorting.js"></script>
-  <script src="/scripts/campaign-url.js"></script>
-  <script src="/scripts/campaign.js"></script>
+  <script nonce="{{cspNonce}}" src="/libs/htmx.min.js"></script>
+  <script nonce="{{cspNonce}}" src="/libs/qrcode.min.js"></script>
+  <script nonce="{{cspNonce}}" src="/scripts/focus.js"></script>
+  <script nonce="{{cspNonce}}" src="/scripts/validation.js"></script>
+  <script nonce="{{cspNonce}}" src="/scripts/dialogs.js"></script>
+  <script nonce="{{cspNonce}}" src="/scripts/copy.js"></script>
+  <script nonce="{{cspNonce}}" src="/scripts/token-secret.js"></script>
+  <script nonce="{{cspNonce}}" src="/scripts/responses.js"></script>
+  <script nonce="{{cspNonce}}" src="/scripts/main.js"></script>
+  <script nonce="{{cspNonce}}" src="/scripts/ui-events.js"></script>
+  <script nonce="{{cspNonce}}" src="/scripts/list-sorting.js"></script>
+  <script nonce="{{cspNonce}}" src="/scripts/campaign-url.js"></script>
+  <script nonce="{{cspNonce}}" src="/scripts/campaign.js"></script>
 </body>
 </html>
