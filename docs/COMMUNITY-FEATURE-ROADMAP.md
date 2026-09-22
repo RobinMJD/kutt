@@ -99,6 +99,15 @@ sorting and appearance have additional dedicated matrices. Coverage includes
 320/390/1440px, EN/FR/ES and both themes where applicable; it is not a claim that
 every possible combination or physical browser/device was tested.
 
+The 1,519-key catalogs retain identical key and placeholder contracts. Reviewed
+copy uses formal Spanish management commands, distinguishes moderated entries
+from link destinations, and explains geography percentages naturally in French
+and Spanish without changing their denominator. `tests/i18n.cjs` pins these
+wording and escaped-interpolation contracts; `tests/i18n-community.cjs` checks
+localized JSON errors under both API prefixes and native HTML errors. The
+existing moderation, sorting and geography browser suites exercise the affected rendered surfaces,
+including compact confirmation text and wrapping percentage explanations.
+
 Passing source/CI checks do not certify live DNS, TLS, WAF, IdP admission, backup
 recovery, physical printing, native clipboard behavior or iPhone Shortcut
 execution. Revalidate the final reconciled commit; no upstream merge or completed

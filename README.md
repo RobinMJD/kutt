@@ -31,6 +31,12 @@ and Redis TLS, dotted aliases, interactive geography and indexed visit lookup.
 from independently adapted implementations; the [UI review](docs/UI-UX-REVIEW.md)
 describes browser workflows and remaining acceptance limits.
 
+The 1,519-key English/French/Spanish catalogs also include reviewed copy polish:
+formal Spanish management prompts, clearer moderation errors and natural
+French/Spanish geography percentage explanations. Stable keys, escaped
+placeholders and API identifiers are unchanged; focused checks cover the copy
+and its rendered confirmation, sorting and geography surfaces.
+
 Review [deployment and recovery](docs/DEPLOYMENT.md), [security boundaries](docs/SECURITY-MAINTENANCE.md)
 and each feature's migration notes before upgrading. Preserve the database and
 original signing/encryption secret together. Optional policies are not enabled
