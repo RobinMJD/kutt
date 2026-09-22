@@ -1436,5 +1436,9 @@
   "enum.moderation_action.ban": "blocage",
   "enum.moderation_action.unban": "levée du blocage",
   "enum.moderation_action.delete": "suppression",
-  "moderation.user_not_found": "Utilisateur introuvable."
+  "moderation.user_not_found": "Utilisateur introuvable.",
+  "theme.appearance": "Apparence",
+  "theme.system": "Système",
+  "theme.light": "Clair",
+  "theme.dark": "Sombre"
 }

@@ -1436,5 +1436,9 @@
   "enum.moderation_action.ban": "ban",
   "enum.moderation_action.unban": "unban",
   "enum.moderation_action.delete": "delete",
-  "moderation.user_not_found": "User was not found."
+  "moderation.user_not_found": "User was not found.",
+  "theme.appearance": "Appearance",
+  "theme.system": "System",
+  "theme.light": "Light",
+  "theme.dark": "Dark"
 }

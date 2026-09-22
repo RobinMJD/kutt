@@ -42,6 +42,20 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
     for (const locale of ["en", "fr", "es"]) {
       const catalog = require("../locales/" + locale + ".json");
       const context = await browser.newContext({ locale: "en-US" });
+      const assertTheme = async () => {
+        assert.equal(await page.locator("html").getAttribute("data-theme"), "dark");
+        assert.equal(await page.evaluate(() => localStorage.getItem("kutt.theme")), "dark");
+        assert.equal(await page.locator(".theme-picker legend").textContent(), catalog["theme.appearance"]);
+        for (const value of ["system", "light", "dark"]) {
+          assert.equal(await page.getByRole("radio", { name: catalog["theme." + value], exact: true }).getAttribute("value"), value);
+        }
+        assert(await page.getByRole("radio", { name: catalog["theme.dark"], exact: true }).isChecked());
+        assert(await page.locator("#site-language").evaluate(node => {
+          const style = getComputedStyle(node), canvas = document.createElement("canvas"), context = canvas.getContext("2d");
+          context.font = style.font;
+          return context.measureText(node.selectedOptions[0].textContent.trim()).width <= node.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+        }), locale + " dark-mode language label fits");
+      };
       page = await context.newPage(); page.setDefaultTimeout(10000);
       page.on("pageerror", error => errors.push(locale + ": " + error.message));
       page.on("console", message => { if (message.type() === "error" && !/Failed to load resource.*(?:400|401|404|409)/.test(message.text())) errors.push(locale + ": " + message.text()); });
@@ -49,6 +63,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
         await page.setViewportSize({ width, height: 900 });
         const login = await page.goto(origin + "/login");
         assert.equal(login.headers()["referrer-policy"], "same-origin");
+        await page.locator('[data-theme-picker] input[value="dark"]').check();
         await page.locator("#site-language").selectOption(locale);
         const changed = page.waitForResponse(response => response.url() === origin + "/language");
         await page.locator(".language-selector button").click();
@@ -56,6 +71,10 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
         assert.equal(result.status(), 303); assert.equal(result.request().headers().origin, origin);
         await page.waitForLoadState("networkidle");
         assert.equal(await page.locator("html").getAttribute("lang"), locale);
+        await assertTheme();
+        await page.getByRole("radio", { name: catalog["theme.light"], exact: true }).check();
+        assert.equal(await page.locator("html").getAttribute("data-theme"), "light");
+        await page.getByRole("radio", { name: catalog["theme.dark"], exact: true }).check();
         await page.locator('#login-signup button[type="submit"]').click();
         await page.locator("#login-signup p.error").first().waitFor();
         assert.equal(await page.locator("#login-signup p.error").first().textContent(), catalog["messages.email_is_not_valid"]);
@@ -70,6 +89,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
       const settingsResult = await settingsPreference;
       assert.equal(settingsResult.status(), 303); assert.equal(settingsResult.request().headers().origin, origin);
       await page.waitForLoadState("networkidle");
+      await assertTheme();
       await page.goto(origin + "/settings/library?q=i18n-browser");
       await page.locator("#site-language").selectOption(locale);
       const libraryPreference = page.waitForResponse(response => response.url() === origin + "/language");
@@ -77,6 +97,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
       const libraryResult = await libraryPreference;
       assert.equal(libraryResult.status(), 303); assert.equal(libraryResult.request().headers().origin, origin);
       await page.waitForLoadState("networkidle");
+      await assertTheme();
       assert.equal(new URL(page.url()).search, "?q=i18n-browser");
       const preference = (await context.cookies()).find(cookie => cookie.name === "kutt_locale");
       assert(preference.httpOnly && preference.sameSite === "Lax" && preference.value === locale);
@@ -92,6 +113,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
           await page.waitForFunction(() => window.KuttI18n && document.querySelector(".site-header"));
           assert.equal(await page.locator("html").getAttribute("lang"), locale);
           assert.equal(await page.evaluate(() => window.KuttI18n.locale), locale);
+          await assertTheme();
           assert((await page.title()).length > 6);
           assert((await page.locator("body").innerText()).length > 100);
           assert.equal(await page.locator(".language-selector option:checked").textContent(), ({ en: "English", fr: "Français", es: "Español" })[locale]);
@@ -131,7 +153,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
       await context.close();
     }
     assert.deepEqual(errors, []);
-    console.log("PASS: " + measurements.length + " localized desktop/mobile page layouts, selector persistence, hostile values, HTMX editing, unchanged expiry syntax, plural selection/bulk notices, and runtime/console checks; " + evidence);
+    console.log("PASS: " + measurements.length + " localized desktop/mobile page layouts, native locale forms preserving theme preferences, translated theme controls, hostile values, HTMX editing, unchanged expiry syntax, plural selection/bulk notices, and runtime/console checks; " + evidence);
     await setup.close();
   } catch (error) {
     if (page && !page.isClosed()) await page.screenshot({ path: path.join(evidence, "failure.png"), fullPage: true });

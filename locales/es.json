@@ -1436,5 +1436,9 @@
   "enum.moderation_action.ban": "bloqueo",
   "enum.moderation_action.unban": "levantamiento del bloqueo",
   "enum.moderation_action.delete": "eliminación",
-  "moderation.user_not_found": "No se encontró el usuario."
+  "moderation.user_not_found": "No se encontró el usuario.",
+  "theme.appearance": "Apariencia",
+  "theme.system": "Sistema",
+  "theme.light": "Claro",
+  "theme.dark": "Oscuro"
 }

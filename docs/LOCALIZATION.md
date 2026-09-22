@@ -2,9 +2,10 @@
 
 C11 provides English (`en`, default), French (`fr`) and Spanish (`es`) for the
 bundled web UI, email and user-facing server/browser feedback. The isolated C11
-branch now incorporates release `.46` (`f85ce35`), including C03 moderation,
-C12 sorting and C19 dotted aliases. Its package version remains `.46`; it does
-not include the parent's uncommitted C14 theme work or deploy anything.
+branch incorporates release `.46` (`f85ce35`), including C03 moderation,
+C12 sorting and C19 dotted aliases, and release `.47` (`741cece`) with C14 theme
+preferences. Its package version remains `.47`. No publication or deployment
+is part of this work.
 
 ## Catalogs And Loading
 
@@ -125,6 +126,12 @@ the stylesheet order. Only bundled, validated catalogs are served, as external
 JavaScript with HTML-sensitive characters escaped; no raw catalog JSON is
 injected into HTML. Locale-specific manifests retain the existing install identity.
 
+The bundled layout also retains C14's early theme script before styles and loads
+`theme.css` after `i18n.css`, before custom styles. The footer's `theme_picker`
+partial uses `theme.appearance`, `theme.system`, `theme.light` and `theme.dark`.
+The `system`/`light`/`dark` radio values, root attributes and `kutt.theme` storage
+values remain literal. See [Appearance](THEMES.md) for custom-layout theme setup.
+
 ## Adding A Language
 
 1. Register its native name and a valid locale code in `locales/languages.json`.
@@ -158,6 +165,9 @@ path. It refuses initialized instances, uses synthetic credentials and writes
 screenshots outside the repository. It covers three languages at 1440, 390 and
 320 pixels, native selector submissions, login validation, populated management
 pages, hostile content, HTMX edits, machine expiry values and plural bulk notices.
+It also checks translated theme labels and unchanged machine values, and verifies
+that a dark preference survives native language-form submissions on login,
+settings and library pages without changing the strict Origin guard.
 
 Unit/HTTP tests cover key/placeholder parity, fail-closed loading, template
 compilation, escaping, custom precedence, 90 concurrent locale contexts,
@@ -176,7 +186,8 @@ claim handling. Only display text is localized: moderation API/audit `entity` an
 `action` values, IDs, timestamps, sorting parameters and alias bytes stay literal.
 New messages use `moderation.*`, `sorting.*`, `aliases.*` and
 `enum.moderation_entity.*` / `enum.moderation_action.*` keys. Existing stable keys
-are retained. The parent can add C14 appearance labels without regenerating them.
+are retained. The subsequent C14 merge adds four `theme.*` keys without
+regenerating existing keys.
 
 `tests/i18n-community.cjs` runs with the localization HTTP gate and checks French
 and Spanish errors, strict origins, unchanged audit payloads, sort ordering,
@@ -197,7 +208,7 @@ and removes its own fresh container and refuses initialized application data.
 These browser runs use regular Playwright because the Browser plugin is not
 available. Catalog-only changes now trigger the Docker smoke workflow too.
 
-### Combined Validation (2026-09-22)
+### Release 46 Validation (2026-09-22)
 
 - Image `kutt-i18n-test:c11-46`: build/hardening and full container regression
   passed, including C03/C12/C19, localization HTTP tests, OIDC and rollback/reapply.
@@ -221,7 +232,59 @@ available. Catalog-only changes now trigger the Docker smoke workflow too.
 
 No production/provider/SMTP acceptance, physical-device or Safari/Firefox runs,
 new TLS handshake runs, remote CI, publication or deployment were performed.
-The parent still owns C14 labels, custom-layout review and release acceptance.
+Custom-layout review and release acceptance remain the parent's responsibility.
+
+## Release 47 Integration
+
+C14 (`741cece`) is merged after the release 46 integration. Its runtime
+`theme.js`, `chart-theme.js` and `theme.css` are unchanged. Both localization and
+theme styles/test selectors are retained when resolving the two merge conflicts.
+English, French and Spanish catalogs now have 1,442 keys each, including all four
+appearance labels. Choosing a language does not translate or reset the selected
+theme's machine value.
+
+The theme browser suite accepts `KUTT_TEST_LOCALE=en|fr|es`, defaulting to English.
+For example:
+
+```sh
+KUTT_TEST_LOCALE=fr sh tests/browser-theme.sh kutt-i18n-test:c11-47
+```
+
+Each run checks 90 layouts: 15 routes at 1440/390/320px in both explicit themes,
+plus System mode, keyboard selection, cross-tab/media changes, storage denial,
+rendered contrast, chart pixels and QR print preservation. These checks complement
+the 198 localized page layouts and native locale/theme interaction gate.
+
+### Release 47 Validation (2026-09-22)
+
+- Image `kutt-i18n-test:c11-47`: build/hardening and the full combined container
+  regression passed, including localization/theme HTTP checks, C03/C12/C19,
+  security boundaries, OIDC and guarded migration rollback/reapply.
+- Catalog/key/placeholder parity, all template compilation, hostile escaping,
+  Node/browser format parity, plural categories, mail rendering and 90 concurrent
+  locale contexts passed with 1,442 keys in each catalog.
+- `browser-i18n.cjs` passed 198 localized layouts. Native login/settings/library
+  language-form clicks sent same-origin Origin and returned 303; dark preferences
+  survived. Translated controls, unchanged theme values and dark-mode language
+  label fit passed, alongside hostile content, HTMX and plural-feedback checks.
+- All three theme browser runs passed: 270 layouts total, with the default
+  English baseline and French/Spanish labels. System/media/storage/keyboard
+  controls, cross-tab propagation, denied storage, contrast, charts and QR/print
+  passed. Desktop/mobile screenshot samples were inspected under
+  `/tmp/kutt-c11-47-theme-{en,fr,es}` and `/tmp/kutt-c11-47-browser-i18n`.
+- English moderation, list-sorting and dotted-alias browser workflows were rerun
+  against `.47` and passed at 1440/390/320px. The nine feature browser runs in
+  three languages and SQLite/MySQL/PostgreSQL/Redis gates above belong to the earlier
+  `.46` integration; those database-specific scripts were not rerun for C14.
+- The three C14 runtime assets match `741cece` byte-for-byte. Both package
+  manifests retain `3.2.6-sr94.47`; changed JavaScript syntax and diff checks pass.
+  No parent checkout files were edited. All disposable browser fixtures were
+  removed after their runs.
+
+Coverage limits remain: signed Apple Shortcut prompts are still English; custom
+layouts/content and browser/OS-native chrome are outside catalog rewriting.
+No new SMTP delivery, physical-device, Safari/Firefox, TLS handshake, live
+provider/production, remote CI, publication or deployment acceptance was run.
 
 ### Initial C11 Slice Evidence
 

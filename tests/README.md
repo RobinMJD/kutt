@@ -1,5 +1,13 @@
 # Container smoke test
 
+Appearance preferences are covered by `KUTT_TEST_ONLY=theme` and the full suite.
+`sh tests/browser-theme.sh IMAGE` checks System/Light/Dark, browser storage and
+cross-tab behavior, real rendered contrast, chart colors/pixels and QR print
+preservation on desktop/mobile. See [themes](../docs/THEMES.md) for test runtime,
+evidence and custom-layout requirements. `KUTT_TEST_LOCALE=fr` or `es` exercises
+translated appearance labels; omission retains the English baseline. The HTTP
+gate checks all three catalogs and unchanged `system`/`light`/`dark` values.
+
 Safe dotted aliases are covered by `dotted-alias-unit.cjs` and
 `dotted-aliases.cjs`. The latter runs in the normal smoke suite or with
 `KUTT_TEST_ONLY=dotted-aliases`: create/edit/admin/workspace/import paths,
@@ -51,11 +59,12 @@ Coverage:
   localized HTTP errors, cookie/header negotiation, null/foreign-origin denial,
   safe return paths, localized assets and unchanged signed expiry inputs.
   `tests/browser-i18n.cjs` uses a fresh loopback fixture for actual native language
-  form submissions (including their Origin header), login errors, HTMX editing,
+  form submissions (including their Origin header and retained theme preference),
+  translated theme controls, login errors, HTMX editing,
   plural feedback and 22 views in three languages at 1440/390/320px.
   `i18n-community.cjs` adds French/Spanish moderation and origin denials,
   unchanged audit payloads, sorting and dotted-alias/import validation.
-  The moderation, list-sorting and dotted-alias browser suites accept
+  The moderation, list-sorting, dotted-alias and theme browser suites accept
   `KUTT_TEST_LOCALE=fr` or `es`; omission retains their default English gate.
   See `docs/LOCALIZATION.md` for commands and explicit acceptance limits.
 - Campaign URL parameters: encoded bounds, explicit clears, API aliases,
