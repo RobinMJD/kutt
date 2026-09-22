@@ -29,8 +29,9 @@ create DNS records, certificates, proxy routes or WAF/SSO exceptions.
   redirecting credentials. API clients must explicitly change their endpoint.
 - Public aliases, redirects, HEAD, forwarding suffixes and password forms stay
   on their short hosts. Password submission checks the matching short host and,
-  when supplied by a browser, its short Origin. It does not use the management
-  Origin. Public health, static/locale assets and public informational pages
+  when supplied by a browser, its exact short Origin, including an accepted
+  `www` alias. It does not use the management Origin. Public health,
+  static/locale assets and public informational pages
   remain accessible. The default short root no longer renders a dashboard;
   configured custom-domain homepages still work.
 - Login and session CSRF checks use the exact management origin. OIDC callbacks,
@@ -82,8 +83,9 @@ links remain available unless independently trashed, expired, paused or banned.
 The creator can still remove their own links. Domain-scoped API tokens for the
 revoked recipient are permanently revoked; regranting does not reactivate them.
 Health schedules are disabled and need an explicit new opt-in. All-domain tokens
-keep their machine value `all` and are limited to the user's current owned and
-explicitly granted domains on every operation.
+keep their machine value `all`; creating or modifying links requires current
+ownership or an explicit grant. The creator retains access to their own stored
+link records and analytics after revocation, never another creator's records.
 
 Domain ban, release, reclaim, reassignment or deletion removes its grants and
 revokes its domain-scoped tokens in the same transaction. Recipient or domain
@@ -136,7 +138,9 @@ sh tests/browser-domain-grants.sh IMAGE
 ```
 
 The browser fixture covers 320/390/1440 pixels, all three locales, both themes,
-native keyboard grant/revoke, selector removal and enforced CSP. OIDC's real
+native keyboard grant/revoke, selector removal and enforced CSP. It also submits
+actual protected forms on the default, bare custom and `www` custom short hosts,
+using only loopback DNS overrides and synthetic landing responses. OIDC's real
 code/PKCE/signature/logout suite also runs with the separate management origin.
 These fixtures do not demonstrate production DNS/TLS/WAF/IdP readiness. Those
 remain separate deployment gates; this feature does not authorize deployment.

@@ -44,7 +44,14 @@ const db = require("../server/knex");
   const result = await apply({ unsafe: "admin" }); assert.equal(result.error, "OIDC_ROLE_CLAIM_INVALID");
   assert.equal((await user()).role, "USER");
   assert.equal((await apply("admin")).user.role, "ADMIN");
+  const access = require("../server/domain-access"), domainUuid = require("node:crypto").randomUUID();
+  await db("domains").insert({ uuid: domainUuid, address: "roles-sharing.example.invalid", user_id: 3 });
+  const authorizedActor = await user();
+  const grant = await access.grant({ user: authorizedActor }, domainUuid, { email: "role-1@example.invalid" });
+  await access.revoke({ user: authorizedActor }, domainUuid, grant.id);
   await db("oidc_role_state").where({ user_id: 2 }).update({ active_until: Date.now() - 1 });
+  await assert.rejects(access.grant({ user: authorizedActor }, domainUuid, { email: "role-1@example.invalid" }), /not found/,
+    "An expired mapped administrator cannot grant using an already authenticated principal");
   assert.equal((await roles.fresh(await user())).role, "USER");
   const av = Number((await user()).auth_version); await roles.initialize(); assert.equal(Number((await user()).auth_version), av, "Identical restart is idempotent");
   await assert.rejects(require("../server/migrations/20260923000000_oidc_roles").down(db), /Preserve OIDC role/);

@@ -23,6 +23,7 @@ function unit() {
   assert.equal(parse("http://localhost:4000", env).origin, "http://localhost:4000");
   for (const value of ["https://short.example.invalid:444", "https://www.short.example.invalid", "http://manage.example.invalid", "https://user@manage.invalid", "https://manage.invalid/path", "https://manage.invalid/?x", "https://manage.invalid/#", "https://manage.invalid\\x", "https://manage.invalid.", " https://manage.invalid", "https://manage%2einvalid", "https:manage.invalid", "https://bad..invalid", "https://-bad.invalid", "https://manage.invalid/../", "https://manage.invalid\n"]) assert.throws(() => parse(value, env), undefined, value);
   assert.throws(() => parse("http://localhost:4000", { ...env, isDev: false }));
+  assert.throws(() => parse("https://manage.example.invalid:", env));
 }
 
 async function main() {
@@ -91,12 +92,16 @@ async function main() {
     await db("domains").insert(domain); Object.assign(domain, await db("domains").where({ uuid: domain.uuid }).first());
     const endpoint = "/api/domains/" + domain.uuid + "/grants", target = "https://192.0.2.1/grants";
     const create = (alias, token = recipientToken, expected = 201, extra) => checked("POST", "/api/links", { target, customurl: alias, domain: domain.address }, token, expected, extra);
-    for (const route of ["/", "/settings", "/login", "/logout", "/create-admin", "/login/oidc", "/reset-password/opaque", "/verify/opaque", "/settings/domain-sharing", "/api/links", "/API/v2/links", "/api/auth/login", "/%6cogin", "/settings%2fsecurity", "/%61pi/links", "/api%2fv2%2flinks", "/%256cogin"]) {
+    for (const route of ["/", "/settings", "/login", "/logout", "/create-admin", "/add-domain", "/login/oidc", "/reset-password/opaque", "/verify/opaque", "/settings/domain-sharing", "/api/links", "/API/v2/links", "/api/auth/login", "/%6cogin", "/settings%2fsecurity", "/%61pi/links", "/api%2fv2%2flinks", "/%256cogin"]) {
       for (const requestHost of [short, domain.address, "foreign.example.invalid"]) {
         const response = await request("GET", route, undefined, adminToken, { "X-Forwarded-Host": host, "X-Forwarded-Proto": "https" }, requestHost);
         assert((route.includes("%") ? [400, 404] : [404]).includes(response.status), route + " on " + requestHost + ": " + response.status);
         assert(!response.headers.location); assert(!response.headers["set-cookie"]);
       }
+    }
+    for (const asset of ["/libs/htmx.min.js", "/fonts/nunito-variable.woff2"]) {
+      const response = await request("GET", asset, undefined, adminToken, {}, short);
+      assert.equal(response.status, 200); assert(!response.headers["set-cookie"]);
     }
     for (const requestHost of [short, domain.address]) {
       const denied = await request("POST", "/api/auth/login", { email: admin.email, password }, null, { Origin: origin, "X-Forwarded-Host": host }, requestHost);
@@ -104,6 +109,15 @@ async function main() {
     }
     for (const requestHost of ["localhost.evil.invalid:" + port, host + ".", host + ",foreign.invalid", "user@" + host]) {
       assert.equal((await request("GET", "/settings", undefined, adminToken, {}, requestHost)).status, 404);
+    }
+    for (const authorities of [[host, "foreign.invalid"], ["foreign.invalid", host]]) {
+      const duplicate = await new Promise((resolve, reject) => {
+        const req = http.request({ hostname: "127.0.0.1", port, path: "/settings", headers: ["Host", authorities[0], "Host", authorities[1], "Cookie", "token=" + adminToken] }, res => {
+          res.resume(); res.on("end", () => resolve({ status: res.statusCode, headers: res.headers }));
+        });
+        req.on("error", reject); req.end();
+      });
+      assert.equal(duplicate.status, 404); assert(!duplicate.headers.location); assert(!duplicate.headers["set-cookie"]);
     }
     for (const badOrigin of ["null", "http://" + short, "https://" + host, "https://foreign.invalid"]) {
       await checked("POST", "/api/auth/login", { email: admin.email, password }, null, 403, { Origin: badOrigin });
@@ -120,6 +134,23 @@ async function main() {
       const mail = require("../server/mail/render").render(kind, { domain: host, origin, site_name: "Fixture", token: "synthetic" });
       assert(mail.html.includes(origin + "/") && mail.text.includes(origin + "/")); assert(!mail.html.includes("https://" + short));
     }
+    // Even a post-startup DB collision cannot grant or serve the management host.
+    const collision = { uuid: randomUUID(), address: "localhost", user_id: owner.id };
+    await db("domains").insert(collision);
+    collision.id = (await db("domains").where({ uuid: collision.uuid }).first()).id;
+    await assert.rejects(require("../server/management-origin").validateDatabase(), /already a short domain/);
+    await assert.rejects(access.grant({ user: owner }, collision.uuid, { email: recipient.email }), /management/i);
+    await db("domain_grants").insert({ id: randomUUID(), domain_id: collision.id, user_id: recipient.id, created_at: Date.now() });
+    assert.equal(await access.find(db, recipient.id, { id: collision.id }), undefined);
+    await db.transaction(async transaction => {
+      await access.lock(transaction);
+      assert.equal(await access.find(transaction, recipient.id, { id: collision.id }), undefined);
+    });
+    await db("links").insert({ uuid: randomUUID(), address: "management-shadow", target, domain_id: collision.id, user_id: recipient.id });
+    assert.equal((await request("GET", "/management-shadow", undefined, adminToken)).status, 404);
+    await db("links").where({ domain_id: collision.id }).delete();
+    await db("domain_grants").where({ domain_id: collision.id }).delete();
+    await db("domains").where({ id: collision.id }).delete();
     await create("before-grant", recipientToken, 400);
     await create("guest-grant", null, 400);
     await checked("POST", endpoint, { email: recipient.email }, strangerToken, 404);
@@ -133,8 +164,8 @@ async function main() {
     const protectedLink = await checked("POST", "/api/links", { target, customurl: "shared-protected", domain: domain.address, password: "synthetic-protection" }, recipientToken, 201);
     const forward = await create("shared-forward");
     await checked("PUT", "/api/links/" + forward.id + "/forwarding", { revision: 0, query_keys: ["page"], path_prefixes: ["docs"] }, recipientToken);
-    const scoped = await checked("POST", "/api/tokens", { name: "Shared", scopes: ["links:read", "links:create", "links:update"], domain_scope: domain.uuid }, recipientToken, 201);
-    const all = await checked("POST", "/api/tokens", { name: "All", scopes: ["links:read", "links:create", "links:update"], domain_scope: "all" }, recipientToken, 201);
+    const scoped = await checked("POST", "/api/tokens", { name: "Shared", scopes: ["links:read", "links:create", "links:update", "stats:read"], domain_scope: domain.uuid }, recipientToken, 201);
+    const all = await checked("POST", "/api/tokens", { name: "All", scopes: ["links:read", "links:create", "links:update", "stats:read"], domain_scope: "all" }, recipientToken, 201);
     const grantToken = await checked("POST", "/api/tokens", { name: "Sharing", scopes: ["domains:share"], domain_scope: domain.uuid }, ownerToken, 201);
     await checked("GET", endpoint, undefined, null, 200, { "X-API-Key": grantToken.token });
     await checked("GET", endpoint, undefined, null, 403, { "X-API-Key": scoped.token });
@@ -144,6 +175,21 @@ async function main() {
       assert(!response.text.includes(target));
     }
     assert(!(await checked("GET", "/api/links", undefined, ownerToken)).data.some(link => link.id === shared.id));
+    const ownerLink = await create("owner-analytics", ownerToken);
+    const sharedId = (await db("links").where({ uuid: shared.id }).first()).id;
+    const ownerLinkId = (await db("links").where({ uuid: ownerLink.id }).first()).id;
+    for (const [link_id, user_id, total] of [[sharedId, recipient.id, 7], [ownerLinkId, owner.id, 100], [ownerLinkId, recipient.id, 900]]) {
+      await db("visits").insert({ link_id, user_id, created_at: "2024-01-01 00:00:00", total,
+        br_safari: total, os_ios: total, countries: JSON.stringify({ fr: total }), referrers: JSON.stringify({ direct: total }) });
+    }
+    const analyticsPath = "/api/analytics?start=2024-01-01&end=2024-01-31&domain=" + domain.uuid;
+    for (const [cookie, key, total] of [[ownerToken, null, 100], [recipientToken, null, 7], [null, scoped.token, 7], [null, all.token, 7]]) {
+      const report = await checked("GET", analyticsPath, undefined, cookie, 200, key ? { "X-API-Key": key } : {});
+      assert.equal(report.total, total, "Domain sharing must not aggregate another creator's links or visit rows");
+      assert(report.available_filters.domains.some(row => row.id === domain.uuid));
+    }
+    await checked("GET", analyticsPath, undefined, strangerToken, 404);
+    await checked("GET", analyticsPath + "&link=" + shared.id, undefined, ownerToken, 404);
     const workspace = await checked("POST", "/api/workspaces", { name: "Granted workspace" }, recipientToken, 201);
     const wsPath = "/api/workspaces/" + workspace.id;
     const invitation = await checked("POST", wsPath + "/members", { email: stranger.email, role: "editor" }, recipientToken, 201);
@@ -164,6 +210,12 @@ async function main() {
     await create("after-revoke", recipientToken, 400);
     await create("all-after-revoke", null, 400, { "X-API-Key": all.token });
     await create("scoped-after-revoke", null, 401, { "X-API-Key": scoped.token });
+    await checked("GET", analyticsPath, undefined, null, 401, { "X-API-Key": scoped.token });
+    for (const [cookie, headers] of [[recipientToken, {}], [null, { "X-API-Key": all.token }]]) {
+      const retained = await checked("GET", analyticsPath, undefined, cookie, 200, headers);
+      assert.equal(retained.total, 7); assert(retained.available_filters.domains.some(row => row.id === domain.uuid));
+    }
+    await assert.rejects(require("../server/analytics").access({ user: recipient, apiToken: scoped.id, apiTokenDomain: domain.id }), /no longer authorized/);
     await create("replay-shared", recipientToken, 400, { "Idempotency-Key": "grants-idempotent-01" });
     await checked("PATCH", "/api/links/" + shared.id, { description: "denied" }, recipientToken, 403);
     await checked("POST", "/api/transfer/commit", { ...input, preview_token: preview.preview_token }, recipientToken, 409);
@@ -173,8 +225,13 @@ async function main() {
       const response = await request(method, "/" + shared.address, undefined, undefined, {}, domain.address);
       assert.equal(response.status, 302); assert.equal(response.headers.location, target); assert(!response.headers["set-cookie"]);
     }
-    assert.equal((await request("GET", "/shared-protected", undefined, undefined, { Accept: "text/html" }, domain.address)).status, 200);
-    await checked("POST", "/api/links/" + protectedLink.id + "/protected", { password: "synthetic-protection" }, null, 200, { Origin: "http://" + domain.address }, domain.address);
+    for (const authority of [domain.address, "www." + domain.address]) {
+      assert.equal((await request("GET", "/shared-protected", undefined, undefined, { Accept: "text/html" }, authority)).status, 200);
+      await checked("POST", "/api/links/" + protectedLink.id + "/protected", { password: "synthetic-protection" }, null, 200, { Origin: "http://" + authority }, authority);
+      for (const Origin of ["http://" + (authority === domain.address ? "www." : "") + domain.address, "http://foreign.example.invalid", origin]) {
+        await checked("POST", "/api/links/" + protectedLink.id + "/protected", { password: "synthetic-protection" }, null, 403, { Origin }, authority);
+      }
+    }
     for (const Origin of ["null", origin, "http://foreign.example.invalid"]) {
       await checked("POST", "/api/links/" + protectedLink.id + "/protected", { password: "synthetic-protection" }, null, 403, { Origin }, domain.address);
     }
@@ -185,8 +242,15 @@ async function main() {
     await create("regranted");
     assert.equal(Number((await db("link_health").where({ link_id: (await db("links").where({ uuid: shared.id }).first()).id }).first()).enabled), 0);
     await checked("DELETE", "/api/links/" + replay.id, undefined, recipientToken);
+    await db("links").where({ uuid: replay.id }).update({ archived_domain: domain.address, domain_id: null });
+    await db("api_tokens").where({ id: all.id }).update({ revoked_at: Date.now() });
+    await assert.rejects(require("../server/link-history").restore(replay.id, recipient.id, recipient, undefined,
+      { user: recipient, apiToken: all.id }), error => error.statusCode === 403 || /no longer authorized/.test(error.message));
+    assert((await db("links").where({ uuid: replay.id }).first()).deleted_at, "A delayed revoked token cannot restore archived links");
+    await checked("POST", "/api/links/" + replay.id + "/restore", {}, recipientToken);
+    await checked("DELETE", "/api/links/" + replay.id, undefined, recipientToken);
     await checked("DELETE", endpoint + "/" + nextGrant.id, undefined, ownerToken, 204);
-    await checked("POST", "/api/links/" + replay.id + "/restore", {}, recipientToken, 403);
+    await checked("POST", "/api/links/" + replay.id + "/restore", {}, recipientToken, 409);
     nextGrant = await access.grant({ user: owner }, domain.uuid, { email: recipient.email });
     const requestData = { user: recipient, body: { fetched_domain: domain }, get: () => undefined };
     const creation = require("../server/link-creation");

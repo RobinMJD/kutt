@@ -16,7 +16,10 @@ const CustomError = utils.CustomError;
 
 function authenticate(type, error, isStrict, redirect) {
   return function auth(req, res, next) {
-    if (req.publicHost && !isStrict) return next();
+    if (req.publicHost) {
+      if (!isStrict) return next();
+      return res.status(404).set("Cache-Control", "no-store").end();
+    }
     if (req.user) return next();
 
     passport.authenticate(type, (err, user, info) => {

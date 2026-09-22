@@ -115,6 +115,6 @@ templatesReady.then(() => management.validateDatabase()).then(() => require("./o
     console.log(`> Ready on http://localhost:${env.PORT}`);
   });
 }).catch(() => {
-  console.error("Application initialization failed. Check templates, private metrics configuration and, when configured, the protected local OIDC recovery administrator.");
+  console.error("Application initialization failed. Check templates, management origin, private metrics configuration and, when configured, the protected local OIDC recovery administrator.");
   process.exit(1);
 });

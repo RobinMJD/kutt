@@ -3,7 +3,7 @@ const { isIP } = require("node:net");
 function parse(value, env) {
   if (value === "") return null;
   const invalid = () => { throw new Error("MANAGEMENT_ORIGIN must be a distinct HTTPS origin (development HTTP loopback is allowed)."); };
-  if (typeof value !== "string" || value.length > 300 || /[\s\\%?#]/.test(value)) return invalid();
+  if (typeof value !== "string" || value.length > 300 || /[\s\\%?#]/.test(value) || /:\/?$/.test(value)) return invalid();
   let url;
   try { url = new URL(value); } catch { return invalid(); }
   const loopback = ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname);
@@ -33,7 +33,12 @@ function reserved(address) {
 }
 function requestHost(req, protocol = "https:") {
   const host = req.get("Host");
-  if (typeof host !== "string" || !host || /[\s\\/%?#@]/.test(host)) return null;
+  if (typeof host !== "string" || !host || host.endsWith(":") || /[\s\\/%?#@]/.test(host)) return null;
+  if (Array.isArray(req.rawHeaders)) {
+    let count = 0;
+    for (let index = 0; index < req.rawHeaders.length; index += 2) if (req.rawHeaders[index].toLowerCase() === "host") count++;
+    if (count !== 1) return null;
+  }
   try {
     const url = new URL(protocol + "//" + host);
     if (url.hostname.endsWith(".") || url.pathname !== "/") return null;
@@ -71,7 +76,7 @@ function boundary(req, res, next) {
   // Do not inspect credentials or redirect management requests from short hosts.
   const path = req.path;
   const read = req.method === "GET" || req.method === "HEAD";
-  if (read && (/^\/(?:images|css|scripts|locales)(?:\/|$)/i.test(path) ||
+  if (read && (/^\/(?:images|css|scripts|libs|fonts|locales)(?:\/|$)/i.test(path) ||
       /^\/(?:banned|report|terms|404|get-report-email|get-support-email|favicon\.ico|robots\.txt|manifest\.webmanifest)\/?$/i.test(path) ||
       /^\/api\/(?:v2\/)?health\/?$/i.test(path))) return next();
   if (req.method === "POST" && (/^\/api\/(?:v2\/)?links\/(?:[a-f0-9-]{36}\/protected|report)\/?$/i.test(path) || path === "/language")) return next();

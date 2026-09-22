@@ -64,13 +64,13 @@ async function restore(id, userId, actor, tokenDomain, request) {
     const link = await db("links").where({ uuid: id, user_id: userId }).first();
     if (!link || (tokenDomain !== undefined && (link.domain_id !== tokenDomain || link.archived_domain))) fail(i18n.t("messages.link_was_not_found"), 404);
     if (link.banned) fail(i18n.t("messages.a_banned_link_cannot_be_restored"));
-    if (request && !link.archived_domain) await require("./domain-access").request(db, request, link.domain_id, "links:update");
     let domainId = link.domain_id;
     if (link.domain_id != null || link.archived_domain) {
       const domain = await require("./domain-access").find(db, userId, { address: await domainName(db, link) });
       if (!domain) fail(i18n.t("messages.restore_requires_current_ownership_of_the_original_domain"));
       domainId = domain.id;
     }
+    if (request) await require("./domain-access").request(db, request, domainId, "links:update");
     await claim(db, link);
     if (link.deleted_at != null) {
       const changed = await db("links").where({ id: link.id, user_id: userId }).whereNotNull("deleted_at")

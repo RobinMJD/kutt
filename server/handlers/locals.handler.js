@@ -29,7 +29,7 @@ function config(req, res, next) {
   res.locals.server_cname_address = env.SERVER_CNAME_ADDRESS;
   res.locals.disallow_registration = env.DISALLOW_REGISTRATION;
   res.locals.disallow_login_form = env.DISALLOW_LOGIN_FORM;
-  res.locals.login_disabled = env.DISALLOW_LOGIN_FORM && !env.OIDC_ENABLED;
+  res.locals.login_disabled = !!req.publicHost || env.DISALLOW_LOGIN_FORM && !env.OIDC_ENABLED;
   res.locals.registration_enabled = !env.DISALLOW_LOGIN_FORM && !env.DISALLOW_REGISTRATION && env.MAIL_ENABLED;
   res.locals.login_label = res.locals.registration_enabled ? i18n.t("messages.log_in_sign_up") : i18n.t("ui.log_in");
   res.locals.login_title = res.locals.login_disabled ? i18n.t("messages.login_is_closed") : res.locals.registration_enabled ? i18n.t("messages.log_in_or_sign_up") : i18n.t("ui.log_in");

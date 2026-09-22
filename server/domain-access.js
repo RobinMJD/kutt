@@ -15,7 +15,9 @@ async function lock(db) {
   }
 }
 function available(db, userId) {
+  const management = require("./management-origin").configured();
   return db("domains as d").select("d.*").where("d.banned", false)
+    .modify(query => { if (management) query.whereNotIn("d.address", [management.host, management.hostname].map(host => host.replace(/^www\./, ""))); })
     .whereExists(db("users as recipient").select("recipient.id").where({ "recipient.id": userId || -1, "recipient.verified": true, "recipient.banned": false }))
     .where(function () {
       this.whereNull("d.user_id").orWhereExists(db("users as owner").select("owner.id")
@@ -30,9 +32,9 @@ async function find(db, userId, match) {
   if (!userId) return undefined;
   // Locking reads are current reads on MySQL even when an outer caller already
   // established a repeatable-read snapshot before waiting for the guard.
-  if (!db.isTransaction) return available(db, userId).where(Object.fromEntries(Object.entries(match).map(([key, value]) => ["d." + key, value]))).first();
+  if (!db.isTransaction || !held.has(db)) return available(db, userId).where(Object.fromEntries(Object.entries(match).map(([key, value]) => ["d." + key, value]))).first();
   const domain = await current(db, db("domains").where({ ...match, banned: false })).first();
-  if (!domain || !await current(db, db("users").where({ id: userId, verified: true, banned: false })).first()) return undefined;
+  if (!domain || require("./management-origin").reserved(domain.address) || !await current(db, db("users").where({ id: userId, verified: true, banned: false })).first()) return undefined;
   if (domain.user_id && !await current(db, db("users").where({ id: domain.user_id, verified: true, banned: false })).first()) return undefined;
   if (domain.user_id !== userId && !await current(db, db("domain_grants").where({ domain_id: domain.id, user_id: userId })).first()) return undefined;
   return domain;
@@ -81,8 +83,8 @@ async function invalidateUser(db, userId) {
 }
 async function manage(db, req, id) {
   if (typeof id !== "string" || !/^[a-f0-9-]{36}$/i.test(id)) fail("messages.domain_was_not_found", 404);
-  const domain = await db("domains").where({ uuid: id }).first();
-  const actor = await db("users").where({ id: req.user.id, verified: true, banned: false }).first();
+  const domain = await current(db, db("domains").where({ uuid: id })).first();
+  const actor = await current(db, db("users").where({ id: req.user.id, verified: true, banned: false })).first();
   if (!actor || Number(actor.auth_version) !== Number(req.user.auth_version)) fail("messages.sign_in_again", 401);
   const admin = !req.apiToken && await require("./oidc-roles").allowsAdmin(db, actor);
   if (!domain || !admin && domain.user_id !== actor.id) fail("messages.domain_was_not_found", 404);
@@ -101,6 +103,7 @@ async function grant(req, id, input) {
   return knex.transaction(async db => {
     await lock(db);
     const domain = await manage(db, req, id);
+    if (require("./management-origin").reserved(domain.address)) fail("domain_grants.management_reserved", 400);
     if (domain.banned || domain.user_id && !await db("users").where({ id: domain.user_id, verified: true, banned: false }).first()) fail("domain_grants.unavailable");
     const user = await db("users").whereRaw("LOWER(email) = ?", [input.email.trim().toLowerCase()]).where({ verified: true, banned: false }).first();
     if (!user || user.id === domain.user_id) fail("domain_grants.invalid_recipient", 400);

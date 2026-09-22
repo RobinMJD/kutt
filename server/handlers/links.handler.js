@@ -411,6 +411,7 @@ async function ban(req, res) {
 };
 
 async function redirect(req, res, next) {
+  if (req.managementHost) return res.status(404).set("Cache-Control", "no-store").end();
   const isPreservedUrl = require("../link-alias").reserved(req.params.id);
 
   if (isPreservedUrl) return next();
@@ -533,11 +534,12 @@ async function redirectProtected(req, res) {
   const link = await query.link.find({ uuid }, { fresh: true, includeTrash: true });
   if (require("../management-origin").configured()) {
     const domain = link?.domain_id == null ? null : await require("../knex")("domains").where({ id: link.domain_id }).first();
-    const host = utils.removeWww(require("../management-origin").requestHost(req) || "");
-    if (req.managementHost || !link || host !== (domain?.address || env.DEFAULT_DOMAIN)) {
+    const short = new globalThis.URL(utils.getShortURL(link?.address || "", domain?.address).url);
+    const authority = require("../management-origin").requestHost(req, short.protocol);
+    if (req.managementHost || !link || utils.removeWww(authority || "") !== utils.removeWww(short.host)) {
       throw new CustomError(i18n.t("messages.couldn_t_find_the_link"), 404);
     }
-    const origin = req.get("Origin"), expected = new globalThis.URL(utils.getShortURL(link.address, domain?.address).url).origin;
+    const origin = req.get("Origin"), expected = short.protocol + "//" + authority;
     if (req.get("Sec-Fetch-Site") === "cross-site" || origin && origin !== expected) {
       res.status(403);
       throw new CustomError(i18n.t("messages.invalid_request_origin"), 403);
