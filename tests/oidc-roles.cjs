@@ -111,7 +111,7 @@ module.exports = async function ({ root, directory, env, algorithm = "RS256" }) 
     app = spawn(process.execPath, [path.join(root, "server/server.js")], { cwd: directory, env: childEnv, stdio: ["ignore", "pipe", "pipe"] });
     exited = new Promise(resolve => app.once("exit", resolve));
     app.stdout.on("data", chunk => output += chunk); app.stderr.on("data", chunk => output += chunk);
-    if (expectFailure) { assert.notEqual(await exited, 0); app = undefined; assert.match(output, /Startup validation failed/); return; }
+    if (expectFailure) { assert.notEqual(await exited, 0); app = undefined; assert.match(output, /Application initialization failed\..*protected local OIDC recovery administrator/); return; }
     for (let n = 0; n < 100; n++) {
       try { if ((await request("GET", "/api/health")).status === 200) return; } catch {}
       if (app.exitCode !== null) break;
