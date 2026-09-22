@@ -287,9 +287,12 @@ async function update(match, update, actor = {}, { expiryExpected } = {}) {
   
   await knex.transaction(async db => {
     const selection = db("links").where(match);
-    if (expiryExpected !== undefined && !knex.client.config.client.includes("sqlite")) selection.forUpdate();
+    if ((expiryExpected !== undefined || update.target !== undefined) && !knex.client.config.client.includes("sqlite")) selection.forUpdate();
     const current = await selection;
     for (const link of current) require("../link-expiry-edit").check(link, expiryExpected);
+    for (const link of current) {
+      if (update.target !== undefined && update.target !== link.target) require("../destination-policy").requireAllowed(update.target);
+    }
     for (const link of current) await history.beforeUpdate(db, link, update, actor);
     await db("links").where(match).update({ ...update, updated_at: utils.dateToUTC(new Date()) });
   });

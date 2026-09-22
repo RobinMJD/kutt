@@ -125,6 +125,7 @@ module.exports = async function ({ request, session, database, account, restart,
     await startPolicy("");
     assert.equal((await request("GET", "/" + old.address)).headers.get("location"), allowed);
     assert.equal((await request("GET", "/" + guarded.address, undefined, undefined, { Authorization: "Basic " + Buffer.from("user:test-password").toString("base64") })).headers.get("location"), denied);
+    await require("./destination-policy-edit.cjs")({ request, session, database, account, restart, env, root, directory });
     assert.equal(db.pragma("quick_check", { simple: true }), "ok"); assert.deepEqual(db.pragma("foreign_key_check"), []);
     console.log("PASS: destination allowlist grammar/IDNA/wildcards, fail-closed startup, default compatibility, API/scopes/localized UI, create/edit/import/workspace denial, public/protected/HEAD counters, repair and restart rollback");
   } finally {
