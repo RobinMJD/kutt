@@ -92,11 +92,16 @@ async function manage(db, req, id) {
   return domain;
 }
 async function list(req, id) {
-  const domain = await manage(knex, req, id);
-  const rows = await knex("domain_grants as g").join("users as u", "u.id", "g.user_id")
-    .where("g.domain_id", domain.id).select("g.id", "u.email", "g.created_at").orderBy("u.email");
-  return { domain: { id: domain.uuid, address: domain.address, banned: !!domain.banned },
-    data: rows.map(row => ({ ...row, created_at: new Date(Number(row.created_at)).toISOString() })) };
+  return knex.transaction(async db => {
+    // Keep authorization and recipients in the same ownership epoch. Acquire
+    // the shared guard first, as grant/revoke, reassignment and role changes do.
+    await lock(db);
+    const domain = await manage(db, req, id);
+    const rows = await db("domain_grants as g").join("users as u", "u.id", "g.user_id")
+      .where("g.domain_id", domain.id).select("g.id", "u.email", "g.created_at").orderBy("u.email");
+    return { domain: { id: domain.uuid, address: domain.address, banned: !!domain.banned },
+      data: rows.map(row => ({ ...row, created_at: new Date(Number(row.created_at)).toISOString() })) };
+  });
 }
 async function grant(req, id, input) {
   if (!input || typeof input.email !== "string" || input.email.length > 255 || Object.keys(input).some(key => key !== "email")) fail("domain_grants.invalid_recipient", 400);

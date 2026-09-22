@@ -27,6 +27,7 @@ function unit() {
 }
 
 async function main() {
+  await require("./domain-access-read.cjs")();
   unit();
   const directory = mkdtempSync(path.join(require("node:os").tmpdir(), "kutt-grants-"));
   let db, server, exited, output = "";
