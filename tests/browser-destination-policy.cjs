@@ -30,12 +30,19 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
         await page.setViewportSize({ width, height: 900 });
         await page.goto(origin + "/settings/destination-policy");
         await page.locator('[data-theme-picker] input[value="' + theme + '"]').check();
+        await page.waitForFunction(() => {
+          const foreground = getComputedStyle(document.body).color;
+          const selector = document.documentElement.dataset.theme === 'dark'
+            ? '.site-header a.nav, .language-selector select' : '.site-header a.nav';
+          return [...document.querySelectorAll(selector)]
+            .every(node => getComputedStyle(node).color === foreground);
+        });
         assert.equal(await page.locator("html").getAttribute("lang"), locale);
         assert.equal(await page.locator("h1").textContent(), catalog["destination_policy.title"]);
         assert(await page.locator(".destination-policy").innerText().then(text => text.includes("192.0.2.1")));
         assert.equal(await page.locator(".destination-policy input,.destination-policy button,.destination-policy form").count(), 0, "Policy is read-only");
         assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
-        await page.screenshot({ path: path.join(evidence, locale + "-" + width + "-" + theme + "-policy.png"), fullPage: true });
+        await page.screenshot({ path: path.join(evidence, locale + "-" + width + "-" + theme + "-policy.png"), fullPage: true, animations: "disabled" });
         await page.goto(origin + "/");
         const denied = "https://198.51.100.2/keep-my-draft";
         await page.locator("#target").fill(denied);
