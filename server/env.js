@@ -85,6 +85,7 @@ const spec = {
   OIDC_SCOPE: str({ default: "openid profile email" }),
   OIDC_EMAIL_CLAIM: str({ default: "email" }),
   OIDC_BUTTON_TEXT: str({ default: "Log in with OIDC" }),
+  OIDC_PROVIDER_NAME: str({ default: "OIDC" }),
   OIDC_ALLOW_REGISTRATION: bool({ default: true }),
   OIDC_SESSION_MAX_SECONDS: num({ default: 3600, choices: [300, 900, 1800, 3600, 14400, 86400] }),
   OIDC_ADMIN_MAPPING_ENABLED: strictBoolean({ default: false }),

@@ -67,6 +67,11 @@ async function unit() {
     return i18n.run(locale, async () => {
       await new Promise(resolve => setTimeout(resolve, index % 9));
       assert.equal(i18n.current().locale, locale);
+      const provider = hbs.compile('{{t "auth.provider_login" provider=value}}')({ value: hostile });
+      assert(provider.includes(escape(hostile)) && !provider.includes("<img"));
+      assert.equal(i18n.t("auth.provider_login", { provider: "Authentik" }), {
+        en: "Log in with Authentik", fr: "Se connecter avec Authentik", es: "Iniciar sesión con Authentik"
+      }[locale]);
       assert.equal(i18n.t("ui.edit_value", { value1: hostile, lng: "en", escapeValue: false }), i18n.catalogs[locale]["ui.edit_value"].replace("{{value1}}", hostile));
       const html = render({ value: hostile });
       assert(html.includes(escape(hostile)) && !html.includes("<img"));

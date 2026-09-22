@@ -7,7 +7,7 @@ module.exports = async function (db) {
   const users = require("../server/queries/user.queries");
   const links = require("../server/queries/link.queries");
   const visits = require("../server/queries/visit.queries");
-  const owner = await users.create({ email: randomUUID() + "@example.invalid", password: "disposable-fixture", verified: true });
+  const owner = await users.add({ email: randomUUID() + "@example.invalid", password: "disposable-fixture", verified: true });
   const link = await links.create({ user_id: owner.id, address: "hour-" + randomUUID(), target: "https://192.0.2.1/" });
   const job = { link_id: link.id, user_id: owner.id, browser: "safari", os: "ios", country: "FR", referrer: "direct", tracking_revision: 0 };
   const lookup = hour => db.select("*").from(db("visits").select("visits.*")

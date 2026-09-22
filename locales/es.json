@@ -19,6 +19,7 @@
   "domain_grants.management_reserved": "El nombre de host de gestión no puede usarse como dominio de enlaces cortos.",
   "domain_grants.token_scope": "Gestionar permisos explícitos de acceso a dominios propios",
   "domain_grants.all_available": "Todos los dominios propios y compartidos explícitamente",
+  "auth.provider_login": "Iniciar sesión con {{provider}}",
   "qr.logo_label": "Logotipo (PNG, máx. 64 KiB, 512 × 512)",
   "qr.selected_logo": "Logotipo seleccionado",
   "qr.remove_logo": "Quitar logotipo",

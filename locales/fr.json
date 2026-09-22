@@ -19,6 +19,7 @@
   "domain_grants.management_reserved": "Le nom d'hôte de gestion ne peut pas servir de domaine de liens courts.",
   "domain_grants.token_scope": "Gérer les autorisations explicites d'accès à vos domaines",
   "domain_grants.all_available": "Tous vos domaines et ceux explicitement partagés",
+  "auth.provider_login": "Se connecter avec {{provider}}",
   "qr.logo_label": "Logo (PNG, 64 Kio max., 512 × 512)",
   "qr.selected_logo": "Logo sélectionné",
   "qr.remove_logo": "Retirer le logo",

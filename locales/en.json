@@ -19,6 +19,7 @@
   "domain_grants.management_reserved": "The management hostname cannot be used as a short domain.",
   "domain_grants.token_scope": "Manage explicit access grants for owned domains",
   "domain_grants.all_available": "All owned and explicitly shared domains",
+  "auth.provider_login": "Log in with {{provider}}",
   "qr.logo_label": "Logo (PNG, max 64 KiB, 512 × 512)",
   "qr.selected_logo": "Selected logo",
   "qr.remove_logo": "Remove logo",

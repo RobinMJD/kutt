@@ -494,3 +494,12 @@ runs all 18 QR combinations with actual decoding, clipboard/print/races/cleanup.
 The QR harness reads captured Blob objects directly; it does not add a synthetic
 `fetch(blob:)` requirement to the production policy. See [CSP](../docs/CSP.md) for
 the bounded policy, custom-template compatibility and deployment limitations.
+
+`sh tests/browser-community.sh IMAGE` runs the combined community-feature
+matrix with CSP enforced, including modal/list/logout/validation/domain/SSO
+flows, QR decoding, destination policy, role diagnostics and all three geography
+locales. Install the locked `tests/browser-deps` dependencies for the independent
+QR decoder and provide `PLAYWRIGHT_MODULE` when Playwright is not locally
+resolvable. Both PR and fork release CI run this suite plus real MySQL/PostgreSQL
+OIDC role-lifecycle tests. Disposable non-admin database fixtures use the
+registration query; administrative creation retains its fresh-actor requirement.

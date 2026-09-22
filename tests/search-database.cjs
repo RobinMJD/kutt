@@ -13,8 +13,8 @@ const db = require("../server/knex");
   await db.migrate.latest({ directory: path.join(__dirname, "../server/migrations") });
   const users = require("../server/queries/user.queries");
   const links = require("../server/queries/link.queries");
-  const owner = await users.create({ email: randomUUID() + "@example.invalid", password: "disposable-fixture", verified: true });
-  const other = await users.create({ email: randomUUID() + "@example.invalid", password: "disposable-fixture", verified: true });
+  const owner = await users.add({ email: randomUUID() + "@example.invalid", password: "disposable-fixture", verified: true });
+  const other = await users.add({ email: randomUUID() + "@example.invalid", password: "disposable-fixture", verified: true });
   // Four-byte Unicode catches utf8_bin/utf8mb4 collation mismatches.
   const description = "\u00c9cole \ud83e\uddea";
   for (const [user, suffix] of [[owner, "one"], [owner, "two"], [other, "foreign"]]) {

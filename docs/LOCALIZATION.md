@@ -1,5 +1,11 @@
 # Localization
 
+For branded SSO, set `OIDC_PROVIDER_NAME=Authentik` (or another plain-text
+provider name) and leave `OIDC_BUTTON_TEXT` at its default. The catalog translates
+the whole sentence around the escaped provider name. Existing custom
+`OIDC_BUTTON_TEXT` sentences remain verbatim for backward compatibility; migrate
+such configuration to the provider-name setting for multilingual buttons.
+
 C11 provides English (`en`, default), French (`fr`) and Spanish (`es`) for the
 bundled web UI, email and user-facing server/browser feedback. The candidate
 release is `.49`, integrating moderation, sorting, dotted aliases, themes and

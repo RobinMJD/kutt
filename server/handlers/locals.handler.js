@@ -34,7 +34,7 @@ function config(req, res, next) {
   res.locals.login_label = res.locals.registration_enabled ? i18n.t("messages.log_in_sign_up") : i18n.t("ui.log_in");
   res.locals.login_title = res.locals.login_disabled ? i18n.t("messages.login_is_closed") : res.locals.registration_enabled ? i18n.t("messages.log_in_or_sign_up") : i18n.t("ui.log_in");
   res.locals.oidc_enabled = env.OIDC_ENABLED;
-  res.locals.oidc_button_text = env.OIDC_BUTTON_TEXT === "Log in with OIDC" ? i18n.t("auth.oidc_login") : env.OIDC_BUTTON_TEXT;
+  res.locals.oidc_button_text = env.OIDC_BUTTON_TEXT === "Log in with OIDC" ? i18n.t("auth.provider_login", { provider: env.OIDC_PROVIDER_NAME }) : env.OIDC_BUTTON_TEXT;
   res.locals.mail_enabled = env.MAIL_ENABLED;
   res.locals.report_email = env.REPORT_EMAIL;
   res.locals.custom_styles = utils.getCustomCSSFileNames();
