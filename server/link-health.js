@@ -105,7 +105,7 @@ async function save(req) {
       lease: null, lease_until: null,
       ...(row?.state === "authorization_required" && { checked_at: null, results: "[]", source_hash: null }) };
     if (row) await db("link_health").where({ link_id: link.id }).update(next);
-    else await db("link_health").insert({ link_id: link.id, ...next });
+    else await db("link_health").insert({ link_id: link.id, results: "[]", ...next });
     await history.record(db, link, "health_configured", ["health_monitoring"], { id: req.user.id, apiToken: req.apiToken });
     return view(link, req.user, db);
   });

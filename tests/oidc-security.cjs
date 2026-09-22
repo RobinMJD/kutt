@@ -7,7 +7,7 @@ const { setTimeout: delay } = require("node:timers/promises");
 const Database = require("better-sqlite3");
 const { SignJWT, generateKeyPair, exportJWK } = require("jose");
 
-module.exports = async function ({ root, directory, env, algorithm = "RS256" }) {
+module.exports = async function ({ root, directory, env, algorithm = "RS256", management = false }) {
   const { privateKey, publicKey } = await generateKeyPair(algorithm);
   const jwk = { ...await exportJWK(publicKey), kid: "test", alg: algorithm, use: "sig" };
   const alternate = algorithm === "ES256" ? "RS256" : "ES256";
@@ -37,6 +37,7 @@ module.exports = async function ({ root, directory, env, algorithm = "RS256" }) 
       }));
       if (url.pathname === "/jwks") return res.end(JSON.stringify({ keys: [jwk, otherJwk] }));
       if (url.pathname === "/authorize") {
+        assert.equal(url.searchParams.get("redirect_uri"), (management ? `http://localhost:${port}` : base) + "/login/oidc");
         assert.equal(url.searchParams.get("code_challenge_method"), "S256");
         const code = randomUUID();
         codes.set(code, { params: url.searchParams, profile: { ...profile } });
@@ -65,8 +66,9 @@ module.exports = async function ({ root, directory, env, algorithm = "RS256" }) 
   const port = reserve.address().port;
   await new Promise(resolve => reserve.close(resolve));
   const base = `http://127.0.0.1:${port}`;
-  const filename = path.join(directory, "oidc-" + algorithm + ".sqlite");
+  const filename = path.join(directory, "oidc-" + algorithm + (management ? "-management" : "") + ".sqlite");
   const childEnv = { ...env, NODE_ENV: "development", PORT: String(port), DEFAULT_DOMAIN: `127.0.0.1:${port}`,
+    MANAGEMENT_ORIGIN: management ? `http://localhost:${port}` : "",
     DB_FILENAME: filename, OIDC_ENABLED: "true", OIDC_ISSUER: issuer, OIDC_CLIENT_ID: "test-client", OIDC_CLIENT_SECRET: clientSecret,
     ...(algorithm !== "RS256" ? { OIDC_ID_TOKEN_SIGNING_ALG: algorithm } : {}) };
   const migrate = spawnSync(process.execPath, [path.join(root, "node_modules/knex/bin/cli.js"), "--knexfile", path.join(root, "knexfile.js"), "migrate:latest"],
@@ -76,9 +78,10 @@ module.exports = async function ({ root, directory, env, algorithm = "RS256" }) 
   const jar = new Map();
   async function request(method, pathname, body, cookies = jar, extra = {}) {
     const response = await fetch(base + pathname, { method, redirect: "manual", signal: AbortSignal.timeout(10000),
-      headers: { Accept: "application/json", "Content-Type": "application/json", Cookie: [...cookies].map(([key, value]) => key + "=" + value).join("; "), ...extra },
+      headers: { Accept: "application/json", "Content-Type": "application/json", ...(management && { Host: `localhost:${port}` }), Cookie: [...cookies].map(([key, value]) => key + "=" + value).join("; "), ...extra },
       body: body === undefined ? undefined : JSON.stringify(body) });
     for (const cookie of response.headers.getSetCookie()) {
+      if (management) assert(!/Domain=/i.test(cookie), "Split-origin OIDC cookies remain host-only");
       const [pair] = cookie.split(";"); const index = pair.indexOf("="); cookies.set(pair.slice(0, index), pair.slice(index + 1));
     }
     return response;
@@ -253,7 +256,7 @@ module.exports = async function ({ root, directory, env, algorithm = "RS256" }) 
     assert.equal((await login()).result.status, 401, "Explicit OIDC registration restriction is enforced");
     assert.equal(db.pragma("quick_check", { simple: true }), "ok");
     assert.equal(db.pragma("foreign_key_check").length, 0);
-    console.log("PASS: " + algorithm + " code/PKCE, stable identities, email boundary, signed logout/replay, absolute expiry, revocation, outage recovery, binding rollback and guarded downgrade");
+    console.log("PASS: " + algorithm + (management ? " management-origin" : "") + " code/PKCE, stable identities, email boundary, signed logout/replay, absolute expiry, revocation, outage recovery, binding rollback and guarded downgrade");
   } finally {
     db.close(); await stop(); await new Promise(resolve => provider.close(resolve));
   }

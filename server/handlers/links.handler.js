@@ -537,6 +537,11 @@ async function redirectProtected(req, res) {
     if (req.managementHost || !link || host !== (domain?.address || env.DEFAULT_DOMAIN)) {
       throw new CustomError(i18n.t("messages.couldn_t_find_the_link"), 404);
     }
+    const origin = req.get("Origin"), expected = new globalThis.URL(utils.getShortURL(link.address, domain?.address).url).origin;
+    if (req.get("Sec-Fetch-Site") === "cross-site" || origin && origin !== expected) {
+      res.status(403);
+      throw new CustomError(i18n.t("messages.invalid_request_origin"), 403);
+    }
   }
 
   // 2. Throw error if no link

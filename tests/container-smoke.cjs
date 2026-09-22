@@ -9,7 +9,7 @@ const net = require("node:net");
 const { setTimeout: delay } = require("node:timers/promises");
 
 async function main() {
-  assert([undefined, "destination-policy", "csp", "qr", "qr-branding", "i18n", "metrics", "theme", "geography", "dotted-aliases", "moderation", "list-sorting", "security-boundaries", "workspaces", "workspace-edit", "routing", "analytics", "privacy", "webhooks", "forwarding", "link-health", "shortcuts", "security-regressions", "admin-user-filter", "admin-edit", "accessibility", "dialogs", "library-ux", "validation", "transfer", "login-copy", "contrast", "copy", "responses", "login-navigation", "unavailable", "header", "campaign", "expiry-edit"].includes(process.env.KUTT_TEST_ONLY), "Unknown focused test selection");
+  assert([undefined, "management-domain-grants", "destination-policy", "csp", "qr", "qr-branding", "i18n", "metrics", "theme", "geography", "dotted-aliases", "moderation", "list-sorting", "security-boundaries", "workspaces", "workspace-edit", "routing", "analytics", "privacy", "webhooks", "forwarding", "link-health", "shortcuts", "security-regressions", "admin-user-filter", "admin-edit", "accessibility", "dialogs", "library-ux", "validation", "transfer", "login-copy", "contrast", "copy", "responses", "login-navigation", "unavailable", "header", "campaign", "expiry-edit"].includes(process.env.KUTT_TEST_ONLY), "Unknown focused test selection");
   const root = path.resolve(__dirname, "..");
   assert(!existsSync(path.join(root, ".env")), "Run in a clean checkout without a .env file");
   const directory = mkdtempSync(path.join(tmpdir(), "kutt-smoke-"));
@@ -228,6 +228,8 @@ async function main() {
     assert.equal((await request("GET", "/api/v2/tokens", undefined, token)).status, 200);
     await require("./oidc-security.cjs")({ root, directory, env });
     await require("./oidc-roles.cjs")({ root, directory, env });
+    await require("./management-domain-grants.cjs")();
+    await require("./oidc-security.cjs")({ root, directory, env, management: true });
     console.log("PASS: additive migration rollback and reapply preserve existing accounts and links");
     console.log("PASS: migrations, SQLite cleanup, bootstrap, login, access control, link CRUD and public redirect");
   } finally {

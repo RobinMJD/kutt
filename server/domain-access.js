@@ -51,7 +51,7 @@ async function request(db, req, domainId, scope, ownerId = req.user?.id) {
     const user = await current(db, db("users").where({ id: req.user.id, verified: true, banned: false })).first();
     if (!user || Number(user.auth_version) !== Number(req.user.auth_version)) fail("messages.sign_in_again", 401);
   }
-  if (domainId != null) await requireDomain(db, ownerId, { id: domainId });
+  if (domainId != null && ownerId !== null) await requireDomain(db, ownerId, { id: domainId });
   if (req.apiToken) {
     const token = await current(db, db("api_tokens").where({ id: req.apiToken, user_id: req.user.id })).first();
     if (!token || token.revoked_at != null || token.expires_at != null && Number(token.expires_at) <= Date.now() ||

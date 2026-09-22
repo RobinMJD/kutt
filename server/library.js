@@ -140,7 +140,7 @@ async function removeFilter(userId, id) {
   if (!await knex("library_filters").where({ id, user_id: userId }).delete()) fail(i18n.t("messages.saved_filter_was_not_found"), 404);
 }
 
-async function bulk(userId, input, actor, domainId) {
+async function bulk(userId, input, actor, domainId, request) {
   const { action, label_id: labelId } = input;
   const ids = typeof input.ids === "string" ? [input.ids] : input.ids;
   if (!Array.isArray(ids) || !ids.length || ids.length > 100 || ids.some(id => !uuid(id)) || new Set(ids).size !== ids.length) fail(i18n.t("messages.select_1_to_100_distinct_links"));
@@ -155,6 +155,7 @@ async function bulk(userId, input, actor, domainId) {
     }
     for (const row of rows) {
       if (action !== "trash") await require("./domain-access").link(db, row);
+      if (request) await require("./domain-access").request(db, request, row.domain_id, action === "trash" ? "links:delete" : "links:update", action === "trash" ? null : row.user_id);
       if (action === "trash") await history.trash(db, row, actor);
       else if (action === "pause" || action === "resume") {
         const paused = action === "pause";

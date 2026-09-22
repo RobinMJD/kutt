@@ -61,7 +61,7 @@ async function remove(req, res) {
     throw new CustomError(i18n.t("messages.could_not_delete_the_domain"), 400);
   }
   
-  const updatedDomain = await query.domain.release(domain.id, req.user.id);
+  const updatedDomain = await query.domain.release(domain.id, req.user.id, req.user);
 
   if (!updatedDomain) {
     throw new CustomError(i18n.t("messages.could_not_delete_the_domain"), 500);
@@ -94,7 +94,7 @@ async function removeAdmin(req, res) {
     throw new CustomError(i18n.t("messages.could_not_find_the_domain"), 400);
   }
 
-  await query.domain.remove(domain, { trashLinks: links === true, actor: { id: req.user.id } });
+  await query.domain.remove(domain, { trashLinks: links === true, actor: req.user });
 
   if (req.isHTML) {
     res.setHeader("HX-Reswap", "outerHTML");

@@ -47,9 +47,10 @@ async function claim({ address, homepage, user }) {
   return domain;
 }
 
-async function release(id, userId) {
+async function release(id, userId, user) {
   const domain = await knex.transaction(async db => {
     await require("../domain-access").lock(db);
+    if (user) await require("../domain-access").request(db, { user }, null);
     const changed = await db("domains").where({ id, user_id: userId }).update({ user_id: null, updated_at: utils.dateToUTC(new Date()) });
     const released = changed ? await db("domains").where({ id }).first() : null;
     if (released) await require("../domain-access").invalidate(db, released);
@@ -61,32 +62,19 @@ async function release(id, userId) {
 
 async function add(params) {
   params.address = params.address.toLowerCase();
-
-  const existingDomain = await knex("domains").where("address", params.address).first();
-
-  let id = existingDomain?.id;
-
-  const newDomain = {
-    address: params.address,
-    homepage: params.homepage,
-    user_id: params.user_id,
-    banned: !!params.banned,
-    banned_by_id: params.banned_by_id
-  };
-
-  if (id) {
-    await knex("domains").where("id", id).update({
-      ...newDomain,
-      updated_at: params.updated_at || utils.dateToUTC(new Date())
-    });
-  } else {
-    // Mysql and sqlite don't support returning but return the inserted id by default
-    const [createdDomain] = await knex("domains").insert(newDomain, "*");
-    id = typeof createdDomain === "number" ? createdDomain : createdDomain.id;
-  }
-
-  // Query domain instead of using returning as sqlite and mysql don't support it
-  const domain = await knex("domains").where("id", id).first();
+  if (require("../management-origin").reserved(params.address)) throw new utils.CustomError(i18n.t("domain_grants.management_reserved"), 400);
+  let existingDomain;
+  const domain = await knex.transaction(async db => {
+    await require("../domain-access").lock(db);
+    existingDomain = await db("domains").where("address", params.address).first();
+    const fields = { address: params.address, homepage: params.homepage, user_id: params.user_id,
+      banned: !!params.banned, banned_by_id: params.banned_by_id };
+    if (existingDomain) {
+      if (fields.banned || fields.user_id !== existingDomain.user_id) await require("../domain-access").invalidate(db, existingDomain);
+      await db("domains").where({ id: existingDomain.id }).update({ ...fields, updated_at: params.updated_at || utils.dateToUTC(new Date()) });
+    } else await db("domains").insert(fields);
+    return db("domains").where({ address: params.address }).first();
+  });
 
   if (env.REDIS_ENABLED) {
     redis.remove.domain(existingDomain);
@@ -104,11 +92,18 @@ async function update(match, update) {
     domains = await knex("domains").select("*").where(match);
   }
   
-  await knex("domains")
-    .where(match)
-    .update({ ...update, updated_at: utils.dateToUTC(new Date()) });
-
-  const updated_domains = await knex("domains").select("*").where(match);
+  if (update.address && require("../management-origin").reserved(update.address)) throw new utils.CustomError(i18n.t("domain_grants.management_reserved"), 400);
+  const updated_domains = await knex.transaction(async db => {
+    await require("../domain-access").lock(db);
+    const rows = await db("domains").where(match);
+    for (const row of rows) {
+      if (update.banned === true || update.user_id !== undefined && update.user_id !== row.user_id || update.address && update.address !== row.address) {
+        await require("../domain-access").invalidate(db, row);
+      }
+    }
+    await db("domains").where(match).update({ ...update, updated_at: utils.dateToUTC(new Date()) });
+    return db("domains").whereIn("id", rows.map(row => row.id));
+  });
 
   if (env.REDIS_ENABLED) {
     domains.forEach(redis.remove.domain);
@@ -235,6 +230,7 @@ async function totalAdmin(match, params) {
 async function remove(domain, { trashLinks = false, actor = {} } = {}) {
   const deletedDomain = await knex.transaction(async db => {
     await require("../domain-access").lock(db);
+    if (actor.auth_version !== undefined) await require("../moderation").lock(db, actor);
     await require("../domain-access").invalidate(db, domain);
     const links = await db("links").where({ domain_id: domain.id });
     if (links.some(link => link.deleted_at == null) && !trashLinks) {

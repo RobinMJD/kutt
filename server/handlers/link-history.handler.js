@@ -61,7 +61,7 @@ async function restore(req, res) {
   sameOrigin(req);
   res.set("Cache-Control", "no-store");
   res.locals.id = req.params.id;
-  const old = await history.restore(req.params.id, req.user.id, { id: req.user.id, apiToken: req.apiToken }, req.apiTokenDomain);
+  const old = await history.restore(req.params.id, req.user.id, { id: req.user.id, apiToken: req.apiToken }, req.apiTokenDomain, req);
   if (env.REDIS_ENABLED) redis.remove.link(old);
   const link = await query.link.find({ uuid: req.params.id, user_id: req.user.id }, { fresh: true });
   if (!req.isHTML) return res.json(sanitize.link(link));

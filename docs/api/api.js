@@ -32,6 +32,39 @@ module.exports = {
     }
   ],
   paths: {
+    "/domains/available": {
+      get: {
+        tags: ["domains"], summary: "List currently available owned or explicitly granted short domains",
+        description: "No implicit global sharing. Session/legacy account or links:create token; token domain restriction applies. Management origin required when configured.",
+        security: [{ SessionAuth: [] }, { APIKeyAuth: [] }],
+        responses: { "200": { description: "data entries: id (domain UUID), address, owned (boolean)" }, "401": { description: "Authentication required" }, "403": { description: "Token scope denied" } }
+      }
+    },
+    "/domains/{id}/grants": {
+      parameters: [{ name: "id", in: "path", required: true, schema: { type: "string", format: "uuid" } }],
+      get: {
+        tags: ["domains"], summary: "List explicit per-user domain grants",
+        description: "Domain owner or current administrator. Named tokens require domains:share and ownership, never administrator inheritance. No onward sharing by recipients.",
+        security: [{ SessionAuth: [] }, { APIKeyAuth: [] }],
+        responses: { "200": { description: "domain object and data entries: id (grant UUID), email, created_at (UTC ISO date)" }, "403": { description: "Token scope denied" }, "404": { description: "Domain unavailable" } }
+      },
+      post: {
+        tags: ["domains"], summary: "Grant a verified account use of a short domain",
+        description: "Owner/admin only; owner named tokens require domains:share. Session writes require matching Origin when supplied. Maximum 100 grants per domain and recipient. New links belong to their creator; no ownership or analytics access transfers.",
+        security: [{ SessionAuth: [] }, { APIKeyAuth: [] }],
+        requestBody: { required: true, content: { "application/json": { schema: { type: "object", additionalProperties: false, required: ["email"], properties: { email: { type: "string", format: "email", maxLength: 255 } } } } } },
+        responses: { "201": { description: "Created grant: id, email, created_at" }, "400": { description: "Invalid or unavailable recipient" }, "403": { description: "Origin, domain or scope denied" }, "404": { description: "Domain unavailable" }, "409": { description: "Duplicate or grant limit" }, "429": { description: "Rate limited" } }
+      }
+    },
+    "/domains/{id}/grants/{grantId}": {
+      delete: {
+        tags: ["domains"], summary: "Revoke a per-user domain grant",
+        description: "Same owner/admin/domains:share boundary as grant creation. Atomically invalidates domain-scoped tokens and health schedules. Existing public redirects and independent bans remain unchanged; regrant does not reactivate tokens or schedules.",
+        security: [{ SessionAuth: [] }, { APIKeyAuth: [] }],
+        parameters: ["id", "grantId"].map(name => ({ name, in: "path", required: true, schema: { type: "string", format: "uuid" } })),
+        responses: { "204": { description: "Revoked" }, "403": { description: "Origin or scope denied" }, "404": { description: "Domain/grant unavailable" }, "429": { description: "Rate limited" } }
+      }
+    },
     "/links/{id}/qr": {
       get: {
         tags: ["links"], summary: "Download an unbranded QR image",
