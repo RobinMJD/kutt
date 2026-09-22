@@ -51,7 +51,7 @@
         if (!width || !height || width > 512 || height > 512 || bytes[28]) throw failure(messages.logo);
         let encoded = "";
         for (let start = 0; start < bytes.length; start += 8192) encoded += String.fromCharCode(...bytes.subarray(start, start + 8192));
-        logo = "data:image/png;base64," + btoa(encoded);
+        logo = btoa(encoded);
       }
       const settings = { size: form.elements.size.value, level: level.value, ...(logo && { logo }) };
       const fetchImage = async format => {

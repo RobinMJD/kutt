@@ -8,7 +8,8 @@ const { CustomError } = require("../server/utils");
 
 (async () => {
   try {
-    const bytes = logo(), decoded = logos.decode(uri(metadata(bytes)));
+    const bytes = logo(), encoded = metadata(bytes).toString("base64"), decoded = logos.decode(encoded);
+    assert.deepEqual(logos.decode("data:image/png;base64," + encoded), decoded, "Plain base64 and exact legacy PNG data URI decode identically");
     assert.deepEqual(decoded.data, PNG.sync.read(bytes).data);
     assert.deepEqual(Object.keys(decoded).sort(), ["data", "height", "width"]);
     const i18n = require("../server/i18n");
@@ -19,6 +20,8 @@ const { CustomError } = require("../server/utils");
     const header = Buffer.from(bytes.subarray(16, 29));
     const withHeader = data => Buffer.concat([bytes.subarray(0, 8), chunk("IHDR", data), bytes.subarray(33)]);
     const bad = [null, {}, [], "", "https://example.invalid/logo.png", "data:image/svg+xml;base64,PHN2Zy8+", "data:image/png;base64,!!!!", uri(Buffer.from("<svg/>")),
+      "data:image/jpeg;base64," + encoded, "DATA:image/png;base64," + encoded, "data:image/png;name=logo.png;base64," + encoded,
+      "data:image/png," + encoded, " " + encoded, encoded + "\n", encoded.slice(0, -1) + "_",
       uri(bytes) + "=", uri(bytes).replace("base64,", "base64,\n"), uri(Buffer.alloc(65537)), uri(Buffer.concat([bytes, Buffer.from("junk")])), uri(bytes.subarray(0, -1)),
       uri(Buffer.concat([bytes.subarray(0, 33), chunk("acTL", Buffer.alloc(8)), bytes.subarray(33)])),
       uri(Buffer.concat([bytes.subarray(0, 33), bytes.subarray(8, 33), bytes.subarray(33)]))];
@@ -30,16 +33,30 @@ const { CustomError } = require("../server/utils");
     }
     const corrupt = Buffer.from(bytes); corrupt[29] ^= 1; bad.push(uri(corrupt));
     const ancillary = metadata(bytes); ancillary[ancillary.indexOf("private-fixture")] ^= 1; bad.push(uri(ancillary));
+    for (const text of ["k\0", "k\0x", "k\0xx"]) {
+      const padded = Buffer.concat([bytes.subarray(0, 33), chunk("tEXt", Buffer.from(text)), bytes.subarray(33)]).toString("base64");
+      if (!padded.endsWith("=")) continue;
+      const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/", at = padded.length - (padded.endsWith("==") ? 3 : 2);
+      const noncanonical = padded.slice(0, at) + alphabet[alphabet.indexOf(padded[at]) | 1] + padded.slice(at + 1);
+      assert.deepEqual(Buffer.from(noncanonical, "base64"), Buffer.from(padded, "base64"));
+      bad.push("data:image/png;base64," + noncanonical);
+    }
     for (const payload of [deflateSync(Buffer.alloc(4 * 1024 * 1024)), deflateSync(Buffer.from([0])), Buffer.from("not-zlib")]) {
       bad.push(uri(Buffer.concat([bytes.subarray(0, 33), chunk("IDAT", payload), chunk("IEND", Buffer.alloc(0))])));
     }
     let calls = 0;
     const read = PNG.sync.read;
     PNG.sync.read = (...args) => { calls++; return read(...args); };
-    try { for (const input of bad) assert.throws(() => logos.decode(input), error => error instanceof CustomError && error.statusCode === 400); }
+    const invalid = bad.flatMap(input => typeof input === "string" && input.startsWith("data:image/png;base64,")
+      ? [input, input.slice("data:image/png;base64,".length)] : [input]);
+    invalid.push("data:image/png;base64," + uri(bytes));
+    try { for (const input of invalid) assert.throws(() => logos.decode(input), error => error instanceof CustomError && error.statusCode === 400); }
     finally { PNG.sync.read = read; }
     assert.equal(calls, 0, "Malformed/oversized/framing/inflate inputs must fail before the raster decoder");
-    for (const dimensions of [[1, 1], [512, 1], [1, 512], [512, 512]]) assert.equal(logos.decode(uri(logo(...dimensions))).width, dimensions[0]);
+    for (const dimensions of [[1, 1], [512, 1], [1, 512], [512, 512]]) {
+      const bytes = logo(...dimensions);
+      for (const input of [bytes.toString("base64"), uri(bytes)]) assert.equal(logos.decode(input).width, dimensions[0]);
+    }
 
     const decoder = process.argv.includes("--decode") ? require(process.env.QR_DECODER_MODULE || "./browser-deps/node_modules/jsqr") : null;
     const urls = ["https://q.invalid/a", "https://q.invalid/guide.pdf", "https://qr.example.invalid/docs/v1.2/guide.pdf",
@@ -80,6 +97,6 @@ const { CustomError } = require("../server/utils");
         assert.equal(result, url, `Decode ${size}px, ${modules.size} modules`); decodedCount++;
       }
     }
-    console.log("PASS: bounded PNG framing/CRC/IHDR/inflate before decode, metadata stripping, center-only PNG/SVG branding and quiet zones" + (decoder ? "; jsQR decoded " + decodedCount + " size/alias cases (" + normalizedCount + " normalized scale, with plain control)" : ""));
+    console.log("PASS: equivalent plain base64/legacy data URI, identical bounded PNG framing/CRC/IHDR/inflate before decode, metadata stripping, center-only PNG/SVG branding and quiet zones" + (decoder ? "; jsQR decoded " + decodedCount + " size/alias cases (" + normalizedCount + " normalized scale, with plain control)" : ""));
   } finally { await require("../server/knex").destroy(); }
 })().catch(error => { console.error(error.stack); process.exitCode = 1; });

@@ -10,9 +10,9 @@ const SIGNATURE = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
 const fail = () => { throw new CustomError(i18n.t("qr.invalid_logo"), 400); };
 
 function decode(input) {
-  if (typeof input !== "string" || input.length > PREFIX.length + 4 * Math.ceil(MAX_BYTES / 3) || !input.startsWith(PREFIX)) fail();
-  const encoded = input.slice(PREFIX.length);
-  if (!encoded.length || encoded.length % 4 || !/^[A-Za-z0-9+/]*={0,2}$/.test(encoded)) fail();
+  if (typeof input !== "string" || input.length > PREFIX.length + 4 * Math.ceil(MAX_BYTES / 3)) fail();
+  const encoded = input.startsWith(PREFIX) ? input.slice(PREFIX.length) : input;
+  if (!encoded.length || encoded.length > 4 * Math.ceil(MAX_BYTES / 3) || encoded.length % 4 || !/^[A-Za-z0-9+/]*={0,2}$/.test(encoded)) fail();
   const bytes = Buffer.from(encoded, "base64");
   if (bytes.length > MAX_BYTES || bytes.length < 45 || bytes.toString("base64") !== encoded || !bytes.subarray(0, 8).equals(SIGNATURE)) fail();
   if (bytes.readUInt32BE(8) !== 13 || bytes.toString("latin1", 12, 16) !== "IHDR") fail();

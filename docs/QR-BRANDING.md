@@ -22,9 +22,18 @@ Both `/api/links/{id}/qr` and `/api/v2/links/{id}/qr` accept authenticated POST:
 {
   "size": 512,
   "format": "svg",
-  "logo": "data:image/png;base64,..."
+  "logo": "iVBORw0KGgo..."
 }
 ```
+
+`logo` is the complete canonical standard-base64 encoding of the PNG file, with
+required padding and no whitespace; the example above is abbreviated. Plain
+base64 is preferred and is what the browser sends, avoiding data-URI syntax in
+the JSON request. The exact legacy `data:image/png;base64,` prefix remains
+accepted for API compatibility; other URI types, parameters and prefix variants
+are rejected. Both forms have identical validation and generated image bytes.
+This requires no WAF exception or policy change. Deployment-specific WAF
+acceptance still needs verification with the actual upload request.
 
 Use a session or an `X-API-Key` with `links:read` and the appropriate domain scope.
 Only the link owner may export, including administrator sessions. Existing ban,
@@ -42,8 +51,9 @@ empty logos produce 400, never a silent plain-image fallback.
 
 ## Input and rendering limits
 
-- PNG data URLs only: no SVG, JPEG, remote URL, raw base64, whitespace or malformed
-  base64. Up to 64 KiB decoded bytes and 512 by 512 pixels. The global JSON body
+- Canonical plain PNG base64, or the exact legacy PNG data URI: no SVG, JPEG,
+  remote URL, URL-safe base64, whitespace or malformed/noncanonical base64.
+  Up to 64 KiB decoded bytes and 512 by 512 pixels. The global JSON body
   limit remains unchanged at 100 KiB.
 - A POST-only parser wrapper returns sanitized JSON errors directly, keeping
   malformed upload bodies out of the existing global request-error logger.
@@ -72,7 +82,8 @@ schema migration or deployment configuration is required.
 
 `qr-branding.cjs` runs in the full container suite, or with
 `KUTT_TEST_ONLY=qr-branding`. It includes the bounded input/raster unit suite,
-ownership/scopes/origin/lifecycle checks, plain GET/POST equivalence, zero visits,
+ownership/scopes/origin/lifecycle checks, both logo encodings with identical
+PNG/SVG bytes and rejection bounds, plain GET/POST equivalence, zero visits,
 metadata/privacy checks and restart/revocation. `qr-logo-unit.cjs --decode`
 additionally requires the isolated test decoder and independently reads actual
 PNGs across plain/dotted/nested/long-alias and custom-host sizes. One dense 1024px
@@ -81,7 +92,8 @@ image; this is recorded, not counted as a native-resolution decode.
 
 `tests/browser-qr-branding.sh IMAGE` creates a fresh loopback SQLite fixture and
 runs `browser-qr-branding.cjs` at 1440/390/320px using Playwright and the test
-decoder. It checks actual downloaded PNG and rasterized SVG, visible logo pixels,
+decoder. It asserts actual browser POSTs contain plain base64, not a data URI,
+and checks downloaded PNG and rasterized SVG, visible logo pixels,
 clipboard PNG, print layout, file rejection/retry, keyboard controls, late render
 and clipboard results, object-URL cleanup and visit counts. It never uses the
 operator's real clipboard or fetches the encoded destination. Physical scanning,
