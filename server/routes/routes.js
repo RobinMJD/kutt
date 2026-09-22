@@ -13,11 +13,13 @@ const tokenHandlers = require("../handlers/tokens.handler");
 const asyncHandler = require("../utils/asyncHandler");
 
 const renderRouter = Router();
+renderRouter.use("/admin/moderation", require("./moderation.routes").pages);
 renderRouter.use(renders);
 
 const apiRouter = Router();
 apiRouter.use(locals.noLayout);
 apiRouter.use(asyncHandler(tokenHandlers.authenticate));
+apiRouter.use("/moderation", require("./moderation.routes").api);
 apiRouter.use("/tokens", tokens);
 apiRouter.use("/shortcuts", require("./shortcuts.routes"));
 apiRouter.use("/webhooks", require("./webhooks.routes"));

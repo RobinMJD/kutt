@@ -224,7 +224,7 @@ const addDomainAdmin = [
   body("banned")
     .optional({ nullable: true })
     .customSanitizer(sanitizeCheckbox)
-    .isBoolean(),
+    .isBoolean().toBoolean(),
 ]
 
 const removeDomain = [
@@ -346,7 +346,7 @@ const banDomain = [
     })
     .customSanitizer(sanitizeCheckbox)
     .isBoolean(),
-  body("domains", '"domains" should be a boolean.')
+  body("user", '"user" should be a boolean.')
     .optional({
       nullable: true
     })
@@ -378,15 +378,15 @@ const createUser = [
   body("verified")
     .optional({ nullable: true })
     .customSanitizer(sanitizeCheckbox)
-    .isBoolean(),
+    .isBoolean().toBoolean(),
   body("banned")
     .optional({ nullable: true })
     .customSanitizer(sanitizeCheckbox)
-    .isBoolean(),
+    .isBoolean().toBoolean(),
   body("verification_email")
     .optional({ nullable: true })
     .customSanitizer(sanitizeCheckbox)
-    .isBoolean(),
+    .isBoolean().toBoolean(),
 ];
 
 const getStats = [
@@ -519,10 +519,10 @@ const deleteUserByAdmin = [
 ];
 
 async function bannedDomain(domain) {
-  const isBanned = await query.domain.find({
+  const isBanned = await require("../knex")("domains").where({
     address: domain,
     banned: true
-  });
+  }).first();
 
   if (isBanned) {
     throw new utils.CustomError("Domain is banned.", 400);
@@ -537,10 +537,10 @@ async function bannedHost(domain) {
 
     if (!dnsRes || !dnsRes.address) return;
 
-    isBanned = await query.host.find({
+    isBanned = await require("../knex")("hosts").where({
       address: dnsRes.address,
       banned: true
-    });
+    }).first();
   } catch (error) {
     isBanned = null;
   }

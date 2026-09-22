@@ -36,7 +36,7 @@ async function list(userId) {
   return rows.map(sanitize);
 }
 
-async function create(userId, input) {
+async function create(userId, input, authVersion) {
   const name = typeof input.name === "string" ? input.name.trim() : "";
   const scopes = typeof input.scopes === "string" ? [input.scopes] : input.scopes;
   if (!name || name.length > 80) throw new CustomError("Name must be 1 to 80 characters.", 400);
@@ -79,7 +79,17 @@ async function create(userId, input) {
     domain_scope: domainScope,
     created_at: Date.now(), expires_at: expires, revoked_at: null, last_used_at: null
   };
-  await knex("api_tokens").insert(row);
+  await knex.transaction(async db => {
+    const owner = await db("users").where({ id: userId }).forUpdate().first();
+    if (!owner || owner.banned || !owner.verified || authVersion === undefined || Number(owner.auth_version) !== Number(authVersion)) {
+      throw new CustomError("Sign in again before creating a token.", 401);
+    }
+    if (domainScope !== "all" && domainScope !== "default" &&
+        !await db("domains").where({ uuid: domainScope, user_id: userId, banned: false }).first()) {
+      throw new CustomError("Domain was not found.", 400);
+    }
+    await db("api_tokens").insert(row);
+  });
   return { ...sanitize(row), token };
 }
 
@@ -98,7 +108,12 @@ async function resolve(value) {
       (row.expires_at != null && Number(row.expires_at) <= Date.now())) return null;
   if (value.length === 50 && row.domain_scope === "all") return null;
   // Bypass the user cache so bans and verification changes apply immediately.
-  const user = await knex("users").where({ id: row.user_id }).first();
+  const user = await knex("users").where({ "users.id": row.user_id })
+    .whereExists(db => db.select("api_tokens.id").from("api_tokens")
+      .where({ "api_tokens.id": row.id, "api_tokens.token_hash": hash(value) }).whereNull("api_tokens.revoked_at")
+      .whereColumn("api_tokens.user_id", "users.id")
+      .where(expiry => expiry.whereNull("api_tokens.expires_at").orWhere("api_tokens.expires_at", ">", Date.now())))
+    .first();
   if (!user || user.banned || !user.verified) return null;
   let domainId;
   if (row.domain_scope === "default") domainId = null;

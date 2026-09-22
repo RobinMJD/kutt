@@ -47,7 +47,7 @@ async function removeByAdmin(req, res) {
     }
   }
   
-  await query.user.remove(user);
+  await query.user.remove(user, req.user, true);
 
   if (req.isHTML) {
     res.setHeader("HX-Reswap", "outerHTML");
@@ -103,45 +103,10 @@ async function getAdmin(req, res) {
 };
 
 async function ban(req, res) {
-  const { id } = req.params;
+  const moderation = require("../moderation");
+  const user = await moderation.moderate("user", req.params.id, true, req.user, moderation.options(req));
 
-  const update = {
-    banned_by_id: req.user.id,
-    banned: true
-  };
-
-  // 1. check if user exists
-  const user = await query.user.find({ id });
-
-  if (!user) {
-    throw new CustomError("No user has been found.", 400);
-  }
-
-  if (user.banned) {
-    throw new CustomError("User has been banned already.", 400);
-  }
-
-  const tasks = [];
-
-  // 2. ban user
-  tasks.push(query.user.update({ id }, update));
-  
-  // 3. ban user links
-  if (req.body.links) {
-    tasks.push(query.link.update({ user_id: id }, update, { id: req.user.id }));
-  }
-  
-  // 4. ban user domains
-  if (req.body.domains) {
-    tasks.push(query.domain.update({ user_id: id }, update));
-  }
-
-  // 5. wait for all tasks to finish
-  await Promise.all(tasks).catch((err) => {
-    throw new CustomError("Couldn't ban entries.");
-  });
-
-  // 6. send response
+  // Send the response only after the complete transaction commits.
   if (req.isHTML) {
     res.setHeader("HX-Reswap", "outerHTML");
     res.setHeader("HX-Trigger", "reloadMainTable");

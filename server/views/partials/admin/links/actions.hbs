@@ -5,9 +5,9 @@
     </button>
   {{/if}}
   {{#if banned}}
-    <button class="action banned" disabled="true" aria-label="Banned" data-tooltip="Banned">
+    <a class="button action banned" href="/admin/moderation/link/{{id}}" aria-label="Remove ban for {{link.address}}" title="Remove ban">
       {{> icons/stop}}
-    </button>
+    </a>
   {{/if}}
   <a
     class="button action stats"

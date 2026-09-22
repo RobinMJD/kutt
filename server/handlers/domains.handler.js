@@ -37,12 +37,7 @@ async function add(req, res) {
 async function addAdmin(req, res) {
   const { address, banned, homepage } = req.body;
 
-  const domain = await query.domain.add({
-    address,
-    homepage,
-    banned,
-    ...(banned && { banned_by_id: req.user.id })
-  });
+  const domain = await require("../moderation").addDomain({ address, homepage, banned }, req.user);
 
   if (req.isHTML) {
     res.setHeader("HX-Trigger", "reloadMainTable");
@@ -152,45 +147,10 @@ async function getAdmin(req, res) {
 }
 
 async function ban(req, res) {
-  const { id } = req.params;
+  const moderation = require("../moderation");
+  const domain = await moderation.moderate("domain", req.params.id, true, req.user, moderation.options(req));
 
-  const update = {
-    banned_by_id: req.user.id,
-    banned: true
-  };
-
-  // 1. check if domain exists
-  const domain = await query.domain.find({ id });
-
-  if (!domain) {
-    throw new CustomError("No domain has been found.", 400);
-  }
-
-  if (domain.banned) {
-    throw new CustomError("Domain has been banned already.", 400);
-  }
-
-  const tasks = [];
-
-  // 2. ban domain
-  tasks.push(query.domain.update({ id }, update));
-  
-  // 3. ban user
-  if (req.body.user && domain.user_id) {
-    tasks.push(query.user.update({ id: domain.user_id }, update));
-  }
-  
-  // 4. ban links
-  if (req.body.links) {
-    tasks.push(query.link.update({ domain_id: id }, update, { id: req.user.id }));
-  }
-  
-  // 5. wait for all tasks to finish
-  await Promise.all(tasks).catch((err) => {
-    throw new CustomError("Couldn't ban entries.");
-  });
-
-  // 6. send response
+  // Send the response only after the complete transaction commits.
   if (req.isHTML) {
     res.setHeader("HX-Reswap", "outerHTML");
     res.setHeader("HX-Trigger", "reloadMainTable");

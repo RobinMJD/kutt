@@ -27,7 +27,7 @@ async function create(req, res) {
   }
   res.status(201).json(await tokens.create(req.user.id, {
     name: req.body.name, scopes: ["links:create"], domain_scope: "default", expires_in_days: 30
-  }));
+  }, req.user.auth_version));
 }
 function template(req, res) {
   res.set("X-Content-Type-Options", "nosniff");

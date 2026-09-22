@@ -21,15 +21,15 @@ automatic domain renaming, historical analytics rewriting or data deletion.
 | --- | --- | --- | --- |
 | C01 | Safari analytics classification | Complete | `.41`; evidence below |
 | C02 | Prefix-only hostname normalization | Complete | `.41`; evidence below |
-| C03 | Transactional, reversible administrative moderation and session safety | Pending | Pending |
+| C03 | Transactional, reversible administrative moderation and session safety | Implemented; release gates pending | Candidate `.45`; API/browser/real-database checks passed |
 | C04 | Strict peer/CIDR/hop reverse-proxy trust | Complete | `.42`; evidence below |
 | C05 | Compatible staged and enforced Content Security Policy | Pending | Pending |
 | C06 | MySQL utf8mb4 search compatibility and real database tests | Complete | `.42`; evidence below |
-| C07 | Verified remote database TLS and credential-file configuration | Implemented; release gates pending | Candidate `.43` |
-| C08 | Consistent verified Redis TLS for cache, queues and limiting | Implemented; release gates pending | Candidate `.43` |
+| C07 | Verified remote database TLS and credential-file configuration | Complete | `.43`; evidence below |
+| C08 | Consistent verified Redis TLS for cache, queues and limiting | Complete | `.43`; evidence below |
 | C09 | Configurable asymmetric OIDC signing algorithm | Complete | `.42`; evidence below |
 | C10 | Custom-domain API routing without homepage interception | Complete | `.42`; evidence below |
-| C11 | Complete English (default), French and Spanish localization | Pending | Pending |
+| C11 | Complete English (default), French and Spanish localization | In progress | Isolated catalog/template/browser implementation; integration and release gates pending |
 | C12 | Stable allowlisted sorting in personal, admin and workspace tables/API | Implemented; release gates pending | Candidate `.44` |
 | C13 | Branded QR logos embedded in validated PNG/SVG exports | Pending | Pending |
 | C14 | Accessible dark/system/light theme | Pending | Pending |
@@ -37,7 +37,7 @@ automatic domain renaming, historical analytics rewriting or data deletion.
 | C16 | Optional separate management hostname and explicit shared-domain grants | Pending | Pending |
 | C17 | Optional consistent destination-domain policy | Pending | Pending |
 | C18 | Private authenticated performance metrics with bounded labels | Pending | Pending |
-| C19 | Safe dotted aliases with reserved-path protections | Pending | Pending |
+| C19 | Safe dotted aliases with reserved-path protections | In progress | Isolated implementation and browser tests; MySQL race remediation and release gates pending |
 | C20 | Accessible interactive geography chart and text alternative | Pending | Pending |
 | C21 | Profile visit aggregation; safely batch only where warranted | Pending | Pending |
 
@@ -129,8 +129,18 @@ review complete while required work remains.
 - Full default SQLite regression and real MySQL/PostgreSQL Unicode search tests
   pass. Independent read-only review found no remaining scoped issue. No live
   database/Redis policy changes are needed for the current SQLite deployment.
-- Publication, exact-wrapper regression and backup/deployment acceptance remain
-  pending. See [transport configuration and recovery](TRANSPORT-TLS.md).
+- Main/tag CI `35671924619` / `35671925066`, exact-wrapper regression, fresh
+  scan (zero Critical/High), public WAF feature tests and Authentik-signed
+  logout/replay passed. The first health sample failed on a transient probe;
+  retained evidence records that failure. Recheck passed all three fresh probes,
+  with no alerts/restarts/failed units/unhealthy containers in two samples 65
+  seconds apart. Whole-lab validation passed without relaxed thresholds.
+- Pre-change backup 2026-09-22 00:51:57 UTC: local `5058a926`, NAS `98926bcb`.
+  Post-change 01:18:43 UTC: local `0d087799`, NAS `631c878f`. Both restored and
+  byte-verified 63 files; original and candidate writable SQLite recovery passed.
+  Original records and integrity/foreign keys unchanged. Homelab publication
+  `62b1cc1`; private report `2026-09-22-kutt-community-43`.
+  See [transport configuration and recovery](TRANSPORT-TLS.md).
 
 ## Evidence: C12
 
@@ -147,3 +157,24 @@ review complete while required work remains.
   problems were fixed and reproduced in the browser regression test.
 - No migration is required. Publication, final regression, exact-image recovery
   and deployment remain separate gates. See [sorting](LIST-SORTING.md).
+
+## Evidence: C03
+
+- Atomic related-target bans, explicit independent unban and private audit
+  preserve domain ownership/homepage and deny self-administrative or final-admin
+  removal. Fresh locked actor/token checks prevent ban/unban credential revival.
+- SQLite, MySQL 8.4 and PostgreSQL 17 passed competing-administrator, token/ban,
+  cache-invalidation retry, transaction rollback and downgrade-guard fixtures.
+  HTTP checks cover strict boolean flags, both credential classes, CSRF, DNS
+  failure rollback, metadata retention, native confirmation and restart.
+- Playwright at 1440/390/320px passed actual HTMX ban checkboxes, keyboard/native
+  unban, independent child bans, audit and public redirects. Screenshots were
+  reviewed. A native `Origin: null` failure was reproduced and fixed with a
+  same-origin-only referrer policy on moderation pages; null/foreign origins
+  remain rejected and HTML errors retain their actual status.
+- Read-only follow-up found no remaining scoped finding after fixing stale ban
+  reads, awaited/retryable cache invalidation, legacy body-key compatibility and
+  the stylesheet path. This is bounded review, not a whole-application guarantee.
+- Browser plugin unavailable: regular Playwright supplied this evidence. Full
+  source/exact-image regression, release CI, publication, recoverable deployment
+  and public acceptance remain release gates. See [moderation](MODERATION.md).

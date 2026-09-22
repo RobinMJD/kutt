@@ -1,0 +1,16 @@
+{{> header}}
+<main class="moderation-page">
+  <h1>Remove ban</h1>
+  <p>{{label}}</p>
+  {{#if banned}}
+    <p>Only this ban will be removed. Related links, domains and accounts keep their own bans. Revoked sessions and API keys will not be restored.</p>
+    <form method="post" action="/admin/moderation/{{entity}}/{{id}}">
+      <button class="primary" type="submit">Remove ban</button>
+      <a href="/admin/moderation?entity={{entity}}">Cancel</a>
+    </form>
+  {{else}}
+    <p>This entry is not banned.</p>
+    <a href="/admin/moderation?entity={{entity}}">Back to moderation</a>
+  {{/if}}
+</main>
+{{> footer}}

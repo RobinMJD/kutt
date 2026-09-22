@@ -17,7 +17,7 @@ the upstream hosted service.
 ## Project status
 
 As of **22 September 2026**, the current deployed application version is
-[3.2.6-sr94.42](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.42).
+[3.2.6-sr94.43](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.43).
 All 16 original roadmap features, the selected community improvements and 25
 confirmed UI/UX fixes have passed their recorded release and homelab deployment
 gates. Release `.40` added DNS ownership verification and closed seven security
@@ -27,8 +27,8 @@ API correctness, preserving management authorization and public redirects.
 Exact-image tests, public WAF regression and pre/post off-host writable restores passed.
 
 The next community work list is approved and in progress, including full English,
-French and Spanish translations. Verified database/Redis TLS is published in
-`.43` and under deployment validation; stable table sorting is the next candidate.
+French and Spanish translations. Verified database/Redis TLS in `.43` passed
+deployment/recovery gates; stable table sorting `.44` is under deployment validation.
 See the
 delivery ledger for publication and deployment gates; pending additions are
 not yet claimed as complete.
@@ -68,6 +68,7 @@ visit statistics, local accounts and administrator tools. It adds:
 | API access | [Named, scoped, expiring and revocable tokens](docs/API-TOKENS.md), domain restrictions and retry-safe idempotent link creation |
 | Link availability | [Pause, scheduled start/end and maximum visits](docs/LINK-LIFECYCLE.md), enforced when a redirect is requested |
 | Recovery | [Change history, trash and restore](docs/LINK-HISTORY.md), with protection against silently reusing retired aliases |
+| Moderation (candidate) | [Atomic administrative bans, explicit recovery and audit](docs/MODERATION.md), with permanent credential revocation and final-administrator protection; release gates pending |
 | Sign-in | [Stable OIDC identity binding, session revocation, signed back-channel logout and diagnostics](docs/OIDC-SECURITY.md) |
 | Organization | [Tags, collections, saved filters and bulk actions](docs/LIBRARY.md) |
 | Data transfer | [CSV/JSON import and export](docs/TRANSFER.md), templates, dry-run previews and explicit conflict handling |
@@ -96,7 +97,7 @@ checked-out source, persists SQLite and custom assets in named volumes, and
 publishes only `127.0.0.1:3000` on the Docker host.
 
 ```sh
-git clone --branch v3.2.6-sr94.42 --depth 1 https://github.com/RobinMJD/kutt.git
+git clone --branch v3.2.6-sr94.43 --depth 1 https://github.com/RobinMJD/kutt.git
 cd kutt
 cp .example.env .env
 chmod 600 .env
@@ -133,7 +134,7 @@ whose data you intend to keep.
 ### Published images and alternative examples
 
 Fork images are published as
-`ghcr.io/robinmjd/kutt:v3.2.6-sr94.42`. For an image-based deployment, replace
+`ghcr.io/robinmjd/kutt:v3.2.6-sr94.43`. For an image-based deployment, replace
 the Compose service's `build` section with an `image` reference, retaining its
 environment and persistent volumes. Pin the tested image digest in production.
 The upstream `kutt/kutt` Docker Hub image does **not** contain these fork changes.

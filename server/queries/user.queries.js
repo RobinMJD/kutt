@@ -106,19 +106,8 @@ async function update(match, update, methods) {
   return updated_user;
 }
 
-async function remove(user) {
-  const deletedUser = await knex.transaction(async db => {
-    if (await db("workspaces").where({ owner_id: user.id }).first()) {
-      throw new utils.CustomError("Close owned workspaces before deleting this account. Shared links must remain recoverable.", 409);
-    }
-    return db("users").where("id", user.id).delete();
-  });
-  
-  if (env.REDIS_ENABLED) {
-    redis.remove.user(user);
-  }
-  
-  return !!deletedUser;
+async function remove(user, actor = user, administrative = false) {
+  return require("../moderation").removeUser(user, actor, administrative);
 }
 
 const selectable_admin = [

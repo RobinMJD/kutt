@@ -6,7 +6,18 @@ its hardened wrapper, WAF/Authentik routing, monitoring and private backup paths
 in its separate deployment repository. This public repository contains no real
 secrets, provider bindings or user data.
 
-### Stable list sorting (3.2.6-sr94.44 candidate)
+### Transactional moderation (candidate)
+
+[Moderation](MODERATION.md) adds an audit and serialized mutation table. Existing
+data and bans are preserved; future user bans/unbans revoke sessions and API
+credentials permanently. Unban does not undo independent related bans.
+Back up database/configuration/secrets and verify a writable candidate restore.
+Do not roll back a populated audit migration or restore old credentials as a way
+to reverse a ban. Reload administration after deployment. Image-only rollback
+keeps additive tables but restores the former partial-mutation and session risks.
+See the community ledger for actual publication/deployment status.
+
+### Stable list sorting (3.2.6-sr94.44)
 
 [Sorting](LIST-SORTING.md) is additive UI/API behavior with no schema, secret or
 public-redirect change. Reload existing management tabs after upgrading so the
