@@ -396,6 +396,10 @@ Primary references: [PostgreSQL image](https://hub.docker.com/_/postgres),
 
 ## Every upgrade
 
+For remote SQL databases or Redis, see [verified transport TLS](TRANSPORT-TLS.md).
+Application and migration settings are shared; configure trusted identities and
+certificate-file mounts before enabling TLS. The public WAF/SSO policy is separate.
+
 1. Record the current app/wrapper image digests, configuration checksums,
    database engine/version, schema migrations and health. Preserve secrets,
    Authentik bindings and existing links. Keep unrelated deployment changes.

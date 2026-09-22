@@ -42,3 +42,8 @@ jobs:
         run: |
           sh tests/search-database.sh kutt-smoke mysql2
           sh tests/search-database.sh kutt-smoke pg
+      - name: Verified database and Redis TLS
+        run: |
+          sh tests/transport-tls.sh kutt-smoke pg
+          sh tests/transport-tls.sh kutt-smoke mysql2
+          sh tests/transport-tls.sh kutt-smoke redis

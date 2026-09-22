@@ -41,6 +41,9 @@ const spec = {
   DB_USER: str({ default: "postgres" }),
   DB_PASSWORD: str({ default: "" }),
   DB_SSL: bool({ default: false }),
+  DB_SSL_CA: str({ default: "" }),
+  DB_SSL_CERT: str({ default: "" }),
+  DB_SSL_KEY: str({ default: "" }),
   DB_POOL_MIN: num({ default: 0 }),
   DB_POOL_MAX: num({ default: 10 }),
   REDIS_ENABLED: bool({ default: false }),
@@ -48,6 +51,10 @@ const spec = {
   REDIS_PORT: num({ default: 6379 }),
   REDIS_PASSWORD: str({ default: "" }),
   REDIS_DB: num({ default: 0 }),
+  REDIS_SSL: bool({ default: false }),
+  REDIS_SSL_CA: str({ default: "" }),
+  REDIS_SSL_CERT: str({ default: "" }),
+  REDIS_SSL_KEY: str({ default: "" }),
   DISALLOW_ANONYMOUS_LINKS: bool({ default: true }),
   DISALLOW_REGISTRATION: bool({ default: true }),
   DISALLOW_LOGIN_FORM: bool({ default: false }),
@@ -83,5 +90,6 @@ require("./env-files")(Object.keys(spec));
 if (process.env.JWT_SECRET === "") delete process.env.JWT_SECRET;
 
 const env = cleanEnv(process.env, spec);
+require("./transport-tls").validate(env);
 
 module.exports = env;

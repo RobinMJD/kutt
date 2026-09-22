@@ -25,8 +25,8 @@ automatic domain renaming, historical analytics rewriting or data deletion.
 | C04 | Strict peer/CIDR/hop reverse-proxy trust | Implemented; release gates pending | Candidate `.42` |
 | C05 | Compatible staged and enforced Content Security Policy | Pending | Pending |
 | C06 | MySQL utf8mb4 search compatibility and real database tests | Implemented; release gates pending | Candidate `.42` |
-| C07 | Verified remote database TLS and credential-file configuration | Pending | Pending |
-| C08 | Consistent verified Redis TLS for cache, queues and limiting | Pending | Pending |
+| C07 | Verified remote database TLS and credential-file configuration | Implemented; release gates pending | Candidate `.43` |
+| C08 | Consistent verified Redis TLS for cache, queues and limiting | Implemented; release gates pending | Candidate `.43` |
 | C09 | Configurable asymmetric OIDC signing algorithm | Implemented; release gates pending | Candidate `.42` |
 | C10 | Custom-domain API routing without homepage interception | Implemented; release gates pending | Candidate `.42` |
 | C11 | Complete English (default), French and Spanish localization | Pending | Pending |
@@ -104,3 +104,19 @@ review complete while required work remains.
   pre-existing empty-alias database lookup rather than normalizing into an API.
 - Full container regression passes. Publication/CI and deployment/restore
   validation are separate pending gates; these features are not complete yet.
+
+## Evidence: C07 / C08
+
+- Shared verified transport configuration serves runtime and migrations, and
+  Redis cache, Bull and rate limiting. Credential-file precedence and malformed,
+  empty, missing, mismatched or inactive TLS material fail closed without values
+  in errors. Installed SQL drivers require DNS identity; no verification bypass.
+- Disposable PostgreSQL 17, MySQL 8.4 and Redis 8 handshake tests pass with
+  fresh certificates: encryption/mutual TLS, untrusted CA, wrong SAN, expiry and
+  plaintext-only denial. Real Redis cache, forked Bull worker and limiter tests
+  pass over TLS and on the unchanged plaintext baseline.
+- Full default SQLite regression and real MySQL/PostgreSQL Unicode search tests
+  pass. Independent read-only review found no remaining scoped issue. No live
+  database/Redis policy changes are needed for the current SQLite deployment.
+- Publication, exact-wrapper regression and backup/deployment acceptance remain
+  pending. See [transport configuration and recovery](TRANSPORT-TLS.md).

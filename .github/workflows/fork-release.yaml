@@ -33,6 +33,11 @@ jobs:
         run: |
           sh tests/search-database.sh kutt-tested mysql2
           sh tests/search-database.sh kutt-tested pg
+      - name: Verified database and Redis TLS
+        run: |
+          sh tests/transport-tls.sh kutt-tested pg
+          sh tests/transport-tls.sh kutt-tested mysql2
+          sh tests/transport-tls.sh kutt-tested redis
       - name: Authenticate to GitHub Container Registry
         if: startsWith(github.ref, 'refs/tags/')
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0

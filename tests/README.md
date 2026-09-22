@@ -321,7 +321,7 @@ intermediate delayed logout page would miss that regression.
 checks the Alpine production image only: no APK tools/system zlib, retained
 CA/TLS dependencies, Node compression and native SQLite. The Dockerfile also
 runs it during the build. Do not run it on a developer host.
-# Community regression coverage
+## Community regression coverage
 
 `community-correctness.cjs` checks the installed user-agent parser (including
 desktop/mobile Safari) and hostname normalization. `community-hostnames.cjs`
@@ -330,3 +330,26 @@ public Host routing and persisted Safari counts on the disposable smoke database
 Both run in the full container suite. Browser analytics and domain-proof tests
 also verify these changes at desktop/mobile widths; Host routing uses Node HTTP
 instead of relying on Fetch implementations preserving a supplied Host header.
+
+## Verified Transport TLS
+
+Run from the checkout with Docker and OpenSSL available:
+
+```sh
+sh tests/transport-tls.sh kutt-smoke pg
+sh tests/transport-tls.sh kutt-smoke mysql2
+sh tests/transport-tls.sh kutt-smoke redis
+```
+
+Each run generates disposable CA/server/client certificates in a private
+temporary directory, starts isolated digest-pinned servers without published
+ports or real configuration mounts, and deletes only its recorded container
+IDs. Trusted mutual TLS must work; wrong SAN, unknown CA, expired certificates,
+missing client credentials and plaintext-only servers must not connect. A
+plaintext control proves the last fixture is actually reachable before testing
+that TLS does not fall back. Migrations/runtime must agree; encrypted Redis
+repeats real cache, Bull worker and restart-persistent limiter tests.
+
+Configuration checks cover CA bundles, default trust, client-key matching,
+sanitized startup failures, file precedence and SQLite pool compatibility.
+Do not use these fixture scripts against a real database or certificate store.
