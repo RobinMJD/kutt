@@ -22,6 +22,14 @@ assistive technology. No tooltip or smaller font is needed to read long values.
 The displayed value updates on selection, resizing and report reload; Clear
 removes it along with the filter. Filtering and export semantics are unchanged.
 
+CSV/JSON export links use the shared light/dark button styling and retain their
+18px current-color icons. The rendered regression requires at least 4.5:1 text
+contrast in normal, hover and keyboard-focus states. Actual keyboard downloads
+verify the selected filters, localized title, filename and CSV/JSON report data
+across EN/FR/ES, both themes and 1440/390/320px. No export URL, authorization or
+format changes accompany the styling fix. These are focused source/fixture
+checks, not acceptance of another installation's custom theme or proxy.
+
 Both `GET /api/analytics` and `GET /api/v2/analytics` accept:
 
 | Parameter | Meaning |

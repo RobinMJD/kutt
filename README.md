@@ -37,6 +37,10 @@ French/Spanish geography percentage explanations. Stable keys, escaped
 placeholders and API identifiers are unchanged; focused checks cover the copy
 and its rendered confirmation, sorting and geography surfaces.
 
+Analytics CSV/JSON exports use the shared light/dark button styling with readable
+text and current-color icons. Focused rendered checks cover normal/hover/focus
+contrast and actual keyboard downloads without changing filters or file formats.
+
 Review [deployment and recovery](docs/DEPLOYMENT.md), [security boundaries](docs/SECURITY-MAINTENANCE.md)
 and each feature's migration notes before upgrading. Preserve the database and
 original signing/encryption secret together. Optional policies are not enabled

@@ -2,10 +2,16 @@
 
 This contribution includes the original managed-link roadmap, its UI/security
 fixes and C01-C21 in the [community source guide](COMMUNITY-FEATURE-ROADMAP.md),
-as an update to the existing [PR #1046](https://github.com/thedevs-network/kutt/pull/1046).
+prepared for an update to the existing [PR #1046](https://github.com/thedevs-network/kutt/pull/1046).
 The selected community features are included here, not deferred to a separate
 fork-only branch. This document records proposal lineage and implementation
 differences, not operator release chronology or a claim of upstream acceptance.
+
+Follow-up copy and analytics export-contrast fixes preserve the same proposal
+lineage. The contribution uses 1,519-key EN/FR/ES catalogs, unchanged machine
+values, and existing light/dark controls with rendered contrast and real-download
+regressions. Temporary-branch validation does not mean the actual PR has been
+updated or accepted; that publication remains separately authorized.
 
 <a id="release-18-acceptance"></a>
 

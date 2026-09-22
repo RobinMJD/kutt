@@ -63,6 +63,12 @@ This is not a claim of exhaustive accessibility or security conformance.
 - [Geography](ANALYTICS.md): local map assets, keyboard zoom/pan/reset and a
   textual country table, including missing/unknown data and retry states.
   Interaction does not fetch a tracking service or broaden analytics access.
+- [Analytics filters and exports](ANALYTICS.md): responsive domain/tag controls
+  expose long selections as associated wrapping text, not tooltip-only content.
+  CSV/JSON links use existing theme-button styling and current-color icons.
+  Rendered regressions require at least 4.5:1 text/background contrast in normal,
+  hover and keyboard-focus states across both themes and all three widths/locales,
+  with actual downloads preserving filters, filenames and API data formats.
 - [Dotted aliases](LINK-ALIASES.md): valid interior dots work across forms and
   APIs without weakening reserved-path, traversal or forwarding boundaries.
 

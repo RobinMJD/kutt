@@ -99,14 +99,24 @@ sorting and appearance have additional dedicated matrices. Coverage includes
 320/390/1440px, EN/FR/ES and both themes where applicable; it is not a claim that
 every possible combination or physical browser/device was tested.
 
+Analytics domain/tag filters expose overflowing selected values as associated,
+wrapping text. CSV/JSON export links use existing theme-button semantics while
+preserving their current-color icons, URLs, filenames and API formats.
+`tests/browser-geography.cjs` measures both export links against their rendered
+backgrounds at a minimum 4.5:1 in normal, hover and keyboard-focus states, and
+downloads both formats with the active filters in every language/theme/width
+layout. These assertions complement the existing selected-value, creator-only
+analytics and revoke/regrant checks in `tests/browser-domain-grants.cjs`.
+
 The 1,519-key catalogs retain identical key and placeholder contracts. Reviewed
 copy uses formal Spanish management commands, distinguishes moderated entries
 from link destinations, and explains geography percentages naturally in French
 and Spanish without changing their denominator. `tests/i18n.cjs` pins these
 wording and escaped-interpolation contracts; `tests/i18n-community.cjs` checks
 localized JSON errors under both API prefixes and native HTML errors. The
-existing moderation, sorting and geography browser suites exercise the affected rendered surfaces,
-including compact confirmation text and wrapping percentage explanations.
+existing moderation, sorting and geography browser suites exercise the affected
+rendered surfaces, including compact confirmation text and wrapping percentage
+explanations.
 
 Passing source/CI checks do not certify live DNS, TLS, WAF, IdP admission, backup
 recovery, physical printing, native clipboard behavior or iPhone Shortcut

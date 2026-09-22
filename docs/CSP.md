@@ -134,6 +134,7 @@ sh tests/browser-csp.sh IMAGE validation
 sh tests/browser-csp.sh IMAGE domain-proof
 sh tests/browser-csp-oidc.sh IMAGE
 KUTT_TEST_CSP_MODE=enforce sh tests/browser-qr-branding-locales.sh IMAGE
+KUTT_TEST_CSP_MODE=enforce sh tests/browser-geography.sh IMAGE
 ```
 
 These runners create and remove fresh loopback-only SQLite containers with
@@ -143,8 +144,12 @@ synthetic credentials and no production mounts. Set `NODE_BINARY` and
 1440/390/320px, plus the existing dialog and delayed list/editor race suites.
 Injection probes cover inline scripts, wrong nonces, same-origin scripts without
 a nonce, inline handlers and network-loaded eval, with report-only controls.
-Real QR exports are independently decoded. Headless Chromium proof is not
-physical-device, Safari, native printing or custom-deployment acceptance.
+Real QR exports are independently decoded. The geography runner also checks
+analytics export contrast and actual keyboard CSV/JSON downloads with active
+filters in both themes at all three widths; run it for each supported locale.
+These export controls use existing self-hosted styles and add no scripts or
+policy exceptions. Headless Chromium proof is not physical-device, Safari,
+native printing or custom-deployment acceptance.
 
 The OIDC browser runner uses an isolated synthetic HTTP provider with development
 mode explicitly enabled. It exercises outage/retry, cross-origin top-level
@@ -156,30 +161,14 @@ Primary references: [CSP specification](https://www.w3.org/TR/CSP/),
 [HTMX configuration and scripting](https://htmx.org/docs/), and
 [HTMX indicator styles and nonces](https://htmx.org/attributes/hx-indicator/).
 
-## Candidate verification (2026-09-22)
+## Deployment Acceptance Limits
 
-- Full offline `tests/container-smoke.cjs`: passed through the final RS256 OIDC
-  protocol/session checks and migration rollback/reapply. The later strengthened
-  CSP-only assertions were rerun separately and passed, including 24 concurrent
-  helper contexts and concurrent real full-page/layout-block nonce checks.
-- Source/template/catalog compilation, changed JavaScript/shell syntax and diff
-  checks passed. No new human-facing messages or catalog keys were needed.
-- Enforced main UI: all 18 EN/FR/ES, light/dark, 1440/390/320 combinations passed
-  with zero ordinary CSP violations or runtime errors. Malicious inline, wrong-
-  nonce, unapproved script, event-handler and eval probes were blocked; the
-  nonced control ran. Report-only permitted the controls and emitted reports.
-- Enforced branded QR: all 18 combinations passed with independently decoded
-  PNG/SVG, clipboard/print, late-response/error paths and object-URL cleanup.
-- Enforced dialog/sorting races, logout/revoked-session recovery, validation
-  failures/drafts and DNS ownership passed. Default-off dialog/sorting suites
-  also passed. Enforced SSO-only outage/retry/cancellation passed at 390/1440px.
-- French/Spanish light/dark desktop/mobile settings and chart screenshots were
-  reviewed for clipping, overlap and contrast. No appearance redesign was made.
-
-Synthetic main-UI, QR and OIDC evidence is generated in the external evidence
-directories reported by the corresponding browser runners. Machine-local paths
-are not part of this contribution.
-All containers used fresh synthetic data and were removed by their runners.
-No parent checkout, live WAF/SSO, release version, dependency lock, schema or
-catalog was changed. Publication/deployment and custom/Safari/native acceptance
-remain separate gates; the unrelated full theme matrix was not rerun.
+Synthetic main-UI, QR and OIDC evidence is generated in the external directories
+reported by the corresponding browser runners. Machine-local paths and operator
+release/backup records are not part of this contribution. Passing fixture checks
+does not establish how another edge proxy, custom template or browser behaves.
+Verify actual rendered HTML keeps `no-transform`, inspect CSP violations and
+exercise authentication, native confirmations, charts and exports before enabling
+enforcement. Do not allow injected scripts or weaken the WAF to hide a mismatch.
+The default remains `off`; deployment and custom/Safari/native acceptance remain
+separate gates. See the [community source guide](COMMUNITY-FEATURE-ROADMAP.md).
