@@ -42,7 +42,10 @@ const decode = require(process.env.QR_DECODER_MODULE || "./browser-deps/node_mod
       const result = await context.request.post(origin + "/api/links", { data: { customurl: address, target: "https://192.0.2.1/private-qr-fixture", password: "private-fixture-password" }, headers: { Accept: "application/json" } });
       assert.equal(result.status(), 201); links.push(await result.json());
     }
-    page = await context.newPage(); const errors = [], consoleErrors = [];
+    page = await context.newPage(); const errors = [], consoleErrors = [], logoRequests = [];
+    page.on("request", request => {
+      if (request.method() === "POST" && /\/api\/links\/[^/]+\/qr$/.test(new URL(request.url()).pathname)) logoRequests.push(request.postDataJSON());
+    });
     page.on("pageerror", error => errors.push(error.message));
     page.on("console", message => { if (["error", "warning"].includes(message.type()) && !/Failed to load resource|net::ERR_FAILED/.test(message.text())) consoleErrors.push(message.text()); });
     const waitReady = () => page.waitForFunction(() => !document.getElementById("qr-print").disabled && document.getElementById("qr-preview").complete);
@@ -74,7 +77,11 @@ const decode = require(process.env.QR_DECODER_MODULE || "./browser-deps/node_mod
       assert.equal(await page.locator("#qr-logo-preview").getAttribute("alt"), t("qr.selected_logo"));
       assert((await page.locator(".qr-state").textContent()).includes(t("ui.password_protected_2")));
       assert((await page.title()).includes(t("ui.qr_code"))); assert(await page.getByRole("heading", { name: t("ui.qr_code"), exact: true }).isVisible());
+      const beforeUpload = logoRequests.length;
       await page.locator("#qr-logo").setInputFiles({ name: "brand.png", mimeType: "image/png", buffer: logo }); await waitReady();
+      const uploaded = logoRequests.slice(beforeUpload);
+      assert.deepEqual(uploaded.map(body => body.format).sort(), ["png", "svg"]);
+      for (const body of uploaded) assert.equal(body.logo, logo.toString("base64"), "Actual browser POST must send canonical plain base64 without a data URI");
       assert.equal(await page.locator('[name="level"]').inputValue(), "H"); assert(await page.locator('[name="level"]').isDisabled());
       assert(await page.locator("#qr-logo-preview").isVisible());
       const embeddedLogo = await page.evaluate(async () => {
@@ -164,6 +171,11 @@ const decode = require(process.env.QR_DECODER_MODULE || "./browser-deps/node_mod
     await page.waitForFunction(() => window.liveBlobs.size === 0);
     const rows = await (await context.request.get(origin + "/api/links", { headers: { Accept: "application/json" } })).json();
     assert(rows.data.every(row => row.visit_count === 0));
+    assert(logoRequests.length > 0);
+    for (const body of logoRequests) {
+      assert.equal(typeof body.logo, "string"); assert(!body.logo.includes("data:"));
+      assert.equal(Buffer.from(body.logo, "base64").toString("base64"), body.logo);
+    }
     assert.deepEqual(errors, []); assert.deepEqual(consoleErrors, []);
     console.log("PASS: " + locale + "/" + theme + " 1440/390/320 branded PNG+SVG independent decoding, preview/remove, keyboard, clipboard/print, invalid/oversize/CRC file recovery, malformed responses, delayed render/copy races, blob cleanup and no visits; " + evidence);
   } catch (error) { if (page) await page.screenshot({ path: path.join(evidence, "failure.png"), fullPage: true }); throw error; }

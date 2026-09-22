@@ -92,7 +92,7 @@ module.exports = {
             size: { oneOf: [{ type: "integer", minimum: 128, maximum: 1024 }, { type: "string", pattern: "^[0-9]{3,4}$" }], default: 512 },
             level: { type: "string", enum: ["L", "M", "Q", "H"], default: "M", description: "Validated, then overridden to H when logo is present." },
             format: { type: "string", enum: ["png", "svg"], default: "png" },
-            logo: { type: "string", maxLength: 87406, description: "Canonical base64 PNG data URL (data:image/png;base64,...). At most 65536 decoded bytes, dimensions 1..512 each, non-interlaced, non-animated PNG. Framing, CRC, IHDR and bounded exact inflation are checked before raster decoding. Metadata is stripped; embedded output is a newly encoded raster." }
+            logo: { type: "string", maxLength: 87406, description: "Canonical plain PNG base64 (preferred, at most 87384 characters), without whitespace and with required padding. The exact legacy data:image/png;base64, prefix is also accepted; no other URI format is permitted. Both forms produce identical output. At most 65536 decoded bytes, dimensions 1..512 each, non-interlaced, non-animated PNG. Framing, CRC, IHDR and bounded exact inflation are checked before raster decoding. Metadata is stripped; embedded output is a newly encoded raster." }
           }
         } } } },
         responses: {
