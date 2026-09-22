@@ -35,6 +35,10 @@ jobs:
           sh tests/search-database.sh kutt-tested pg
       - name: Stable sorting on SQLite
         run: docker run --rm --network none --read-only --tmpfs /tmp:mode=1777 --cap-drop ALL --security-opt no-new-privileges:true -e KUTT_DATABASE_DISPOSABLE=1 -e DB_CLIENT=better-sqlite3 -e DB_FILENAME=/tmp/kutt-sort-ci.sqlite -e REDIS_ENABLED=false -e DEFAULT_DOMAIN=localhost -e JWT_SECRET=disposable-sort-fixture-not-a-real-secret --entrypoint node kutt-tested tests/list-sort-sqlite.cjs
+      - name: Alias claims on real MySQL and PostgreSQL
+        run: |
+          sh tests/dotted-alias-database.sh kutt-tested mysql2
+          sh tests/dotted-alias-database.sh kutt-tested pg
       - name: Verified database and Redis TLS
         run: |
           sh tests/transport-tls.sh kutt-tested pg
@@ -47,6 +51,8 @@ jobs:
           PLAYWRIGHT_MODULE="$RUNNER_TEMP/kutt-browser/node_modules/playwright" KUTT_EVIDENCE_DIR="$RUNNER_TEMP/kutt-browser-evidence" sh tests/browser-list-sorting.sh kutt-tested
       - name: Browser moderation and native confirmation regression
         run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/kutt-browser/node_modules/playwright" KUTT_EVIDENCE_DIR="$RUNNER_TEMP/kutt-moderation-evidence" sh tests/browser-moderation.sh kutt-tested
+      - name: Browser dotted alias and draft recovery regression
+        run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/kutt-browser/node_modules/playwright" KUTT_EVIDENCE_DIR="$RUNNER_TEMP/kutt-alias-evidence" sh tests/browser-dotted-aliases.sh kutt-tested
       - name: Authenticate to GitHub Container Registry
         if: startsWith(github.ref, 'refs/tags/')
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0

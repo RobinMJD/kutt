@@ -13,6 +13,9 @@ checkout. It covers native create, personal/admin/workspace edits, rejected
 aliases and retained drafts, redirects and layout at 1440/390/320px. It refuses
 an initialized app, verifies the public redirect response, and substitutes a
 synthetic landing response without contacting the external destination.
+`sh tests/browser-dotted-aliases.sh IMAGE` provisions and removes the fresh
+loopback instance. It accepts `NODE_BINARY`, `PLAYWRIGHT_MODULE`,
+`KUTT_BROWSER_PORT` (default `31121`) and `KUTT_EVIDENCE_DIR`.
 
 Build the candidate image, then run `sh tests/dotted-alias-database.sh IMAGE mysql2`
 and `sh tests/dotted-alias-database.sh IMAGE pg`. Each gate creates its own pinned,

@@ -31,13 +31,13 @@ automatic domain renaming, historical analytics rewriting or data deletion.
 | C10 | Custom-domain API routing without homepage interception | Complete | `.42`; evidence below |
 | C11 | Complete English (default), French and Spanish localization | In progress | Isolated catalog/template/browser implementation; integration and release gates pending |
 | C12 | Stable allowlisted sorting in personal, admin and workspace tables/API | Complete | `.44`; evidence below |
-| C13 | Branded QR logos embedded in validated PNG/SVG exports | Pending | Pending |
+| C13 | Branded QR logos embedded in validated PNG/SVG exports | In progress | Isolated implementation and decoder validation; release gates pending |
 | C14 | Accessible dark/system/light theme | Pending | Pending |
 | C15 | Optional explicit OIDC role mapping and safe demotion/recovery | Pending | Pending |
 | C16 | Optional separate management hostname and explicit shared-domain grants | Pending | Pending |
 | C17 | Optional consistent destination-domain policy | Pending | Pending |
 | C18 | Private authenticated performance metrics with bounded labels | Pending | Pending |
-| C19 | Safe dotted aliases with reserved-path protections | Implemented; [rules and tests](LINK-ALIASES.md) | Pending parent review/release gates |
+| C19 | Safe dotted aliases with reserved-path protections | Implemented; [rules and tests](LINK-ALIASES.md) | Candidate `.46`; combined browser/MySQL/PostgreSQL checks passed, full release gates pending |
 | C20 | Accessible interactive geography chart and text alternative | Pending | Pending |
 | C21 | Profile visit aggregation; safely batch only where warranted | Pending | Pending |
 
@@ -190,3 +190,22 @@ review complete while required work remains.
 - Browser plugin unavailable: regular Playwright supplied this evidence. Full
   source/exact-image regression, release CI, publication, recoverable deployment
   and public acceptance remain release gates. See [moderation](MODERATION.md).
+
+## Evidence: C19
+
+- Literal dotted names work across personal/admin/workspace create and edit,
+  import, alias claims and public redirects. Reserved roots, traversal,
+  encoding ambiguity, empty dot components and size/depth limits fail closed.
+  Existing forwarding suffixes and single-component custom alphabets remain
+  compatible; no existing alias is rewritten and no migration is required.
+- Real MySQL 8.4 and PostgreSQL 17 checks passed native collation parity,
+  scoped-domain isolation, competing claims, lifecycle and rollback. A forced
+  MySQL stale-snapshot failure previously returned an unclassified error; it
+  now returns a conflict for both ordinary and dotted names, preserving the
+  winner and rolling back the loser.
+- Combined-source Playwright workflows at 1440/390/320px passed create, edit,
+  rejected-input draft retention, rename/reload and actual public redirect
+  responses. Screenshots were reviewed; the browser plugin is unavailable.
+- CI now runs the real-database and browser companions. Full regression,
+  release publication, recoverable backup/deployment and public acceptance
+  remain pending; this entry is not a completion claim.
