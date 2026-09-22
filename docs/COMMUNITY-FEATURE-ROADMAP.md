@@ -21,7 +21,7 @@ automatic domain renaming, historical analytics rewriting or data deletion.
 | --- | --- | --- | --- |
 | C01 | Safari analytics classification | Complete | `.41`; evidence below |
 | C02 | Prefix-only hostname normalization | Complete | `.41`; evidence below |
-| C03 | Transactional, reversible administrative moderation and session safety | Implemented; release gates pending | Candidate `.45`; API/browser/real-database checks passed |
+| C03 | Transactional, reversible administrative moderation and session safety | Complete | `.45`; evidence below |
 | C04 | Strict peer/CIDR/hop reverse-proxy trust | Complete | `.42`; evidence below |
 | C05 | Compatible staged and enforced Content Security Policy | Pending | Pending |
 | C06 | MySQL utf8mb4 search compatibility and real database tests | Complete | `.42`; evidence below |
@@ -36,7 +36,7 @@ automatic domain renaming, historical analytics rewriting or data deletion.
 | C15 | Optional explicit OIDC role mapping and safe demotion/recovery | Pending | Pending |
 | C16 | Optional separate management hostname and explicit shared-domain grants | Pending | Pending |
 | C17 | Optional consistent destination-domain policy | Pending | Pending |
-| C18 | Private authenticated performance metrics with bounded labels | Pending | Pending |
+| C18 | Private authenticated performance metrics with bounded labels | Implemented; release gates pending | Candidate `.48`; focused and full isolated regression passed; publication/deployment pending |
 | C19 | Safe dotted aliases with reserved-path protections | Implemented; [rules and tests](LINK-ALIASES.md) | Candidate `.46`; combined browser/MySQL/PostgreSQL checks passed, full release gates pending |
 | C20 | Accessible interactive geography chart and text alternative | Pending | Pending |
 | C21 | Profile visit aggregation; safely batch only where warranted | Pending | Pending |
@@ -187,9 +187,22 @@ review complete while required work remains.
 - Read-only follow-up found no remaining scoped finding after fixing stale ban
   reads, awaited/retryable cache invalidation, legacy body-key compatibility and
   the stylesheet path. This is bounded review, not a whole-application guarantee.
-- Browser plugin unavailable: regular Playwright supplied this evidence. Full
-  source/exact-image regression, release CI, publication, recoverable deployment
-  and public acceptance remain release gates. See [moderation](MODERATION.md).
+- Browser plugin unavailable: regular Playwright supplied this evidence. Main/tag
+  CI `35677669218` / `35677699701`, full exact-wrapper regression and fresh valid
+  scan (zero Critical/High) passed. Deployed wrapper is
+  `sha256:bef29ed449f380d71f4dde5520304930d59d0a2559ba382ca7d464e21b6ba802`.
+- Public WAF moderation/existing-feature tests, real Authentik-signed logout and
+  whole-lab validation passed. Original records/integrity/foreign keys unchanged;
+  two samples 65 seconds apart found all three fresh probes and no alerts,
+  restarts, failed units or unhealthy containers.
+- Pre-change 02:02:14 UTC backup: local `55b76b82`, NAS `d6e51a90`, 64 verified
+  files. Post-change 02:49:01 UTC: local `2cf9f8ad`, NAS `cef86eca`, 66 verified
+  files. Byte restoration and exact-image writable SQLite checks passed.
+- BunkerWeb supplies `strict-origin-when-cross-origin` rather than the source's
+  `same-origin` policy. Real public keyboard submission confirmed the expected
+  Origin, 303 and recovered redirect. The initial over-specific header assertion
+  was corrected; no WAF/SSO/header setting was weakened. Failed evidence is kept
+  in private report `2026-09-22-kutt-community-45`. See [moderation](MODERATION.md).
 
 ## Evidence: C19
 
@@ -225,3 +238,21 @@ review complete while required work remains.
 - Custom templates, native Safari/Firefox and physical assistive technology
   remain separate acceptance surfaces. Publication, exact-wrapper deployment,
   backup/recovery and public acceptance are pending. See [appearance](THEMES.md).
+
+## Evidence: C18
+
+- Separate opt-in bearer-authenticated listener, no public application route,
+  bounded route/method/status labels, cumulative duration histograms and process
+  gauges. Missing credentials, bad bind/port/worker configuration and listener
+  conflicts fail startup. Metrics do not access persisted data or make requests.
+- Focused and full container regression passed, including file precedence,
+  token rotation/restart, public `/metrics` alias compatibility, disabled mode,
+  credential/method/path denial, no CORS, no identity leakage, 1,000 distinct
+  aliases with fixed cardinality, cumulative buckets and no double-counting.
+- Full tests exposed an unread-response Node client assertion, not an application
+  crash. The test helper now drains ordinary bodies while retaining SSE streams;
+  no failed application assertion was removed. An unrelated offline schema
+  fixture now uses a reserved literal address instead of depending on DNS.
+- There is no migration or account change. Publication, exact-wrapper scan,
+  private collector integration, recoverable deployment and live acceptance are
+  still pending. See [metrics](METRICS.md).

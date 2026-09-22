@@ -29,6 +29,8 @@ require("./passport");
 
 // create express app
 const app = express();
+const metrics = require("./metrics").create(env);
+app.use(metrics.middleware);
 
 app.set("trust proxy", env.TRUST_PROXY);
 
@@ -85,6 +87,11 @@ app.get("*", renders.notFound);
 // handle errors coming from above routes
 app.use(helpers.error);
   
-app.listen(env.PORT, () => {
-  console.log(`> Ready on http://localhost:${env.PORT}`);
+metrics.start().then(() => {
+  app.listen(env.PORT, () => {
+    console.log(`> Ready on http://localhost:${env.PORT}`);
+  });
+}).catch(() => {
+  console.error("Unable to start the private metrics listener. Check its bind address and port.");
+  process.exit(1);
 });

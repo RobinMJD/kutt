@@ -84,6 +84,10 @@ const spec = {
   REPORT_EMAIL: str({ default: "" }),
   CONTACT_EMAIL: str({ default: "" }),
   NODE_APP_INSTANCE: num({ default: 0 }),
+  METRICS_ENABLED: bool({ default: false }),
+  METRICS_HOST: str({ default: "127.0.0.1" }),
+  METRICS_PORT: num({ default: 9101 }),
+  METRICS_TOKEN: str({ default: "" }),
 };
 
 require("./env-files")(Object.keys(spec));
@@ -91,5 +95,6 @@ if (process.env.JWT_SECRET === "") delete process.env.JWT_SECRET;
 
 const env = cleanEnv(process.env, spec);
 require("./transport-tls").validate(env);
+require("./metrics").validate(env);
 
 module.exports = env;

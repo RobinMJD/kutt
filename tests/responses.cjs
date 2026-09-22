@@ -13,7 +13,7 @@ module.exports = async ({ root, request, session }) => {
     const result = await request(method, route, body, session); assert.equal(result.status, status);
     return result.json();
   };
-  const link = await call("POST", "/api/links", { target: "https://example.org/response-contract", customurl: "response-contract", paused: true }, 201);
+  const link = await call("POST", "/api/links", { target: "https://192.0.2.1/response-contract", customurl: "response-contract", paused: true }, 201);
   const api = "/api/links/" + link.id;
   const samples = {
     forwarding: await call("GET", api + "/forwarding"), routing: await call("GET", api + "/routing"),
