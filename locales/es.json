@@ -1440,5 +1440,22 @@
   "theme.appearance": "Apariencia",
   "theme.system": "Sistema",
   "theme.light": "Claro",
-  "theme.dark": "Oscuro"
+  "theme.dark": "Oscuro",
+  "geography.title": "Geografía",
+  "geography.table": "Tabla de países",
+  "geography.basis": "Las proporciones usan todas las visitas registradas del informe actual.",
+  "geography.country_details": "Detalles del país",
+  "geography.none_selected": "Ningún país seleccionado",
+  "geography.keyboard": "Las flechas recorren los países por orden alfabético. Inicio y Fin llevan al primer y al último país. Intro o Espacio selecciona los detalles. Escape borra la selección.",
+  "geography.legend": "Visitas registradas por país",
+  "geography.no_recorded_visits": "Sin visitas registradas",
+  "geography.range": "De {{from}} a {{to}}",
+  "geography.share": "Proporción del informe",
+  "geography.share_unavailable": "Proporción no disponible",
+  "geography.details_one": "{{country}}: {{visits}} visita; {{share}}",
+  "geography.details_other": "{{country}}: {{visits}} visitas; {{share}}",
+  "geography.details_many": "{{country}}: {{visits}} visitas; {{share}}",
+  "geography.unmapped_one": "{{visits}} visita sin país en el mapa, conservada en la tabla de países.",
+  "geography.unmapped_other": "{{visits}} visitas sin país en el mapa, conservadas en la tabla de países.",
+  "geography.unmapped_many": "{{visits}} visitas sin país en el mapa, conservadas en la tabla de países."
 }

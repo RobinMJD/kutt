@@ -38,7 +38,7 @@ automatic domain renaming, historical analytics rewriting or data deletion.
 | C17 | Optional consistent destination-domain policy | Pending | Pending |
 | C18 | Private authenticated performance metrics with bounded labels | Pending | Pending |
 | C19 | Safe dotted aliases with reserved-path protections | Implemented; [rules and tests](LINK-ALIASES.md) | Candidate `.46`; combined browser/MySQL/PostgreSQL checks passed, full release gates pending |
-| C20 | Accessible interactive geography chart and text alternative | Pending | Pending |
+| C20 | Accessible interactive geography chart and text alternative | Implemented; combined source/browser gates passed | Parent integration/release pending; see `ANALYTICS.md` |
 | C21 | Profile visit aggregation; safely batch only where warranted | Pending | Pending |
 
 ## Localization Contract
@@ -225,3 +225,24 @@ review complete while required work remains.
 - Custom templates, native Safari/Firefox and physical assistive technology
   remain separate acceptance surfaces. Publication, exact-wrapper deployment,
   backup/recovery and public acceptance are pending. See [appearance](THEMES.md).
+
+## Evidence: C20
+
+- Authenticated range analytics reuses the 177 bundled country shapes and the
+  existing authorized country aggregates. No new API, external map service,
+  visitor-location lookup or analytics write was added. Legacy stats is unchanged.
+- Country details support hover, click, roving keyboard focus and a native
+  selector, with a linked paginated country table. Counts and report-total shares
+  are localized in English/French/Spanish; names use `Intl.DisplayNames`.
+  Unknown/unmapped values stay in the table. Selection never changes filters.
+- Full combined container regression, focused geography/analytics tests and
+  catalog/template checks passed. Chromium passed 18 light/dark layouts across
+  1440/390/320px and all three locales, including stale/empty/error states,
+  keyboard interaction, hostile text, zero external traffic and unchanged visits.
+  The existing English analytics browser filter/export workflow passed too.
+- Screenshot review and native Tab tests found and corrected inherited masthead
+  spacing and an implicit extra SVG tab stop. Geometry, API/routes, QR files and
+  package `.47` remain unchanged. No parent checkout files were edited.
+- Physical devices, Safari/Firefox, assistive technology, custom layouts and
+  live release/deployment acceptance remain separate gates. See
+  [analytics geography](ANALYTICS.md#geography-c20).

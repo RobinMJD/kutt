@@ -55,6 +55,102 @@ stored counts/dimensions fail closed (503). The application limits this endpoint
 to 30 requests/minute per client/path when rate limiting is enabled; edge controls
 remain active. These limits do not change the legacy stats response.
 
+## Geography (C20)
+
+C20 is an unreleased source change. The historical deployment evidence at the
+top of this document does not cover this chart.
+
+The range-report page includes an interactive geography view in English, French
+and Spanish. Country labels use the selected locale's `Intl.DisplayNames`.
+The SVG uses the existing `server/utils/map.json` geometry (177 country/territory
+shapes) already bundled with Kutt. Geometry is rendered into the authenticated
+HTML with escaped template attributes; no raw report JSON, inline event handlers,
+new mapping service, external tile requests or new API endpoints are used.
+The existing per-link legacy stats map is unchanged.
+
+### API Data Usage
+
+The chart consumes the **same validated response** from `GET /api/analytics` as
+the other range-report views. `stats.country` is an array of `{ name, visits }`,
+with country-code names and nonnegative integer counts. `total` is the count of
+tracked visits for the active date/link/domain/tag/search filters. Names are
+matched case-insensitively against bundled geometry IDs; the API payload is not
+rewritten. API ownership, token scopes, domain restrictions and private/no-store
+responses are unchanged.
+
+- A country's displayed share is `visits / total`, formatted as a locale-aware
+  percentage with at most one decimal place. The denominator includes unknown
+  and unmapped visits, not just colored countries. Rounding can affect sums.
+- When the report total is zero, or historical country counts exceed it, shares
+  are marked unavailable. Counts remain visible; the chart does not renormalize
+  inconsistent historical data or claim that mapped countries account for 100%.
+- Color bins are labeled integer count ranges derived from the largest mapped
+  count in the current response. Zero means no recorded count for that shape,
+  not proof that no visitor came from that country. Colors are not a substitute
+  for the textual counts and shares.
+- Unknown country names and codes missing from this simplified geometry (for
+  example Singapore) remain in the existing paginated country table. The map
+  also reports the count without matching geometry. Geometry is not a statement
+  about current political boundaries and must not be used as a complete region
+  directory. No new geographic resolution or visitor-location inference is added.
+
+Country hover/focus shows details; click, Enter/Space or the native country
+selector keeps a selection. The SVG has one country tab stop, with arrows and
+Home/End traversing localized alphabetical order. Escape clears the selection.
+The native selector makes tiny shapes accessible, and the linked country table
+retains every returned row plus the report-share column. The map selection is
+**details only**, never a global country filter: it does not change the URL,
+date/link/domain/tag/search filters, exports, table pagination or report totals.
+
+All country interactions are local DOM updates using text-only content. They
+do not request reports, redirect through a short link or add analytics. New
+responses update the map only after the existing schema and request-serial
+checks. Loading/error states hide the report and remove export targets as before;
+an older response cannot replace newer geography, even if abort is ineffective.
+Light/dark styling responds to the existing theme root attribute without another
+request. Custom layouts/views retain their existing override precedence; custom
+analytics views without the new geography partial keep their existing table.
+
+### Source Validation
+
+Use disposable fixtures, never live data:
+
+```sh
+docker build -t kutt-geography-test:c20 .
+docker run --rm --network none --read-only --tmpfs /tmp \
+  -e KUTT_TEST_ONLY=geography kutt-geography-test:c20 node tests/container-smoke.cjs
+KUTT_TEST_LOCALE=fr sh tests/browser-geography.sh kutt-geography-test:c20
+```
+
+The browser wrapper owns a loopback-only app and a temporary SQLite database;
+it seeds synthetic country aggregates directly in that database, exposes no test
+API, and removes only its own container by captured ID. The test refuses an
+initialized app. It accepts `NODE_BINARY`, `PLAYWRIGHT_MODULE`,
+`KUTT_BROWSER_PORT` (default 31123), `KUTT_EVIDENCE_DIR` outside the checkout,
+and `KUTT_TEST_LOCALE=en|fr|es` (English by default).
+
+The focused HTTP/unit gate checks geometry identity, counts/percentages, unknown
+and unmapped values, inconsistent and empty totals, hostile names, unchanged API
+data, private pages and zero visit writes. Each browser language run checks
+1440/390/320px in light and dark, actual keyboard/pointer/native interactions,
+nonblank SVG bounds/fills, filter and table-page preservation, stale/empty/error
+and retry states, safe text, no external requests and unchanged visit records.
+Browser-plugin tooling is unavailable in this task; tests use regular Playwright
+Chromium. Physical devices, Safari/Firefox and assistive-technology acceptance
+remain separate from these automated keyboard and screenshot checks.
+
+On 2026-09-22, the geography HTTP/unit gate, catalog/template checks (1,459 keys
+per locale), existing analytics authorization/export/ingestion regression and
+existing English analytics browser flow passed. English/French/Spanish geography
+browser runs each passed six light/dark layouts at 1440/390/320px, with screenshot
+samples inspected under `/tmp/kutt-c20-geography-*`. An extra SVG-container tab
+stop found by the initial native-keyboard test was removed; the final map has one
+country tab stop. The section heading also has a scoped reset so it does not
+inherit masthead spacing. These are source/browser checks, not live acceptance.
+The full combined container regression also passed, including OIDC and guarded
+migration rollback/reapply. Package version remains `3.2.6-sr94.47`; no QR,
+metrics, analytics API, geometry-data or parent-checkout changes were made.
+
 ## Ingestion and compatibility
 
 Request and queue processing use the same `isbot` classification and 1,000-character

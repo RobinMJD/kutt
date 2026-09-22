@@ -16,12 +16,13 @@
       <div class="analytics-exports"><a id="analytics-csv" download="kutt-analytics.csv" title="{{t 'ui.download_csv'}}"><span class="analytics-download">{{> icons/arrow_left}}</span> CSV</a><a id="analytics-json" download="kutt-analytics.json" title="{{t 'ui.download_json'}}"><span class="analytics-download">{{> icons/arrow_left}}</span> JSON</a></div>
     </div>
     <section class="analytics-chart"><h2>{{t "ui.daily_visits"}}</h2><div class="analytics-canvas"><canvas id="analytics-chart" role="img" aria-label="{{t 'ui.daily_tracked_visits_values_are_also_in_the_daily_totals_table'}}"></canvas></div></section>
+    {{> analytics_geography}}
     <div class="analytics-tables">
       <section><h2>{{t "ui.tags"}}</h2><p class="analytics-meta">{{t "ui.current_assignments_overlapping_totals"}}</p><div data-table="tags"></div></section>
       <section><h2>{{t "ui.daily_totals_utc"}}</h2><div data-table="days"></div></section>
       <section><h2>{{t "ui.browsers"}}</h2><div data-table="browser"></div></section>
       <section><h2>{{t "ui.operating_systems"}}</h2><div data-table="os"></div></section>
-      <section><h2>{{t "ui.countries"}}</h2><div data-table="country"></div></section>
+      <section id="analytics-country-table" tabindex="-1"><h2>{{t "ui.countries"}}</h2><div data-table="country"></div></section>
       <section><h2>{{t "ui.referrers"}}</h2><div data-table="referrer"></div></section>
     </div>
     <p class="analytics-meta" id="analytics-updated"></p>
@@ -30,5 +31,6 @@
 </main>
 <script src="/libs/chart.min.js" defer></script>
 <script src="/scripts/chart-theme.js" defer></script>
+<script src="/scripts/geography.js" defer></script>
 <script src="/scripts/analytics.js" defer></script>
 {{> footer}}

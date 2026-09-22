@@ -1440,5 +1440,22 @@
   "theme.appearance": "Appearance",
   "theme.system": "System",
   "theme.light": "Light",
-  "theme.dark": "Dark"
+  "theme.dark": "Dark",
+  "geography.title": "Geography",
+  "geography.table": "Country table",
+  "geography.basis": "Shares use all tracked visits in the current report.",
+  "geography.country_details": "Country details",
+  "geography.none_selected": "No country selected",
+  "geography.keyboard": "Arrow keys move between countries in alphabetical order. Home and End move to the first and last country. Enter or Space selects details. Escape clears selection.",
+  "geography.legend": "Recorded visits by country",
+  "geography.no_recorded_visits": "No recorded visits",
+  "geography.range": "{{from}} to {{to}}",
+  "geography.share": "Report share",
+  "geography.share_unavailable": "Share unavailable",
+  "geography.details_one": "{{country}}: {{visits}} visit; {{share}}",
+  "geography.details_other": "{{country}}: {{visits}} visits; {{share}}",
+  "geography.details_many": "{{country}}: {{visits}} visits; {{share}}",
+  "geography.unmapped_one": "{{visits}} visit without a mapped country, retained in the country table.",
+  "geography.unmapped_other": "{{visits}} visits without a mapped country, retained in the country table.",
+  "geography.unmapped_many": "{{visits}} visits without a mapped country, retained in the country table."
 }
