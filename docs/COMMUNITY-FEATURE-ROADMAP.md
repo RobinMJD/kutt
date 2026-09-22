@@ -82,7 +82,7 @@ reviews, reconcile source/release/deployed versions, confirm clean committed and
 pushed changes, and update the documented upstream contribution. Do not mark this
 review complete while required work remains.
 
-## Superseded Candidates: .50 / .51 / .52 / .53 / .54
+## Superseded Candidates: .50 / .51 / .52 / .53 / .54 / .55
 
 Release `.50` (`8b9afa3`) passed source/tag CI, exact-wrapper regression and a
 valid image scan with zero Critical/High findings. Its pre-release local/NAS
@@ -164,6 +164,30 @@ unchanged. Red/green SQLite, MySQL and PostgreSQL checks and mapping-off control
 passed. Ordinary owners, granted-domain creators and workspace collaborators
 retain their existing rights. These regressions are included in automated CI;
 candidate `.55` still requires full publication and deployment acceptance.
+
+Candidate `.55` (`6c16e8b`) passed main/tag/contribution CI, the complete hardened
+container regression, zero-Critical/High image scanning, verified pre-change
+local/NAS recovery and a writable candidate restore. Its public QR/policy/map
+report-only check passed; domain granting and recipient creation also passed
+without the former Cloudflare CSP violation. The new recipient-analytics visual
+gate then found the selected domain clipped by a narrow filter column.
+
+The disposable fixtures were removed and guarded rollback restored exact `.49`
+configuration/image without changing original records or secrets. `.55` is not
+an accepted deployment. The next candidate must make analytics filter selection
+readable at desktop and compact widths, cover that flow before/after grant
+revocation offline, then repeat the public and recovery gates. Private evidence:
+`2026-09-22-kutt-community-55` and
+`Work/kutt-community-20260922/public-domain-grants-de5b6161e6c5`.
+
+Candidate `.56` gives analytics domain/tag selectors a dedicated, wider desktop
+row and full-width mobile controls. Values too long for a native selector are
+also displayed as associated, wrapping text below it, never just a tooltip.
+Red/green rendered checks reproduce `.55` clipping and cover common and maximum
+length names, hostile text escaping, keyboard selection, Apply/reload/Clear and
+creator-only analytics before and after domain-grant revocation. All 18 translated
+theme/viewport combinations and the existing analytics/browser suite passed.
+This is source evidence; publication, public-edge and recovery gates remain pending.
 
 ## Evidence: C01 / C02
 
