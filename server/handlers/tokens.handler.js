@@ -37,6 +37,7 @@ const routes = [
   ["DELETE", /^\/library\/(?:labels|filters)\/[a-f0-9-]{36}\/?$/i, "links:update"],
   ["GET", /^\/links\/?$/i, "links:read"],
   ["GET", /^\/links\/([a-f0-9-]{36})\/qr\/?$/i, "links:read"],
+  ["POST", /^\/links\/([a-f0-9-]{36})\/qr\/?$/i, "links:read"],
   ["GET", /^\/links\/trash\/?$/i, "links:read"],
   ["GET", /^\/links\/([a-f0-9-]{36})\/history\/?$/i, "links:read"],
   ["POST", /^\/links\/([a-f0-9-]{36})\/restore\/?$/i, "links:update"],

@@ -16,7 +16,7 @@ function options(input) {
   return { size: Number(size), level, format };
 }
 
-async function load(req, res) {
+async function load(req, res, input = req.query) {
   res.set({ "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff", "Referrer-Policy": "no-referrer" });
   if (!/^[a-f0-9-]{36}$/i.test(req.params.id)) throw new CustomError("Link was not found.", 404);
   const link = await query.link.find({ uuid: req.params.id, user_id: req.user.id }, { fresh: true, includeTrash: true });
@@ -33,7 +33,7 @@ async function load(req, res) {
   if (!parsed || !["http:", "https:"].includes(parsed.protocol) || parsed.username || parsed.password || parsed.search || parsed.hash || url.length > 1000) {
     throw new CustomError("This short URL cannot be encoded safely.", 400);
   }
-  const settings = options(req.query);
+  const settings = options(input);
   let modules;
   try { modules = QRCode.create(url, { errorCorrectionLevel: settings.level }).modules; }
   catch { throw new CustomError("This short URL is too large for the chosen QR correction level.", 400); }
@@ -44,12 +44,22 @@ async function load(req, res) {
 }
 
 async function download(req, res) {
-  const { link, url, modules, size, level, format } = await load(req, res);
+  let input = req.query, logo;
+  if (req.method === "POST") {
+    require("./link-history.handler").sameOrigin(req);
+    if (!req.is("application/json") || !req.body || Array.isArray(req.body)) throw new CustomError("Send QR settings as a JSON object.", 400);
+    if (Object.keys(req.body).some(key => !["size", "level", "format", "logo"].includes(key))) throw new CustomError("Unknown QR setting.", 400);
+    input = { ...req.body };
+    if (typeof input.size === "number" && Number.isInteger(input.size)) input.size = String(input.size);
+    if (input.logo !== undefined) { options(input); input.level = "H"; }
+  }
+  const { link, url, modules, size, level, format } = await load(req, res, input);
+  if (req.method === "POST" && input.logo !== undefined) logo = require("../qr-logo").decode(input.logo);
   // Never fetch the destination or encode target/password/session data.
-  const settings = { width: size, margin: 4, errorCorrectionLevel: level, color: { dark: "#000000ff", light: "#ffffffff" } };
-  const bytes = format === "svg" ? await QRCode.toString(url, { ...settings, type: "svg" }) : require("../qr-image").renderPNG(modules, size);
+  const renderer = require("../qr-image");
+  const bytes = format === "svg" ? await renderer.renderSVG(url, modules, size, level, logo) : renderer.renderPNG(modules, size, logo);
   res.set("Content-Disposition", `attachment; filename="kutt-qr-${link.uuid}.${format}"`);
-  if (format === "svg") res.set("Content-Security-Policy", "default-src 'none'; sandbox");
+  if (format === "svg") res.set("Content-Security-Policy", logo ? "default-src 'none'; img-src data:; sandbox" : "default-src 'none'; sandbox");
   res.type(format === "svg" ? "image/svg+xml" : "image/png").send(bytes);
 }
 

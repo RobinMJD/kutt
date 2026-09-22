@@ -1,19 +1,33 @@
 {{> header}}
-<main class="link-archive qr-page">
+<main class="link-archive qr-page" data-qr-id="{{id}}">
   <header class="archive-heading"><h1>QR code</h1><a href="/settings/library">Library</a><a href="/">Links</a></header>
   <div class="qr-controls">
-    <form method="get" action="/link/qr/{{id}}" aria-label="QR settings">
+    <form id="qr-settings" method="get" action="/link/qr/{{id}}" aria-label="QR settings">
       <label>Size (px)<input type="number" name="size" min="128" max="1024" step="1" value="{{size}}" required /></label>
       <label>Error correction<select name="level">{{#each levels}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{value}}</option>{{/each}}</select></label>
       <button type="submit">Apply</button>
     </form>
-    <div class="qr-actions"><a class="button primary" href="{{image_url}}" download>Download PNG</a><a class="button" href="{{svg_url}}" download>Download SVG</a><button id="qr-copy" type="button" aria-label="Copy QR image" title="Copy QR image" disabled>{{> icons/copy}}</button><button id="qr-print" type="button" disabled>Print</button></div>
+    <div id="qr-branding" class="qr-branding" hidden>
+      <label for="qr-logo">Logo (PNG, max 64 KiB, 512 &times; 512)<input id="qr-logo" type="file" accept="image/png,.png" /></label>
+      <img id="qr-logo-preview" alt="Selected logo" width="48" height="48" hidden />
+      <button id="qr-logo-remove" type="button" aria-label="Remove logo" title="Remove logo" disabled>{{> icons/x}}</button>
+    </div>
+    <div class="qr-actions"><a id="qr-png" class="button primary" href="{{image_url}}" download="kutt-qr-{{id}}.png">Download PNG</a><a id="qr-svg" class="button" href="{{svg_url}}" download="kutt-qr-{{id}}.svg">Download SVG</a><button id="qr-copy" type="button" aria-label="Copy QR image" title="Copy QR image" disabled>{{> icons/copy}}</button><button id="qr-print" type="button" disabled>Print</button></div>
     <p id="qr-copy-status" role="status" aria-live="polite"></p>
     <p class="qr-state">{{lifecycle_status}}{{#if protected}} &middot; Password protected{{/if}}</p>
-    <p id="qr-error" role="alert" hidden>QR image could not load. Sign in again or retry.</p>
+    <p id="qr-error" role="alert" hidden
+      data-load="QR image could not load. Sign in again or retry."
+      data-logo="Choose a valid non-interlaced PNG logo, at most 64 KiB and 512 by 512 pixels."
+      data-pending="Changes pending."
+      data-rendering="Generating QR code..."
+      data-ready="QR code ready."
+      data-copying="Copying..."
+      data-copied="QR image copied."
+      data-copy-failed="Could not copy image. Retry or download PNG."
+      data-copy-unavailable="Image copying unavailable; download PNG instead">QR image could not load. Sign in again or retry.</p>
   </div>
   <figure class="qr-sheet">
-    <img id="qr-preview" src="{{image_url}}" alt="QR code for {{short_url}}" width="512" height="512" />
+    <div class="qr-preview-frame"><img id="qr-preview" src="{{image_url}}" alt="QR code for {{short_url}}" width="512" height="512" /></div>
     <figcaption>{{short_url}}</figcaption>
   </figure>
 </main>

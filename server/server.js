@@ -34,6 +34,17 @@ app.set("trust proxy", env.TRUST_PROXY);
 
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cookieParser());
+// Do not send ephemeral logo payloads to the global body-parser error logger.
+const qrJSON = express.json();
+app.use(/^\/api\/(?:v2\/)?links\/[^/]+\/qr\/?$/i, (req, res, next) => {
+  if (req.method !== "POST") return next();
+  res.set("Cache-Control", "private, no-store");
+  if (!req.is("application/json")) return res.status(400).json({ error: "Send QR settings as a JSON object." });
+  qrJSON(req, res, error => {
+    if (!error) return next();
+    res.status(error.status === 413 ? 413 : 400).json({ error: "Invalid or oversized QR JSON request." });
+  });
+});
 // Bounded transfer payloads only; retain default limits on every other route.
 app.use(/^\/api\/(?:v2\/)?transfer\/(?:preview|commit)\/?$/i, express.json({ limit: "1mb" }));
 app.use(express.json());

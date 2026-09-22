@@ -160,6 +160,16 @@ revision recovery, clear/fallback, layout and browser errors.
 
 ## QR validation
 
+Branded exports add `qr-branding.cjs` to the full offline suite and the focused
+`KUTT_TEST_ONLY=qr-branding` selector. `qr-logo-unit.cjs --decode` uses the existing
+test-only jsQR dependency for actual raster decoding across size/alias cases;
+run with disposable app configuration (including SQLite under `/tmp`) and no
+real `.env`. `QR_DECODER_MODULE` may specify an installed test decoder.
+`NODE_BINARY`, `PLAYWRIGHT_MODULE` and `QR_DECODER_MODULE` can select host test
+runtimes for `sh tests/browser-qr-branding.sh IMAGE`. This runner creates/removes
+only its own fresh loopback fixture; evidence stays outside the checkout.
+See [QR branding](../docs/QR-BRANDING.md) for limits and separate physical gates.
+
 `qr.cjs` runs in the standard offline hardened-image suite. For independent
 browser decoding install the isolated test-only dependency with
 `npm ci --prefix tests/browser-deps` (never inside the production image).

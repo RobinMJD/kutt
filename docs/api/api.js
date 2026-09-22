@@ -32,6 +32,44 @@ module.exports = {
     }
   ],
   paths: {
+    "/links/{id}/qr": {
+      get: {
+        tags: ["links"], summary: "Download an unbranded QR image",
+        description: "Owner-only export of the public short URL, never the destination or password. Scoped tokens require links:read and an allowed domain. No visits are recorded. Existing GET behavior is unchanged; logos are accepted only by POST.",
+        security: [{ SessionAuth: [] }, { APIKeyAuth: [] }],
+        parameters: [
+          { name: "id", in: "path", required: true, schema: { type: "string", format: "uuid" } },
+          { name: "size", in: "query", schema: { type: "integer", minimum: 128, maximum: 1024, default: 512 } },
+          { name: "level", in: "query", schema: { type: "string", enum: ["L", "M", "Q", "H"], default: "M" } },
+          { name: "format", in: "query", schema: { type: "string", enum: ["png", "svg"], default: "png" } }
+        ],
+        responses: {
+          "200": { description: "Private, no-store attachment", content: { "image/png": { schema: { type: "string", format: "binary" } }, "image/svg+xml": { schema: { type: "string", format: "binary" } } } },
+          "400": { description: "Invalid options or insufficient size" }, "401": { description: "Authentication required" },
+          "403": { description: "Token scope denied" }, "404": { description: "Link unavailable or not owned" }, "410": { description: "Restore link/domain first" }
+        }
+      },
+      post: {
+        tags: ["links"], summary: "Download a QR image with an optional ephemeral PNG logo",
+        description: "Same owner/domain/links:read authorization as GET. Use JSON and session authentication or X-API-Key. Supplied foreign/null Origin and cross-site browser requests are denied, including token requests. No external URLs are fetched. Logo is never stored. Only the public short URL is encoded. A logo forces correction H and a center plate of at most 20% symbol width; finder patterns and the four-module quiet zone are untouched. Dense symbols require at least two pixels per module. Omit logo for a plain export; null/empty is invalid.",
+        security: [{ SessionAuth: [] }, { APIKeyAuth: [] }],
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "string", format: "uuid" } }],
+        requestBody: { required: true, content: { "application/json": { schema: {
+          type: "object", additionalProperties: false, properties: {
+            size: { oneOf: [{ type: "integer", minimum: 128, maximum: 1024 }, { type: "string", pattern: "^[0-9]{3,4}$" }], default: 512 },
+            level: { type: "string", enum: ["L", "M", "Q", "H"], default: "M", description: "Validated, then overridden to H when logo is present." },
+            format: { type: "string", enum: ["png", "svg"], default: "png" },
+            logo: { type: "string", maxLength: 87406, description: "Canonical base64 PNG data URL (data:image/png;base64,...). At most 65536 decoded bytes, dimensions 1..512 each, non-interlaced, non-animated PNG. Framing, CRC, IHDR and bounded exact inflation are checked before raster decoding. Metadata is stripped; embedded output is a newly encoded raster." }
+          }
+        } } } },
+        responses: {
+          "200": { description: "Private, no-store attachment; SVG permits only its embedded PNG data image", content: { "image/png": { schema: { type: "string", format: "binary" } }, "image/svg+xml": { schema: { type: "string", format: "binary" } } } },
+          "400": { description: "Invalid PNG/options or insufficient image size" }, "401": { description: "Authentication required" },
+          "403": { description: "Origin or scope denied" }, "404": { description: "Link unavailable or not owned" },
+          "410": { description: "Restore link/domain first" }, "413": { description: "JSON body exceeds the existing 100 KiB limit" }, "429": { description: "Export rate limit exceeded" }
+        }
+      }
+    },
     "/moderation": {
       get: {
         tags: ["users"], summary: "List active bans and private moderation audit (administrator only)",
