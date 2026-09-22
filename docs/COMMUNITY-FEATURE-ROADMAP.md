@@ -23,7 +23,7 @@ automatic domain renaming, historical analytics rewriting or data deletion.
 | C02 | Prefix-only hostname normalization | Complete | `.41`; evidence below |
 | C03 | Transactional, reversible administrative moderation and session safety | Complete | `.45`; evidence below |
 | C04 | Strict peer/CIDR/hop reverse-proxy trust | Complete | `.42`; evidence below |
-| C05 | Compatible staged and enforced Content Security Policy | Pending | Pending |
+| C05 | Compatible staged and enforced Content Security Policy | Implemented; release gates pending | Integrated; strict nonce policy and translated browser checks passed; see `CSP.md` |
 | C06 | MySQL utf8mb4 search compatibility and real database tests | Complete | `.42`; evidence below |
 | C07 | Verified remote database TLS and credential-file configuration | Complete | `.43`; evidence below |
 | C08 | Consistent verified Redis TLS for cache, queues and limiting | Complete | `.43`; evidence below |
@@ -31,15 +31,15 @@ automatic domain renaming, historical analytics rewriting or data deletion.
 | C10 | Custom-domain API routing without homepage interception | Complete | `.42`; evidence below |
 | C11 | Complete English (default), French and Spanish localization | Implemented; release gates pending | Candidate `.49`, integrated with `.48` metrics; 198 combined desktop/mobile layouts passed; see `LOCALIZATION.md` |
 | C12 | Stable allowlisted sorting in personal, admin and workspace tables/API | Complete | `.44`; evidence below |
-| C13 | Branded QR logos embedded in validated PNG/SVG exports | In progress | Isolated implementation and decoder validation; release gates pending |
+| C13 | Branded QR logos embedded in validated PNG/SVG exports | Implemented; release gates pending | Integrated; bounded PNG validation, independent decoding and 18 enforced-CSP layouts passed; see `QR-BRANDING.md` |
 | C14 | Accessible dark/system/light theme | Complete | `.47`; full source/wrapper regression, 90 layouts, public theme selection, WAF/SSO and backup/restore gates passed; evidence below |
 | C15 | Optional explicit OIDC role mapping and safe demotion/recovery | Implemented; release gates pending | Integrated; see `OIDC-SECURITY.md` |
-| C16 | Optional separate management hostname and explicit shared-domain grants | Pending | Pending |
+| C16 | Optional separate management hostname and explicit shared-domain grants | In progress | Isolated implementation and authorization/transaction review; not deployed |
 | C17 | Optional consistent destination-domain policy | In progress | Isolated implementation; 18 translated desktop/mobile workflows passed; combined regression/publication/deployment pending |
 | C18 | Private authenticated performance metrics with bounded labels | Complete | `.48`; source/wrapper/CI, private Prometheus scrapes, WAF/SSO, backup/restore and stable health gates passed |
 | C19 | Safe dotted aliases with reserved-path protections | Complete | `.46`; [rules and tests](LINK-ALIASES.md), evidence below |
 | C20 | Accessible interactive geography chart and text alternative | Implemented; release gates pending | Integrated; see `ANALYTICS.md` |
-| C21 | Profile visit aggregation; safely batch only where warranted | In progress | Synthetic profile identified hourly SQLite lookup; preserving transactions and testing expression index, with SQL-engine compatibility gates |
+| C21 | Profile visit aggregation; safely batch only where warranted | Implemented; release gates pending | Indexed SQLite hourly lookup preserves synchronous transactions; SQLite/MySQL/PostgreSQL and rollback checks passed; see `VISIT-PERFORMANCE.md` |
 
 ## Evidence: C14
 
