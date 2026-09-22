@@ -1,8 +1,9 @@
+const i18n = require("./i18n");
 const { PNG } = require("pngjs");
 
 function renderPNG(modules, width, logo) {
   const total = modules.size + 8;
-  if (!Number.isInteger(width) || width < Math.max(128, total) || width > 1024) throw new Error("Invalid QR image width");
+  if (!Number.isInteger(width) || width < Math.max(128, total) || width > 1024) throw new Error(i18n.t("messages.invalid_qr_image_width"));
   const image = new PNG({ width, height: width });
   // Render the library's matrix on an exact integer canvas. node-qrcode's PNG
   // width calculation can round 1024 down to 1023 for a 41-module symbol.

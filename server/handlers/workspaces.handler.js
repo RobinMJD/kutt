@@ -1,3 +1,4 @@
+const i18n = require("../i18n");
 const spaces = require("../workspaces");
 const lifecycle = require("../link-lifecycle");
 const { sameOrigin } = require("./link-history.handler");
@@ -8,7 +9,7 @@ const editing = require("../workspace-edit");
 function boundary(req, res, next) {
   res.set("Cache-Control", "private, no-store");
   res.set("Referrer-Policy", "same-origin");
-  if (req.apiTokenDomain !== undefined) throw new CustomError("Workspace access requires an unrestricted domain scope.", 403);
+  if (req.apiTokenDomain !== undefined) throw new CustomError(i18n.t("messages.workspace_access_requires_an_unrestricted_domain_scope"), 403);
   if (!["GET", "HEAD"].includes(req.method)) sameOrigin(req);
   next();
 }
@@ -48,7 +49,7 @@ async function mutate(req, operation, res) {
       const input = operation === "trash_link" || operation === "restore_link" ? {} : req.isHTML ? formLink(body) : body;
       return spaces.changeLink(req.user.id, id, operation.replace("_link", ""), req.params.linkId || body.link_id, input, actor);
     }
-    default: throw new CustomError("Invalid workspace action.", 400);
+    default: throw new CustomError(i18n.t("messages.invalid_workspace_action"), 400);
   }
 }
 
@@ -99,7 +100,7 @@ async function page(req, res, error, failedEdit) {
     }
   }
   const pageURL = number => url + "?" + new URLSearchParams({ q: selected.q, state: selected.state, page: number, sort: selected.sort, direction: selected.direction });
-  return res.render("workspaces", { title: selected?.name || "Workspaces", all, selected, error: inlineError ? undefined : error, action_url: selected ? pageURL(selected.page) : url,
+  return res.render("workspaces", { title: selected?.name || i18n.t("ui.workspaces"), all, selected, error: inlineError ? undefined : error, action_url: selected ? pageURL(selected.page) : url,
     previous: selected?.page > 1 ? pageURL(selected.page - 1) : null,
     next: selected && selected.page * selected.limit < selected.total ? pageURL(selected.page + 1) : null });
 }

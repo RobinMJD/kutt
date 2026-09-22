@@ -15,11 +15,12 @@
 >
   <div class="loading-stats">
     {{> icons/spinner}}
-    Loading stats...
+    {{t "ui.loading_stats"}}
   </div>
 </section>
 {{> footer}}
 {{#extend "scripts"}}
   <script src="/libs/chart.min.js"></script>
+  <script src="/scripts/chart-theme.js"></script>
   <script src="/scripts/stats.js"></script>
 {{/extend}}

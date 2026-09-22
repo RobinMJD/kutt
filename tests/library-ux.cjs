@@ -29,8 +29,10 @@ module.exports = async ({ request, session, database, env }) => {
     const filter = await request("POST", "/api/library/filters", { name: prefix, filters: { q: prefix, state: "active" } }, session);
     assert.equal(filter.status, 201); const saved = await filter.json();
     assert.equal((await (await request("GET", "/api/library?saved=" + saved.id, undefined, session)).json()).total, 5);
-    const html = await (await request("GET", "/settings/library?saved=" + saved.id, undefined, session, headers)).text();
-    for (const label of ["Not in trash", "Paused", "Not paused", "In trash"]) assert(html.includes(">" + label + "</option>"));
+    const page = await request("GET", "/settings/library?saved=" + saved.id, undefined, session, headers);
+    const html = await page.text();
+    assert.equal(page.status, 200, "Library page must render");
+    for (const label of ["Not in trash", "Paused", "Not paused", "In trash"]) assert(html.includes(">" + label + "</option>"), label + ": " + html.match(/<select name="state"[\s\S]*?<\/select>/)?.[0]);
     for (const state of ["Paused", "Scheduled", "Expired", "Visit limit reached"]) assert(html.includes(state));
     const workspaceResponse = await request("POST", "/api/workspaces", { name: prefix }, session);
     assert.equal(workspaceResponse.status, 201);

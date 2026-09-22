@@ -87,7 +87,54 @@ and clipboard results, object-URL cleanup and visit counts. It never uses the
 operator's real clipboard or fetches the encoded destination. Physical scanning,
 native print dialogs and Safari acceptance remain separate release gates.
 
-C11 catalog integration is intentionally left to the parent: this base has no
-localization runtime. New browser messages live in `qr.hbs` data attributes;
-labels/attributes and server CustomErrors need catalog entries alongside the
-existing QR strings. No C11 worktree files are changed or copied.
+## Localization and themes
+
+The QR branch integrates C11 and C14 from `6cf8f959` and retains version `.47`.
+All QR labels, accessible names, status text and API errors use the bundled
+English (default), French and Spanish catalogs. New branding messages have
+stable `qr.*` keys; existing QR keys are retained. Browser feedback is escaped
+in template data attributes and assigned with `textContent`, not DOM translation
+or HTML insertion. Unexpected browser/network errors use the localized load
+failure message. Native file-dialog/validation chrome follows the browser/OS.
+
+Locale middleware precedes the bounded POST parser, including malformed and
+oversized JSON errors. The preference cookie and `Accept-Language` negotiation
+are unchanged. QR bytes, URLs, filenames, sizes, correction levels, formats,
+scope names and status codes never depend on locale. The lifecycle display uses
+the localized label; the API's machine-readable lifecycle value stays unchanged.
+Dark mode retains an opaque white QR image, thumbnail and quiet zone.
+
+`qr-branding-i18n.cjs` checks all three languages on both API aliases, parser and
+authorization errors, concurrent cookie precedence, source/catalog references,
+and byte-identical plain/branded images across locales. The full suite includes
+the shared catalog/key/placeholder and template-compilation gate.
+
+Run `sh tests/browser-qr-branding-locales.sh IMAGE` for the focused 18-view matrix:
+EN/FR/ES, light/dark, 1440/390/320px. Each locale/theme has its own disposable
+fixture, with actual decoded PNG/SVG downloads, clipboard images, print layout,
+keyboard/remove/error/race/cleanup coverage, no-overflow and text-contrast checks.
+Screenshots include branded, invalid-logo and print states. A single combination
+can be run with `KUTT_TEST_LOCALE=fr KUTT_TEST_THEME=dark` and the ordinary runner.
+The unrelated 270-view appearance suite is not needed for QR-only integration.
+
+### Integration verification (2026-09-22)
+
+- Full offline `tests/container-smoke.cjs`: passed with the .47 dependency lock,
+  including C11 source catalogs, C14 theme contracts, both QR suites, C19,
+  moderation, OIDC and migration rollback checks. The test harness drains ordinary
+  responses (preserving URL and streaming SSE) to avoid the known Node 24.21
+  unread-response/connection-close failure; runtime behavior is unchanged.
+- Focused `KUTT_TEST_ONLY=qr-branding`: passed, including localized HTTP errors.
+- `qr-logo-unit.cjs --decode`: 36 size/alias cases passed; one dense case used
+  normalized sampling with the same plain control, as documented above.
+- Focused browser matrix: all 18 viewport/locale/theme combinations passed, with
+  54 branded/error/print screenshots. Longer French/Spanish text, mobile layouts,
+  dark contrast and white printed quiet zones were visually reviewed.
+- Legacy `browser-qr.cjs`: passed, including clipboard conversion/denial,
+  unsupported controls, plain PNG/SVG decoding, print/PDF and image recovery.
+- Source key/placeholder parity (1,453 keys per locale), all template compilation,
+  changed JavaScript syntax, shell syntax, API schema import and diff checks passed.
+
+Local synthetic browser evidence: `/var/folders/fd/hv8hnh4x4k3b8__jg5d6v2k40000gn/T/kutt-qr-locales.rEJP2U/`;
+legacy evidence: `/tmp/kutt-qr-legacy.HEWjxJ/`. No production, parent working-tree,
+analytics-source or version changes were made by this integration.

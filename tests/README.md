@@ -1,5 +1,42 @@
 # Container smoke test
 
+Appearance preferences are covered by `KUTT_TEST_ONLY=theme` and the full suite.
+`sh tests/browser-theme.sh IMAGE` checks System/Light/Dark, browser storage and
+cross-tab behavior, real rendered contrast, chart colors/pixels and QR print
+preservation on desktop/mobile. See [themes](../docs/THEMES.md) for test runtime,
+evidence and custom-layout requirements. `KUTT_TEST_LOCALE=fr` or `es` exercises
+translated appearance labels; omission retains the English baseline. The HTTP
+gate checks all three catalogs and unchanged `system`/`light`/`dark` values.
+
+Safe dotted aliases are covered by `dotted-alias-unit.cjs` and
+`dotted-aliases.cjs`. The latter runs in the normal smoke suite or with
+`KUTT_TEST_ONLY=dotted-aliases`: create/edit/admin/workspace/import paths,
+reserved names, dot/traversal/encoding limits, case/domain identity, scoped
+access, redirects, retirement/restore and forwarding-suffix compatibility.
+See [alias rules](../docs/LINK-ALIASES.md). Use only disposable test databases.
+
+`browser-dotted-aliases.cjs` uses `KUTT_BROWSER_DISPOSABLE=1`, a fresh loopback
+`KUTT_TEST_URL`, optional `PLAYWRIGHT_MODULE`, and `KUTT_EVIDENCE_DIR` outside the
+checkout. It covers native create, personal/admin/workspace edits, rejected
+aliases and retained drafts, redirects and layout at 1440/390/320px. It refuses
+an initialized app, verifies the public redirect response, and substitutes a
+synthetic landing response without contacting the external destination.
+`sh tests/browser-dotted-aliases.sh IMAGE` provisions and removes the fresh
+loopback instance. It accepts `NODE_BINARY`, `PLAYWRIGHT_MODULE`,
+`KUTT_BROWSER_PORT` (default `31121`) and `KUTT_EVIDENCE_DIR`.
+
+Build the candidate image, then run `sh tests/dotted-alias-database.sh IMAGE mysql2`
+and `sh tests/dotted-alias-database.sh IMAGE pg`. Each gate creates its own pinned,
+network-isolated database container with tmpfs storage and removes only that
+container by its captured ID. The HTTP suite refuses an initialized database and
+covers dotted write paths, native collation parity, scoped domains, concurrent
+claims, rollback, trash/restore and unchanged forwarding suffixes.
+Ordinary aliases are controls for both case matching and duplicate-claim races.
+The forced stale-snapshot check requires a normal `409` conflict, never a `500`
+or an unclassified exception, for both ordinary and dotted aliases. Both race
+forms also verify that the losing link rolls back, the winning link/claim/history
+remain unchanged, and the same owner can reassert an active claim.
+
 Build from a clean checkout without a `.env` file:
 
 ```sh
@@ -16,6 +53,20 @@ file settings from its caller. Run only in a disposable build/container.
 
 Coverage:
 
+- C11 localization: English/French/Spanish key and placeholder parity, fail-closed
+  catalog loading, hostile interpolation, custom view/partial precedence,
+  Node/browser formatter parity, mail rendering, 90 concurrent locale contexts,
+  localized HTTP errors, cookie/header negotiation, null/foreign-origin denial,
+  safe return paths, localized assets and unchanged signed expiry inputs.
+  `tests/browser-i18n.cjs` uses a fresh loopback fixture for actual native language
+  form submissions (including their Origin header and retained theme preference),
+  translated theme controls, login errors, HTMX editing,
+  plural feedback and 22 views in three languages at 1440/390/320px.
+  `i18n-community.cjs` adds French/Spanish moderation and origin denials,
+  unchanged audit payloads, sorting and dotted-alias/import validation.
+  The moderation, list-sorting, dotted-alias and theme browser suites accept
+  `KUTT_TEST_LOCALE=fr` or `es`; omission retains their default English gate.
+  See `docs/LOCALIZATION.md` for commands and explicit acceptance limits.
 - Campaign URL parameters: encoded bounds, explicit clears, API aliases,
   idempotency, public/protected/Basic and routing/forwarding precedence,
   import/export, history, restart, owner/admin/scoped/CSRF and workspace roles.
@@ -168,6 +219,11 @@ real `.env`. `QR_DECODER_MODULE` may specify an installed test decoder.
 `NODE_BINARY`, `PLAYWRIGHT_MODULE` and `QR_DECODER_MODULE` can select host test
 runtimes for `sh tests/browser-qr-branding.sh IMAGE`. This runner creates/removes
 only its own fresh loopback fixture; evidence stays outside the checkout.
+`sh tests/browser-qr-branding-locales.sh IMAGE` runs the focused QR gate in
+EN/FR/ES and light/dark at 1440/390/320px, including contrast/overflow and
+localized browser/server error recovery. `qr-branding-i18n.cjs` additionally
+checks localized parser/auth/validation errors, concurrent cookie negotiation,
+source/catalog coverage and unchanged plain/branded artifact bytes.
 See [QR branding](../docs/QR-BRANDING.md) for limits and separate physical gates.
 
 `qr.cjs` runs in the standard offline hardened-image suite. For independent

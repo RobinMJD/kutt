@@ -2,11 +2,12 @@ const { inflateSync } = require("node:zlib");
 const { PNG } = require("pngjs");
 const { crc32 } = require("pngjs/lib/crc");
 const { CustomError } = require("./utils");
+const i18n = require("./i18n");
 
 const MAX_BYTES = 64 * 1024, MAX_SIDE = 512;
 const PREFIX = "data:image/png;base64,";
 const SIGNATURE = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
-const fail = () => { throw new CustomError("Choose a valid non-interlaced PNG logo, at most 64 KiB and 512 by 512 pixels.", 400); };
+const fail = () => { throw new CustomError(i18n.t("qr.invalid_logo"), 400); };
 
 function decode(input) {
   if (typeof input !== "string" || input.length > PREFIX.length + 4 * Math.ceil(MAX_BYTES / 3) || !input.startsWith(PREFIX)) fail();
@@ -65,7 +66,7 @@ function decode(input) {
 
 function placement(modules, width, logo) {
   const total = modules.size + 8;
-  if (width < total * 2) throw new CustomError("Choose a larger QR image size for this logo.", 400);
+  if (width < total * 2) throw new CustomError(i18n.t("qr.logo_size_required"), 400);
   // At most 20% of the symbol width (4% of its area), clear of all finders
   // and the four-module quiet zone. The plate is aligned to module edges.
   let span = Math.floor(modules.size / 5);

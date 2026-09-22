@@ -9,7 +9,7 @@ const net = require("node:net");
 const { setTimeout: delay } = require("node:timers/promises");
 
 async function main() {
-  assert([undefined, "qr", "qr-branding", "moderation", "list-sorting", "security-boundaries", "workspaces", "workspace-edit", "routing", "analytics", "privacy", "webhooks", "forwarding", "link-health", "shortcuts", "security-regressions", "admin-user-filter", "admin-edit", "accessibility", "dialogs", "library-ux", "validation", "transfer", "login-copy", "contrast", "copy", "responses", "login-navigation", "unavailable", "header", "campaign", "expiry-edit"].includes(process.env.KUTT_TEST_ONLY), "Unknown focused test selection");
+  assert([undefined, "qr", "qr-branding", "i18n", "theme", "dotted-aliases", "moderation", "list-sorting", "security-boundaries", "workspaces", "workspace-edit", "routing", "analytics", "privacy", "webhooks", "forwarding", "link-health", "shortcuts", "security-regressions", "admin-user-filter", "admin-edit", "accessibility", "dialogs", "library-ux", "validation", "transfer", "login-copy", "contrast", "copy", "responses", "login-navigation", "unavailable", "header", "campaign", "expiry-edit"].includes(process.env.KUTT_TEST_ONLY), "Unknown focused test selection");
   const root = path.resolve(__dirname, "..");
   assert(!existsSync(path.join(root, ".env")), "Run in a clean checkout without a .env file");
   const directory = mkdtempSync(path.join(tmpdir(), "kutt-smoke-"));
@@ -82,10 +82,19 @@ async function main() {
       const headers = { "Content-Type": "application/json", Accept: "application/json", ...extraHeaders };
       if (token) headers.Cookie = `token=${token}`;
       try {
-        return await fetch(url + pathname, {
+        const response = await fetch(url + pathname, {
           method, headers, redirect: "manual", signal: AbortSignal.timeout(10000),
           body: body === undefined ? undefined : JSON.stringify(body)
         });
+        // Status-only assertions must still drain ordinary responses: leaving a
+        // large body unread can trigger nodejs/undici#5360 on connection close.
+        if (response.headers.get("content-type")?.startsWith("text/event-stream")) return response;
+        const bytes = await response.arrayBuffer();
+        const buffered = new Response(response.body === null ? null : bytes, {
+          status: response.status, statusText: response.statusText, headers: response.headers
+        });
+        Object.defineProperty(buffered, "url", { value: response.url });
+        return buffered;
       } catch (error) {
         throw new Error(`${method} ${pathname}: ${error.message}`);
       }
@@ -150,12 +159,13 @@ async function main() {
       throw new Error(`Restart failed: ${output}`);
     };
     if (process.env.KUTT_TEST_ONLY) {
-      await require("./" + process.env.KUTT_TEST_ONLY + ".cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, root, directory, env });
+      await require("./" + process.env.KUTT_TEST_ONLY + ".cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, root, directory, env, url });
       return;
     }
     await require("./community-hostnames.cjs")({ request, session: token, database: env.DB_FILENAME, account, env });
     await require("./token-domains-idempotency.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart });
     await require("./link-lifecycle.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, idempotencySecret: env.JWT_SECRET });
+    await require("./i18n.cjs")({ request, session: token, url });
     await require("./expiry-edit.cjs")({ request, session: token, database: env.DB_FILENAME, restart });
     await require("./link-history.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart });
     await require("./library.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, root, directory, env });
@@ -172,6 +182,7 @@ async function main() {
     await require("./validation.cjs")({ request, session: token, account });
     await require("./login-copy.cjs")({ request, session: token, root, directory, env });
     await require("./contrast.cjs")({ root });
+    await require("./theme.cjs")({ root, request, session: token });
     await require("./copy.cjs")({ root });
     await require("./responses.cjs")({ root, request, session: token });
     await require("./login-navigation.cjs")({ root, request, account });
@@ -185,6 +196,7 @@ async function main() {
     await require("./privacy.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, root, directory, env });
     await require("./webhooks.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, root, directory, env });
     await require("./forwarding.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, root, directory, env });
+    await require("./dotted-aliases.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, root, directory, env });
     await require("./link-health.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, root, directory, env });
     await require("./shortcuts.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, root, directory, env });
     await require("./security-regressions.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, root, directory, env });

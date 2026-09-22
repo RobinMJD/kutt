@@ -1,3 +1,4 @@
+const i18n = require("./i18n");
 const { randomUUID, randomBytes, hkdfSync, createCipheriv, createDecipheriv, createHmac } = require("node:crypto");
 const knex = require("./knex");
 const env = require("./env");
@@ -26,19 +27,19 @@ function signature(secret, timestamp, body) {
   return "v1=" + createHmac("sha256", secret).update(timestamp + "." + body).digest("hex");
 }
 function strict(body, keys) {
-  if (!body || typeof body !== "object" || Array.isArray(body) || Object.keys(body).some(k => !keys.includes(k))) fail("Invalid webhook fields.");
+  if (!body || typeof body !== "object" || Array.isArray(body) || Object.keys(body).some(k => !keys.includes(k))) fail(i18n.t("messages.invalid_webhook_fields"));
 }
-function revision(value) { if (!Number.isSafeInteger(value) || value < 1 || value >= Number.MAX_SAFE_INTEGER) fail("A valid revision is required."); }
+function revision(value) { if (!Number.isSafeInteger(value) || value < 1 || value >= Number.MAX_SAFE_INTEGER) fail(i18n.t("messages.a_valid_revision_is_required")); }
 async function authorized(req, db = knex, lock = false) {
-  if (!req.user || req.apiTokenDomain !== undefined) fail("Use owner-wide permissions for integrations.", 403);
+  if (!req.user || req.apiTokenDomain !== undefined) fail(i18n.t("messages.use_owner_wide_permissions_for_integrations"), 403);
   const user = await db("users").where({ id: req.user.id }).modify(q => { if (lock) q.forUpdate(); }).first();
-  if (!user || user.banned || !user.verified || Number(user.auth_version) !== Number(req.user.auth_version)) fail("Sign in again.", 401);
+  if (!user || user.banned || !user.verified || Number(user.auth_version) !== Number(req.user.auth_version)) fail(i18n.t("messages.sign_in_again"), 401);
   return user;
 }
 async function owned(req, db = knex) {
-  if (!uuid(req.params.id)) fail("Webhook was not found.", 404);
+  if (!uuid(req.params.id)) fail(i18n.t("messages.webhook_was_not_found"), 404);
   const row = await db("webhooks").where({ id: req.params.id, user_id: req.user.id }).first();
-  if (!row) fail("Webhook was not found.", 404);
+  if (!row) fail(i18n.t("messages.webhook_was_not_found"), 404);
   return row;
 }
 function clean(row, user) {
@@ -48,8 +49,8 @@ function clean(row, user) {
 }
 async function configuration(body) {
   if (typeof body.name !== "string" || !body.name.trim() || body.name.trim().length > 80 || typeof body.enabled !== "boolean" ||
-    !Array.isArray(body.events) || !body.events.length || body.events.length > TYPES.length || body.events.some(e => !TYPES.includes(e))) fail("Provide a name, HTTPS URL, enabled flag and valid events.");
-  let url; try { url = await safe.validate(body.url); } catch { fail("Webhook URL must resolve exclusively to public HTTPS addresses on port 443."); }
+    !Array.isArray(body.events) || !body.events.length || body.events.length > TYPES.length || body.events.some(e => !TYPES.includes(e))) fail(i18n.t("messages.provide_a_name_https_url_enabled_flag_and_valid_events"));
+  let url; try { url = await safe.validate(body.url); } catch { fail(i18n.t("messages.webhook_url_must_resolve_exclusively_to_public_https_addresses_on_port")); }
   return { name: body.name.trim(), url, enabled: body.enabled, events: JSON.stringify([...new Set(body.events)]) };
 }
 async function list(req) {
@@ -66,17 +67,17 @@ async function save(req, create = false) {
     const user = await authorized(req, db, true), now = Date.now();
     if (create) {
       const { count } = await db("webhooks").where({ user_id: user.id }).count("* as count").first();
-      if (Number(count) >= 10) fail("At most ten webhooks may be configured.", 409);
+      if (Number(count) >= 10) fail(i18n.t("messages.at_most_ten_webhooks_may_be_configured"), 409);
       const id = randomUUID(), secret = "whsec_" + randomBytes(32).toString("base64url");
       const row = { ...config, id, user_id: user.id, secret: encrypt(secret, id), revision: 1, auth_version: user.auth_version, created_at: now, updated_at: now };
       await db("webhooks").insert(row);
       return { ...clean(row, user), secret };
     }
     const row = await owned(req, db);
-    if (Number(row.revision) !== req.body.revision) fail("Webhook changed. Reload before saving.", 409);
+    if (Number(row.revision) !== req.body.revision) fail(i18n.t("messages.webhook_changed_reload_before_saving"), 409);
     const update = { ...config, revision: req.body.revision + 1, auth_version: user.auth_version, updated_at: now };
     const changed = await db("webhooks").where({ id: row.id, revision: req.body.revision }).update(update);
-    if (!changed) fail("Webhook changed. Reload before saving.", 409);
+    if (!changed) fail(i18n.t("messages.webhook_changed_reload_before_saving"), 409);
     await cancel(db, row.id);
     return clean({ ...row, ...update }, user);
   });
@@ -89,11 +90,11 @@ async function rotate(req) {
   strict(req.body, ["revision"]); revision(req.body.revision);
   return knex.transaction(async db => {
     const user = await authorized(req, db, true), row = await owned(req, db);
-    if (Number(row.revision) !== req.body.revision) fail("Webhook changed. Reload before rotating.", 409);
+    if (Number(row.revision) !== req.body.revision) fail(i18n.t("messages.webhook_changed_reload_before_rotating"), 409);
     const secret = "whsec_" + randomBytes(32).toString("base64url"), update = { revision: req.body.revision + 1,
       secret: encrypt(secret, row.id), auth_version: user.auth_version, updated_at: Date.now() };
     const changed = await db("webhooks").where({ id: row.id, revision: req.body.revision }).update(update);
-    if (!changed) fail("Webhook changed. Reload before rotating.", 409);
+    if (!changed) fail(i18n.t("messages.webhook_changed_reload_before_rotating"), 409);
     await cancel(db, row.id);
     return { ...clean({ ...row, ...update }, user), secret };
   });
@@ -102,15 +103,15 @@ async function remove(req) {
   strict(req.body, ["revision"]); revision(req.body.revision);
   await knex.transaction(async db => {
     await authorized(req, db, true); const row = await owned(req, db);
-    if (Number(row.revision) !== req.body.revision) fail("Webhook changed. Reload before deleting.", 409);
+    if (Number(row.revision) !== req.body.revision) fail(i18n.t("messages.webhook_changed_reload_before_deleting"), 409);
     const changed = await db("webhooks").where({ id: row.id, revision: req.body.revision }).delete();
-    if (!changed) fail("Webhook changed. Reload before deleting.", 409);
+    if (!changed) fail(i18n.t("messages.webhook_changed_reload_before_deleting"), 409);
   });
 }
 function eventValue(row) { return { sequence: String(row.sequence), ...JSON.parse(row.payload) }; }
 function cursor(value) {
   if (value === undefined || value === "") return 0;
-  if (typeof value !== "string" || !/^(0|[1-9]\d{0,15})$/.test(value) || !Number.isSafeInteger(Number(value))) fail("Invalid event cursor.");
+  if (typeof value !== "string" || !/^(0|[1-9]\d{0,15})$/.test(value) || !Number.isSafeInteger(Number(value))) fail(i18n.t("messages.invalid_event_cursor"));
   return Number(value);
 }
 async function events(req, after) {
@@ -134,21 +135,21 @@ async function deliveries(req) {
 }
 async function retry(req) {
   strict(req.body, ["delivery_id", "revision"]); revision(req.body.revision);
-  if (!uuid(req.body.delivery_id)) fail("Invalid delivery identifier.");
+  if (!uuid(req.body.delivery_id)) fail(i18n.t("messages.invalid_delivery_identifier"));
   await knex.transaction(async db => {
     const user = await authorized(req, db, true), hook = await owned(req, db);
-    if (!hook.enabled || Number(hook.auth_version) !== Number(user.auth_version) || Number(hook.revision) !== req.body.revision) fail("Reload and enable the current webhook before retrying.", 409);
+    if (!hook.enabled || Number(hook.auth_version) !== Number(user.auth_version) || Number(hook.revision) !== req.body.revision) fail(i18n.t("messages.reload_and_enable_the_current_webhook_before_retrying"), 409);
     await queue.admit(db, user.id, 1);
     const changed = await db("webhook_deliveries").where({ id: req.body.delivery_id, webhook_id: hook.id, revision: hook.revision, state: "failed" })
       .update({ state: "pending", attempts: 0, next_at: Date.now(), completed_at: null, error: null, http_status: null });
-    if (!changed) fail("Only failed deliveries of the current configuration can be retried.", 409);
+    if (!changed) fail(i18n.t("messages.only_failed_deliveries_of_the_current_configuration_can_be_retried"), 409);
   });
 }
 async function test(req) {
   strict(req.body, ["revision"]); revision(req.body.revision);
   return knex.transaction(async db => {
     const user = await authorized(req, db, true), hook = await owned(req, db);
-    if (!hook.enabled || Number(hook.auth_version) !== Number(user.auth_version) || Number(hook.revision) !== req.body.revision) fail("Reload and enable the current webhook before testing.", 409);
+    if (!hook.enabled || Number(hook.auth_version) !== Number(user.auth_version) || Number(hook.revision) !== req.body.revision) fail(i18n.t("messages.reload_and_enable_the_current_webhook_before_testing"), 409);
     await queue.admit(db, user.id, 1);
     const id = randomUUID(), delivery = randomUUID(), now = Date.now(), type = "webhook.test";
     const payload = JSON.stringify({ id, type, occurred_at: new Date(now).toISOString(), data: {} });

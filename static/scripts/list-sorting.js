@@ -10,7 +10,7 @@
       const busy = editing(table);
       for (const control of table.querySelectorAll(".list-sort-select")) {
         control.disabled = busy;
-        control.title = busy ? "Close link editors to change order." : "";
+        control.title = busy ? window.KuttI18n.t("sorting.close_editors") : "";
       }
       if (!busy && pending.has(table) && !table.classList.contains("htmx-request")) {
         pending.delete(table);

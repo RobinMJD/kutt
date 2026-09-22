@@ -1,3 +1,4 @@
+const i18n = require("../i18n");
 const privacy = require("../analytics-privacy");
 const routing = require("../link-routing");
 const { sameOrigin } = require("./link-history.handler");
@@ -16,12 +17,12 @@ async function previewRetention(req, res) { res.json(await privacy.previewRetent
 async function saveRetention(req, res) { res.json(await privacy.saveRetention(req)); }
 async function trackingPage(req, res) {
   const link = await routing.owned(req);
-  res.render("privacy", { title: "Tracking", link_id: link.uuid, address: link.address,
+  res.render("privacy", { title: i18n.t("messages.tracking"), link_id: link.uuid, address: link.address,
     custom_styles: [...(res.locals.custom_styles || []), "privacy.css"] });
 }
 async function retentionPage(req, res) {
   await privacy.administrator(req);
-  res.render("privacy", { title: "Analytics retention", retention: true,
+  res.render("privacy", { title: i18n.t("ui.analytics_retention"), retention: true,
     custom_styles: [...(res.locals.custom_styles || []), "privacy.css"] });
 }
 module.exports = { boundary, getTracking, saveTracking, getRetention, previewRetention, saveRetention, trackingPage, retentionPage };

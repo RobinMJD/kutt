@@ -1,22 +1,22 @@
 {{> header}}
 <main class="link-archive shortcut-page">
-  <header class="archive-heading"><h1>iOS Shortcut</h1><a href="/settings">Settings</a><a href="/settings/library">Library</a></header>
-  <div class="shortcut-template"><a href="/api/v2/shortcuts/template" download>Download Shortcut</a><a href="/api/v2/shortcuts/guide" target="_blank" rel="noopener">Setup and recovery guide</a></div>
-  <label for="shortcut-endpoint">API endpoint</label>
-  <div class="shortcut-value"><input id="shortcut-endpoint" value="{{endpoint}}" readonly /><button id="shortcut-copy-endpoint" type="button" title="Copy API endpoint" aria-label="Copy API endpoint" disabled>{{> icons/copy}}</button></div>
+  <header class="archive-heading"><h1>{{t "ui.ios_shortcut"}}</h1><a href="/settings">{{t "ui.settings"}}</a><a href="/settings/library">{{t "ui.library"}}</a></header>
+  <div class="shortcut-template"><a href="/api/v2/shortcuts/template" download>{{t "ui.download_shortcut"}}</a><a href="/api/v2/shortcuts/guide" target="_blank" rel="noopener">{{t "ui.setup_and_recovery_guide"}}</a></div>
+  <label for="shortcut-endpoint">{{t "ui.api_endpoint"}}</label>
+  <div class="shortcut-value"><input id="shortcut-endpoint" value="{{endpoint}}" readonly /><button id="shortcut-copy-endpoint" type="button" title="{{t 'ui.copy_api_endpoint'}}" aria-label="{{t 'ui.copy_api_endpoint'}}" disabled>{{> icons/copy}}</button></div>
   <form id="shortcut-form">
-    <label for="shortcut-name">Shortcut name</label><input id="shortcut-name" name="name" maxlength="80" required value="iPhone Shortcut" autocomplete="off" />
-    <dl class="shortcut-policy"><dt>Permission</dt><dd>Create links only</dd><dt>Domain</dt><dd>{{default_domain}}</dd><dt>Expiry</dt><dd>30 days</dd></dl>
-    <button id="shortcut-create" type="submit" disabled>{{> icons/plus}} Create Shortcut token</button>
+    <label for="shortcut-name">{{t "ui.shortcut_name"}}</label><input id="shortcut-name" name="name" maxlength="80" required value="iPhone Shortcut" autocomplete="off" />
+    <dl class="shortcut-policy"><dt>{{t "ui.permission"}}</dt><dd>{{t "ui.create_links_only"}}</dd><dt>{{t "ui.domain"}}</dt><dd>{{default_domain}}</dd><dt>{{t "ui.expiry"}}</dt><dd>{{t "ui.30_days"}}</dd></dl>
+    <button id="shortcut-create" type="submit" disabled>{{> icons/plus}} {{t "ui.create_shortcut_token"}}</button>
   </form>
   <p id="shortcut-message" role="status" aria-live="polite"></p>
   <section id="shortcut-secret" hidden>
-    <h2>New credential</h2><p>Shown once. Do not share or publish a configured Shortcut.</p>
-    <label for="shortcut-token">API token</label>
-    <div class="shortcut-value"><input id="shortcut-token" type="password" readonly autocomplete="off" /><button id="shortcut-reveal" type="button" title="Show API token" aria-label="Show API token" aria-pressed="false">{{> icons/eye}}</button><button id="shortcut-copy-token" type="button" title="Copy API token" aria-label="Copy API token">{{> icons/copy}}</button></div>
+    <h2>{{t "ui.new_credential"}}</h2><p>{{t "ui.shown_once_do_not_share_or_publish_a_configured_shortcut"}}</p>
+    <label for="shortcut-token">{{t "ui.api_token"}}</label>
+    <div class="shortcut-value"><input id="shortcut-token" type="password" readonly autocomplete="off" /><button id="shortcut-reveal" type="button" title="{{t 'ui.show_api_token'}}" aria-label="{{t 'ui.show_api_token'}}" aria-pressed="false">{{> icons/eye}}</button><button id="shortcut-copy-token" type="button" title="{{t 'ui.copy_api_token'}}" aria-label="{{t 'ui.copy_api_token'}}">{{> icons/copy}}</button></div>
     <p id="shortcut-expiry"></p>
-    <button id="shortcut-hide" type="button">Hide credential</button>
-    <button id="shortcut-revoke" type="button">{{> icons/trash}} Revoke this token</button>
+    <button id="shortcut-hide" type="button">{{t "ui.hide_credential"}}</button>
+    <button id="shortcut-revoke" type="button">{{> icons/trash}} {{t "ui.revoke_this_token"}}</button>
   </section>
 </main>
 <script src="/scripts/shortcuts.js" defer></script>

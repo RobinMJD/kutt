@@ -1,8 +1,8 @@
 <table id="domains-table" hx-swap-oob="true">
   <thead>
     <tr>
-      <th class="domain">Domain</th>
-      <th class="homepage">Homepage</th>
+      <th class="domain">{{t "ui.domain"}}</th>
+      <th class="homepage">{{t "ui.homepage"}}</th>
       <th class="actions"></th>
     </tr>
   </thead>
@@ -20,8 +20,8 @@
             <button 
               type="button"
               class="action delete" 
-              aria-label="Delete domain {{address}}"
-              title="Delete domain"
+              aria-label="{{t 'ui.delete_domain_value' value1=address}}"
+              title="{{t 'ui.delete_domain_2'}}"
               hx-on::before-request='openDialog("domain-dialog", null, this)'
               hx-get="/confirm-domain-delete" 
               hx-target="#domain-dialog .content-wrapper" 
@@ -36,7 +36,7 @@
     {{else}}
       <tr>
         <td class="no-entry">
-          No domains yet.
+          {{t "ui.no_domains_yet"}}
         </td>
       </tr>
     {{/if}}

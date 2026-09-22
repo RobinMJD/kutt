@@ -9,6 +9,7 @@
   let generation = 0, controller, ready = false, copying = false, unbrandedLevel = level.value, urls = [];
   document.getElementById("qr-branding").hidden = false;
   if (!supported) copy.title = messages.copyUnavailable;
+  const failure = message => Object.assign(new Error(), { qrMessage: message });
   const update = () => {
     print.disabled = !ready;
     copy.disabled = !ready || !supported || copying;
@@ -42,12 +43,12 @@
     try {
       let logo;
       if (selected) {
-        if (!selected.size || selected.size > 65536 || (selected.type && selected.type !== "image/png")) throw Error(messages.logo);
+        if (!selected.size || selected.size > 65536 || (selected.type && selected.type !== "image/png")) throw failure(messages.logo);
         const bytes = new Uint8Array(await selected.arrayBuffer());
         if (current !== generation) return;
-        if (bytes.length < 33 || ![137, 80, 78, 71, 13, 10, 26, 10].every((v, i) => bytes[i] === v)) throw Error(messages.logo);
+        if (bytes.length < 33 || ![137, 80, 78, 71, 13, 10, 26, 10].every((v, i) => bytes[i] === v)) throw failure(messages.logo);
         const header = new DataView(bytes.buffer), width = header.getUint32(16), height = header.getUint32(20);
-        if (!width || !height || width > 512 || height > 512 || bytes[28]) throw Error(messages.logo);
+        if (!width || !height || width > 512 || height > 512 || bytes[28]) throw failure(messages.logo);
         let encoded = "";
         for (let start = 0; start < bytes.length; start += 8192) encoded += String.fromCharCode(...bytes.subarray(start, start + 8192));
         logo = "data:image/png;base64," + btoa(encoded);
@@ -61,19 +62,19 @@
         });
         if (!response.ok) {
           const body = response.headers.get("content-type")?.includes("application/json") ? await response.json() : null;
-          throw Error(typeof body?.error === "string" && body.error.length < 400 ? body.error : messages.load);
+          throw failure(typeof body?.error === "string" && body.error.length < 400 ? body.error : messages.load);
         }
         const blob = await response.blob(), type = format === "png" ? "image/png" : "image/svg+xml";
-        if (blob.type.split(";")[0] !== type || !blob.size || blob.size > 2 * 1024 * 1024) throw Error(messages.load);
+        if (blob.type.split(";")[0] !== type || !blob.size || blob.size > 2 * 1024 * 1024) throw failure(messages.load);
         return blob;
       };
       const blobs = await Promise.all([fetchImage("png"), fetchImage("svg")]);
       if (current !== generation) return;
       const vector = new DOMParser().parseFromString(await blobs[1].text(), "image/svg+xml");
       if (vector.querySelector("parsererror") || vector.documentElement.localName !== "svg" ||
-          vector.documentElement.namespaceURI !== "http://www.w3.org/2000/svg") throw Error(messages.load);
+          vector.documentElement.namespaceURI !== "http://www.w3.org/2000/svg") throw failure(messages.load);
       const canonicalLogo = logo && vector.querySelector("image")?.getAttribute("href");
-      if (logo && !/^data:image\/png;base64,[A-Za-z0-9+/]+={0,2}$/.test(canonicalLogo || "")) throw Error(messages.load);
+      if (logo && !/^data:image\/png;base64,[A-Za-z0-9+/]+={0,2}$/.test(canonicalLogo || "")) throw failure(messages.load);
       if (current !== generation) return;
       const fresh = blobs.map(blob => { const url = URL.createObjectURL(blob); generated.push(url); return url; });
       const decoded = new Image(); decoded.src = fresh[0]; await decoded.decode();
@@ -83,8 +84,8 @@
       if (logo) { thumbnail.src = canonicalLogo; thumbnail.hidden = false; }
       history.replaceState(null, "", form.action + "?" + new URLSearchParams({ size: settings.size, level: settings.level }));
       status.textContent = messages.ready;
-    } catch (failure) {
-      if (current === generation) { controller.abort(); failed(failure.name === "AbortError" ? messages.load : failure.message); }
+    } catch (error) {
+      if (current === generation) { controller.abort(); failed(error.qrMessage || messages.load); }
     } finally {
       clearTimeout(abort); generated.forEach(url => URL.revokeObjectURL(url));
       if (current === generation) update();

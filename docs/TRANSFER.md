@@ -112,8 +112,10 @@ not a later attempt to create its skipped rows.
 
 The optional `routing_rules` field follows [the routing policy format](ROUTING.md).
 The optional `forwarding` object preserves [query/path allowlists](FORWARDING.md);
-missing values default to empty lists. Nested aliases use the same validated
-segments as ordinary create/edit. Nonempty imported policies start at revision 1.
+missing values default to empty lists. Dotted/nested aliases use the same
+[validated segments and limits](LINK-ALIASES.md) as ordinary create/edit,
+including generated conflict-renaming candidates. Nonempty imported policies
+start at revision 1.
 The optional boolean `tracking_enabled` preserves [analytics opt-outs](PRIVACY.md).
 It defaults to true for older files; importing false with a token additionally
 requires `links:update`. New exports include it in both CSV and JSON.

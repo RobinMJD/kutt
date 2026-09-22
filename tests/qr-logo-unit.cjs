@@ -11,6 +11,11 @@ const { CustomError } = require("../server/utils");
     const bytes = logo(), decoded = logos.decode(uri(metadata(bytes)));
     assert.deepEqual(decoded.data, PNG.sync.read(bytes).data);
     assert.deepEqual(Object.keys(decoded).sort(), ["data", "height", "width"]);
+    const i18n = require("../server/i18n");
+    for (const locale of ["en", "fr", "es"]) i18n.run(locale, () => {
+      assert.throws(() => logos.decode(null), error => error.statusCode === 400 && error.message === i18n.t("qr.invalid_logo"));
+      assert.throws(() => logos.placement({ size: 81 }, 128, decoded), error => error.statusCode === 400 && error.message === i18n.t("qr.logo_size_required"));
+    });
     const header = Buffer.from(bytes.subarray(16, 29));
     const withHeader = data => Buffer.concat([bytes.subarray(0, 8), chunk("IHDR", data), bytes.subarray(33)]);
     const bad = [null, {}, [], "", "https://example.invalid/logo.png", "data:image/svg+xml;base64,PHN2Zy8+", "data:image/png;base64,!!!!", uri(Buffer.from("<svg/>")),

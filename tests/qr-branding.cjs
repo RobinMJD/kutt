@@ -18,6 +18,7 @@ module.exports = async ({ request, session, database, account, restart, root, di
     const input = { logo: uri(metadata(logo())), size: 300, level: "L" };
     const base = "/api/links/" + link.id + "/qr", call = (body = input, headers = {}, token = session, api = base) => request("POST", api, body, token, headers);
     const initial = db.prepare("SELECT visit_count,redirect_count FROM links WHERE uuid=?").get(link.id);
+    await require("./qr-branding-i18n.cjs")({ request, session, link, input, origin: "http://" + env.DEFAULT_DOMAIN });
     for (const api of [base, base.replace("/api/", "/api/v2/")]) {
       const plain = await request("GET", api + "?size=300&level=H", undefined, session);
       const branded = await call(input, {}, session, api);

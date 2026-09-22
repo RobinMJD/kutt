@@ -1,3 +1,4 @@
+const i18n = require("../i18n");
 const bcrypt = require("bcryptjs");
 
 const query = require("../queries");
@@ -24,7 +25,7 @@ async function remove(req, res) {
     utils.deleteCurrentToken(res);
     res.setHeader("HX-Trigger-After-Swap", "redirectToHomepage");
     res.render("partials/settings/delete_account", {
-      success: "Account has been deleted. Logging out..."
+      success: i18n.t("messages.account_has_been_deleted_logging_out")
     });
     return;
   }
@@ -36,7 +37,7 @@ async function removeByAdmin(req, res) {
   const user = await query.user.find({ id: req.params.id });
 
   if (!user) {
-    const message = "Could not find the user.";
+    const message = i18n.t("messages.could_not_find_the_user");
     if (req.isHTML) {
       return res.render("partials/admin/dialog/message", {
         layout: false,
@@ -58,7 +59,7 @@ async function removeByAdmin(req, res) {
     return;
   }
   
-  return res.status(200).send({ message: "User has been deleted successfully." });
+  return res.status(200).send({ message: i18n.t("messages.user_has_been_deleted_successfully") });
 };
 
 async function getAdmin(req, res) {
@@ -86,7 +87,7 @@ async function getAdmin(req, res) {
   if (req.isHTML) {
     res.render("partials/admin/users/table", {
       total,
-      total_formatted: total.toLocaleString("en-US"),
+      total_formatted: i18n.number(total),
       limit,
       skip,
       users,
@@ -116,7 +117,7 @@ async function ban(req, res) {
     return;
   }
 
-  return res.status(200).send({ message: "Banned user successfully." });
+  return res.status(200).send({ message: i18n.t("messages.banned_user_successfully") });
 }
 
 async function create(req, res) {
@@ -137,7 +138,7 @@ async function create(req, res) {
     return;
   }
 
-  return res.status(201).send({ message: "The user has been created successfully." });
+  return res.status(201).send({ message: i18n.t("messages.the_user_has_been_created_successfully") });
 }
 
 module.exports = {

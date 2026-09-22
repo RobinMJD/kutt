@@ -1,3 +1,4 @@
+const i18n = require("../i18n");
 const { addMinutes } = require("date-fns");
 const { randomUUID } = require("node:crypto");
 
@@ -50,7 +51,7 @@ async function add(params, user) {
     const changed = await knex("users")
       .where({ id: user.id, verified: false, auth_version: user.auth_version }).increment("auth_version", 1)
       .update({ ...data, ...require("../account-tokens"), updated_at: utils.dateToUTC(new Date()) });
-    if (!changed) throw new utils.CustomError("Account changed. Please sign in or request account recovery.", 409);
+    if (!changed) throw new utils.CustomError(i18n.t("messages.account_changed_please_sign_in_or_request_account_recovery"), 409);
   } else {
     await knex("users").insert(data);
   }

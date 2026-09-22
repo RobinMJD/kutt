@@ -11,6 +11,7 @@ on:
       - ".example.env"
       - "tests/**"
       - "static/**"
+      - "locales/**"
       - "examples/**"
       - "scripts/**"
       - ".dockerignore"

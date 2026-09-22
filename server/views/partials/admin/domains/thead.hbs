@@ -8,7 +8,7 @@
             id="search" 
             name="search" 
             type="text" 
-            placeholder="Search domain..." aria-label="Search domains"
+            placeholder="{{t 'ui.search_domain'}}" aria-label="{{t 'ui.search_domains'}}"
             class="table-input search admin" 
             hx-on:input="onSearchChange(event)" 
             hx-on:keyup="resetTableNav()"
@@ -16,7 +16,7 @@
           />
           <button 
             type="button" 
-            aria-label="Clear search" 
+            aria-label="{{t 'ui.clear_search'}}"
             class="clear" 
             onclick="clearSeachInput(event)"
           >
@@ -28,7 +28,7 @@
             id="search_user" 
             name="user" 
             type="text" 
-            placeholder="Search user..." aria-label="Search users"
+            placeholder="{{t 'ui.search_user'}}" aria-label="{{t 'ui.search_users'}}"
             class="table-input search admin" 
             hx-on:input="onSearchChange(event)" 
             hx-on:keyup="resetTableNav()"
@@ -36,29 +36,29 @@
           />
           <button 
             type="button" 
-            aria-label="Clear user" 
+            aria-label="{{t 'ui.clear_user'}}"
             class="clear" 
             onclick="clearSeachInput(event)"
           >
             {{> icons/x}}
           </button>
         </div>
-        <select id="domains-select-banned" name="banned" class="table-input ban" hx-on:change="resetTableNav()" aria-label="Banned status">
-          <option value="" selected>Banned...</option>
-          <option value="true">Banned</option>
-          <option value="false">Not banned</option>
+        <select id="domains-select-banned" name="banned" class="table-input ban" hx-on:change="resetTableNav()" aria-label="{{t 'ui.banned_status'}}">
+          <option value="" selected>{{t "ui.banned_2"}}</option>
+          <option value="true">{{t "ui.banned"}}</option>
+          <option value="false">{{t "ui.not_banned"}}</option>
         </select>
       </div>
       <div>
-        <select id="domains-select-links" name="links" class="table-input links" hx-on:change="resetTableNav()" aria-label="Link ownership">
-          <option value="" selected>Links...</option>
-          <option value="true" {{#ifEquals query.links 'true'}}selected{{/ifEquals}}>With links</option>
-          <option value="false" {{#ifEquals query.links 'true'}}selected{{/ifEquals}}>No links</option>
+        <select id="domains-select-links" name="links" class="table-input links" hx-on:change="resetTableNav()" aria-label="{{t 'ui.link_ownership'}}">
+          <option value="" selected>{{t "ui.links_2"}}</option>
+          <option value="true" {{#ifEquals query.links 'true'}}selected{{/ifEquals}}>{{t "ui.with_links"}}</option>
+          <option value="false" {{#ifEquals query.links 'true'}}selected{{/ifEquals}}>{{t "ui.no_links"}}</option>
         </select>
-        <select id="domains-select-owner" name="owner" class="table-input owner" hx-on:change="resetTableNav()" aria-label="Domain owner type">
-          <option value="" selected>Owner...</option>
-          <option value="true" {{#ifEquals query.owner 'true'}}selected{{/ifEquals}}>With owner</option>
-          <option value="false" {{#ifEquals query.owner 'true'}}selected{{/ifEquals}}>No owner</option>
+        <select id="domains-select-owner" name="owner" class="table-input owner" hx-on:change="resetTableNav()" aria-label="{{t 'ui.domain_owner_type'}}">
+          <option value="" selected>{{t "ui.owner_2"}}</option>
+          <option value="true" {{#ifEquals query.owner 'true'}}selected{{/ifEquals}}>{{t "ui.with_owner"}}</option>
+          <option value="false" {{#ifEquals query.owner 'true'}}selected{{/ifEquals}}>{{t "ui.no_owner"}}</option>
         </select>
         <input id="total" name="total" type="hidden" value="{{total}}" />
         <input id="limit" name="limit" type="hidden" value="10" />
@@ -72,18 +72,18 @@
           hx-indicator="#admin-table-dialog"
         >
           <span>{{> icons/plus}}</span>
-          Add domain
+          {{t "ui.add_domain"}}
         </button>
       </div>
     </th>
     {{> admin/table_nav}}
   </tr>
   <tr class="table-columns">
-    <th class="domains-id" scope="col">ID</th>
-    <th class="domains-address" scope="col">Address</th>
-    <th class="domains-homepage" scope="col">Homepage</th>
-    <th class="domains-created-at" scope="col">Created at</th>
-    <th class="domains-links-count" scope="col">Total links</th>
+    <th class="domains-id" scope="col">{{t "ui.id"}}</th>
+    <th class="domains-address" scope="col">{{t "ui.address_3"}}</th>
+    <th class="domains-homepage" scope="col">{{t "ui.homepage"}}</th>
+    <th class="domains-created-at" scope="col">{{t "ui.created_at"}}</th>
+    <th class="domains-links-count" scope="col">{{t "ui.total_links"}}</th>
     <th class="domains-actions" scope="col"></th>
   </tr>
 </thead>

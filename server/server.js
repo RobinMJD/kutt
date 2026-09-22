@@ -15,6 +15,7 @@ const locals = require("./handlers/locals.handler");
 const links = require("./handlers/links.handler");
 const routes = require("./routes");
 const utils = require("./utils");
+const i18n = require("./i18n");
 
 
 // run the cron jobs
@@ -34,15 +35,16 @@ app.set("trust proxy", env.TRUST_PROXY);
 
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cookieParser());
+app.use(i18n.middleware);
 // Do not send ephemeral logo payloads to the global body-parser error logger.
 const qrJSON = express.json();
 app.use(/^\/api\/(?:v2\/)?links\/[^/]+\/qr\/?$/i, (req, res, next) => {
   if (req.method !== "POST") return next();
   res.set("Cache-Control", "private, no-store");
-  if (!req.is("application/json")) return res.status(400).json({ error: "Send QR settings as a JSON object." });
+  if (!req.is("application/json")) return res.status(400).json({ error: i18n.t("qr.json_required") });
   qrJSON(req, res, error => {
     if (!error) return next();
-    res.status(error.status === 413 ? 413 : 400).json({ error: "Invalid or oversized QR JSON request." });
+    res.status(error.status === 413 ? 413 : 400).json({ error: i18n.t("qr.invalid_json") });
   });
 });
 // Bounded transfer payloads only; retain default limits on every other route.
@@ -60,9 +62,9 @@ if (env.OIDC_ENABLED) {
 }
 
 // serve static
-app.use("/images", express.static("custom/images"));
-app.use("/css", express.static("custom/css", { extensions: ["css"] }));
-app.use(express.static("static"));
+app.use("/images", express.static(path.join(__dirname, "../custom/images")));
+app.use("/css", express.static(path.join(__dirname, "../custom/css"), { extensions: ["css"] }));
+app.use(express.static(path.join(__dirname, "../static")));
 
 app.use(passport.initialize());
 app.use(locals.isHTML);
@@ -75,7 +77,10 @@ app.set("views", [
   path.join(__dirname, "../custom/views"),
   path.join(__dirname, "views"),
 ]);
-utils.registerHandlebarsHelpers();
+const templatesReady = utils.registerHandlebarsHelpers();
+i18n.register(hbs);
+i18n.assets(app, env.SITE_NAME);
+app.post("/language", i18n.change);
 
 // if is custom domain, redirect to the set homepage
 app.use(asyncHandler(links.redirectCustomDomainHomepage));
@@ -96,6 +101,9 @@ app.get("*", renders.notFound);
 // handle errors coming from above routes
 app.use(helpers.error);
   
-app.listen(env.PORT, () => {
+templatesReady.then(() => app.listen(env.PORT, () => {
   console.log(`> Ready on http://localhost:${env.PORT}`);
+})).catch(() => {
+  console.error("Template initialization failed.");
+  process.exit(1);
 });

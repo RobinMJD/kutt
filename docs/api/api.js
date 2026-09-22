@@ -654,7 +654,10 @@ module.exports = {
             type: "string"
           },
           customurl: {
-            type: "string"
+            type: "string",
+            maxLength: 64,
+            example: "docs/v1.2/guide.pdf",
+            description: "Alias text is preserved without case folding; existing database collation and collision semantics apply. Up to 8 nonempty slash-separated segments and 64 characters total. Dotted/nested segments use ASCII letters, digits, underscore and hyphen with single interior dots. Leading/trailing/consecutive dots, encoding, traversal and reserved management/static roots are rejected. Legacy dot-free single-segment custom-alphabet aliases remain supported."
           },
           reuse: {
             type: "boolean",
@@ -680,7 +683,10 @@ module.exports = {
             type: "string"
           },
           address: {
-            type: "string"
+            type: "string",
+            maxLength: 64,
+            example: "docs/v1.2/guide.pdf",
+            description: "Replacement alias; follows the same segment, interior-dot, length, collation and reserved-path rules as customurl on creation. Renamed aliases remain permanently reserved."
           },
           description: {
             type: "string"

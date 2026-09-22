@@ -4,6 +4,9 @@ const { mkdirSync, mkdtempSync, readFileSync } = require("node:fs");
 const path = require("node:path");
 const { tmpdir } = require("node:os");
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
+const { locale, t } = require("./browser-locale.cjs");
+const theme = process.env.KUTT_TEST_THEME || "light";
+assert(["light", "dark"].includes(theme));
 const decode = require(process.env.QR_DECODER_MODULE || "./browser-deps/node_modules/jsqr");
 
 (async () => {
@@ -14,7 +17,7 @@ const decode = require(process.env.QR_DECODER_MODULE || "./browser-deps/node_mod
   mkdirSync(evidence, { recursive: true });
   const browser = await chromium.launch({ headless: true }); let page;
   try {
-    const context = await browser.newContext({ acceptDownloads: true });
+    const context = await browser.newContext({ acceptDownloads: true, locale, colorScheme: theme });
     await context.route("**/*", route => new URL(route.request().url()).origin === origin ? route.continue() : route.abort());
     await context.addInitScript(() => {
       const create = URL.createObjectURL.bind(URL), revoke = URL.revokeObjectURL.bind(URL);
@@ -65,7 +68,12 @@ const decode = require(process.env.QR_DECODER_MODULE || "./browser-deps/node_mod
     for (const [index, width] of [1440, 390, 320].entries()) {
       const link = links[index]; await page.setViewportSize({ width, height: 1000 });
       await page.goto(origin + "/link/qr/" + link.id); await waitReady();
-      assert.match(await page.title(), /QR code/); assert(await page.getByRole("heading", { name: "QR code", exact: true }).isVisible());
+      assert.equal(await page.locator("html").getAttribute("lang"), locale);
+      assert.equal(await page.locator("html").getAttribute("data-theme"), theme);
+      assert.equal(await page.locator("#qr-logo-remove").getAttribute("aria-label"), t("qr.remove_logo"));
+      assert.equal(await page.locator("#qr-logo-preview").getAttribute("alt"), t("qr.selected_logo"));
+      assert((await page.locator(".qr-state").textContent()).includes(t("ui.password_protected_2")));
+      assert((await page.title()).includes(t("ui.qr_code"))); assert(await page.getByRole("heading", { name: t("ui.qr_code"), exact: true }).isVisible());
       await page.locator("#qr-logo").setInputFiles({ name: "brand.png", mimeType: "image/png", buffer: logo }); await waitReady();
       assert.equal(await page.locator('[name="level"]').inputValue(), "H"); assert(await page.locator('[name="level"]').isDisabled());
       assert(await page.locator("#qr-logo-preview").isVisible());
@@ -75,26 +83,28 @@ const decode = require(process.env.QR_DECODER_MODULE || "./browser-deps/node_mod
       });
       assert.equal(await page.locator("#qr-logo-preview").getAttribute("src"), embeddedLogo, "Thumbnail must use only the canonical server raster, never the uploaded metadata");
       for (const size of index ? [300] : [128, 255, 512, 1024]) {
-        await page.getByLabel("Size (px)", { exact: true }).fill(String(size));
+        await page.getByLabel(t("ui.size_px"), { exact: true }).fill(String(size));
         assert(await page.locator("#qr-print").isDisabled());
-        await page.getByRole("button", { name: "Apply", exact: true }).click(); await waitReady();
+        await page.getByRole("button", { name: t("ui.apply"), exact: true }).click(); await waitReady();
         for (const format of ["PNG", "SVG"]) {
-          const download = page.waitForEvent("download"); await page.getByRole("link", { name: "Download " + format, exact: true }).click();
+          const download = page.waitForEvent("download"); await page.getByRole("link", { name: t("ui.download_" + format.toLowerCase()), exact: true }).click();
           const file = await download; assert.equal(file.suggestedFilename(), "kutt-qr-" + link.id + "." + format.toLowerCase());
           assert.equal(await inspect(readFileSync(await file.path()), format === "PNG" ? "image/png" : "image/svg+xml", link.link), size);
         }
       }
-      await page.getByRole("button", { name: "Copy QR image", exact: true }).click();
-      await page.getByRole("status").getByText("QR image copied.", { exact: true }).waitFor();
+      await page.getByRole("button", { name: t("ui.copy_qr_image"), exact: true }).click();
+      await page.getByRole("status").getByText(t("ui.qr_image_copied"), { exact: true }).waitFor();
       await inspect(Buffer.from(await page.evaluate(() => window.copied)), "image/png", link.link);
       await page.evaluate(() => { window.denyCopy = true; }); await page.locator("#qr-copy").click();
-      await page.getByRole("status").getByText(/Could not copy image/).waitFor(); await page.evaluate(() => { window.denyCopy = false; });
-      await page.locator("#qr-copy").click(); await page.getByRole("status").getByText("QR image copied.", { exact: true }).waitFor();
+      await page.getByRole("status").getByText(t("ui.could_not_copy_image_retry_or_download_png"), { exact: true }).waitFor(); await page.evaluate(() => { window.denyCopy = false; });
+      await page.locator("#qr-copy").click(); await page.getByRole("status").getByText(t("ui.qr_image_copied"), { exact: true }).waitFor();
       await page.locator("#qr-print").focus(); await page.keyboard.press("Enter"); assert.equal(await page.evaluate(() => window.printCalls), 1);
       assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), width + " horizontal overflow");
       const heading = await page.locator(".qr-page .archive-heading").boundingBox();
       assert((await page.locator(".qr-controls").boundingBox()).y >= heading.y + heading.height);
       await page.screenshot({ path: path.join(evidence, width + "-branded.png"), fullPage: true });
+      await require("./qr-browser-layout.cjs")(page);
+      assert.equal(await page.locator("#qr-preview").evaluate(el => getComputedStyle(el).backgroundColor), "rgb(255, 255, 255)");
       await page.emulateMedia({ media: "print" }); assert(await page.locator(".qr-controls").isHidden());
       await page.screenshot({ path: path.join(evidence, width + "-print.png"), fullPage: true }); await page.emulateMedia({ media: "screen" });
       await page.locator("#qr-logo-remove").focus(); await page.keyboard.press("Enter"); await waitReady();
@@ -104,24 +114,29 @@ const decode = require(process.env.QR_DECODER_MODULE || "./browser-deps/node_mod
       await inspect(Buffer.from(plain), "image/png", link.link, false);
       assert.equal(await page.evaluate(() => window.liveBlobs.size), 2);
       await page.locator("#qr-logo").setInputFiles({ name: "bad.svg", mimeType: "image/svg+xml", buffer: Buffer.from("<svg/>") });
-      await page.getByRole("alert").getByText(/Choose a valid/).waitFor();
-      await page.getByRole("button", { name: "Apply", exact: true }).click();
+      await page.getByRole("alert").getByText(t("qr.invalid_logo"), { exact: true }).waitFor();
+      await page.getByRole("button", { name: t("ui.apply"), exact: true }).click();
       assert(await page.locator("#qr-print").isDisabled()); assert.equal(await page.locator("#qr-png").getAttribute("href"), null);
       await page.screenshot({ path: path.join(evidence, width + "-invalid.png"), fullPage: true });
+      await require("./qr-browser-layout.cjs")(page);
       await page.locator("#qr-logo").setInputFiles({ name: "oversize.png", mimeType: "image/png", buffer: Buffer.alloc(65537) });
-      await page.getByRole("alert").getByText(/Choose a valid/).waitFor(); assert(await page.locator("#qr-print").isDisabled());
+      await page.getByRole("alert").getByText(t("qr.invalid_logo"), { exact: true }).waitFor(); assert(await page.locator("#qr-print").isDisabled());
       await page.locator("#qr-logo-remove").click(); await waitReady();
     }
     const link = links[2], routePattern = "**/api/links/" + link.id + "/qr";
     const corrupt = Buffer.from(logo); corrupt[29] ^= 1;
     await page.locator("#qr-logo").setInputFiles({ name: "corrupt.png", mimeType: "image/png", buffer: corrupt });
-    await page.getByRole("alert").getByText(/Choose a valid/).waitFor(); assert(await page.locator("#qr-print").isDisabled());
+    await page.getByRole("alert").getByText(t("qr.invalid_logo"), { exact: true }).waitFor(); assert(await page.locator("#qr-print").isDisabled());
     await page.route(routePattern, route => route.request().postDataJSON().format === "svg"
       ? route.fulfill({ status: 200, contentType: "text/html", body: "<h1>Not an image</h1>" }) : route.continue());
     await page.locator("#qr-logo").setInputFiles({ name: "brand.png", mimeType: "image/png", buffer: logo });
-    await page.getByRole("alert").getByText(/QR image could not load/).waitFor();
+    await page.getByRole("alert").getByText(t("ui.qr_image_could_not_load_sign_in_again_or_retry"), { exact: true }).waitFor();
     assert.equal(await page.locator("#qr-svg").getAttribute("href"), null); assert.equal(await page.evaluate(() => window.liveBlobs.size), 0);
-    await page.unroute(routePattern); await page.getByRole("button", { name: "Apply", exact: true }).click(); await waitReady();
+    await page.unroute(routePattern); await page.getByRole("button", { name: t("ui.apply"), exact: true }).click(); await waitReady();
+    await page.route(routePattern, route => route.abort("failed"));
+    await page.getByRole("button", { name: t("ui.apply"), exact: true }).click();
+    await page.getByRole("alert").getByText(t("ui.qr_image_could_not_load_sign_in_again_or_retry"), { exact: true }).waitFor();
+    await page.unroute(routePattern); await page.getByRole("button", { name: t("ui.apply"), exact: true }).click(); await waitReady();
     await page.locator("#qr-logo-remove").click(); await waitReady();
     let release, entered;
     const waiting = new Promise(resolve => { entered = resolve; }), blocked = new Promise(resolve => { release = resolve; });
@@ -135,11 +150,11 @@ const decode = require(process.env.QR_DECODER_MODULE || "./browser-deps/node_mod
     assert(await page.locator("#qr-logo-preview").isHidden()); assert.equal(await page.locator('[name="level"]').inputValue(), "M");
     await page.evaluate(() => { window.delayCopy = true; }); await page.locator("#qr-copy").click();
     await page.waitForFunction(() => typeof window.releaseCopy === "function");
-    await page.getByLabel("Size (px)", { exact: true }).fill("256");
+    await page.getByLabel(t("ui.size_px"), { exact: true }).fill("256");
     await page.evaluate(() => window.releaseCopy()); await page.waitForFunction(() => !document.getElementById("qr-copy").hasAttribute("aria-busy"));
-    assert.equal(await page.locator("#qr-copy-status").innerText(), "Changes pending.");
+    assert.equal(await page.locator("#qr-copy-status").innerText(), t("qr.changes_pending"));
     await page.locator('[name="level"]').selectOption("Q");
-    await page.getByRole("button", { name: "Apply", exact: true }).click(); await waitReady();
+    await page.getByRole("button", { name: t("ui.apply"), exact: true }).click(); await waitReady();
     await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent("pagehide")));
     await page.waitForFunction(() => window.liveBlobs.size === 0); assert.equal(await page.locator("#qr-logo").inputValue(), "");
     assert.equal(await page.locator('[name="level"]').inputValue(), "Q", "Page exit must preserve unbranded correction settings");
@@ -150,7 +165,7 @@ const decode = require(process.env.QR_DECODER_MODULE || "./browser-deps/node_mod
     const rows = await (await context.request.get(origin + "/api/links", { headers: { Accept: "application/json" } })).json();
     assert(rows.data.every(row => row.visit_count === 0));
     assert.deepEqual(errors, []); assert.deepEqual(consoleErrors, []);
-    console.log("PASS: 1440/390/320 branded PNG+SVG independent decoding, preview/remove, keyboard, clipboard/print, invalid/oversize/CRC file recovery, malformed responses, delayed render/copy races, blob cleanup and no visits; " + evidence);
+    console.log("PASS: " + locale + "/" + theme + " 1440/390/320 branded PNG+SVG independent decoding, preview/remove, keyboard, clipboard/print, invalid/oversize/CRC file recovery, malformed responses, delayed render/copy races, blob cleanup and no visits; " + evidence);
   } catch (error) { if (page) await page.screenshot({ path: path.join(evidence, "failure.png"), fullPage: true }); throw error; }
   finally { await browser.close(); }
 })().catch(error => { console.error(error.stack); process.exitCode = 1; });

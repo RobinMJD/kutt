@@ -1,3 +1,4 @@
+const i18n = require("./i18n");
 const { createHmac, timingSafeEqual } = require("node:crypto");
 const env = require("./env");
 
@@ -10,7 +11,7 @@ function snapshot(link, input) {
 }
 
 function read(value, id) {
-  const fail = () => { throw new (require("./utils").CustomError)("Reload the editor before changing expiry.", 409); };
+  const fail = () => { throw new (require("./utils").CustomError)(i18n.t("messages.reload_the_editor_before_changing_expiry"), 409); };
   if (typeof value !== "string" || value.length > 2048) return fail();
   const [data, signature, extra] = value.split(".");
   if (extra !== undefined || !/^[a-zA-Z0-9_-]+$/.test(data) || !/^[a-f0-9]{64}$/.test(signature || "") ||
@@ -26,7 +27,7 @@ function read(value, id) {
 async function prepare(req, res, next) {
   if (req.isHTML) {
     const link = await require("./queries").link.find({ uuid: req.params.id, ...(!req.user.admin && { user_id: req.user.id }) }, { fresh: true });
-    if (!link) throw new (require("./utils").CustomError)("Link was not found.", 404);
+    if (!link) throw new (require("./utils").CustomError)(i18n.t("messages.link_was_not_found"), 404);
     res.locals.expire_in = expiry(link);
     res.locals.relative_expire_in = req.body.expire_in;
     res.locals.expiry_snapshot = req.body.expiry_snapshot;
@@ -43,7 +44,7 @@ async function save(req, res, link, values) {
   try {
     const [updated] = await require("./queries").link.update({ id: link.id, uuid: link.uuid, user_id: link.user_id ?? null, deleted_at: null }, values,
       { id: req.user.id, apiToken: req.apiToken }, { expiryExpected: req.expiryExpected });
-    if (!updated) throw new (require("./utils").CustomError)("Link changed ownership or is no longer available. Reload the editor.", 409);
+    if (!updated) throw new (require("./utils").CustomError)(i18n.t("messages.link_changed_ownership_or_is_no_longer_available_reload_the_editor"), 409);
     return updated;
   } catch (error) {
     if (req.isHTML && error.statusCode === 409) {
@@ -61,7 +62,7 @@ async function save(req, res, link, values) {
 
 function check(link, expected) {
   if (expected !== undefined && expiry(link) !== expected) {
-    throw new (require("./utils").CustomError)("Expiry changed elsewhere. Review the current expiry, then save again to replace it.", 409);
+    throw new (require("./utils").CustomError)(i18n.t("messages.expiry_changed_elsewhere_review_the_current_expiry_then_save_again_to"), 409);
   }
 }
 

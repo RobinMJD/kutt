@@ -10,8 +10,8 @@
     const input = root.querySelector("input"), reveal = root.querySelector('[data-token-action="reveal"]');
     input.type = "password";
     reveal.setAttribute("aria-pressed", "false");
-    reveal.setAttribute("aria-label", "Reveal API token");
-    reveal.title = "Reveal API token";
+    reveal.setAttribute("aria-label", window.KuttI18n.t("ui.reveal_api_token"));
+    reveal.title = window.KuttI18n.t("ui.reveal_api_token");
   }
   function clear(root) {
     state(root).generation++;
@@ -22,7 +22,7 @@
     root.removeAttribute("aria-busy");
     const status = root.querySelector('[role="status"]');
     status.classList.remove("error");
-    status.textContent = "Token hidden. It remains active until revoked.";
+    status.textContent = window.KuttI18n.t("ui.token_hidden_it_remains_active_until_revoked");
   }
   function initialize() {
     roots().forEach(root => {
@@ -40,24 +40,24 @@
     if (button.dataset.tokenAction === "reveal") {
       if (input.type === "text") { mask(root); return; }
       input.type = "text"; button.setAttribute("aria-pressed", "true");
-      button.setAttribute("aria-label", "Mask API token"); button.title = "Mask API token";
+      button.setAttribute("aria-label", window.KuttI18n.t("ui.mask_api_token")); button.title = window.KuttI18n.t("ui.mask_api_token");
       return;
     }
     if (button.dataset.tokenAction !== "copy" || current.pending) return;
     const generation = current.generation;
     current.pending = true; button.disabled = true; root.setAttribute("aria-busy", "true");
-    status.classList.remove("error"); status.textContent = "Copying...";
+    status.classList.remove("error"); status.textContent = window.KuttI18n.t("ui.copying");
     let timer;
     try {
-      if (!navigator.clipboard?.writeText) throw new Error("Clipboard unavailable");
+      if (!navigator.clipboard?.writeText) throw new Error(window.KuttI18n.t("ui.clipboard_unavailable"));
       await Promise.race([navigator.clipboard.writeText(input.value), new Promise((_, reject) => {
-        timer = setTimeout(() => reject(new Error("Clipboard timeout")), 3000);
+        timer = setTimeout(() => reject(new Error(window.KuttI18n.t("ui.clipboard_timeout"))), 3000);
       })]);
-      if (root.isConnected && generation === current.generation) status.textContent = "Token copied.";
+      if (root.isConnected && generation === current.generation) status.textContent = window.KuttI18n.t("ui.token_copied");
     } catch {
       if (root.isConnected && generation === current.generation) {
         status.classList.add("error");
-        status.textContent = "Copy failed. Reveal the token to copy it manually.";
+        status.textContent = window.KuttI18n.t("ui.copy_failed_reveal_the_token_to_copy_it_manually");
       }
     } finally {
       clearTimeout(timer); current.pending = false;
