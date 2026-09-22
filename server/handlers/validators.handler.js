@@ -111,8 +111,7 @@ const editLink = [
     .custom(value => utils.urlRegex.test(value) || /^(?!https?|ftp)(\w+:|\/\/)/.test(value))
     .withMessage(() => i18n.t("messages.url_is_not_valid"))
     .custom(value => utils.removeWww(URL.parse(value).host) !== env.DEFAULT_DOMAIN)
-    .withMessage(() => i18n.t("messages.value_urls_are_not_allowed", {value1: env.DEFAULT_DOMAIN})).bail()
-    .custom(value => !!require("../destination-policy").requireAllowed(value)),
+    .withMessage(() => i18n.t("messages.value_urls_are_not_allowed", {value1: env.DEFAULT_DOMAIN})),
   body("password")
     .optional({ nullable: true, checkFalsy: true })
     .isString()

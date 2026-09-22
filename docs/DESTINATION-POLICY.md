@@ -43,6 +43,14 @@ Existing rows are **not rewritten or deleted**. Owners can inspect/export record
 repair a destination, or edit unrelated metadata. Policy rejection does not grant
 access to another owner's link or bypass a token's domain restrictions.
 
+Edit forms may submit an unchanged, now-disallowed stored target while updating
+metadata. This exception is checked only after a fresh authorized link lookup;
+personal/admin edits omit that target from the write, so a concurrent repair is
+not reverted. Actual target changes still require policy approval. Workspace
+edits compare against the locked record and retain their existing revision and
+membership checks. Missing/foreign records and stale ownership/domain scope do
+not qualify for the exception.
+
 Signed-in users can inspect the effective policy at `/settings/destination-policy`.
 `GET /api/destination-policy` and `GET /api/v2/destination-policy` expose the same
 read-only `{ enabled, hosts }` object to authenticated sessions or tokens with
@@ -76,3 +84,11 @@ redirects, counters, health probes, repair and restart rollback. The normal cont
 suite also includes it. `tests/browser-destination-policy.sh IMAGE` starts a fresh
 loopback-only fixture and checks the translated UI and rejected draft recovery at
 1440, 390 and 320 pixels in light and dark mode.
+
+The same focused suite includes `tests/destination-policy-edit.cjs` and its
+deterministic repair/ownership/domain-scope race checks. Run
+`sh tests/browser-destination-policy-edit.sh IMAGE` for actual personal/admin and
+native workspace form submissions at 1440/390/320px under enforced CSP, including
+unchanged denied targets, rejected changed targets, retained drafts and repair.
+This wrapper uses only a fresh loopback fixture and deletes its own container;
+Node/Playwright paths can be supplied through `NODE_BINARY`/`PLAYWRIGHT_MODULE`.

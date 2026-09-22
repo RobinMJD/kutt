@@ -225,7 +225,6 @@ async function changeLink(userId, id, action, linkId, input, actor, request) {
   // Reuse import validation and the existing ban checks; no destination fetch.
   if (input.target !== undefined) {
     const checked = require("./link-transfer").normalized({ target: input.target, address: "validation-only" });
-    require("./destination-policy").requireAllowed(checked.target);
     const host = utils.removeWww(new URL(checked.target).hostname);
     await require("./handlers/validators.handler").bannedDomain(host);
     await require("./handlers/validators.handler").bannedHost(host);
@@ -255,6 +254,7 @@ async function changeLink(userId, id, action, linkId, input, actor, request) {
     }
     if (link?.deleted_at != null) fail(i18n.t("messages.restore_the_link_before_editing"), 409);
     if (action === "edit") editing.check(link, input.edit_revision);
+    if (input.target !== undefined && input.target !== link?.target) require("./destination-policy").requireAllowed(input.target);
     if (action === "edit" && input.domain !== undefined) fail(i18n.t("messages.move_domains_through_the_owner_s_personal_link_management"));
     const currentDomain = link ? await domain(db, link, space.owner_id) : null;
     const normalized = require("./link-transfer").normalized({
