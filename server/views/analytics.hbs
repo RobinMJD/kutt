@@ -19,7 +19,7 @@
   <p id="analytics-status" role="status" aria-live="polite">{{t "ui.loading"}}</p>
   <div id="analytics-report" hidden>
     <div class="analytics-summary"><div><span>{{t "ui.tracked_visits"}}</span><strong id="analytics-total"></strong></div><div><span>{{t "ui.links_with_visits"}}</span><strong id="analytics-links"></strong></div>
-      <div class="analytics-exports"><a id="analytics-csv" download="kutt-analytics.csv" title="{{t 'ui.download_csv'}}"><span class="analytics-download">{{> icons/arrow_left}}</span> CSV</a><a id="analytics-json" download="kutt-analytics.json" title="{{t 'ui.download_json'}}"><span class="analytics-download">{{> icons/arrow_left}}</span> JSON</a></div>
+      <div class="analytics-exports"><a id="analytics-csv" class="button" download="kutt-analytics.csv" title="{{t 'ui.download_csv'}}"><span class="analytics-download">{{> icons/arrow_left}}</span> CSV</a><a id="analytics-json" class="button" download="kutt-analytics.json" title="{{t 'ui.download_json'}}"><span class="analytics-download">{{> icons/arrow_left}}</span> JSON</a></div>
     </div>
     <section class="analytics-chart"><h2>{{t "ui.daily_visits"}}</h2><div class="analytics-canvas"><canvas id="analytics-chart" role="img" aria-label="{{t 'ui.daily_tracked_visits_values_are_also_in_the_daily_totals_table'}}"></canvas></div></section>
     {{> analytics_geography}}
