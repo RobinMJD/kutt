@@ -1,9 +1,10 @@
 # Localization
 
 C11 provides English (`en`, default), French (`fr`) and Spanish (`es`) for the
-bundled web UI, email and user-facing server/browser feedback. This slice starts
-at `44656a3`; later C03, C12 and C19 strings need the same treatment when integrated.
-It does not change the package/release version or deploy anything.
+bundled web UI, email and user-facing server/browser feedback. The isolated C11
+branch now incorporates release `.46` (`f85ce35`), including C03 moderation,
+C12 sorting and C19 dotted aliases. Its package version remains `.46`; it does
+not include the parent's uncommitted C14 theme work or deploy anything.
 
 ## Catalogs And Loading
 
@@ -165,6 +166,64 @@ localized requests, cookie negotiation, null/foreign-origin rejection,
 open-redirect rejection, allowlisted assets and locale-independent edit signatures.
 SMTP delivery, physical mobile devices, native Safari/Firefox, production custom
 layouts and live parent integration/release acceptance remain separate gates.
+
+## Release 46 Integration
+
+The merge retains transactional moderation, independent unban, revoked-credential
+invalidation, last-administrator protection, exact sort profiles and pagination,
+workspace candidate-search state, pre-trim alias validation and concurrent alias
+claim handling. Only display text is localized: moderation API/audit `entity` and
+`action` values, IDs, timestamps, sorting parameters and alias bytes stay literal.
+New messages use `moderation.*`, `sorting.*`, `aliases.*` and
+`enum.moderation_entity.*` / `enum.moderation_action.*` keys. Existing stable keys
+are retained. The parent can add C14 appearance labels without regenerating them.
+
+`tests/i18n-community.cjs` runs with the localization HTTP gate and checks French
+and Spanish errors, strict origins, unchanged audit payloads, sort ordering,
+dotted redirects and invalid imports. `tests/browser-i18n.cjs` now covers 22
+routes at three widths in three languages (198 layouts), including moderation.
+The three feature browser suites accept `KUTT_TEST_LOCALE=en|fr|es` and default
+to English, preserving the existing default regression. For example:
+
+```sh
+KUTT_TEST_LOCALE=fr sh tests/browser-moderation.sh kutt-i18n-test:c11-46
+KUTT_TEST_LOCALE=es sh tests/browser-list-sorting.sh kutt-i18n-test:c11-46
+KUTT_TEST_LOCALE=fr sh tests/browser-dotted-aliases.sh kutt-i18n-test:c11-46
+```
+
+Set `NODE_BINARY` / `PLAYWRIGHT_MODULE` when needed, `KUTT_BROWSER_PORT` to a free
+loopback port and `KUTT_EVIDENCE_DIR` outside the repository. Each wrapper creates
+and removes its own fresh container and refuses initialized application data.
+These browser runs use regular Playwright because the Browser plugin is not
+available. Catalog-only changes now trigger the Docker smoke workflow too.
+
+### Combined Validation (2026-09-22)
+
+- Image `kutt-i18n-test:c11-46`: build/hardening and full container regression
+  passed, including C03/C12/C19, localization HTTP tests, OIDC and rollback/reapply.
+- Catalog parity/placeholders, hostile interpolation, all template compilation,
+  custom precedence and 90 concurrent locale contexts passed: 1,438 keys each.
+- `browser-i18n.cjs` passed 198 layouts at 1440/390/320px. All nine feature browser
+  runs passed: moderation, list sorting and dotted aliases in English, French
+  and Spanish. Page rendering, runtime/console checks, mobile bounds, selected
+  label fit, actual native Origin, drafts, delayed requests, persistence and
+  literal redirects passed. Screenshots were inspected outside the repository
+  under `/tmp/kutt-c11-46-*`.
+- Real SQLite/MySQL/PostgreSQL sorting and moderation concurrency/token-ban
+  races passed; MySQL/PostgreSQL dotted-alias HTTP races, stale snapshots,
+  imports, scopes, lifecycle and rollback passed. Redis/Bull processing,
+  persistent limiting and fresh authentication after revocation passed.
+- A translation-normalized AST comparison with `f85ce35` passed for moderation,
+  its handler/routes, list sorting, aliases, alias claims/history, user queries
+  and the sorting browser script. Release behavior in those modules is unchanged.
+- Syntax checks for 94 changed JavaScript files and `git diff --check` passed.
+  Both package manifests retain `3.2.6-sr94.46`. No parent files were modified.
+
+No production/provider/SMTP acceptance, physical-device or Safari/Firefox runs,
+new TLS handshake runs, remote CI, publication or deployment were performed.
+The parent still owns C14 labels, custom-layout review and release acceptance.
+
+### Initial C11 Slice Evidence
 
 Verified on 2026-09-22 in the isolated worktree: image build/hardening, the full
 SQLite container smoke suite (including OIDC and guarded migration rollback),

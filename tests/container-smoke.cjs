@@ -9,7 +9,7 @@ const net = require("node:net");
 const { setTimeout: delay } = require("node:timers/promises");
 
 async function main() {
-  assert([undefined, "i18n", "security-boundaries", "workspaces", "workspace-edit", "routing", "analytics", "privacy", "webhooks", "forwarding", "link-health", "shortcuts", "security-regressions", "admin-user-filter", "admin-edit", "accessibility", "dialogs", "library-ux", "validation", "transfer", "login-copy", "contrast", "copy", "responses", "login-navigation", "unavailable", "header", "campaign", "expiry-edit"].includes(process.env.KUTT_TEST_ONLY), "Unknown focused test selection");
+  assert([undefined, "i18n", "dotted-aliases", "moderation", "list-sorting", "security-boundaries", "workspaces", "workspace-edit", "routing", "analytics", "privacy", "webhooks", "forwarding", "link-health", "shortcuts", "security-regressions", "admin-user-filter", "admin-edit", "accessibility", "dialogs", "library-ux", "validation", "transfer", "login-copy", "contrast", "copy", "responses", "login-navigation", "unavailable", "header", "campaign", "expiry-edit"].includes(process.env.KUTT_TEST_ONLY), "Unknown focused test selection");
   const root = path.resolve(__dirname, "..");
   assert(!existsSync(path.join(root, ".env")), "Run in a clean checkout without a .env file");
   const directory = mkdtempSync(path.join(tmpdir(), "kutt-smoke-"));
@@ -160,6 +160,8 @@ async function main() {
     await require("./expiry-edit.cjs")({ request, session: token, database: env.DB_FILENAME, restart });
     await require("./link-history.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart });
     await require("./library.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, root, directory, env });
+    await require("./list-sorting.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart });
+    await require("./moderation.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart });
     await require("./library-ux.cjs")({ request, session: token, database: env.DB_FILENAME, env });
     await require("./transfer.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, root, directory, env });
     await require("./qr.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, env });
@@ -183,6 +185,7 @@ async function main() {
     await require("./privacy.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, root, directory, env });
     await require("./webhooks.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, root, directory, env });
     await require("./forwarding.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, root, directory, env });
+    await require("./dotted-aliases.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, root, directory, env });
     await require("./link-health.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, root, directory, env });
     await require("./shortcuts.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, root, directory, env });
     await require("./security-regressions.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, root, directory, env });

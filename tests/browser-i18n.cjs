@@ -81,7 +81,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
       const preference = (await context.cookies()).find(cookie => cookie.name === "kutt_locale");
       assert(preference.httpOnly && preference.sameSite === "Lax" && preference.value === locale);
       assert(!await page.evaluate(() => document.cookie.includes("kutt_locale")));
-      const routes = ["/", "/admin", "/settings", "/settings/library", "/settings/trash", "/settings/workspaces/" + workspace.id,
+      const routes = ["/", "/admin", "/admin/moderation", "/admin/moderation/link/" + link.id, "/settings", "/settings/library", "/settings/trash", "/settings/workspaces/" + workspace.id,
         "/settings/analytics", "/settings/transfer", "/settings/retention", "/settings/integrations", "/settings/health", "/settings/shortcuts", "/settings/security", "/terms",
         ...["routing", "forwarding", "tracking", "health", "history", "qr"].map(name => "/link/" + name + "/" + link.id)];
       for (const width of [1440, 390, 320]) {

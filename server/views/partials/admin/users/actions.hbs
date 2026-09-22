@@ -1,8 +1,8 @@
 <td class="actions users-actions">
   {{#if banned}}
-    <button class="action banned" disabled="true" aria-label="{{t 'ui.banned'}}" data-tooltip="{{t 'ui.banned'}}">
+    <a class="button action banned" href="/admin/moderation/user/{{id}}" aria-label="{{t 'moderation.remove_for' value=email}}" title="{{t 'moderation.remove'}}">
       {{> icons/stop}}
-    </button>
+    </a>
   {{/if}}
   {{#unless banned}}
     <button 

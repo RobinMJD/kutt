@@ -142,6 +142,7 @@ async function domain(db, link, ownerId) {
 }
 
 async function detail(userId, id, input = {}, editId) {
+  const sorting = require("./list-sort").parse(input, "workspace");
   const page = input.page === undefined ? 1 : Number(input.page);
   if (typeof input.page === "object" || !Number.isSafeInteger(page) || page < 1 || page > 100000) fail(i18n.t("messages.invalid_page"));
   const state = input.state ?? "active", search = input.q ?? "";
@@ -156,9 +157,10 @@ async function detail(userId, id, input = {}, editId) {
       for (const field of ["address", "target", "description"]) this.orWhereRaw(`LOWER(l.${field}) LIKE ? ESCAPE '!'`, [pattern]);
     });
     const { n } = await query.clone().count("* as n").first();
-    const links = await query.clone().leftJoin("domains as d", "d.id", "l.domain_id")
+    const rows = query.clone().leftJoin("domains as d", "d.id", "l.domain_id")
       .select("l.*", "d.address as domain", "d.user_id as domain_owner", "d.banned as domain_banned")
-      .orderBy("l.id", "desc").offset((page - 1) * 50).limit(50);
+      .offset((page - 1) * 50).limit(50);
+    const links = await require("./list-sort").apply(rows, sorting, "workspace");
     // An intervening edit can move this row outside the current search/page.
     // Recover it only from this authorized workspace, never from posted data.
     if (uuid(editId) && !links.some(link => link.uuid === editId)) {
@@ -172,7 +174,7 @@ async function detail(userId, id, input = {}, editId) {
       .where({ "m.workspace_id": id }).select("m.id", "m.role", "m.accepted_at", "u.email", "u.banned", "u.verified").orderBy("u.email") : [];
     const domains = space.role !== "viewer" ? await db("domains").where({ user_id: space.owner_id, banned: false }).select("address").orderBy("address") : [];
     return { ...publicSpace(space), membership_id: space.membership_id, members: members.map(m => ({ id: m.id, email: m.email, role: m.role, accepted: m.accepted_at != null, unavailable: !!m.banned || !m.verified })),
-      domains, page, limit: 50, total: Number(n), q: search, state,
+      domains, page, limit: 50, total: Number(n), q: search, state, ...sorting,
       data: links.map(({ domain_owner, domain_banned, ...link }) => ({ ...utils.sanitize.link(link),
         edit_revision: editing.revision(link),
         editable: !link.banned && !link.archived_domain && (link.domain_id == null || domain_owner === space.owner_id && !domain_banned) })) };

@@ -130,7 +130,7 @@ async function list(req, res) {
 }
 
 async function create(req, res) {
-  const result = await tokens.create(req.user.id, req.body);
+  const result = await tokens.create(req.user.id, req.body, req.user.auth_version);
   if (!req.isHTML) return res.status(201).json(result);
   await load(req, res, () => {});
   res.render("partials/settings/tokens", { newToken: result.token });

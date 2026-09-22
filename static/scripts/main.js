@@ -150,7 +150,6 @@ function resetTableNav() {
   const limitElm = document.querySelector("#limit");
   if (!totalElm || !skipElm || !limitElm) return;
   skipElm.value = 0;
-  limitElm.value = 10;
   const total = parseInt(totalElm.value);
   const skip = parseInt(skipElm.value);
   const limit = parseInt(limitElm.value);
@@ -181,6 +180,7 @@ function clearSeachInput(event) {
   const input = button.parentElement.querySelector("input");
   if (!input) return;
   input.value = "";
+  resetTableNav();
   button.style.display = "none";
   htmx.trigger("body", "reloadMainTable");
 }

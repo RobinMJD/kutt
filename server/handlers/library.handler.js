@@ -69,7 +69,22 @@ async function page(req, res, error) {
   // Native forms need their same-origin Origin; never accept the opaque null origin.
   res.set("Referrer-Policy", "same-origin");
   const notice = readNotice(req, res);
-  const result = await library.list(req.user.id, error ? {} : req.query);
+  let filters = req.query;
+  if (error && typeof req.body.return_to === "string" && req.body.return_to.length < 8192) {
+    let previous;
+    try { previous = new URL(req.body.return_to, "https://kutt.invalid"); } catch {}
+    if (previous?.origin === "https://kutt.invalid" && previous.pathname === "/settings/library") {
+      filters = Object.fromEntries([...previous.searchParams.keys()].map(key => [key,
+        previous.searchParams.getAll(key).length === 1 ? previous.searchParams.get(key) : previous.searchParams.getAll(key)]));
+    }
+  }
+  let result;
+  try { result = await library.list(req.user.id, filters); }
+  catch (failure) {
+    if (!error || !(failure instanceof CustomError)) throw failure;
+    // Deleted or malformed filter references cannot prevent showing the action error.
+    result = await library.list(req.user.id, {});
+  }
   const tags = result.labels.filter(row => row.kind === "tag").map(row => ({ ...row, selected: row.id === result.filters.tag }));
   const collections = result.labels.filter(row => row.kind === "collection").map(row => ({ ...row, selected: row.id === result.filters.collection }));
   return res.render("library", {

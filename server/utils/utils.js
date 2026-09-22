@@ -73,12 +73,13 @@ function generateRandomPassword() {
 }
 
 async function generateId(query, domain_id) {
-  const address = nanoid();
-  const link = await require("../link-history").reserved(address, domain_id);
-  if (link) {
-    return generateId(query, domain_id)
-  };
-  return address;
+  // Custom alphabets may generate unsafe dot segments or reserved root names.
+  for (let attempt = 0; attempt < 100; attempt++) {
+    const address = nanoid();
+    if (!require("../link-alias").valid(address)) continue;
+    if (!await require("../link-history").reserved(address, domain_id)) return address;
+  }
+  throw new CustomError(i18n.t("aliases.generation_failed"), 503);
 }
 
 function addProtocol(url) {

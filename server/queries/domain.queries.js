@@ -163,10 +163,10 @@ async function getAdmin(match, params) {
     .offset(params.skip)
     .limit(params.limit)
     .fromRaw("domains")
-    .orderBy("domains.id", "desc")
     .groupBy(1)
     .groupBy("l.links_count")
     .groupBy("users.email");
+  require("../list-sort").apply(query, params, "domains");
 
   filterAdminUser(query, "domains.user_id", params?.user);
 

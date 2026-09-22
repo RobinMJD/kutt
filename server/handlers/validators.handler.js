@@ -43,7 +43,9 @@ const createLink = [
     .optional({ nullable: true, checkFalsy: true })
     .custom(checkUser)
     .withMessage(() => i18n.t("messages.only_users_can_use_this_field"))
-    .isString()
+    .isString().bail()
+    .custom(value => !/[\u0000-\u001f\u007f]/.test(value))
+    .withMessage(() => i18n.t("messages.custom_url_is_not_valid")).bail()
     .trim()
     .isLength({ min: 1, max: 64 })
     .withMessage(() => i18n.t("messages.custom_url_length_must_be_between_1_and_64"))
@@ -120,7 +122,9 @@ const editLink = [
     .withMessage(() => i18n.t("messages.password_length_must_be_between_3_and_64")),
   body("address")
     .optional({ checkFalsy: true, nullable: true })
-    .isString()
+    .isString().bail()
+    .custom(value => !/[\u0000-\u001f\u007f]/.test(value))
+    .withMessage(() => i18n.t("messages.custom_url_is_not_valid_2")).bail()
     .trim()
     .isLength({ min: 1, max: 64 })
     .withMessage(() => i18n.t("messages.custom_url_length_must_be_between_1_and_64"))
@@ -225,7 +229,7 @@ const addDomainAdmin = [
   body("banned")
     .optional({ nullable: true })
     .customSanitizer(sanitizeCheckbox)
-    .isBoolean(),
+    .isBoolean().toBoolean(),
 ]
 
 const removeDomain = [
@@ -347,7 +351,7 @@ const banDomain = [
     })
     .customSanitizer(sanitizeCheckbox)
     .isBoolean(),
-  body("domains", () => i18n.t("messages.domains_should_be_a_boolean"))
+  body("user", () => i18n.t("messages.user_should_be_a_boolean"))
     .optional({
       nullable: true
     })
@@ -379,15 +383,15 @@ const createUser = [
   body("verified")
     .optional({ nullable: true })
     .customSanitizer(sanitizeCheckbox)
-    .isBoolean(),
+    .isBoolean().toBoolean(),
   body("banned")
     .optional({ nullable: true })
     .customSanitizer(sanitizeCheckbox)
-    .isBoolean(),
+    .isBoolean().toBoolean(),
   body("verification_email")
     .optional({ nullable: true })
     .customSanitizer(sanitizeCheckbox)
-    .isBoolean(),
+    .isBoolean().toBoolean(),
 ];
 
 const getStats = [
@@ -520,10 +524,10 @@ const deleteUserByAdmin = [
 ];
 
 async function bannedDomain(domain) {
-  const isBanned = await query.domain.find({
+  const isBanned = await require("../knex")("domains").where({
     address: domain,
     banned: true
-  });
+  }).first();
 
   if (isBanned) {
     throw new utils.CustomError(i18n.t("messages.domain_is_banned"), 400);
@@ -538,10 +542,10 @@ async function bannedHost(domain) {
 
     if (!dnsRes || !dnsRes.address) return;
 
-    isBanned = await query.host.find({
+    isBanned = await require("../knex")("hosts").where({
       address: dnsRes.address,
       banned: true
-    });
+    }).first();
   } catch (error) {
     isBanned = null;
   }

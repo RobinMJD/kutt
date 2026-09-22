@@ -1,10 +1,8 @@
 const i18n = require("../i18n");
 const { differenceInSeconds } = require("date-fns");
-const promisify = require("node:util").promisify;
 const bcrypt = require("bcryptjs");
 const visitClassification = require("../visit-classification");
 const URL = require("node:url");
-const dns = require("node:dns");
 
 const validators = require("./validators.handler");
 const map = require("../utils/map.json");
@@ -16,7 +14,6 @@ const env = require("../env");
 const linkLifecycle = require("../link-lifecycle");
 
 const CustomError = utils.CustomError;
-const dnsLookup = promisify(dns.lookup);
 
 async function get(req, res) {
   const { limit, skip } = req.context;
@@ -29,7 +26,7 @@ async function get(req, res) {
   };
 
   const [data, total] = await Promise.all([
-    query.link.get(match, { limit, search, skip }),
+    query.link.get(match, { limit, search, skip, ...require("../list-sort").parse(req.query) }),
     query.link.total(match, { search })
   ]);
 
@@ -74,7 +71,7 @@ async function getAdmin(req, res) {
   }
   
   const [data, total] = await Promise.all([
-    query.link.getAdmin(match, { limit, search, user, domain, skip }),
+    query.link.getAdmin(match, { limit, search, user, domain, skip, ...require("../list-sort").parse(req.query) }),
     query.link.totalAdmin(match, { search, user, domain })
   ]);
 
@@ -399,66 +396,16 @@ async function report(req, res) {
 };
 
 async function ban(req, res) {
-  const { id } = req.params;
+  const moderation = require("../moderation");
+  const link = await moderation.moderate("link", req.params.id, true, req.user, moderation.options(req));
+  const domain = link.domain_id && await query.domain.find({ id: link.domain_id });
 
-  const update = {
-    banned_by_id: req.user.id,
-    banned: true
-  };
-
-  // 1. check if link exists
-  const link = await query.link.find({ uuid: id });
-
-  if (!link) {
-    throw new CustomError(i18n.t("messages.no_link_has_been_found"), 400);
-  }
-
-  if (link.banned) {
-    throw new CustomError(i18n.t("messages.link_has_been_banned_already"), 400);
-  }
-
-  const tasks = [];
-
-  // 2. ban link
-  tasks.push(query.link.update({ uuid: id }, update, { id: req.user.id }));
-
-  const domain = utils.removeWww(URL.parse(link.target).hostname);
-
-  // 3. ban target's domain
-  if (req.body.domain) {
-    tasks.push(query.domain.add({ ...update, address: domain }));
-  }
-
-  // 4. ban target's host
-  if (req.body.host) {
-    const dnsRes = await dnsLookup(domain).catch(() => {
-      throw new CustomError(i18n.t("messages.couldn_t_fetch_dns_info"));
-    });
-    const host = dnsRes?.address;
-    tasks.push(query.host.add({ ...update, address: host }));
-  }
-
-  // 5. ban link owner
-  if (req.body.user && link.user_id) {
-    tasks.push(query.user.update({ id: link.user_id }, update));
-  }
-
-  // 6. ban all of owner's links
-  if (req.body.userLinks && link.user_id) {
-    tasks.push(query.link.update({ user_id: link.user_id }, update, { id: req.user.id }));
-  }
-
-  // 7. wait for all tasks to finish
-  await Promise.all(tasks).catch((err) => {
-    throw new CustomError(i18n.t("messages.couldn_t_ban_entries"));
-  });
-
-  // 8. send response
+  // Send the response only after the complete transaction commits.
   if (req.isHTML) {
     res.setHeader("HX-Reswap", "outerHTML");
     res.setHeader("HX-Trigger", "reloadMainTable");
     res.render("partials/links/dialog/ban_success", {
-      link: utils.getShortURL(link.address, link.domain).link,
+      link: utils.getShortURL(link.address, domain?.address).link,
     });
     return;
   }
@@ -475,7 +422,7 @@ async function redirect(req, res, next) {
   const host = utils.removeWww(req.headers.host);
   const domain =
     host !== env.DEFAULT_DOMAIN
-      ? await query.domain.find({ address: host })
+      ? await require("../knex")("domains").where({ address: host }).first()
       : null;
 
   if (host !== env.DEFAULT_DOMAIN && !domain) return res.status(404).send(i18n.t("messages.not_found"));

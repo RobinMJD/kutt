@@ -6,6 +6,26 @@ its hardened wrapper, WAF/Authentik routing, monitoring and private backup paths
 in its separate deployment repository. This public repository contains no real
 secrets, provider bindings or user data.
 
+### Transactional moderation (candidate)
+
+[Moderation](MODERATION.md) adds an audit and serialized mutation table. Existing
+data and bans are preserved; future user bans/unbans revoke sessions and API
+credentials permanently. Unban does not undo independent related bans.
+Back up database/configuration/secrets and verify a writable candidate restore.
+Do not roll back a populated audit migration or restore old credentials as a way
+to reverse a ban. Reload administration after deployment. Image-only rollback
+keeps additive tables but restores the former partial-mutation and session risks.
+See the community ledger for actual publication/deployment status.
+
+### Stable list sorting (3.2.6-sr94.44)
+
+[Sorting](LIST-SORTING.md) is additive UI/API behavior with no schema, secret or
+public-redirect change. Reload existing management tabs after upgrading so the
+new controls and draft-preserving script load together. Old saved Library
+filters retain `id DESC`; new filters can include the selected sort/direction.
+Keep current data for image-only rollback; older code ignores sorting fields.
+Do not claim publication/deployment from this section: use the community ledger.
+
 ### Browser and hostname correctness (3.2.6-sr94.41)
 
 Safari visits now enter the existing Safari bucket. Historical aggregated visits

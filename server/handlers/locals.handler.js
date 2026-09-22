@@ -85,6 +85,8 @@ function adminTable(req, res, next) {
     search: req.query.search,
     user: req.query.user,
     verified: req.query.verified,
+    sort: req.query.sort,
+    direction: req.query.direction,
   };
   next();
 }

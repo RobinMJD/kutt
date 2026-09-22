@@ -99,7 +99,7 @@ async function page(req, res, error, failedEdit) {
       link.edit_conflict = failedEdit.conflict;
     }
   }
-  const pageURL = number => url + "?" + new URLSearchParams({ q: selected.q, state: selected.state, page: number });
+  const pageURL = number => url + "?" + new URLSearchParams({ q: selected.q, state: selected.state, page: number, sort: selected.sort, direction: selected.direction });
   return res.render("workspaces", { title: selected?.name || i18n.t("ui.workspaces"), all, selected, error: inlineError ? undefined : error, action_url: selected ? pageURL(selected.page) : url,
     previous: selected?.page > 1 ? pageURL(selected.page - 1) : null,
     next: selected && selected.page * selected.limit < selected.total ? pageURL(selected.page + 1) : null });
@@ -108,12 +108,16 @@ async function page(req, res, error, failedEdit) {
 async function submit(req, res) {
   const operation = req.body.operation;
   try {
+    const current = req.params.id ? await spaces.detail(req.user.id, req.params.id, req.query) : null;
     const result = await mutate(req, operation, res);
     let id = req.params.id;
     if (operation === "create") id = result.id;
     if (operation === "accept") id = result.workspace_id;
     if (operation === "close" || operation === "remove_member") id = null;
-    return res.redirect(303, "/settings/workspaces" + (id ? "/" + id : ""));
+    const state = current && id === current.id ? "?" + new URLSearchParams({
+      q: current.q, state: current.state, page: current.page, sort: current.sort, direction: current.direction
+    }) : "";
+    return res.redirect(303, "/settings/workspaces" + (id ? "/" + id : "") + state);
   } catch (error) {
     if (!(error instanceof CustomError)) throw error;
     res.status(error.statusCode || 400);

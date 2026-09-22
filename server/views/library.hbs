@@ -8,6 +8,7 @@
     <label>{{t "ui.tag"}}<select name="tag" aria-label="{{t 'ui.tag'}}"><option value="">{{t "ui.all_tags"}}</option>{{#each tags}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}</option>{{/each}}</select></label>
     <label>{{t "ui.collection"}}<select name="collection" aria-label="{{t 'ui.collection'}}"><option value="">{{t "ui.all_collections"}}</option>{{#each collections}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}</option>{{/each}}</select></label>
     <label>{{t "ui.state"}}<select name="state" aria-label="{{t 'ui.state'}}">{{#each states}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select></label>
+    {{> list_sort profile='links' state=filters}}
     <button class="primary" type="submit">{{t "ui.filter"}}</button><a href="/settings/library">{{t "ui.clear"}}</a>
   </form>
   <nav class="library-saved" aria-label="{{t 'ui.saved_filters'}}">

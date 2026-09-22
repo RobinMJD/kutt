@@ -39,6 +39,8 @@
             <button name="operation" value="remove_member" title="{{t 'ui.remove_member_or_invitation'}}" aria-label="{{t 'ui.remove_member_or_invitation'}}" class="library-icon" data-confirm="{{t 'ui.revoke_this_workspace_membership_or_invitation'}}">{{> icons/trash}}</button>
           </form></li>{{else}}<li>{{t "ui.no_other_members"}}</li>{{/each}}</ul>
         <form method="get" action="{{@root.action_url}}" class="workspace-form" aria-label="{{t 'ui.find_personal_link'}}">
+          <input type="hidden" name="q" value="{{q}}" /><input type="hidden" name="state" value="{{state}}" />
+          <input type="hidden" name="page" value="{{page}}" /><input type="hidden" name="sort" value="{{sort}}" /><input type="hidden" name="direction" value="{{direction}}" />
           <label>{{t "ui.find_personal_link"}}<input type="search" name="share_q" value="{{share_q}}" maxlength="200" /></label><button type="submit">{{t "ui.search"}}</button>
         </form>
         <form method="post" action="{{@root.action_url}}" class="workspace-form" aria-label="{{t 'ui.share_existing_link'}}">
@@ -55,7 +57,7 @@
         <input type="hidden" name="operation" value="create_link" />
         <label class="workspace-wide">{{t "ui.destination"}}<input name="target" type="url" required maxlength="2040" placeholder="https://example.com/" /></label>
         {{> campaign}}
-        <label>{{t "ui.alias"}}<input name="address" maxlength="64" /></label>
+        <label>{{t "ui.alias"}}<input name="address" maxlength="64" placeholder="docs/v1.2" /></label>
         <label>{{t "ui.domain"}}<select name="domain" aria-label="{{t 'ui.domain'}}"><option value="">{{t "ui.default_domain"}}</option>{{#each domains}}<option value="{{address}}">{{address}}</option>{{/each}}</select></label>
         <label>{{t "ui.description_3"}}<input name="description" maxlength="2040" /></label>
         <label>{{t "ui.link_password"}}<input name="password" type="password" minlength="3" maxlength="64" autocomplete="new-password" /></label>
@@ -64,7 +66,8 @@
     </details>{{/if}}
     <form class="workspace-form" method="get" action="{{@root.action_url}}" aria-label="{{t 'ui.filter_shared_links'}}">
       <label>{{t "ui.search"}}<input type="search" name="q" value="{{q}}" maxlength="200" /></label>
-      <label>{{t "ui.state"}}<select name="state" aria-label="{{t 'ui.state'}}"><option value="active" {{#unless trash}}selected{{/unless}}>{{t "ui.not_in_trash"}}</option><option value="trash" {{#if trash}}selected{{/if}}>{{t "ui.in_trash"}}</option></select></label><button type="submit">{{t "ui.filter"}}</button>
+      <label>{{t "ui.state"}}<select name="state" aria-label="{{t 'ui.state'}}"><option value="active" {{#unless trash}}selected{{/unless}}>{{t "ui.not_in_trash"}}</option><option value="trash" {{#if trash}}selected{{/if}}>{{t "ui.in_trash"}}</option></select></label>
+      {{> list_sort profile='links' state=this}}<button type="submit">{{t "ui.filter"}}</button>
     </form>
     <p>{{t "library.links" count=total formatted=(number total)}}</p><ul class="workspace-links">
       {{#each data}}<li>
@@ -99,7 +102,7 @@
             <input type="hidden" name="edit_revision" value="{{edit_revision}}" />
             <label class="workspace-wide">{{t "ui.destination"}}<input name="target" type="url" value="{{target}}" required maxlength="2040" /></label>
             {{> campaign}}
-            <label>{{t "ui.alias"}}<input name="address" value="{{address}}" required maxlength="64" /></label>
+            <label>{{t "ui.alias"}}<input name="address" value="{{address}}" required maxlength="64" placeholder="docs/v1.2" /></label>
             <label>{{t "ui.description_3"}}<input name="description" value="{{description}}" maxlength="2040" /></label>
             <label>{{t "ui.new_password_3"}}<input name="password" type="password" minlength="3" maxlength="64" autocomplete="new-password" /></label>
             {{#if password_reentry}}<p class="workspace-wide">{{t "ui.password_was_not_retained_enter_it_again_to_change_protection"}}</p>{{/if}}

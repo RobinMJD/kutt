@@ -153,6 +153,7 @@ async function plan(db, req, input, id, fixedAliases) {
         } else fail(i18n.t("messages.alias_is_unavailable_no_existing_link_will_be_overwritten"), 409);
       }
       if (action === "create") {
+        if (!require("./link-alias").valid(address)) fail(i18n.t("messages.invalid_or_reserved_alias"));
         used.add(history.key(row.domain, address));
         for (const label of labelsFor(row)) newLabels.set(label.kind + ":" + label.name.toLowerCase(), label);
       }

@@ -1,5 +1,10 @@
 # Shared workspaces
 
+Shared-link lists support [stable sorting](LIST-SORTING.md) through the UI and
+the `sort` / `direction` API query parameters. Filters, pagination, candidate
+search and native mutations retain normalized sorting state; permissions do not
+change.
+
 Release `v3.2.6-sr94.9` was published and deployed on 2026-09-14. Release CI,
 exact hardened-image regression, desktop/mobile workflows, verified NAS restore
 and live HTTPS/WAF authorization tests passed. Consult the feature roadmap for
@@ -97,6 +102,8 @@ on create), `description`, `password`, `paused`, ISO `starts_at`/`ends_at`, and
 `max_visits`. Creation also accepts an owner-controlled `domain`; domain moves
 stay with the personal owner. Unknown fields are rejected. `password: null`
 clears protection. Redirect quotas/history/alias reservations are preserved.
+Aliases follow the shared [alias rules](LINK-ALIASES.md), including safe interior
+dots (`docs/v1.2/guide.pdf`), eight segments, 64 characters and reserved roots.
 Workspace detail responses now include opaque `edit_revision` per link. Supply
 it with a PATCH to get atomic stale-write rejection. Omission retains legacy
 partial-update semantics, so API clients should PATCH only fields they intend to

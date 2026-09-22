@@ -1,5 +1,34 @@
 # Container smoke test
 
+Safe dotted aliases are covered by `dotted-alias-unit.cjs` and
+`dotted-aliases.cjs`. The latter runs in the normal smoke suite or with
+`KUTT_TEST_ONLY=dotted-aliases`: create/edit/admin/workspace/import paths,
+reserved names, dot/traversal/encoding limits, case/domain identity, scoped
+access, redirects, retirement/restore and forwarding-suffix compatibility.
+See [alias rules](../docs/LINK-ALIASES.md). Use only disposable test databases.
+
+`browser-dotted-aliases.cjs` uses `KUTT_BROWSER_DISPOSABLE=1`, a fresh loopback
+`KUTT_TEST_URL`, optional `PLAYWRIGHT_MODULE`, and `KUTT_EVIDENCE_DIR` outside the
+checkout. It covers native create, personal/admin/workspace edits, rejected
+aliases and retained drafts, redirects and layout at 1440/390/320px. It refuses
+an initialized app, verifies the public redirect response, and substitutes a
+synthetic landing response without contacting the external destination.
+`sh tests/browser-dotted-aliases.sh IMAGE` provisions and removes the fresh
+loopback instance. It accepts `NODE_BINARY`, `PLAYWRIGHT_MODULE`,
+`KUTT_BROWSER_PORT` (default `31121`) and `KUTT_EVIDENCE_DIR`.
+
+Build the candidate image, then run `sh tests/dotted-alias-database.sh IMAGE mysql2`
+and `sh tests/dotted-alias-database.sh IMAGE pg`. Each gate creates its own pinned,
+network-isolated database container with tmpfs storage and removes only that
+container by its captured ID. The HTTP suite refuses an initialized database and
+covers dotted write paths, native collation parity, scoped domains, concurrent
+claims, rollback, trash/restore and unchanged forwarding suffixes.
+Ordinary aliases are controls for both case matching and duplicate-claim races.
+The forced stale-snapshot check requires a normal `409` conflict, never a `500`
+or an unclassified exception, for both ordinary and dotted aliases. Both race
+forms also verify that the losing link rolls back, the winning link/claim/history
+remain unchanged, and the same owner can reassert an active claim.
+
 Build from a clean checkout without a `.env` file:
 
 ```sh
@@ -23,7 +52,11 @@ Coverage:
   safe return paths, localized assets and unchanged signed expiry inputs.
   `tests/browser-i18n.cjs` uses a fresh loopback fixture for actual native language
   form submissions (including their Origin header), login errors, HTMX editing,
-  plural feedback and 20 management views in three languages at 1440/390/320px.
+  plural feedback and 22 views in three languages at 1440/390/320px.
+  `i18n-community.cjs` adds French/Spanish moderation and origin denials,
+  unchanged audit payloads, sorting and dotted-alias/import validation.
+  The moderation, list-sorting and dotted-alias browser suites accept
+  `KUTT_TEST_LOCALE=fr` or `es`; omission retains their default English gate.
   See `docs/LOCALIZATION.md` for commands and explicit acceptance limits.
 - Campaign URL parameters: encoded bounds, explicit clears, API aliases,
   idempotency, public/protected/Basic and routing/forwarding precedence,
@@ -362,3 +395,24 @@ repeats real cache, Bull worker and restart-persistent limiter tests.
 Configuration checks cover CA bundles, default trust, client-key matching,
 sanitized startup failures, file precedence and SQLite pool compatibility.
 Do not use these fixture scripts against a real database or certificate store.
+
+## Stable Sorting
+
+`list-sorting.cjs` runs in the isolated container suite (`KUTT_TEST_ONLY=list-sorting`
+for focused HTTP tests). `list-sort-database.cjs` exercises every sort field and
+direction against the real MySQL/PostgreSQL search fixtures. SQLite uses
+`list-sort-sqlite.cjs` with `KUTT_DATABASE_DISPOSABLE=1`, `DB_CLIENT=better-sqlite3`
+and a fresh `DB_FILENAME=/tmp/kutt-sort-*.sqlite`. CI runs all three engines.
+
+`browser-list-sorting.cjs` requires an empty disposable loopback application,
+`KUTT_BROWSER_DISPOSABLE=1`, `KUTT_TEST_URL` and `KUTT_EVIDENCE_DIR`, plus
+Playwright/Chromium (`PLAYWRIGHT_MODULE` may name an absolute module path).
+It creates fixture users/links, never authenticates to a real deployment, and
+checks desktop/mobile controls, admin transitions, native state, multiple drafts
+and in-flight list/editor response races. Remove its disposable container/data
+afterward; do not run it against retained configuration.
+
+`sh tests/browser-list-sorting.sh IMAGE` provisions and cleans that disposable
+container with a loopback-only port and no real mounts. Set `NODE_BINARY` for an
+alternate Node runtime and `KUTT_BROWSER_PORT` when port 31119 is occupied.
+CI runs the same helper with isolated, version-pinned Playwright tooling.

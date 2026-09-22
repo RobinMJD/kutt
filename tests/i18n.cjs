@@ -164,6 +164,7 @@ module.exports = async ({ request, session, url }) => {
     }
     assert(snapshots[0]); assert(snapshots.every(value => value === snapshots[0]), "Locale never changes the signed machine-readable expiry snapshot");
   } finally { await request("DELETE", "/api/links/" + link.id, undefined, session); }
+  await require("./i18n-community.cjs")({ request, session, url });
   console.log("PASS: concurrent localized HTTP/validation errors, Accept-Language negotiation, cookie precedence, allowlisted external catalogs, same-origin selector and open-redirect rejection");
 };
 module.exports.unit = unit;

@@ -38,4 +38,6 @@ const db = require("../server/knex");
     assert.deepEqual(await links.get(match, { search, limit: 10, skip: 0 }), []);
   }
   console.log("PASS: " + process.env.DB_CLIENT + " Unicode search, case matching, count/list pagination, owner isolation and bound input");
+  await require("./list-sort-database.cjs")(db);
+  await require("./moderation-database.cjs")(db);
 })().catch(error => { console.error(error.stack); process.exitCode = 1; }).finally(() => db.destroy());

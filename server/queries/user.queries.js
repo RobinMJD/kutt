@@ -107,19 +107,8 @@ async function update(match, update, methods) {
   return updated_user;
 }
 
-async function remove(user) {
-  const deletedUser = await knex.transaction(async db => {
-    if (await db("workspaces").where({ owner_id: user.id }).first()) {
-      throw new utils.CustomError(i18n.t("messages.close_owned_workspaces_before_deleting_this_account_shared_links_must_remain"), 409);
-    }
-    return db("users").where("id", user.id).delete();
-  });
-  
-  if (env.REDIS_ENABLED) {
-    redis.remove.user(user);
-  }
-  
-  return !!deletedUser;
+async function remove(user, actor = user, administrative = false) {
+  return require("../moderation").removeUser(user, actor, administrative);
 }
 
 const selectable_admin = [
@@ -153,10 +142,10 @@ async function getAdmin(match, params) {
     .where(normalizeMatch(match))
     .offset(params.skip)
     .limit(params.limit)
-    .orderBy("users.id", "desc")
     .groupBy(1)
     .groupBy("l.links_count")
     .groupBy("d.domains");
+  require("../list-sort").apply(query, params, "users");
   
   if (params?.search) {
     const id = parseInt(params?.search);
