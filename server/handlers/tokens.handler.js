@@ -1,3 +1,4 @@
+const i18n = require("../i18n");
 const tokens = require("../api-tokens");
 const knex = require("../knex");
 const env = require("../env");
@@ -5,6 +6,11 @@ const { CustomError } = require("../utils");
 
 // New API routes are unavailable to scoped tokens unless explicitly allowlisted.
 const routes = [
+  ["GET", /^\/domains\/available\/?$/i, "links:create"],
+  ["GET", /^\/domains\/[a-f0-9-]{36}\/grants\/?$/i, "domains:share"],
+  ["POST", /^\/domains\/[a-f0-9-]{36}\/grants\/?$/i, "domains:share"],
+  ["DELETE", /^\/domains\/[a-f0-9-]{36}\/grants\/[a-f0-9-]{36}\/?$/i, "domains:share"],
+  ["GET", /^\/destination-policy\/?$/i, "links:read"],
   ["GET", /^\/links\/health\/?$/i, "links:read"],
   ["GET", /^\/links\/([a-f0-9-]{36})\/health\/?$/i, "links:read"],
   ["PUT", /^\/links\/([a-f0-9-]{36})\/health\/?$/i, "links:update"],
@@ -37,6 +43,7 @@ const routes = [
   ["DELETE", /^\/library\/(?:labels|filters)\/[a-f0-9-]{36}\/?$/i, "links:update"],
   ["GET", /^\/links\/?$/i, "links:read"],
   ["GET", /^\/links\/([a-f0-9-]{36})\/qr\/?$/i, "links:read"],
+  ["POST", /^\/links\/([a-f0-9-]{36})\/qr\/?$/i, "links:read"],
   ["GET", /^\/links\/trash\/?$/i, "links:read"],
   ["GET", /^\/links\/([a-f0-9-]{36})\/history\/?$/i, "links:read"],
   ["POST", /^\/links\/([a-f0-9-]{36})\/restore\/?$/i, "links:update"],
@@ -48,38 +55,39 @@ const routes = [
 ];
 
 async function authenticate(req, res, next) {
+  if (req.publicHost) return next();
   const supplied = [req.get("X-API-Key"), req.body?.apikey, req.query.apikey]
     .filter(value => value !== undefined);
   if (!supplied.length) return next();
   res.set("Cache-Control", "no-store");
   if (supplied.some(value => typeof value !== "string" || !value || value.length > 256)) {
-    return res.status(401).json({ error: "Invalid API credential." });
+    return res.status(401).json({ error: i18n.t("messages.invalid_api_credential") });
   }
   if (!supplied.some(value => value.startsWith("kutt_") && value.length !== 40)) {
     // Invalid explicit credentials must not fall back to an unrelated cookie.
-    const legacy = supplied.length === 1 && await knex("users").where({ apikey: supplied[0] }).first();
-    if (!legacy || legacy.banned || !legacy.verified) {
-      return res.status(401).json({ error: "Invalid API credential." });
+    const legacy = supplied.length === 1 && await require("../oidc-roles").fresh(await knex("users").where({ apikey: supplied[0] }).first());
+    if (!legacy || legacy.apikey !== supplied[0] || legacy.banned || !legacy.verified) {
+      return res.status(401).json({ error: i18n.t("messages.invalid_api_credential") });
     }
     return next();
   }
   if (supplied.length !== 1 || supplied[0] !== req.get("X-API-Key")) {
-    return res.status(401).json({ error: "Use a scoped token only in the X-API-Key header." });
+    return res.status(401).json({ error: i18n.t("messages.use_a_scoped_token_only_in_the_x_api_key_header") });
   }
   const resolved = await tokens.resolve(supplied[0]);
-  if (!resolved) return res.status(401).json({ error: "Invalid or expired API token." });
+  if (!resolved) return res.status(401).json({ error: i18n.t("messages.invalid_or_expired_api_token") });
   const route = routes.find(([method, pattern]) => method === req.method && pattern.test(req.path));
   const scopes = JSON.parse(resolved.row.scopes);
   const requiredScope = route && req.method === "POST" && /^\/library\/bulk\/?$/i.test(req.path) && req.body.action === "trash"
     ? "links:delete" : route?.[2];
   if (!route || !scopes.includes(requiredScope)) {
-    return res.status(403).json({ error: "API token does not permit this operation." });
+    return res.status(403).json({ error: i18n.t("messages.api_token_does_not_permit_this_operation") });
   }
   const id = req.path.match(route[1])[1];
   if (id) {
     const owned = await knex("links").where({ uuid: id, user_id: resolved.user.id }).first();
     if (!owned || (resolved.domainId !== undefined && (owned.domain_id !== resolved.domainId || owned.archived_domain))) {
-      return res.status(404).json({ error: "Link was not found." });
+      return res.status(404).json({ error: i18n.t("messages.link_was_not_found") });
     }
   }
   // Never inherit administrator privileges or elevate using a browser cookie.
@@ -97,30 +105,24 @@ function sessionOnly(req, res, next) {
   res.set("Cache-Control", "no-store");
   if (req.apiToken || req.get("X-API-Key") !== undefined ||
       req.body?.apikey !== undefined || req.query.apikey !== undefined) {
-    throw new CustomError("Use your signed-in session for this operation.", 403);
+    throw new CustomError(i18n.t("messages.use_your_signed_in_session_for_this_operation"), 403);
   }
   if (req.method !== "GET" && req.method !== "HEAD") {
-    if (req.get("Sec-Fetch-Site") === "cross-site") throw new CustomError("Invalid request origin.", 403);
-    const origin = req.get("Origin");
-    if (origin) {
-      let host;
-      try { host = new URL(origin).host; } catch {}
-      if (host !== env.DEFAULT_DOMAIN) throw new CustomError("Invalid request origin.", 403);
-    }
+    require("../management-origin").sameOrigin(req);
   }
   return next();
 }
 
 async function load(req, res, next) {
-  const domains = await knex("domains").where({ user_id: req.user.id, banned: false });
+  const domains = await require("../domain-access").available(knex, req.user.id).orderBy("d.address");
   res.locals.tokenDomains = domains;
   res.locals.apiTokens = (await tokens.list(req.user.id)).map(token => ({
-    ...token, active: token.status === "Active", scopesLabel: token.scopes.join(", "),
-    domainLabel: token.domain_scope === "all" ? "All owned domains" :
+    ...token, active: token.status === "Active", status: i18n.t("token.status." + token.status), scopesLabel: token.scopes.map(scope => i18n.t(tokens.SCOPES[scope])).join(", "),
+    domainLabel: token.domain_scope === "all" ? i18n.t("domain_grants.all_available") :
       token.domain_scope === "default" ? env.DEFAULT_DOMAIN :
-        domains.find(domain => domain.uuid === token.domain_scope)?.address || "Unavailable domain (access denied)"
+        domains.find(domain => domain.uuid === token.domain_scope)?.address || i18n.t("messages.unavailable_domain_access_denied")
   }));
-  res.locals.tokenScopes = Object.entries(tokens.SCOPES).map(([value, label]) => ({ value, label }));
+  res.locals.tokenScopes = Object.entries(tokens.SCOPES).map(([value, label]) => ({ value, label: i18n.t(label) }));
   next();
 }
 
@@ -129,7 +131,7 @@ async function list(req, res) {
 }
 
 async function create(req, res) {
-  const result = await tokens.create(req.user.id, req.body);
+  const result = await tokens.create(req.user.id, req.body, req.user.auth_version);
   if (!req.isHTML) return res.status(201).json(result);
   await load(req, res, () => {});
   res.render("partials/settings/tokens", { newToken: result.token });

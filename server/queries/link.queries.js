@@ -1,3 +1,4 @@
+const i18n = require("../i18n");
 const bcrypt = require("bcryptjs");
 
 const utils = require("../utils");
@@ -6,6 +7,7 @@ const knex = require("../knex");
 const env = require("../env");
 const history = require("../link-history");
 const filterAdminUser = require("./admin-user-filter");
+const sorting = require("../list-sort");
 
 const CustomError = utils.CustomError;
 
@@ -127,8 +129,8 @@ async function get(match, params) {
     .select(...selectable)
     .where(normalizeMatch(match))
     .offset(params.skip)
-    .limit(params.limit)
-    .orderBy("links.id", "desc");
+    .limit(params.limit);
+  sorting.apply(query, params);
   query[params?.trash ? "whereNotNull" : "whereNull"]("links.deleted_at");
   
   if (params?.search) {
@@ -151,8 +153,8 @@ async function getAdmin(match, params) {
     query.andWhere(key, ...(Array.isArray(value) ? value : [value]));
   });
 
+  sorting.apply(query, params);
   query
-    .orderBy("links.id", "desc")
     .offset(params.skip)
     .limit(params.limit)
   
@@ -200,6 +202,9 @@ async function find(match, { fresh = false, includeTrash = false } = {}) {
 }
 
 async function create(params, db = knex, actor = {}) {
+  if (!db.isTransaction) return knex.transaction(transaction => create(params, transaction, actor));
+  await require("../domain-access").lock(db);
+  await require("../domain-access").link(db, params);
   let encryptedPassword = null;
   
   if (params.password) {
@@ -243,7 +248,7 @@ async function remove(match, actor = {}) {
     if (link) await history.trash(db, link, actor);
     return link;
   });
-  if (!link) return { isRemoved: false, error: "Could not find the link.", link: null };
+  if (!link) return { isRemoved: false, error: i18n.t("messages.could_not_find_the_link"), link: null };
 
   if (env.REDIS_ENABLED) {
     redis.remove.link(link);
@@ -270,7 +275,7 @@ async function batchRemove(match) {
   }
 }
 
-async function update(match, update, actor = {}, { expiryExpected } = {}) {
+async function update(match, update, actor = {}, { expiryExpected, request } = {}) {
   if (update.password) {
     const salt = await bcrypt.genSalt(12);
     update.password = await bcrypt.hash(update.password, salt);
@@ -284,10 +289,19 @@ async function update(match, update, actor = {}, { expiryExpected } = {}) {
   }
   
   await knex.transaction(async db => {
+    await require("../domain-access").lock(db);
     const selection = db("links").where(match);
-    if (expiryExpected !== undefined && !knex.client.config.client.includes("sqlite")) selection.forUpdate();
+    if ((expiryExpected !== undefined || update.target !== undefined) && !knex.client.config.client.includes("sqlite")) selection.forUpdate();
     const current = await selection;
+    for (const link of current) {
+      await require("../domain-access").link(db, link);
+      await require("../domain-access").link(db, { ...link, ...update });
+      if (request) await require("../domain-access").request(db, request, link.domain_id, "links:update", link.user_id);
+    }
     for (const link of current) require("../link-expiry-edit").check(link, expiryExpected);
+    for (const link of current) {
+      if (update.target !== undefined && update.target !== link.target) require("../destination-policy").requireAllowed(update.target);
+    }
     for (const link of current) await history.beforeUpdate(db, link, update, actor);
     await db("links").where(match).update({ ...update, updated_at: utils.dateToUTC(new Date()) });
   });

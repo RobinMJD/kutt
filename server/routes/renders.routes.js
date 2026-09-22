@@ -8,6 +8,18 @@ const auth = require("../handlers/auth.handler");
 const env = require("../env");
 
 const router = Router();
+const domainGrants = require("../handlers/domain-grants.handler");
+router.get(["/settings/domain-sharing", "/settings/domain-sharing/:id"], require("../handlers/tokens.handler").sessionOnly,
+  asyncHandler(auth.jwtPage), asyncHandler(locals.user), domainGrants.boundary, asyncHandler((req, res) => domainGrants.page(req, res)));
+router.post("/settings/domain-sharing/:id", require("../handlers/tokens.handler").sessionOnly,
+  asyncHandler(auth.jwtPage), asyncHandler(locals.user), domainGrants.boundary,
+  helpers.rateLimit({ window: 60, limit: 30, always: true, key: "domain-grants" }), asyncHandler(domainGrants.submit));
+router.get("/settings/domain-sharing/:id/revoke/:grantId", require("../handlers/tokens.handler").sessionOnly,
+  asyncHandler(auth.jwtPage), asyncHandler(locals.user), domainGrants.boundary, asyncHandler((req, res) => domainGrants.confirmPage(req, res)));
+router.post("/settings/domain-sharing/:id/revoke/:grantId", require("../handlers/tokens.handler").sessionOnly,
+  asyncHandler(auth.jwtPage), asyncHandler(locals.user), domainGrants.boundary,
+  helpers.rateLimit({ window: 60, limit: 30, always: true, key: "domain-grants" }), asyncHandler(domainGrants.confirmRevoke));
+router.use("/settings/domain-sharing", domainGrants.pageError);
 const destinationHealth = require("../handlers/link-health.handler");
 router.get("/link/health/:id", require("../handlers/tokens.handler").sessionOnly,
   asyncHandler(auth.jwtPage), asyncHandler(locals.user), destinationHealth.boundary, asyncHandler(destinationHealth.page));
@@ -15,6 +27,10 @@ router.get("/settings/health", require("../handlers/tokens.handler").sessionOnly
   asyncHandler(auth.jwtPage), asyncHandler(locals.user), destinationHealth.boundary, asyncHandler(destinationHealth.dashboard));
 router.use(["/link/health", "/settings/health"], (error, req, res, next) => { res.status(error.statusCode || 500); next(error); });
 const privacy = require("../handlers/privacy.handler");
+router.get("/settings/destination-policy", require("../handlers/tokens.handler").sessionOnly,
+  asyncHandler(auth.jwtPage), asyncHandler(locals.user), privacy.boundary,
+  require("../handlers/destination-policy.handler").page);
+router.use("/settings/destination-policy", (error, req, res, next) => { res.status(error.statusCode || 500); next(error); });
 router.get("/settings/shortcuts", require("../handlers/tokens.handler").sessionOnly,
   asyncHandler(auth.jwtPage), asyncHandler(locals.user), privacy.boundary,
   require("../handlers/shortcuts.handler").page);

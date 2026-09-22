@@ -1,3 +1,4 @@
+const i18n = require("../i18n");
 const { differenceInDays, addMinutes } = require("date-fns");
 const { nanoid } = require("nanoid");
 const passport = require("passport");
@@ -15,6 +16,10 @@ const CustomError = utils.CustomError;
 
 function authenticate(type, error, isStrict, redirect) {
   return function auth(req, res, next) {
+    if (req.publicHost) {
+      if (!isStrict) return next();
+      return res.status(404).set("Cache-Control", "no-store").end();
+    }
     if (req.user) return next();
 
     passport.authenticate(type, (err, user, info) => {
@@ -24,7 +29,7 @@ function authenticate(type, error, isStrict, redirect) {
       ) {
         require("../oidc-client").failure(err?.authCode || info?.authCode);
         res.status(401).set("Cache-Control", "no-store");
-        return next(new CustomError("OIDC authentication failed.", 401));
+        return next(new CustomError(i18n.t("messages.oidc_authentication_failed"), 401));
       };
 
       if (err) return next(err);
@@ -48,16 +53,15 @@ function authenticate(type, error, isStrict, redirect) {
       }
       
       if (!user && isStrict) {
-        throw new CustomError(error, 401);
+        throw new CustomError(i18n.t(error), 401);
       }
 
       if (user && user.banned) {
-        throw new CustomError("You're banned from using this website.", 403);
+        throw new CustomError(i18n.t("messages.you_re_banned_from_using_this_website"), 403);
       }
 
       if (user && isStrict && !user.verified) {
-        throw new CustomError("Your email address is not verified. " +
-          "Sign up to get the verification link again.", 400);
+        throw new CustomError(i18n.t("auth.email_unverified"), 400);
       }
 
       if (user) {
@@ -85,17 +89,24 @@ function authenticate(type, error, isStrict, redirect) {
   }
 }
 
-const local = authenticate("local", "Login credentials are wrong.", true, null);
-const jwt = authenticate("jwt", "Unauthorized.", true, "header");
-const jwtPage = authenticate("jwt", "Unauthorized.", true, "page");
-const jwtLoose = authenticate("jwt", "Unauthorized.", false, "header");
-const jwtLoosePage = authenticate("jwt", "Unauthorized.", false, "page");
-const apikey = authenticate("localapikey", "API key is not correct.", false, null);
-const oidc = authenticate("oidc", "Unauthorized", true, "page");
+const local = authenticate("local", "messages.login_credentials_are_wrong", true, null);
+const jwt = authenticate("jwt", "messages.unauthorized", true, "header");
+const jwtPage = authenticate("jwt", "messages.unauthorized", true, "page");
+const jwtLoose = authenticate("jwt", "messages.unauthorized", false, "header");
+const jwtLoosePage = authenticate("jwt", "messages.unauthorized", false, "page");
+const apikey = authenticate("localapikey", "messages.api_key_is_not_correct", false, null);
+const oidc = authenticate("oidc", "messages.unauthorized_2", true, "page");
 
-function admin(req, res, next) {
-  if (req.user.admin) return next();
-  throw new CustomError("Unauthorized", 401);
+async function admin(req, res, next) {
+  const current = req.user && !req.apiToken && await require("../oidc-roles").fresh(
+    await require("../knex")("users").where({ id: req.user.id }).first());
+  if (current && !current.banned && current.verified && current.role === ROLES.ADMIN &&
+      Number(current.auth_version) === Number(req.user.auth_version)) {
+    req.user = { ...current, admin: true };
+    res.locals.canCreateLocalAdmin = await require("../oidc-roles").canCreateLocalAdmin(current);
+    return next();
+  }
+  throw new CustomError(i18n.t("messages.unauthorized_2"), 401);
 }
 
 function sessionOrigin(req, res, next) {
@@ -123,7 +134,7 @@ async function signup(req, res) {
     return;
   }
   
-  return res.status(201).send({ message: "A verification email has been sent." });
+  return res.status(201).send({ message: i18n.t("messages.a_verification_email_has_been_sent") });
 }
 
 function completeBrowserLogin(req, res, token) {
@@ -137,7 +148,7 @@ function completeBrowserLogin(req, res, token) {
 async function createAdminUser(req, res) {
   const isThereAUser = await query.user.findAny();
   if (isThereAUser) {
-    throw new CustomError("Can not create the admin user because a user already exists.", 400);
+    throw new CustomError(i18n.t("messages.can_not_create_the_admin_user_because_a_user_already_exists"), 400);
   }
   
   const salt = await bcrypt.genSalt(12);
@@ -195,7 +206,7 @@ async function verify(req, res, next) {
 async function changePassword(req, res) {
   const isMatch = await bcrypt.compare(req.body.currentpassword, req.user.password);
   if (!isMatch) {
-    const message = "Current password is not correct.";
+    const message = i18n.t("messages.current_password_is_not_correct");
     res.locals.errors = { currentpassword: message };
     throw new CustomError(message, 401);
   }
@@ -206,20 +217,20 @@ async function changePassword(req, res) {
   const user = await query.user.update({ id: req.user.id, auth_version: req.user.auth_version }, { password: newpassword });
   
   if (!user) {
-    throw new CustomError("Couldn't change the password. Try again later.");
+    throw new CustomError(i18n.t("messages.couldn_t_change_the_password_try_again_later"));
   }
 
   if (req.isHTML) {
     res.setHeader("HX-Trigger-After-Swap", "resetChangePasswordForm");
     res.render("partials/settings/change_password", {
-      success: "Password has been changed."
+      success: i18n.t("messages.password_has_been_changed")
     });
     return;
   }
   
   return res
     .status(200)
-    .send({ message: "Your password has been changed successfully." });
+    .send({ message: i18n.t("messages.your_password_has_been_changed_successfully") });
 }
 
 async function generateApiKey(req, res) {
@@ -232,7 +243,7 @@ async function generateApiKey(req, res) {
   const user = await query.user.update({ id: req.user.id, auth_version: req.user.auth_version }, { apikey });
   
   if (!user) {
-    throw new CustomError("Couldn't generate API key. Please try again later.");
+    throw new CustomError(i18n.t("messages.couldn_t_generate_api_key_please_try_again_later"));
   }
 
   if (req.isHTML) {
@@ -262,13 +273,13 @@ async function resetPassword(req, res) {
 
   if (req.isHTML) {
     res.render("partials/reset_password/request_form", {
-      message: "If the email address exists, a reset password email will be sent to it."
+      message: i18n.t("messages.if_the_email_address_exists_a_reset_password_email_will_be")
     });
     return;
   }
   
   return res.status(200).send({
-    message: "If email address exists, a reset password email has been sent."
+    message: i18n.t("messages.if_email_address_exists_a_reset_password_email_has_been_sent")
   });
 }
 
@@ -276,7 +287,7 @@ async function newPassword(req, res) {
   const { new_password, reset_password_token } = req.body;
   const match = { reset_password_token, reset_password_expires: [">", utils.dateToUTC(new Date())] };
   if (!await query.user.find(match)) {
-    throw new CustomError("Could not set the password. Please try again later.", 400);
+    throw new CustomError(i18n.t("messages.could_not_set_the_password_please_try_again_later"), 400);
   }
   const salt = await bcrypt.genSalt(12);
   const password = await bcrypt.hash(new_password, salt);
@@ -294,7 +305,7 @@ async function newPassword(req, res) {
   );
 
   if (!user) {
-    throw new CustomError("Could not set the password. Please try again later.", 400);
+    throw new CustomError(i18n.t("messages.could_not_set_the_password_please_try_again_later"), 400);
   }
 
   res.render("partials/reset_password/new_password_success");
@@ -306,7 +317,7 @@ async function changeEmailRequest(req, res) {
   const isMatch = await bcrypt.compare(password, req.user.password);
   
   if (!isMatch) {
-    const error = "Password is not correct.";
+    const error = i18n.t("messages.password_is_not_correct");
     res.locals.errors = { password: error };
     throw new CustomError(error, 401);
   }
@@ -314,7 +325,7 @@ async function changeEmailRequest(req, res) {
   const user = await query.user.find({ email });
   
   if (user) {
-    const error = "Can't use this email address.";
+    const error = i18n.t("messages.can_t_use_this_email_address");
     res.locals.errors = { email: error };
     throw new CustomError(error, 400);
   }
@@ -331,10 +342,10 @@ async function changeEmailRequest(req, res) {
   if (updatedUser) {
     await mail.changeEmail({ ...updatedUser, email });
   } else {
-    throw new CustomError("Sign in again before changing your email address.", 401);
+    throw new CustomError(i18n.t("messages.sign_in_again_before_changing_your_email_address"), 401);
   }
 
-  const message = "A verification link has been sent to the requested email address."
+  const message = i18n.t("messages.a_verification_link_has_been_sent_to_the_requested_email_address")
   
   if (req.isHTML) {
     res.setHeader("HX-Trigger-After-Swap", "resetChangeEmailForm");
@@ -384,7 +395,7 @@ function featureAccess(features, redirect) {
         if (redirect) {
           return res.redirect("/");
         } else {
-          throw new CustomError("Request is not allowed.", 400);
+          throw new CustomError(i18n.t("messages.request_is_not_allowed"), 400);
         }
       } 
     }

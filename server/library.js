@@ -1,3 +1,4 @@
+const i18n = require("./i18n");
 const { randomUUID } = require("node:crypto");
 const knex = require("./knex");
 const history = require("./link-history");
@@ -9,34 +10,35 @@ const fail = (message, status = 400) => { throw new CustomError(message, status)
 const uuid = value => typeof value === "string" && /^[a-f0-9-]{36}$/i.test(value);
 const kinds = ["tag", "collection"];
 const publicLabel = row => ({ id: row.id, name: row.name, kind: row.kind });
-const publicFilter = row => ({ id: row.id, name: row.name, filters: JSON.parse(row.filters) });
+const publicFilter = row => ({ id: row.id, name: row.name, filters: parseFilters(JSON.parse(row.filters)) });
 
 function nameFields(input) {
-  if (typeof input !== "string") fail("A name is required.");
+  if (typeof input !== "string") fail(i18n.t("messages.a_name_is_required"));
   const name = input.normalize("NFKC").trim();
-  if (!name || name.length > 80 || /[\u0000-\u001f\u007f]/.test(name)) fail("Name must be 1 to 80 printable characters.");
+  if (!name || name.length > 80 || /[\u0000-\u001f\u007f]/.test(name)) fail(i18n.t("messages.name_must_be_1_to_80_printable_characters"));
   return { name, name_key: name.toLowerCase() };
 }
 
 function parseFilters(input = {}) {
   const result = { q: "", tag: "", collection: "", state: "active" };
-  if (!input || typeof input !== "object" || Array.isArray(input)) fail("Invalid filters.");
+  if (!input || typeof input !== "object" || Array.isArray(input)) fail(i18n.t("messages.invalid_filters"));
   for (const key of Object.keys(result)) {
     if (input[key] === undefined || input[key] === "") continue;
-    if (typeof input[key] !== "string") fail("Invalid filter value.");
+    if (typeof input[key] !== "string") fail(i18n.t("messages.invalid_filter_value"));
     result[key] = input[key];
   }
   result.q = result.q.trim();
-  if (result.q.length > 200 || /[\u0000-\u001f]/.test(result.q)) fail("Search is too long or invalid.");
-  if (!['active', 'paused', 'unpaused', 'trash'].includes(result.state)) fail("Invalid link state.");
-  for (const key of kinds) if (result[key] && !uuid(result[key])) fail("Invalid label.");
+  if (result.q.length > 200 || /[\u0000-\u001f]/.test(result.q)) fail(i18n.t("messages.search_is_too_long_or_invalid"));
+  if (!['active', 'paused', 'unpaused', 'trash'].includes(result.state)) fail(i18n.t("messages.invalid_link_state"));
+  for (const key of kinds) if (result[key] && !uuid(result[key])) fail(i18n.t("messages.invalid_label"));
+  Object.assign(result, require("./list-sort").parse(input));
   return result;
 }
 
 async function validateLabels(db, userId, filters) {
   for (const kind of kinds) {
     if (filters[kind] && !await db("library_labels").where({ id: filters[kind], kind, user_id: userId }).first()) {
-      fail("Label was not found.", 404);
+      fail(i18n.t("messages.label_was_not_found"), 404);
     }
   }
 }
@@ -50,15 +52,15 @@ function owned(db, userId, domainId) {
 async function list(userId, input, domainId) {
   let filters = parseFilters(input);
   if (input.saved) {
-    if (!uuid(input.saved)) fail("Invalid saved filter.");
-    if (domainId !== undefined) fail("Saved filters require an unrestricted domain scope.", 403);
+    if (!uuid(input.saved)) fail(i18n.t("messages.invalid_saved_filter"));
+    if (domainId !== undefined) fail(i18n.t("messages.saved_filters_require_an_unrestricted_domain_scope"), 403);
     const saved = await knex("library_filters").where({ id: input.saved, user_id: userId }).first();
-    if (!saved) fail("Saved filter was not found.", 404);
+    if (!saved) fail(i18n.t("messages.saved_filter_was_not_found"), 404);
     filters = parseFilters(JSON.parse(saved.filters));
   }
   await validateLabels(knex, userId, filters);
   const page = input.page === undefined ? 1 : Number(input.page);
-  if (typeof input.page === "object" || !Number.isSafeInteger(page) || page < 1 || page > 100000) fail("Invalid page.");
+  if (typeof input.page === "object" || !Number.isSafeInteger(page) || page < 1 || page > 100000) fail(i18n.t("messages.invalid_page"));
   const limit = 50;
   const query = owned(knex, userId, domainId);
   filters.state === "trash" ? query.whereNotNull("links.deleted_at") : query.whereNull("links.deleted_at");
@@ -74,9 +76,10 @@ async function list(userId, input, domainId) {
     query.whereIn("links.id", knex("library_link_labels").select("link_id").where({ label_id: filters[kind] }));
   }
   const { n } = await query.clone().count("* as n").first();
-  const links = await query.clone().leftJoin("domains", "domains.id", "links.domain_id")
+  const rows = query.clone().leftJoin("domains", "domains.id", "links.domain_id")
     .select("links.*", knex.raw("coalesce(domains.address, links.archived_domain) as domain"))
-    .orderBy("links.id", "desc").offset((page - 1) * limit).limit(limit);
+    .offset((page - 1) * limit).limit(limit);
+  const links = await require("./list-sort").apply(rows, filters);
   const assigned = links.length ? await knex("library_link_labels as rel")
     .join("library_labels as label", "label.id", "rel.label_id")
     .where("label.user_id", userId).whereIn("rel.link_id", links.map(row => row.id))
@@ -89,15 +92,15 @@ async function list(userId, input, domainId) {
 }
 
 async function saveLabel(userId, input, id) {
-  if (!kinds.includes(input.kind)) fail("Select tag or collection.");
+  if (!kinds.includes(input.kind)) fail(i18n.t("messages.select_tag_or_collection"));
   const fields = nameFields(input.name);
   return knex.transaction(async db => {
-    if (id && !await db("library_labels").where({ id, user_id: userId, kind: input.kind }).first()) fail("Label was not found.", 404);
+    if (id && !await db("library_labels").where({ id, user_id: userId, kind: input.kind }).first()) fail(i18n.t("messages.label_was_not_found"), 404);
     const duplicate = await db("library_labels").where({ user_id: userId, kind: input.kind, name_key: fields.name_key }).first();
-    if (duplicate && duplicate.id !== id) fail("A label with this name already exists.", 409);
+    if (duplicate && duplicate.id !== id) fail(i18n.t("messages.a_label_with_this_name_already_exists"), 409);
     if (!id) {
       const { n } = await db("library_labels").where({ user_id: userId, kind: input.kind }).count("* as n").first();
-      if (Number(n) >= 100) fail("Limit of 100 labels per kind reached.", 409);
+      if (Number(n) >= 100) fail(i18n.t("messages.limit_of_100_labels_per_kind_reached"), 409);
     }
     const row = { id: id || randomUUID(), user_id: userId, kind: input.kind, ...fields };
     if (id) await db("library_labels").where({ id, user_id: userId }).update(fields);
@@ -109,10 +112,10 @@ async function saveLabel(userId, input, id) {
 async function removeLabel(userId, id) {
   return knex.transaction(async db => {
     const label = await db("library_labels").where({ id, user_id: userId }).first();
-    if (!label) fail("Label was not found.", 404);
+    if (!label) fail(i18n.t("messages.label_was_not_found"), 404);
     // Do not silently widen a saved filter when its referenced label is removed.
     const filters = await db("library_filters").where({ user_id: userId });
-    if (filters.some(row => Object.values(JSON.parse(row.filters)).includes(id))) fail("This label is used by a saved filter. Update or remove that filter first.", 409);
+    if (filters.some(row => Object.values(JSON.parse(row.filters)).includes(id))) fail(i18n.t("messages.this_label_is_used_by_a_saved_filter_update_or_remove"), 409);
     await db("library_labels").where({ id, user_id: userId }).delete();
   });
 }
@@ -121,11 +124,11 @@ async function saveFilter(userId, input, id) {
   const fields = nameFields(input.name), filters = parseFilters(input.filters);
   return knex.transaction(async db => {
     await validateLabels(db, userId, filters);
-    if (id && !await db("library_filters").where({ id, user_id: userId }).first()) fail("Saved filter was not found.", 404);
+    if (id && !await db("library_filters").where({ id, user_id: userId }).first()) fail(i18n.t("messages.saved_filter_was_not_found"), 404);
     const duplicate = await db("library_filters").where({ user_id: userId, name_key: fields.name_key }).first();
-    if (duplicate && duplicate.id !== id) fail("A filter with this name already exists.", 409);
+    if (duplicate && duplicate.id !== id) fail(i18n.t("messages.a_filter_with_this_name_already_exists"), 409);
     const { n } = await db("library_filters").where({ user_id: userId }).count("* as n").first();
-    if (!id && Number(n) >= 50) fail("Limit of 50 saved filters reached.", 409);
+    if (!id && Number(n) >= 50) fail(i18n.t("messages.limit_of_50_saved_filters_reached"), 409);
     const row = { id: id || randomUUID(), user_id: userId, ...fields, filters: JSON.stringify(filters) };
     if (id) await db("library_filters").where({ id, user_id: userId }).update(row);
     else await db("library_filters").insert(row);
@@ -134,22 +137,25 @@ async function saveFilter(userId, input, id) {
 }
 
 async function removeFilter(userId, id) {
-  if (!await knex("library_filters").where({ id, user_id: userId }).delete()) fail("Saved filter was not found.", 404);
+  if (!await knex("library_filters").where({ id, user_id: userId }).delete()) fail(i18n.t("messages.saved_filter_was_not_found"), 404);
 }
 
-async function bulk(userId, input, actor, domainId) {
+async function bulk(userId, input, actor, domainId, request) {
   const { action, label_id: labelId } = input;
   const ids = typeof input.ids === "string" ? [input.ids] : input.ids;
-  if (!Array.isArray(ids) || !ids.length || ids.length > 100 || ids.some(id => !uuid(id)) || new Set(ids).size !== ids.length) fail("Select 1 to 100 distinct links.");
-  if (!["add_label", "remove_label", "pause", "resume", "trash"].includes(action)) fail("Invalid bulk action.");
+  if (!Array.isArray(ids) || !ids.length || ids.length > 100 || ids.some(id => !uuid(id)) || new Set(ids).size !== ids.length) fail(i18n.t("messages.select_1_to_100_distinct_links"));
+  if (!["add_label", "remove_label", "pause", "resume", "trash"].includes(action)) fail(i18n.t("messages.invalid_bulk_action"));
   const links = await knex.transaction(async db => {
+    await require("./domain-access").lock(db);
     const rows = await owned(db, userId, domainId).whereIn("links.uuid", ids).whereNull("links.deleted_at").orderBy("links.id");
-    if (rows.length !== ids.length) fail("One or more links are unavailable. No links were changed.", 404);
-    if (rows.some(row => row.banned)) fail("Selection contains a banned link. No links were changed.", 409);
+    if (rows.length !== ids.length) fail(i18n.t("messages.one_or_more_links_are_unavailable_no_links_were_changed"), 404);
+    if (rows.some(row => row.banned)) fail(i18n.t("messages.selection_contains_a_banned_link_no_links_were_changed"), 409);
     if (action.endsWith("label")) {
-      if (!uuid(labelId) || !await db("library_labels").where({ id: labelId, user_id: userId }).first()) fail("Label was not found.", 404);
+      if (!uuid(labelId) || !await db("library_labels").where({ id: labelId, user_id: userId }).first()) fail(i18n.t("messages.label_was_not_found"), 404);
     }
     for (const row of rows) {
+      if (action !== "trash") await require("./domain-access").link(db, row);
+      if (request) await require("./domain-access").request(db, request, row.domain_id, action === "trash" ? "links:delete" : "links:update", action === "trash" ? null : row.user_id);
       if (action === "trash") await history.trash(db, row, actor);
       else if (action === "pause" || action === "resume") {
         const paused = action === "pause";

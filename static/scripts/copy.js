@@ -12,7 +12,7 @@ async function handleShortURLCopyLink(element) {
     status.setAttribute("role", "status");
     status.setAttribute("aria-atomic", "true");
     const fallback = document.createElement("label");
-    fallback.textContent = "Value to copy";
+    fallback.textContent = window.KuttI18n.t("ui.value_to_copy");
     fallback.hidden = true;
     const input = document.createElement("input");
     input.type = "text";
@@ -27,22 +27,22 @@ async function handleShortURLCopyLink(element) {
   }
   state.pending = true;
   state.status.className = "";
-  state.status.textContent = "Copying...";
+  state.status.textContent = window.KuttI18n.t("ui.copying");
   state.fallback.hidden = true;
   state.input.value = "";
   host.setAttribute("aria-busy", "true");
   const clipboard = host.querySelector(".clipboard");
   clipboard?.classList.remove("copied");
   try {
-    if (!navigator.clipboard?.writeText) throw new Error("Clipboard unavailable");
+    if (!navigator.clipboard?.writeText) throw new Error(window.KuttI18n.t("ui.clipboard_unavailable"));
     await navigator.clipboard.writeText(element.dataset.url);
     if (!host.isConnected) return;
-    state.status.textContent = "Copied.";
+    state.status.textContent = window.KuttI18n.t("ui.copied");
     clipboard?.classList.add("copied");
   } catch {
     if (!host.isConnected) return;
     state.status.className = "copy-error";
-    state.status.textContent = "Copy failed. Select and copy the value below.";
+    state.status.textContent = window.KuttI18n.t("ui.copy_failed_select_and_copy_the_value_below");
     state.input.value = element.dataset.url;
     state.fallback.hidden = false;
     // Do not pull focus back if the user has moved to another control.

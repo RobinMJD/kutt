@@ -2,61 +2,53 @@
 
 # Kutt.to
 
-## RobinMJD fork
+## Managed-Link Contribution
 
-This fork develops tested, incremental improvements to upstream Kutt.
-The original series runs from `v3.2.6-sr94.1` through `.16` and is complete.
-See the [feature roadmap and release gates](docs/FEATURE-ROADMAP.md) for verified
-deployment evidence and upstream PR #1046.
+This RobinMJD contribution extends upstream Kutt with managed-link workflows,
+community-inspired features and focused UI/security improvements. It is prepared
+for the existing [upstream PR #1046](https://github.com/thedevs-network/kutt/pull/1046);
+upstream authorship, branding, license, donation links and project information
+remain below. No maintainer merge or production rollout is implied.
 
-Identity migration and logout requirements for the OIDC security release are in
-[OIDC security](docs/OIDC-SECURITY.md). Existing accounts need verified bindings;
-do not upgrade an email-based deployment without the documented backup and
-migration procedure.
+The original workflows include [scoped API tokens and idempotency](docs/API-TOKENS.md),
+[availability](docs/LINK-LIFECYCLE.md), [history/trash](docs/LINK-HISTORY.md),
+[stable OIDC identities](docs/OIDC-SECURITY.md), [Library](docs/LIBRARY.md),
+[CSV/JSON transfer](docs/TRANSFER.md), [QR exports](docs/QR-CODES.md),
+[workspaces](docs/WORKSPACES.md), [routing](docs/ROUTING.md),
+[analytics](docs/ANALYTICS.md), [privacy/retention](docs/PRIVACY.md),
+[webhooks](docs/WEBHOOKS.md), [forwarding](docs/FORWARDING.md),
+[destination monitoring](docs/DESTINATION-HEALTH.md) and the optional
+[iOS Shortcut](examples/IOS-SHORTCUT.md). [DNS ownership proof](docs/CUSTOM-DOMAINS.md)
+and [campaign URL building](docs/CAMPAIGNS.md) are retained.
 
-The [Library guide](docs/LIBRARY.md) covers tags, collections, saved filters,
-ownership-safe bulk actions and their API/migration boundaries.
-The [transfer guide](docs/TRANSFER.md) covers CSV/JSON downloads, dry-run imports,
-alias conflicts, protected links, scoped authorization and retry recovery.
-The [routing guide](docs/ROUTING.md) covers ordered redirect conditions, preview,
-authorization and recovery constraints.
-The [analytics guide](docs/ANALYTICS.md) covers UTC date ranges, tag summaries,
-private exports, bot classification and aggregate compatibility.
-The [privacy guide](docs/PRIVACY.md) covers per-link tracking opt-outs,
-signed retention confirmation and recovery restrictions. The
-[integrations guide](docs/WEBHOOKS.md) documents signed webhooks, private live
-updates, delivery retries, receiver verification and recovery restrictions.
-The [forwarding guide](docs/FORWARDING.md) covers nested aliases,
-explicit query/path allowlists and reserved-child precedence.
-The [campaign guide](docs/CAMPAIGNS.md) covers UTM URL building in link forms
-and APIs, query precedence, encoding limits and backward-compatible storage.
-The [destination monitoring guide](docs/DESTINATION-HEALTH.md) covers opt-in
-checks, SSRF controls, owner-scoped results, operational alerts and recovery.
-The [QR guide](docs/QR-CODES.md) covers owner-only PNG copying/downloads, SVG export, printing,
-scoped API use and independent decoder/browser validation.
-The [Workspaces guide](docs/WORKSPACES.md) covers accepted invitations,
-owner/editor/viewer permissions, shared-link APIs and non-destructive closure.
-The [iOS Shortcut guide](examples/IOS-SHORTCUT.md) covers optional share-sheet
-shortening with a limited token. It is a client integration, not a server dependency.
-See [deployment and recovery](docs/DEPLOYMENT.md) and the
-[security maintenance notes](docs/SECURITY-MAINTENANCE.md) before upgrading.
-The [community PR review](docs/UPSTREAM-PR-REVIEW.md) records selected improvements,
-contributor credits and deferred proposals with their compatibility/security tradeoffs.
-The [UI/UX review](docs/UI-UX-REVIEW.md) summarizes the reusable fixes, regression
-coverage and validation limits. The [custom-domain guide](docs/CUSTOM-DOMAINS.md)
-documents the DNS TXT ownership exchange required for new domain claims.
+The [21-feature community guide](docs/COMMUNITY-FEATURE-ROADMAP.md) maps each
+addition to its compatibility boundaries, guide and tests. It includes complete
+English/French/Spanish localization, light/dark/system appearance, stable sorting,
+branded QR exports, safe moderation, explicit domain sharing and management-host
+isolation, optional CSP/OIDC roles/destination policy/metrics, verified database
+and Redis TLS, dotted aliases, interactive geography and indexed visit lookup.
+[Proposal credits](docs/UPSTREAM-PR-REVIEW.md) distinguish upstream inspiration
+from independently adapted implementations; the [UI review](docs/UI-UX-REVIEW.md)
+describes browser workflows and remaining acceptance limits.
 
-Fork CI tests an isolated SQLite database on each main-branch push. Version tags
-matching `v*-sr94.*` publish the tested amd64 image to `ghcr.io/robinmjd/kutt`.
-Production deployment is a separate backup/test/approval-controlled operation,
-not an automatic replacement of a running instance. Pin image digests in
-production. Existing upstream Docker Hub workflows do not publish from forks.
+Review [deployment and recovery](docs/DEPLOYMENT.md), [security boundaries](docs/SECURITY-MAINTENANCE.md)
+and each feature's migration notes before upgrading. Preserve the database and
+original signing/encryption secret together. Optional policies are not enabled
+implicitly, and old images can ignore newer authorization/lifecycle policies.
 
-Run regression tests with `docker build -t kutt-test .` followed by
+Native domain-grant revocation now asks for confirmation and explains permanent
+scoped-token revocation and disabled health monitoring; Cancel is non-mutating
+and regranting does not restore those effects automatically. QR uploads use
+plain PNG base64 while retaining exact legacy data-URI API compatibility. Actual
+WAF/IdP/custom-template behavior must be validated without weakening controls.
+
+Run the isolated suites from [tests/README.md](tests/README.md), starting with
+`docker build -t kutt-test .` and
 `docker run --rm --network none --entrypoint node kutt-test tests/container-smoke.cjs`.
-SQLite is exercised end-to-end; PostgreSQL 16 and MySQL 8.4 have targeted
-security/concurrency coverage, not full feature parity. Do not substitute a
-production database into the test harness.
+SQLite has full feature regression; PostgreSQL/MySQL have focused execution,
+not an exhaustive parity guarantee. Never use production data for these fixtures.
+Browser screenshots and operator release/backup records belong outside this
+contribution. Existing upstream Docker Hub workflows do not publish from forks.
 
 **Kutt** is a modern URL shortener with support for custom domains. Create and edit links, view statistics, manage users, and more.
 

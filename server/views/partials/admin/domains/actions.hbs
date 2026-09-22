@@ -1,16 +1,17 @@
 <td class="actions domains-actions">
+  <a class="button action" href="/settings/domain-sharing/{{uuid}}" aria-label="{{t 'domain_grants.manage_for' domain=address}}" title="{{t 'domain_grants.title'}}">{{> icons/key}}</a>
   {{#if banned}}
-    <button class="action banned" disabled="true" aria-label="Banned" data-tooltip="Banned">
+    <a class="button action banned" href="/admin/moderation/domain/{{id}}" aria-label="{{t 'moderation.remove_for' value=address}}" title="{{t 'moderation.remove'}}">
       {{> icons/stop}}
-    </button>
+    </a>
   {{/if}}
   {{#unless banned}}
     <button 
       class="action ban"
       type="button"
-      aria-label="Ban domain {{address}}"
-      title="Ban domain"
-      hx-on::before-request='openDialog("admin-table-dialog", null, this)'
+      aria-label="{{t 'ui.ban_domain_value' value1=address}}"
+      title="{{t 'ui.ban_domain_2'}}"
+      data-ui-open-dialog="admin-table-dialog"
       hx-get="/confirm-domain-ban" 
       hx-target="#admin-table-dialog .content-wrapper" 
       hx-indicator="#admin-table-dialog" 
@@ -22,9 +23,9 @@
   <button 
     class="action delete"
     type="button"
-    aria-label="Delete domain {{address}}"
-    title="Delete domain"
-    hx-on::before-request='openDialog("admin-table-dialog", null, this)'
+    aria-label="{{t 'ui.delete_domain_value' value1=address}}"
+    title="{{t 'ui.delete_domain_2'}}"
+    data-ui-open-dialog="admin-table-dialog"
     hx-get="/confirm-domain-delete-admin" 
     hx-target="#admin-table-dialog .content-wrapper" 
     hx-indicator="#admin-table-dialog" 

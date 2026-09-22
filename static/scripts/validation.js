@@ -94,7 +94,7 @@
       error = document.createElement("p"); error.className = "error"; error.dataset.requestError = "true";
       form.append(error);
     }
-    error.textContent = "The request could not be confirmed. Your draft is kept. Check the saved state before retrying.";
+    error.textContent = window.KuttI18n.t("ui.the_request_could_not_be_confirmed_your_draft_is_kept_check");
     decorate(form); release(state); focusError(form, state);
   }
   for (const name of ["htmx:responseError", "htmx:sendError", "htmx:timeout"]) document.addEventListener(name, requestFailed);

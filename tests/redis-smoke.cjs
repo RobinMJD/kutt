@@ -2,7 +2,7 @@
 const assert = require("node:assert/strict");
 const { spawn, spawnSync } = require("node:child_process");
 const { randomBytes } = require("node:crypto");
-const { existsSync, mkdtempSync, rmSync } = require("node:fs");
+const { existsSync, mkdtempSync, rmSync, readFileSync } = require("node:fs");
 const { tmpdir } = require("node:os");
 const path = require("node:path");
 const { setTimeout: delay } = require("node:timers/promises");
@@ -14,13 +14,19 @@ async function main() {
   const root = path.resolve(__dirname, "..");
   assert(!existsSync(path.join(root, ".env")), "No real configuration allowed");
   const directory = mkdtempSync(path.join(tmpdir(), "kutt-redis-"));
-  const client = new Redis({ host: "127.0.0.1", port: 6379, maxRetriesPerRequest: 1, retryStrategy: () => null });
+  const useTLS = process.env.KUTT_REDIS_TLS_TEST === "isolated";
+  const material = useTLS ? { REDIS_SSL: true, REDIS_SSL_CA: readFileSync("/tmp/tls/ca.crt", "utf8"),
+    REDIS_SSL_CERT: readFileSync("/tmp/tls/client.crt", "utf8"), REDIS_SSL_KEY: readFileSync("/tmp/tls/client.key", "utf8") } : { REDIS_SSL: false };
+  const client = new Redis({ ...require("../server/redis-options")({ REDIS_HOST: "127.0.0.1", REDIS_PORT: 6379,
+    REDIS_DB: 0, REDIS_ENABLED: true, ...material }), maxRetriesPerRequest: 1, retryStrategy: () => null });
   let server, exit, db, output = "";
   const env = { PATH: process.env.PATH, NODE_ENV: "production", PORT: "31991",
     DEFAULT_DOMAIN: "127.0.0.1:31991", DB_CLIENT: "better-sqlite3", DB_FILENAME: path.join(directory, "db.sqlite"),
     JWT_SECRET: randomBytes(48).toString("hex"), REDIS_ENABLED: "true", REDIS_HOST: "127.0.0.1", REDIS_PORT: "6379",
     REDIS_DB: "0", MAIL_ENABLED: "false", OIDC_ENABLED: "false", ENABLE_RATE_LIMIT: "true", TRUST_PROXY: "false",
     DISALLOW_ANONYMOUS_LINKS: "true", DISALLOW_REGISTRATION: "true", DISALLOW_LOGIN_FORM: "false", NODE_APP_INSTANCE: "1" };
+  if (useTLS) Object.assign(env, { REDIS_SSL: "true", REDIS_SSL_CA_FILE: "/tmp/tls/ca.crt",
+    REDIS_SSL_CERT_FILE: "/tmp/tls/client.crt", REDIS_SSL_KEY_FILE: "/tmp/tls/client.key" });
   const request = (method, pathname, body, token, extra = {}) => fetch("http://127.0.0.1:31991" + pathname, {
     method, redirect: "manual", signal: AbortSignal.timeout(10000),
     headers: { Accept: "application/json", "Content-Type": "application/json", ...(token ? { Cookie: `token=${token}` } : {}), ...extra },

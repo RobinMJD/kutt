@@ -37,6 +37,9 @@ router.post("/:id/routing/preview", asyncHandler(auth.apikey), asyncHandler(auth
 
 router.get("/:id/qr", asyncHandler(auth.apikey), asyncHandler(auth.jwt),
   helpers.rateLimit({ window: 60, limit: 30 }), asyncHandler(require("../handlers/qr.handler").download));
+// This JSON-only POST must not turn export/auth errors into 200 HTML pages.
+router.post("/:id/qr", (req, res, next) => { req.isHTML = false; next(); }, asyncHandler(auth.apikey), asyncHandler(auth.jwt),
+  helpers.rateLimit({ window: 60, limit: 30 }), asyncHandler(require("../handlers/qr.handler").download));
 
 router.get("/trash", asyncHandler(auth.apikey), asyncHandler(auth.jwt), asyncHandler(history.trash));
 router.get("/:id/history", asyncHandler(auth.apikey), asyncHandler(auth.jwt), asyncHandler(history.list));

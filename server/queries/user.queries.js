@@ -1,3 +1,4 @@
+const i18n = require("../i18n");
 const { addMinutes } = require("date-fns");
 const { randomUUID } = require("node:crypto");
 
@@ -50,7 +51,7 @@ async function add(params, user) {
     const changed = await knex("users")
       .where({ id: user.id, verified: false, auth_version: user.auth_version }).increment("auth_version", 1)
       .update({ ...data, ...require("../account-tokens"), updated_at: utils.dateToUTC(new Date()) });
-    if (!changed) throw new utils.CustomError("Account changed. Please sign in or request account recovery.", 409);
+    if (!changed) throw new utils.CustomError(i18n.t("messages.account_changed_please_sign_in_or_request_account_recovery"), 409);
   } else {
     await knex("users").insert(data);
   }
@@ -65,6 +66,7 @@ async function add(params, user) {
 
 async function update(match, update, methods) {
   const { user, updated_user } = await knex.transaction(async function(trx) {
+    if (update.banned !== undefined) await require("../domain-access").lock(trx);
     const query = trx("users");
     Object.entries(match).forEach(([key, value]) => {
       query.andWhere(key, ...(Array.isArray(value) ? value : [value]));
@@ -93,6 +95,7 @@ async function update(match, update, methods) {
     const changed = await updateQuery.update({ ...update,
       ...(invalidates ? require("../account-tokens") : {}), updated_at: utils.dateToUTC(new Date()) });
     if (!changed) return {};
+    if (update.banned === true) await require("../domain-access").invalidateUser(trx, user.id);
     const updated_user = await trx("users").where("id", user.id).first();
 
     return { user, updated_user };
@@ -106,19 +109,8 @@ async function update(match, update, methods) {
   return updated_user;
 }
 
-async function remove(user) {
-  const deletedUser = await knex.transaction(async db => {
-    if (await db("workspaces").where({ owner_id: user.id }).first()) {
-      throw new utils.CustomError("Close owned workspaces before deleting this account. Shared links must remain recoverable.", 409);
-    }
-    return db("users").where("id", user.id).delete();
-  });
-  
-  if (env.REDIS_ENABLED) {
-    redis.remove.user(user);
-  }
-  
-  return !!deletedUser;
+async function remove(user, actor = user, administrative = false) {
+  return require("../moderation").removeUser(user, actor, administrative);
 }
 
 const selectable_admin = [
@@ -152,10 +144,10 @@ async function getAdmin(match, params) {
     .where(normalizeMatch(match))
     .offset(params.skip)
     .limit(params.limit)
-    .orderBy("users.id", "desc")
     .groupBy(1)
     .groupBy("l.links_count")
     .groupBy("d.domains");
+  require("../list-sort").apply(query, params, "users");
   
   if (params?.search) {
     const id = parseInt(params?.search);
@@ -236,22 +228,20 @@ async function totalAdmin(match, params) {
   return typeof count === "number" ? count : parseInt(count);
 }
 
-async function create(params) {
-  let [user] = await knex("users").insert({
-    email: params.email,
-    password: params.password,
-    role: params.role ?? ROLES.USER,
-    verified: params.verified ?? false,
-    banned: params.banned ?? false,
-  }, "*");
-
-  // mysql doesn't return the whole user, but rather the id number only
-  // so we need to fetch the user ourselves
-  if (typeof user === "number") {
-    user = await knex("users").where("id", user).first();
-  }
-
-  return user;
+async function create(params, actor) {
+  return knex.transaction(async db => {
+    const current = await require("../moderation").lock(db, actor);
+    if (params.role === ROLES.ADMIN && !await require("../oidc-roles").canCreateLocalAdmin(current, db)) {
+      throw new utils.CustomError(i18n.t("oidc_roles.local_admin_creation"), 403);
+    }
+    let [user] = await db("users").insert({
+      email: params.email, password: params.password, role: params.role ?? ROLES.USER,
+      verified: params.verified ?? false, banned: params.banned ?? false
+    }, "*");
+    // MySQL returns the inserted ID rather than the row.
+    if (typeof user === "number") user = await db("users").where("id", user).first();
+    return user;
+  });
 }
 
 // check if there exists a user

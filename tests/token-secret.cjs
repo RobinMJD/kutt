@@ -5,7 +5,8 @@ const vm = require("node:vm");
 
 module.exports = async ({ root }) => {
   const template = readFileSync(path.join(root, "server/views/partials/settings/tokens.hbs"), "utf8");
-  assert.match(template, /type="password" aria-label="New API token"/);
+  const rendered = require("hbs").handlebars.compile(template)({ newToken: "synthetic-only" }, { helpers: { t: (key, options) => require("../server/i18n").t(key, options.hash) }, partials: Object.fromEntries(["eye", "copy", "x", "trash", "zap", "spinner"].map(name => ["icons/" + name, ""])) });
+  assert.match(rendered, /type="password" aria-label="New API token"/);
   assert(!template.includes('data-url="{{newToken}}"'));
   assert.match(readFileSync(path.join(root, "server/views/layout.hbs"), "utf8"), /scripts\/token-secret\.js/);
   const events = {}, windowEvents = {}, timers = new Map(); let sequence = 0;
@@ -33,7 +34,7 @@ module.exports = async ({ root }) => {
   document.querySelectorAll = () => [current.box];
   const navigator = {};
   vm.runInNewContext(readFileSync(path.join(root, "static/scripts/token-secret.js"), "utf8"), {
-    document, navigator, window: { addEventListener: (name, handler) => { windowEvents[name] = handler; } },
+    document, navigator, window: { KuttI18n: require("../server/i18n").current(), addEventListener: (name, handler) => { windowEvents[name] = handler; } },
     setTimeout: handler => { const id = ++sequence; timers.set(id, handler); return id; },
     clearTimeout: id => timers.delete(id)
   });

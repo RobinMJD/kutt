@@ -1,8 +1,9 @@
+const i18n = require("./i18n");
 const { CustomError } = require("./utils");
 const MAX_NAMES = 128;
 const MAX_BYTES = 1000000;
 const OTHER = "(other)";
-const invalid = () => { throw new CustomError("Stored analytics referrers are unavailable.", 503); };
+const invalid = () => { throw new CustomError(i18n.t("messages.stored_analytics_referrers_are_unavailable"), 503); };
 function count(value) {
   const result = Number(value);
   if (!Number.isSafeInteger(result) || result < 0) invalid();

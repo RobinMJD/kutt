@@ -15,7 +15,7 @@
   }
   function refresh() {
     [...list.children].forEach((rule, index) => {
-      rule.querySelector("h2").textContent = "Rule " + (index + 1);
+      rule.querySelector("h2").textContent = window.KuttI18n.t("routing.rule_number", { number: window.KuttI18n.number(index + 1) });
       rule.querySelector('[data-action="up"]').disabled = index === 0;
       rule.querySelector('[data-action="down"]').disabled = index === list.children.length - 1;
       rule.querySelector('[data-action="add-condition"]').disabled = rule.querySelectorAll(".routing-condition").length >= 17;
@@ -65,11 +65,11 @@
       const data = await api(""); revision = data.revision; list.replaceChildren();
       data.rules.forEach(addRule); dirty = false; refresh();
       document.getElementById("routing-save").disabled = false; document.getElementById("routing-test").disabled = false;
-      setStatus(data.rules.length ? "Saved rules" : "No routing rules");
-    } catch (error) { setStatus(error.message, true); }
+      setStatus(data.rules.length ? window.KuttI18n.t("ui.saved_rules") : window.KuttI18n.t("ui.no_routing_rules"));
+    } catch (error) { setStatus(window.KuttI18n.failure(error), true); }
   }
   root.addEventListener("change", event => { if (event.target.closest(".routing-condition")) conditionFields(event.target.closest(".routing-condition")); });
-  form.addEventListener("input", () => { dirty = true; setStatus("Unsaved changes"); });
+  form.addEventListener("input", () => { dirty = true; setStatus(window.KuttI18n.t("ui.unsaved_changes")); });
   root.addEventListener("click", event => {
     const button = event.target.closest("[data-action]"); if (!button) return;
     const row = button.closest(".routing-rule"), action = button.dataset.action;
@@ -78,18 +78,18 @@
     if (action === "remove") row.remove();
     if (action === "add-condition") addCondition(row);
     if (action === "remove-condition") button.closest(".routing-condition").remove();
-    dirty = true; refresh(); setStatus("Unsaved changes");
+    dirty = true; refresh(); setStatus(window.KuttI18n.t("ui.unsaved_changes"));
   });
-  document.getElementById("routing-add").addEventListener("click", () => { addRule().querySelector("input").focus(); dirty = true; setStatus("Unsaved changes"); });
-  document.getElementById("routing-reload").addEventListener("click", () => { if (!dirty || confirm("Discard unsaved rules and reload?")) load(); });
+  document.getElementById("routing-add").addEventListener("click", () => { addRule().querySelector("input").focus(); dirty = true; setStatus(window.KuttI18n.t("ui.unsaved_changes")); });
+  document.getElementById("routing-reload").addEventListener("click", () => { if (!dirty || confirm(window.KuttI18n.t("ui.discard_unsaved_rules_and_reload"))) load(); });
   form.addEventListener("submit", async event => {
     const focus = window.KuttFocus.capture();
     event.preventDefault(); const button = document.getElementById("routing-save"); button.disabled = true;
     const submitted = rules(), serialized = JSON.stringify(submitted);
     try {
       const data = await api("", "PUT", { revision, rules: submitted }); revision = data.revision;
-      dirty = JSON.stringify(rules()) !== serialized; setStatus(dirty ? "New unsaved changes" : "Rules saved");
-    } catch (error) { setStatus(error.message, true); }
+      dirty = JSON.stringify(rules()) !== serialized; setStatus(dirty ? window.KuttI18n.t("ui.new_unsaved_changes") : window.KuttI18n.t("ui.rules_saved"));
+    } catch (error) { setStatus(window.KuttI18n.failure(error), true); }
     finally { button.disabled = false; window.KuttFocus.restore(focus); }
   });
   document.getElementById("routing-preview-form").addEventListener("submit", async event => {
@@ -98,8 +98,8 @@
     try {
       const context = Object.fromEntries(new FormData(event.target)); context.country = context.country.toUpperCase();
       const result = await api("/preview", "POST", { rules: rules(), context });
-      output.textContent = (result.rule_index === null ? "Default destination" : "Rule " + (result.rule_index + 1) + ": " + result.rule_name) + "\n" + result.target;
-    } catch (error) { output.textContent = error.message; }
+      output.textContent = (result.rule_index === null ? window.KuttI18n.t("ui.default_destination") : window.KuttI18n.t("routing.rule_number", { number: window.KuttI18n.number(result.rule_index + 1) }) + ": " + result.rule_name) + "\n" + result.target;
+    } catch (error) { output.textContent = window.KuttI18n.failure(error); }
     finally { button.disabled = false; window.KuttFocus.restore(focus); }
   });
   window.addEventListener("beforeunload", event => { if (dirty) { event.preventDefault(); event.returnValue = ""; } });

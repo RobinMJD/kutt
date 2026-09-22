@@ -1,11 +1,11 @@
 <tr class="category">
   <th class="category-total">
     <p id="category-total">
-      Total {{title}}: <b>{{#if total includeZero=true}}{{total_formatted}}{{else}}-{{/if}}</b>
+      {{t "ui.total_value" value1=(localizedLabel "resource" title)}} <b>{{#if total includeZero=true}}{{total_formatted}}{{else}}-{{/if}}</b>
     </p>
   </th>
   <th class="category-tab">
-    <nav class="tab" role="tablist" aria-label="Administration">
+    <nav class="tab" role="tablist" aria-label="{{t 'ui.administration'}}">
       <button type="button"
         id="tab-links" 
         role="tab" 
@@ -18,12 +18,12 @@
         hx-indicator="closest table"
         {{#ifEquals title 'links'}}
           class="active" aria-selected="true" tabindex="0"
-          hx-on:htmx:before-request="event.preventDefault()"
+          data-ui-no-request
         {{else}}
           aria-selected="false" tabindex="-1"
         {{/ifEquals}}
       >
-        Links
+        {{t "ui.links"}}
       </button>
       <button type="button"
         id="tab-users" 
@@ -37,12 +37,12 @@
         hx-indicator="closest table"
         {{#ifEquals title 'users'}}
           class="active" aria-selected="true" tabindex="0"
-          hx-on:htmx:before-request="event.preventDefault()"
+          data-ui-no-request
         {{else}}
           aria-selected="false" tabindex="-1"
         {{/ifEquals}}
       >
-        Users
+        {{t "ui.users"}}
       </button>
        <button type="button"
         id="tab-domains" 
@@ -56,12 +56,12 @@
         hx-indicator="closest table"
         {{#ifEquals title 'domains'}}
           class="active" aria-selected="true" tabindex="0"
-          hx-on:htmx:before-request="event.preventDefault()"
+          data-ui-no-request
         {{else}}
           aria-selected="false" tabindex="-1"
         {{/ifEquals}}
       >
-        Domains
+        {{t "ui.domains"}}
       </button>
     </nav>
   </th>

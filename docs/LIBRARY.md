@@ -46,11 +46,11 @@ session or `X-API-Key` authentication as the existing links API.
 
 | Method and path | Input/result | Scoped permission |
 | --- | --- | --- |
-| `GET /library` | `q`, `tag`, `collection`, `state`, `page` or `saved` query; `{data,total,page,limit,filters,labels,saved_filters}` | `links:read` |
+| `GET /library` | `q`, `tag`, `collection`, `state`, `sort`, `direction`, `page` or `saved` query; `{data,total,page,limit,filters,labels,saved_filters}` | `links:read` |
 | `POST /library/labels` | `{kind:"tag"\|"collection",name}`; `{id,kind,name}` | `links:update` |
 | `PATCH /library/labels/:id` | `{kind,name}`; same result | `links:update` |
 | `DELETE /library/labels/:id` | 204; 409 if saved-filter reference exists | `links:update` |
-| `POST /library/filters` | `{name,filters:{q,tag,collection,state}}`; `{id,name,filters}` | `links:update` |
+| `POST /library/filters` | `{name,filters:{q,tag,collection,state,sort,direction}}`; `{id,name,filters}` | `links:update` |
 | `PATCH /library/filters/:id` | Same input; replaces name and criteria | `links:update` |
 | `DELETE /library/filters/:id` | 204 | `links:update` |
 | `POST /library/bulk` | `{ids:[link UUIDs],action,label_id?}`; `{affected,action}` | `links:update`, or `links:delete` for trash |
@@ -66,7 +66,9 @@ State query values and existing saved filters remain backward-compatible:
 means not paused and not trashed, and `trash` means in trash. Only the displayed
 filter labels change; lifecycle status is evaluated independently.
 
-Pages contain at most 50 links, newest first. A saved-filter ID resolves only
+Pages contain at most 50 links, newest first by default. [Sorting](LIST-SORTING.md)
+also supports alias, destination, creation timestamp and views, with a stable
+tie-breaker and preserved saved-filter state. A saved-filter ID resolves only
 within the authenticated account. Domain-restricted tokens see only their own
 in-scope links and assigned labels; the account-wide label/filter catalogs are
 omitted. Such tokens cannot manage labels/filters or load a saved filter, but

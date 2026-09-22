@@ -1,6 +1,6 @@
 <section id="main-table-wrapper">
-  <h2>Recent shortened links.</h2>
-  <nav class="archive-nav"><a href="/settings/library">Library</a><a href="/settings/analytics">Analytics</a><a href="/settings/workspaces">Workspaces</a><a href="/settings/trash">Trash</a></nav>
+  <h2>{{t "ui.recent_shortened_links"}}</h2>
+  <nav class="archive-nav"><a href="/settings/library">{{t "ui.library"}}</a><a href="/settings/analytics">{{t "ui.analytics"}}</a><a href="/settings/workspaces">{{t "ui.workspaces"}}</a><a href="/settings/trash">{{t "ui.trash"}}</a></nav>
   <table 
     hx-get="/api/links"
     hx-target="tbody"
@@ -11,8 +11,8 @@
     hx-params="not total"
     hx-sync="this:replace"
     hx-select-oob="#total" 
-    hx-trigger="load once, reloadMainTable from:body, click delay:100ms from:button.nav, input changed delay:500ms from:#search"
-    hx-on:htmx:after-on-load="updateLinksNav()"
+    hx-trigger="load once, reloadMainTable from:body, click delay:100ms from:button.nav, input changed delay:500ms from:#search, change from:.list-sort-select"
+    data-ui-table-nav
   >
     {{> links/thead}}
     {{> links/tbody}}

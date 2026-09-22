@@ -6,6 +6,42 @@ its hardened wrapper, WAF/Authentik routing, monitoring and private backup paths
 in its separate deployment repository. This public repository contains no real
 secrets, provider bindings or user data.
 
+### Transactional moderation (3.2.6-sr94.45)
+
+[Moderation](MODERATION.md) adds an audit and serialized mutation table. Existing
+data and bans are preserved; future user bans/unbans revoke sessions and API
+credentials permanently. Unban does not undo independent related bans.
+Back up database/configuration/secrets and verify a writable candidate restore.
+Do not roll back a populated audit migration or restore old credentials as a way
+to reverse a ban. Reload administration after deployment. Image-only rollback
+keeps additive tables but restores the former partial-mutation and session risks.
+See the community ledger for actual publication/deployment status.
+
+### Stable list sorting (3.2.6-sr94.44)
+
+[Sorting](LIST-SORTING.md) is additive UI/API behavior with no schema, secret or
+public-redirect change. Reload existing management tabs after upgrading so the
+new controls and draft-preserving script load together. Old saved Library
+filters retain `id DESC`; new filters can include the selected sort/direction.
+Keep current data for image-only rollback; older code ignores sorting fields.
+Do not claim publication/deployment from this section: use the community ledger.
+
+### Browser and hostname correctness (3.2.6-sr94.41)
+
+Safari visits now enter the existing Safari bucket. Historical aggregated visits
+cannot be reliably reclassified and are not rewritten. Host normalization removes
+only one leading lowercase `www.`; names such as `notwww.example.com` and
+`sub.www.example.com` retain their identity in moderation, routing, registration,
+imports and DNS proofs. Existing records are not renamed, re-proved or merged.
+Before upgrading, review domain/host records and any affected configured URLs;
+irreversible old normalization requires operator-led correction with fresh DNS
+proof, not a guessed migration or fallback to the old ambiguous lookup.
+
+There is no migration, dependency, token, WAF, SSO or public-route policy change.
+Back up and verify restore as above. Image-only rollback keeps current data but
+restores the two defects. Delivery gates and exact release/deployment evidence are
+tracked in [Community Feature Delivery](COMMUNITY-FEATURE-ROADMAP.md).
+
 ### Security boundary upgrade (3.2.6-sr94.40)
 
 Before deploying, take a consistent database/configuration/secret backup, copy it
@@ -333,6 +369,15 @@ only when the app can be reached exclusively through trusted proxies that
 replace untrusted forwarding headers. Direct local examples default to false;
 the application's legacy default remains true for compatibility.
 
+Prefer `TRUST_PROXY=peers:172.18.0.2,::1/128` with the actual immediate proxy
+addresses or narrowly scoped networks. Express stops at the first untrusted hop.
+`hops:0` through `hops:32` are available for invariant-length topologies; a shorter
+alternate path can let a client supply a trusted address, so peer mode is safer.
+The trusted edge must strip and replace incoming forwarding headers. Boolean
+aliases `true/t/1` and `false/f/0` retain their old meaning; `1` is not one hop.
+Empty or malformed settings fail startup. Existing deployments are not changed
+automatically; validate their real proxy topology before changing trust.
+
 Complete first-admin bootstrap privately before enabling public DNS/routing.
 Configure WAF, TLS and Authentik/OIDC management admission before exposure.
 Short-link redirects stay public. Native API tokens authenticate API clients;
@@ -370,6 +415,48 @@ Primary references: [PostgreSQL image](https://hub.docker.com/_/postgres),
 [MariaDB healthcheck](https://mariadb.com/docs/server/server-management/automated-mariadb-deployment-and-administration/docker-and-mariadb/using-healthcheck-sh).
 
 ## Every upgrade
+
+For remote SQL databases or Redis, see [verified transport TLS](TRANSPORT-TLS.md).
+Application and migration settings are shared; configure trusted identities and
+certificate-file mounts before enabling TLS. The public WAF/SSO policy is separate.
+
+### Community Features
+
+The [community ledger](COMMUNITY-FEATURE-ROADMAP.md) distinguishes implemented,
+published and accepted deployments. Do not infer live acceptance from a tag.
+
+- [Localization](LOCALIZATION.md) requires shipping `locales/` alongside the
+  server and static assets, including in downstream hardened wrapper images.
+  English is the fallback. Use `OIDC_PROVIDER_NAME` for a translated standard
+  sign-in label; an explicit `OIDC_BUTTON_TEXT` is intentionally verbatim.
+- Stage [CSP](CSP.md) in `report-only` through the real reverse proxy/WAF before
+  `enforce`. Exercise forms, OIDC, QR logos/downloads, charts and HTMX updates.
+  A local browser fixture is not evidence that an external WAF accepts uploads.
+  Retain failed responses and fix application compatibility without disabling
+  WAF, TLS, SSO, CSRF or CSP protections.
+- [OIDC role mapping](OIDC-SECURITY.md#optional-administrator-mapping-c15),
+  [destination policy](DESTINATION-POLICY.md) and the
+  [separate management origin](DOMAIN-SHARING.md) are opt-in. An application
+  update does not authorize new public DNS/routes, automatic grants or changes
+  to the identity provider's policy. Prepare protected recovery access before
+  enabling role mapping, and validate a new management hostname's WAF/SSO/TLS
+  and IdP callback configuration before directing users to it.
+- Explicit domain grants are additive and empty after migration. Revocation
+  permanently invalidates affected scoped tokens and disables their health
+  schedules; regrant does not undo those actions. Existing public links and
+  creator-owned analytics remain available. Validate native confirmation,
+  cancellation, API scopes and creator isolation after deployment.
+- [Private metrics](METRICS.md) use a separate authenticated listener. Keep it
+  internal, mount the collector credential securely, and verify both scraping
+  and missing/down-target alerts. Do not publish a backend port for monitoring.
+
+Never roll back to an image that predates an enabled authorization control.
+After domain grants or OIDC role mapping are used, prefer fix-forward; an older
+image may ignore the new state even if its process starts successfully. Test
+rollback compatibility against an isolated copy, preserve revocation records,
+and keep management unavailable if a safe rollback cannot enforce them.
+
+### Procedure
 
 1. Record the current app/wrapper image digests, configuration checksums,
    database engine/version, schema migrations and health. Preserve secrets,

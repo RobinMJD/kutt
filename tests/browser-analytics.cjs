@@ -27,7 +27,10 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
     const created = await context.request.post(origin + "/api/links", { data: { customurl: "analytics-browser-fixture", target: "https://192.0.2.1/default" }, headers });
     assert.equal(created.status(), 201); const link = await created.json();
     assert.equal((await context.request.post(origin + "/api/library/bulk", { data: { action: "add_label", label_id: tag.id, ids: [link.id] }, headers })).status(), 200);
-    for (let i = 0; i < 2; i++) assert.equal((await context.request.get(origin + "/" + link.address, { maxRedirects: 0, headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/130.0.0.0 Safari/537.36" } })).status(), 302);
+    for (const userAgent of [
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/130.0.0.0 Safari/537.36",
+      "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1"
+    ]) assert.equal((await context.request.get(origin + "/" + link.address, { maxRedirects: 0, headers: { "User-Agent": userAgent } })).status(), 302);
     const submit = async () => {
       const waited = page.waitForResponse(r => r.url().includes("/api/analytics?") && r.request().method() === "GET");
       await page.getByRole("button", { name: "Apply", exact: true }).click(); const response = await waited; assert.equal(response.status(), 200, await response.text());
@@ -39,16 +42,19 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
       await page.getByRole("link", { name: "Analytics", exact: true }).click();
       await page.getByText("Report ready", { exact: true }).waitFor();
       assert.equal(await page.locator("#analytics-total").textContent(), "2");
+      assert.match(await page.locator('[data-table="browser"]').getByRole("row", { name: /safari/i }).textContent(), /1/);
       await page.getByLabel("Tag", { exact: true }).selectOption(tag.id);
       await page.getByLabel("Domain", { exact: true }).selectOption("default");
       await page.getByLabel("Search links", { exact: true }).fill("analytics-browser");
       await submit();
       assert.equal(await page.locator("#analytics-total").textContent(), "2");
-      assert(await page.evaluate(() => {
-        const c = document.querySelector("#analytics-chart"), p = c.getContext("2d").getImageData(0, 0, c.width, c.height).data; let bars = 0;
+      await page.waitForFunction(() => {
+        const c = document.querySelector("#analytics-chart");
+        if (!c.width || !c.height) return false;
+        const p = c.getContext("2d").getImageData(0, 0, c.width, c.height).data; let bars = 0;
         for (let i = 0; i < p.length; i += 4) if (p[i] === 38 && p[i + 1] === 123 && p[i + 2] === 162 && p[i + 3]) bars++;
         return bars > 20;
-      }), "Rendered chart contains actual nonzero data bars");
+      });
       assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), label + " overflow");
       const layout = await page.evaluate(() => {
         const form = document.querySelector("#analytics-filters"), labels = [...form.querySelectorAll("label")].map(node => node.getBoundingClientRect());

@@ -80,8 +80,7 @@ function formatDateHour(selector) {
   if (!element) return;
   const dateString = element.dataset.date;
   if (!dateString) return;
-  const date = new Date(dateString);
-  element.textContent = date.getHours() + ":" + date.getMinutes();
+  element.textContent = window.KuttI18n.date(dateString, { timeStyle: "short" });
 }
 
 // show QR code
@@ -151,7 +150,6 @@ function resetTableNav() {
   const limitElm = document.querySelector("#limit");
   if (!totalElm || !skipElm || !limitElm) return;
   skipElm.value = 0;
-  limitElm.value = 10;
   const total = parseInt(totalElm.value);
   const skip = parseInt(skipElm.value);
   const limit = parseInt(limitElm.value);
@@ -182,6 +180,7 @@ function clearSeachInput(event) {
   const input = button.parentElement.querySelector("input");
   if (!input) return;
   input.value = "";
+  resetTableNav();
   button.style.display = "none";
   htmx.trigger("body", "reloadMainTable");
 }

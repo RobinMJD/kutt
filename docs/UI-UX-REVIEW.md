@@ -1,152 +1,112 @@
 # UI/UX Improvements And Validation
 
-This contribution contains the reusable fixes from a desktop/mobile review of
-the managed-link workflows. The fork's `main` branch retains the chronological
-operator ledger and captured evidence; deployment-specific screenshots are not
-part of this upstream changeset. This document is not a claim of exhaustive
-accessibility conformance.
+This contribution contains the reusable managed-link UI fixes and the community
+features described in [the source guide](COMMUNITY-FEATURE-ROADMAP.md).
+Deployment-specific screenshots and chronological operator records are excluded.
+This is not a claim of exhaustive accessibility or security conformance.
 
-## Behavior Changes
+## Existing Workflows
 
-| Area | Improvement | Main regression |
+| Area | Preserved behavior | Main regression |
 | --- | --- | --- |
-| Editing | Unchanged relative expiry no longer extends a link; explicit stale changes require conflict review | `expiry-edit.cjs`, `browser-expiry-edit.cjs` |
-| Collaboration | Signed edit revisions prevent concurrent availability loss; non-secret drafts survive validation/conflicts | `workspace-edit.cjs`, `browser-workspace-edit.cjs` |
-| Admin editing | Preserve actual owner/domain context on success and errors; use the correct authorized editor | `admin-edit.cjs`, `browser-admin-edit.cjs` |
-| Keyboard | Named icon actions, native tabs, visible focus and focus restoration after updates | `accessibility.cjs`, `browser-accessibility.cjs` |
-| Responsive layout | Usable table action regions and content-sized headings at compact sizes and real browser zoom | `browser-tables.cjs`, `browser-table-zoom.cjs`, `browser-headings.cjs` |
-| Dialogs | Names, focus containment/return, background isolation, cancellation and stale-response suppression | `dialogs.cjs`, `browser-dialogs.cjs` |
-| Library | Accurate availability labels and signed, user-bound bulk-action result notices | `library-ux.cjs`, `browser-library.cjs` |
-| Forms | Local named errors, correction focus, independent drafts and pending-action guards | `validation.cjs`, `browser-validation.cjs` |
-| Import | Downloadable CSV/JSON examples, actionable row errors and preserved authorization | `transfer.cjs`, `browser-transfer.cjs` |
-| Authentication | Labels reflect enabled registration/login; successful browser login navigates once, without duplicate HTMX/table setup | `login-copy.cjs`, `login-navigation.cjs`, corresponding browser suites |
-| Webhooks | Save errors remain visible by the relevant form | `webhooks.cjs`, `browser-webhook-errors.cjs` |
-| Webhook clipboard | Local confirmation and fixed-width Copy/Copying/Copied states; bounded failure handling and stale-copy suppression after dismissal/rotation | `webhooks.cjs`, `browser-webhook-copy.cjs` |
-| Contrast | Readable text, error, placeholder and control colors | `contrast.cjs`, `browser-contrast.cjs` |
-| Clipboard | Success follows the resolved write; denial/unsupported cases offer selectable text | `copy.cjs`, `browser-copy.cjs` |
-| One-time tokens | Masked responsive field; explicit reveal/copy/hide; failure does not auto-reveal; lifecycle cleanup and stale callback protection | `token-secret.cjs`, `browser-copy.cjs` |
-| Session recovery | Logout uses full document navigation instead of delayed body replacement; no duplicate scripts on revoked-page/background requests | `login-navigation.cjs`, `browser-logout-navigation.cjs` |
-| API feedback | Validate status, content type and consumed schema before claiming success or replacing saved state | `responses.cjs`, `browser-responses.cjs` |
-| Recipients | Accessible branded 410 pages with a neutral next step, without private destination or lifecycle details | `unavailable.cjs`, `browser-unavailable.cjs` |
-| Header | Deliberate wrapping of brand/account actions and separate account-security content heading | `header.cjs`, `browser-header.cjs` |
-| Domain ownership | Signed, user-bound DNS TXT challenge, preserved draft and visible Copy feedback at desktop/mobile widths | `security-boundaries.cjs`, `security-database.cjs`, `browser-domain-proof.cjs` |
-| Moderation | A full webhook queue cannot veto administrator ban/trash; notification omission is explicit in history | `security-boundaries.cjs`, `browser-domain-proof.cjs` |
+| Editing | Unchanged relative expiry does not extend a link; stale changes require conflict review | `expiry-edit.cjs`, `browser-expiry-edit.cjs` |
+| Collaboration | Signed revisions prevent concurrent availability loss; non-secret drafts survive errors | `workspace-edit.cjs`, `browser-workspace-edit.cjs` |
+| Admin editing | Correct owner/domain context and authorized editor on success and failure | `admin-edit.cjs`, `browser-admin-edit.cjs` |
+| Keyboard/layout | Named actions, visible focus, deliberate wrapping, usable tables and content-sized headings | `browser-accessibility.cjs`, `browser-tables.cjs`, `browser-table-zoom.cjs`, `browser-headings.cjs` |
+| Dialogs | Focus containment/return, background isolation, cancellation and stale-response suppression | `dialogs.cjs`, `browser-dialogs.cjs` |
+| Library/forms | Accurate lifecycle/bulk feedback, local errors, correction focus and preserved drafts | `library-ux.cjs`, `validation.cjs`, corresponding browser suites |
+| Transfer | Downloadable examples, actionable row errors and preserved authorization | `transfer.cjs`, `browser-transfer.cjs` |
+| Authentication | Configuration-aware labels and one-document login/logout/revoked-session navigation | `login-copy.cjs`, `login-navigation.cjs`, `browser-logout-navigation.cjs` |
+| Webhooks/clipboard | Local pending/success/error feedback and stale-copy suppression after dismissal/rotation | `webhooks.cjs`, `browser-webhook-copy.cjs`, `browser-copy.cjs` |
+| One-time tokens | Masked responsive field, explicit reveal/copy/hide and lifecycle cleanup | `token-secret.cjs`, `browser-copy.cjs` |
+| API feedback | Validate status, content type and consumed schema before claiming success | `responses.cjs`, `browser-responses.cjs` |
+| Public recipients | Neutral branded 410 pages without private destination/lifecycle details; bodyless HEAD | `unavailable.cjs`, `browser-unavailable.cjs` |
+| Domain ownership | Signed user-bound DNS proof, immediate form activation for fast submits, retained draft and visible Copy feedback | `security-boundaries.cjs`, `browser-domain-proof.cjs` |
 
-## Compatibility And Security
+## Community Workflows
 
-- Existing links, users and signing/encryption keys are retained. The additive
-  security migration retires pre-upgrade pending recovery links and adds durable
-  webhook admission state; see [DEPLOYMENT.md](DEPLOYMENT.md).
-- Public redirects remain unauthenticated and continue to enforce password,
-  availability, domain and routing policies. Management remains authenticated.
-- Edit receipts detect conflicts; they do not replace fresh ownership, workspace
-  membership, token scope/domain or CSRF checks.
-- Password drafts are never echoed. A failed password edit requires re-entry.
-- One-time API tokens are masked initially and when the tab becomes hidden.
-  Dismissal, page exit and HTMX removal clear the displayed value and attribute;
-  these controls do not revoke the credential or clear the system clipboard.
-- Browser sign-in returns HTMX `204` with a fixed-root `HX-Redirect`, or native
-  HTML `303` to `/`. JSON login keeps its existing contract. OIDC code/state/PKCE,
-  identity binding, cookie and revocation checks remain in place.
-- Logout clears the cookie and uses the same fixed-root HTMX/native navigation
-  contract with no-store caching. Browser tests wait for the final login form,
-  not network idle on an intermediate page before its delayed request occurs.
-- Unavailable HTML GET/HEAD uses the new 410 page. HEAD remains bodyless; existing
-  API/default/protected POST response contracts and counters are unchanged.
-- CSS is scoped to application surfaces; real mobile wrapping and action hit
-  regions are tested rather than relying only on document scroll width.
+- [Localization](LOCALIZATION.md): English is the default; French and Spanish
+  cover bundled templates, browser feedback, mail and API human messages.
+  Escaped stable keys, plural/date/number formatting and request-local state
+  replace English DOM postprocessing. Machine values remain unchanged. The
+  native selector works without JavaScript; custom text is not auto-translated.
+- [Appearance](THEMES.md): System/light/dark modes, early preference selection,
+  keyboard controls, storage-denial/cross-tab behavior and readable charts/forms.
+  QR previews retain white image backgrounds and quiet zones in both themes.
+- [CSP](CSP.md): opt-in report-only/enforce with per-document nonces and
+  self-hosted delegated handlers. Bundled HTMX, dialogs, charts, forms, QR and
+  authentication are exercised under enforcement. No script unsafe-inline/eval
+  fallback is added; custom templates need explicit integration.
+- [Sorting](LIST-SORTING.md): consistent allowlisted keys and stable pagination
+  in personal/admin/library/workspace views. Filters, disabled sort state,
+  active drafts and pending editor loads survive delayed list responses.
+- [QR branding](QR-BRANDING.md): PNG file chooser, sanitized preview, remove,
+  download PNG/SVG, copy and print with pending/error recovery and blob cleanup.
+  The logo is embedded in exported pixels, not a cosmetic overlay. Browser JSON
+  sends canonical plain base64; exact legacy PNG data URIs remain API-compatible.
+  Real exported PNG and rasterized SVG are independently decoded.
+- [Moderation](MODERATION.md): native confirmation, safe errors/status codes,
+  independent-ban preservation and fresh administrative authorization. Existing
+  sessions and tokens cannot revive when an account is unbanned.
+- [Domain sharing](DOMAIN-SHARING.md): explicit recipient grants with no global
+  sharing or cross-owner analytics. Native revoke first displays recipient,
+  domain and irreversible token/health consequences. Keyboard Cancel is
+  non-mutating; only the origin-checked POST commits. This works with JavaScript
+  disabled. Gone grants return controlled errors, stale confirmations cannot
+  revoke a later regrant, and ownership/admin permission is checked freshly.
+  Regranting does not reactivate revoked scoped tokens or health schedules.
+  Grant-list authorization and recipient reads use the same guarded transaction,
+  so a former owner cannot receive recipients added after domain reassignment.
+- [Destination policy](DESTINATION-POLICY.md): localized policy feedback and
+  read-only policy discovery. Authorized metadata-only repair can preserve an
+  unchanged denied target; it cannot change destinations or bypass ownership.
+- [Geography](ANALYTICS.md): local map assets, keyboard zoom/pan/reset and a
+  textual country table, including missing/unknown data and retry states.
+  Interaction does not fetch a tracking service or broaden analytics access.
+- [Dotted aliases](LINK-ALIASES.md): valid interior dots work across forms and
+  APIs without weakening reserved-path, traversal or forwarding boundaries.
 
-## Reproduction
+## Security And Compatibility
 
-See [tests/README.md](../tests/README.md) for full isolated container and Redis
-regressions and each rendered fixture. Rendered tests refuse initialized or
-non-loopback instances, use synthetic records and fresh browser profiles, and
-retain screenshots in an explicit external evidence directory. Never use a
-production database or personal browser profile for these suites.
+Public short links remain public, with existing password/lifecycle/routing checks.
+An optional management hostname isolates management routes without redirecting
+credentials from a wrong host; protected-link forms submit on their actual short
+authority, including accepted www aliases. Session cookies stay host-only.
 
-Responsive coverage includes 320/390/768/1440px, long titles/URLs, admin/ordinary/
-signed-out roles, keyboard workflows and actual 200/400% Chromium tab zoom.
-The heading test waits for font loading and breakpoint transitions before strict
-geometry comparisons; it does not change layout tolerances or disable animation
-to hide a failure. Fault-injection suites exercise malformed successes, denial,
-network errors, delayed requests and retry without accepting false saved state.
+Edit receipts, confirmation pages and UI-disabled controls are not authorization
+boundaries. Fresh ownership, workspace membership, token scope/domain, role
+expiry and origin checks remain authoritative. Password drafts are not echoed.
+Hiding a one-time token does not revoke it or erase the system clipboard.
 
-The full runtime and exact deployed-image regressions passed for release
-`v3.2.6-sr94.39.2`, including local webhook clipboard feedback and stale-asset
-regressions at 1440/390/320px. Existing-browser resource inspection confirmed the
-corrected script and styling after ordinary reload and SSO recovery. Earlier
-nine logout/revoked-page/revoked-background-request browser cases remain covered.
-Public route/security checks, monitored health
-and pre/post off-host writable recovery also passed. Deployment/recovery evidence belongs to the fork operator
-ledger and is not a substitute for validating a different installation.
+HTML native forms retain a same-origin Referrer-Policy so their Origin remains
+valid. Opaque null and foreign browser origins are not accepted to make a form
+work. API DELETE grant revocation intentionally retains its direct contract.
 
-Fresh native Chromium print preview also rendered the actual QR page as one
-complete page with the QR/caption, enabled Save and working Cancel. Independent
-decoding of the captured preview recovered the expected synthetic short URL.
-The earlier plain-page preview failure did not reproduce in fresh profiles;
-no application change or root-cause claim was needed for this acceptance.
+## Reproduction And Limits
 
-## Remaining Acceptance Limits
+Use [tests/README.md](../tests/README.md) for isolated full-container, Redis,
+real-database and rendered fixtures. Browser suites use synthetic loopback
+instances and fresh profiles, and keep screenshots outside the repository.
+Never substitute a production database or personal browser profile.
 
-The one-time token fix is included in `.37.1`. The earlier `.37` publication was
-not deployed after a fresh image scan identified vulnerable system zlib. The
-runtime Dockerfile removes its unused package-manager dependency chain after
-building dependencies, explicitly retains CA/TLS support and runs
-`tests/image-hardening.cjs`. Keep package inventory intact and rebuild images
-instead of installing packages at runtime. Both `.37.1` and `.38` passed their
-publication, exact-image, deployment and recovery gates. All 25 confirmed UI
-defects through `.39.2` are closed; this does not waive the human acceptance limits below.
-The subsequent live credential ceremony exposed a 25th finding: webhook Copy
-confirmed success only at the distant page header. The `.39` patch moves feedback
-beside the secret and into the button, reports success only after clipboard
-completion, handles denial/missing/timeout without raw error details, and ignores
-callbacks for a dismissed or replaced secret. Source-rendered 1440/390/320px
-regressions pass. No credential, authorization, WAF, schema or delivery policy changes.
+The original matrix covers compact layouts, long titles/URLs, admin/ordinary/
+signed-out roles and actual 200/400% Chromium zoom. New focused matrices exercise
+320/390/1440px, EN/FR/ES and light/dark where applicable. Native keyboard,
+JavaScript-disabled domain confirmation, delayed editor/list/QR responses,
+malformed successes, denial and retry are separate assertions, not inferred
+from a screenshot or document-width check.
 
-`.39` passed clean-browser, runtime and live API/health checks, but the existing
-live browser retained old unversioned JavaScript/CSS beside the new HTML. The
-`.39.2` release versions this page's two assets using the installed package
-version. Regression intercepts stale unversioned paths and requires both release
-keys before exercising the normal copy flow. No cache purge or policy weakening.
-Existing-browser loaded-resource validation, release/exact-image tests, deployed
-public routes, monitored health and pre/post off-host writable recovery passed.
-The `.39.1` image was not published or deployed: CI caught a raw-HTML assertion
-expecting an unescaped equals sign. `.39.2` uses Handlebars escaping in that
-assertion, retaining the same exact-version contract and unchanged markup.
-
-- Native preview rendering passed separately from programmatic PDF checks.
-  Physical printing and native file-save dialog completion are not claimed.
-- Account-holder token creation/copy/revocation, webhook rotation/copy and
-  explicitly approved disposable-only irreversible deletions passed separately
-  from synthetic API checks on September 19.
-- Physical QR scanning passed with account-holder confirmation that the public
-  destination opened without SSO. Naturally expired live Authentik session
-  recovery also passed on `.38` through ordinary SSO, without browser errors or
-  policy changes. User-assisted real session revocation and return through SSO
-  subsequently passed as separate acceptance on September 19.
-- SQLite has executed full feature regression. PostgreSQL 16 and MySQL 8.4 have
-  targeted security/concurrency tests, not full feature parity. MariaDB remains
-  configuration-only coverage.
-- The missing scan identity was resolved. A finalized source scan identified seven
-  medium findings addressed in `.40`: webhook admission, atomic claims, DNS proof,
-  recovery capability invalidation, verification-login CSRF, legacy-write CSRF
-  and URL-regex work. Independent patch review also caught quota-blocked moderation
-  and stale Redis principals; both received fixes and regression tests before
-  publication. See [SECURITY-MAINTENANCE.md](SECURITY-MAINTENANCE.md). This is a
-  bounded review, not an exhaustive vulnerability-free guarantee. Image scanning
-and the deployment/restore checks are separate evidence, not substitutes for
-source tests. Release `.40` passed full exact-image regression, rendered DNS
-proof/copy/persistence and moderation feedback at 1440/390/320px, real public
-DNS/WAF ownership proof, HTTPS webhook delivery and Authentik-signed logout/replay.
-Pre/post off-host backups were byte-verified and restored with a successful write
-test; the original account/link remained unchanged. Monitored health and lab
-validation passed. All temporary DNS, app and browser fixtures were removed.
-
-The `.40` runtime source is `1107011e7a8a0ad11b69a8af0f871f7794ad93ef`;
-subsequent closure commits change documentation only. Fork release CI
-`35416114256` and main CI `35416090059` passed. Published image digest:
-`sha256:05b332018c4891a7f2457225dcdadeededcac1a8efbf62ff1c1c06ea201b179f`.
-The privately hardened deployed wrapper is distinct and tested separately.
-Fresh published/wrapper Grype scans retain zero Critical/High and three Medium
-BusyBox matches for CVE-2025-60876, without a vendor fix in the valid September 18
-database. None were suppressed. Deployment-specific raw evidence remains private.
+- Browser QR tests decode actual downloaded images, inspect print CSS, and test
+  clipboard completion/failure with synthetic controls. They do not establish
+  physical printing, native file-save completion or OS clipboard acceptance.
+- Source and loopback tests do not prove live WAF, TLS, DNS, mail or IdP behavior.
+  In particular, verify plain-base64 QR uploads through the actual WAF without
+  relaxing rules. Do not claim deployment acceptance from a successful decoder.
+- SQLite runs the full feature suite. PostgreSQL/MySQL have focused execution
+  for documented boundaries, not an exhaustive parity guarantee; MariaDB is
+  configuration coverage only.
+- Custom themes/templates, Safari/physical mobile devices and the signed iPhone
+  Shortcut need their own acceptance. The Shortcut's signed bytes remain
+  unchanged; localized setup guides do not translate the signed artifact.
+- Prior operator-specific acceptance is not evidence for another installation.
+  Re-run the final reconciled commit's gates before publishing or deploying.

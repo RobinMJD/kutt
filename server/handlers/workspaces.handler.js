@@ -1,3 +1,4 @@
+const i18n = require("../i18n");
 const spaces = require("../workspaces");
 const lifecycle = require("../link-lifecycle");
 const { sameOrigin } = require("./link-history.handler");
@@ -8,7 +9,7 @@ const editing = require("../workspace-edit");
 function boundary(req, res, next) {
   res.set("Cache-Control", "private, no-store");
   res.set("Referrer-Policy", "same-origin");
-  if (req.apiTokenDomain !== undefined) throw new CustomError("Workspace access requires an unrestricted domain scope.", 403);
+  if (req.apiTokenDomain !== undefined) throw new CustomError(i18n.t("messages.workspace_access_requires_an_unrestricted_domain_scope"), 403);
   if (!["GET", "HEAD"].includes(req.method)) sameOrigin(req);
   next();
 }
@@ -46,9 +47,9 @@ async function mutate(req, operation, res) {
     case "share": case "unshare": return spaces.share(req.user.id, id, req.params.linkId || body.link_id, operation === "unshare");
     case "create_link": case "edit_link": case "trash_link": case "restore_link": {
       const input = operation === "trash_link" || operation === "restore_link" ? {} : req.isHTML ? formLink(body) : body;
-      return spaces.changeLink(req.user.id, id, operation.replace("_link", ""), req.params.linkId || body.link_id, input, actor);
+      return spaces.changeLink(req.user.id, id, operation.replace("_link", ""), req.params.linkId || body.link_id, input, actor, req);
     }
-    default: throw new CustomError("Invalid workspace action.", 400);
+    default: throw new CustomError(i18n.t("messages.invalid_workspace_action"), 400);
   }
 }
 
@@ -98,8 +99,8 @@ async function page(req, res, error, failedEdit) {
       link.edit_conflict = failedEdit.conflict;
     }
   }
-  const pageURL = number => url + "?" + new URLSearchParams({ q: selected.q, state: selected.state, page: number });
-  return res.render("workspaces", { title: selected?.name || "Workspaces", all, selected, error: inlineError ? undefined : error, action_url: selected ? pageURL(selected.page) : url,
+  const pageURL = number => url + "?" + new URLSearchParams({ q: selected.q, state: selected.state, page: number, sort: selected.sort, direction: selected.direction });
+  return res.render("workspaces", { title: selected?.name || i18n.t("ui.workspaces"), all, selected, error: inlineError ? undefined : error, action_url: selected ? pageURL(selected.page) : url,
     previous: selected?.page > 1 ? pageURL(selected.page - 1) : null,
     next: selected && selected.page * selected.limit < selected.total ? pageURL(selected.page + 1) : null });
 }
@@ -107,12 +108,16 @@ async function page(req, res, error, failedEdit) {
 async function submit(req, res) {
   const operation = req.body.operation;
   try {
+    const current = req.params.id ? await spaces.detail(req.user.id, req.params.id, req.query) : null;
     const result = await mutate(req, operation, res);
     let id = req.params.id;
     if (operation === "create") id = result.id;
     if (operation === "accept") id = result.workspace_id;
     if (operation === "close" || operation === "remove_member") id = null;
-    return res.redirect(303, "/settings/workspaces" + (id ? "/" + id : ""));
+    const state = current && id === current.id ? "?" + new URLSearchParams({
+      q: current.q, state: current.state, page: current.page, sort: current.sort, direction: current.direction
+    }) : "";
+    return res.redirect(303, "/settings/workspaces" + (id ? "/" + id : "") + state);
   } catch (error) {
     if (!(error instanceof CustomError)) throw error;
     res.status(error.statusCode || 400);

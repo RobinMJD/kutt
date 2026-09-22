@@ -1,3 +1,4 @@
+const i18n = require("../i18n");
 const knex = require("../knex");
 const env = require("../env");
 const oidc = require("../oidc-client");
@@ -9,9 +10,9 @@ async function status(req, res) {
   const identities = await knex("oidc_identities").where({ user_id: req.user.id }).select("issuer", "created_at");
   const result = { identities: identities.map(row => ({ issuer: row.issuer, created_at: new Date(Number(row.created_at)).toISOString() })),
     oidc_session_max_seconds: env.OIDC_SESSION_MAX_SECONDS,
-    ...(req.user.admin && { provider: oidc.status() }) };
+    ...(req.user.admin && { provider: oidc.status(), role_mapping: await require("../oidc-roles").status() }) };
   if (!req.isHTML) return res.json(result);
-  res.render("security", { title: "Account security", ...result });
+  res.render("security", { title: i18n.t("ui.account_security"), ...result });
 }
 
 async function revoke(req, res) {
@@ -20,7 +21,7 @@ async function revoke(req, res) {
   res.set("Cache-Control", "no-store");
   if (req.isHTML) {
     res.set("HX-Redirect", "/login");
-    return res.send("Sessions revoked.");
+    return res.send(i18n.t("messages.sessions_revoked"));
   }
   return res.status(204).end();
 }
@@ -32,7 +33,7 @@ async function backchannel(req, res) {
     await oidc.logout(req.body?.logout_token);
     return res.status(200).end();
   } catch {
-    return res.status(400).json({ error: "Invalid logout notification." });
+    return res.status(400).json({ error: i18n.t("messages.invalid_logout_notification") });
   }
 }
 

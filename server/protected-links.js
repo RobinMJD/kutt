@@ -1,3 +1,4 @@
+const i18n = require("./i18n");
 const knex = require("./knex");
 const { CustomError } = require("./utils");
 const { rateLimit } = require("./handlers/helpers.handler");
@@ -16,6 +17,6 @@ async function available(link) {
   return !!await knex("domains").where({ id: link.domain_id, banned: false }).first();
 }
 async function requireAvailable(link) {
-  if (!await available(link)) throw new CustomError("This short link is not currently available.", 410);
+  if (!await available(link)) throw new CustomError(i18n.t("ui.this_short_link_is_not_currently_available"), 410);
 }
 module.exports = { attempt, available, requireAvailable };

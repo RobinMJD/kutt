@@ -1,3 +1,4 @@
+const i18n = require("./i18n");
 const knex = require("./knex");
 const { CustomError } = require("./utils");
 const routing = require("./link-routing");
@@ -6,14 +7,14 @@ const fail = (message, status = 400) => { throw new CustomError(message, status)
 const sensitive = /^(?:access_token|refresh_token|id_token|token|api[_-]?key|password|secret|authorization|cookie|code|state)$/i;
 const object = value => value && typeof value === "object" && !Array.isArray(value);
 function fields(value, keys) {
-  if (!object(value) || Object.keys(value).some(key => !keys.includes(key))) fail("Unknown or invalid forwarding field.");
+  if (!object(value) || Object.keys(value).some(key => !keys.includes(key))) fail(i18n.t("messages.unknown_or_invalid_forwarding_field"));
 }
 function path(value) {
   if (value === "") return "";
-  if (typeof value !== "string" || value.length > 256) fail("Path suffix must be at most 256 characters.");
+  if (typeof value !== "string" || value.length > 256) fail(i18n.t("messages.path_suffix_must_be_at_most_256_characters"));
   const parts = value.split("/");
   if (parts.length > 8 || parts.some(part => !/^[A-Za-z0-9_~.-]+$/.test(part) || part === "." || part === "..")) {
-    fail("Use 1 to 8 literal path segments without encoding or traversal.");
+    fail(i18n.t("messages.use_1_to_8_literal_path_segments_without_encoding_or_traversal"));
   }
   return value;
 }
@@ -22,10 +23,10 @@ function normalize(value = {}) {
   const result = {};
   for (const key of ["query_keys", "path_prefixes"]) {
     const list = value[key] === undefined ? [] : value[key];
-    if (!Array.isArray(list) || list.length > 20 || list.some(item => typeof item !== "string")) fail("Use at most 20 explicit entries per allowlist.");
+    if (!Array.isArray(list) || list.length > 20 || list.some(item => typeof item !== "string")) fail(i18n.t("messages.use_at_most_20_explicit_entries_per_allowlist"));
     result[key] = [...new Set(list.map(item => {
-      if (key === "path_prefixes") { if (!item) fail("An empty path prefix is not allowed."); return path(item); }
-      if (!/^[A-Za-z0-9_.~-]{1,80}$/.test(item) || sensitive.test(item)) fail("Invalid or credential-like query key.");
+      if (key === "path_prefixes") { if (!item) fail(i18n.t("messages.an_empty_path_prefix_is_not_allowed")); return path(item); }
+      if (!/^[A-Za-z0-9_.~-]{1,80}$/.test(item) || sensitive.test(item)) fail(i18n.t("messages.invalid_or_credential_like_query_key"));
       return item;
     }))];
   }
@@ -33,7 +34,7 @@ function normalize(value = {}) {
 }
 function stored(row) {
   try { return { ...normalize(row ? JSON.parse(row.policy) : {}), revision: Number(row?.revision || 0) }; }
-  catch { fail("Forwarding policy is unavailable. Ask the link owner to repair it.", 503); }
+  catch { fail(i18n.t("messages.forwarding_policy_is_unavailable_ask_the_link_owner_to_repair_it"), 503); }
 }
 async function policy(id, db = knex) { return stored(await db("link_forwarding").where({ link_id: id }).first()); }
 function allows(config, suffix) {
@@ -41,27 +42,28 @@ function allows(config, suffix) {
   return !suffix || config.path_prefixes.some(prefix => suffix === prefix || suffix.startsWith(prefix + "/"));
 }
 function apply(config, destination, query = "", suffix = "") {
-  if (!allows(config, suffix)) fail("This path is not enabled for this short link.", 404);
+  require("./destination-policy").requireAllowed(destination);
+  if (!allows(config, suffix)) fail(i18n.t("messages.this_path_is_not_enabled_for_this_short_link"), 404);
   if (!config.query_keys.length && !suffix) return destination;
   // URL is only manipulated locally. No headers, cookies or HTTP requests are forwarded.
   const target = new URL(routing.target(destination));
   if (suffix) target.pathname = target.pathname.replace(/\/$/, "") + "/" + suffix;
   if (config.query_keys.length) {
     const incoming = new URLSearchParams(routing.queryString(query));
-    if ([...incoming].length > 50) fail("Use at most 50 incoming query parameters.");
+    if ([...incoming].length > 50) fail(i18n.t("messages.use_at_most_50_incoming_query_parameters"));
     for (const key of config.query_keys) {
       if (target.searchParams.has(key)) continue;
       const values = incoming.getAll(key);
-      if (values.length > 10 || values.some(value => value.length > 500 || /[\u0000-\u001f\u007f]/.test(value))) fail("Forwarded values exceed their limits.");
+      if (values.length > 10 || values.some(value => value.length > 500 || /[\u0000-\u001f\u007f]/.test(value))) fail(i18n.t("messages.forwarded_values_exceed_their_limits"));
       for (const value of values) target.searchParams.append(key, value);
     }
   }
-  if (target.href.length > 2040) fail("The forwarded destination is too long.");
+  if (target.href.length > 2040) fail(i18n.t("messages.the_forwarded_destination_is_too_long"));
   return target.href;
 }
 function submittedPath(body) {
   // Keep .14 clients compatible; new clients use a name without CRS's .forward match.
-  if (body.suffix_path !== undefined && body.forwarding_path !== undefined && body.suffix_path !== body.forwarding_path) fail("Conflicting short paths.");
+  if (body.suffix_path !== undefined && body.forwarding_path !== undefined && body.suffix_path !== body.forwarding_path) fail(i18n.t("messages.conflicting_short_paths"));
   return body.suffix_path === undefined ? body.forwarding_path : body.suffix_path;
 }
 async function resolve(req, link, suppliedQuery, suppliedPath) {
@@ -69,9 +71,11 @@ async function resolve(req, link, suppliedQuery, suppliedPath) {
   if (suppliedPath) {
     path(suppliedPath);
     const match = await lookup(link.address + "/" + suppliedPath, link.domain_id);
-    if (!match || match.link.uuid !== link.uuid) fail("The short path belongs to another link.", 404);
+    if (!match || match.link.uuid !== link.uuid) fail(i18n.t("messages.the_short_path_belongs_to_another_link"), 404);
   }
-  return apply(config, await routing.resolve(req, link, suppliedQuery),
+  const destination = await routing.resolve(req, link, suppliedQuery);
+  require("./destination-policy").requireAllowed(destination, 410);
+  return apply(config, destination,
     suppliedQuery === undefined ? new URL(req.originalUrl, "http://local.invalid").search : suppliedQuery,
     suppliedPath === undefined ? req.forwardPath || "" : suppliedPath);
 }
@@ -83,15 +87,19 @@ async function save(req) {
   await routing.owned(req);
   fields(req.body, ["query_keys", "path_prefixes", "revision"]);
   const { revision, ...input } = req.body, config = normalize(input);
-  if (!Number.isSafeInteger(revision) || revision < 0) fail("A current integer revision is required.");
+  if (!Number.isSafeInteger(revision) || revision < 0) fail(i18n.t("messages.a_current_integer_revision_is_required"));
   return knex.transaction(async db => {
     const link = await routing.owned(req, db, true);
     if (config.query_keys.length || config.path_prefixes.length) {
+      require("./destination-policy").requireAllowed(link.target);
       routing.target(link.target);
-      for (const rule of (await routing.policy(link.id, db)).rules) routing.target(rule.target);
+      for (const rule of (await routing.policy(link.id, db)).rules) {
+        require("./destination-policy").requireAllowed(rule.target);
+        routing.target(rule.target);
+      }
     }
     const old = await db("link_forwarding").where({ link_id: link.id }).first();
-    if (Number(old?.revision || 0) !== revision) fail("Forwarding changed elsewhere. Reload before saving.", 409);
+    if (Number(old?.revision || 0) !== revision) fail(i18n.t("messages.forwarding_changed_elsewhere_reload_before_saving"), 409);
     const next = { policy: JSON.stringify(config), revision: revision + 1 };
     if (old) await db("link_forwarding").where({ link_id: link.id }).update(next);
     else await db("link_forwarding").insert({ link_id: link.id, ...next });
@@ -104,16 +112,16 @@ async function save(req) {
 async function lookup(address, domainId) {
   const query = require("./queries");
   const parts = address.split("/");
-  if (parts.length > 16 || address.length > 512) fail("Short path is too long.");
+  if (parts.length > 16 || address.length > 512) fail(i18n.t("messages.short_path_is_too_long"));
   for (let count = parts.length; count > 0; count--) {
     const candidate = parts.slice(0, count).join("/");
     const link = await query.link.find({ address: candidate, domain_id: domainId }, { fresh: true, includeTrash: true });
     if (link) {
       const suffix = parts.slice(count).join("/");
-      if (suffix && !allows(await policy(link.id), suffix)) fail("This path is not enabled for this short link.", 404);
+      if (suffix && !allows(await policy(link.id), suffix)) fail(i18n.t("messages.this_path_is_not_enabled_for_this_short_link"), 404);
       return { link, suffix };
     }
-    if (parts.length > 1 && await history.reserved(candidate, domainId)) fail("This alias is permanently reserved.", 410);
+    if (parts.length > 1 && await history.reserved(candidate, domainId)) fail(i18n.t("messages.this_alias_is_permanently_reserved"), 410);
   }
   return null;
 }

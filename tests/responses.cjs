@@ -4,7 +4,7 @@ const path = require("node:path");
 const vm = require("node:vm");
 
 module.exports = async ({ root, request, session }) => {
-  const context = vm.createContext({ window: {} });
+  const context = vm.createContext({ window: { KuttI18n: require("../server/i18n").current() } });
   vm.runInContext(readFileSync(path.join(root, "static/scripts/responses.js"), "utf8"), context);
   const { read, ...schemas } = context.window.KuttResponses;
   const response = (data, overrides = {}) => ({ ok: true, status: 200, redirected: false,
@@ -13,7 +13,7 @@ module.exports = async ({ root, request, session }) => {
     const result = await request(method, route, body, session); assert.equal(result.status, status);
     return result.json();
   };
-  const link = await call("POST", "/api/links", { target: "https://example.org/response-contract", customurl: "response-contract", paused: true }, 201);
+  const link = await call("POST", "/api/links", { target: "https://192.0.2.1/response-contract", customurl: "response-contract", paused: true }, 201);
   const api = "/api/links/" + link.id;
   const samples = {
     forwarding: await call("GET", api + "/forwarding"), routing: await call("GET", api + "/routing"),

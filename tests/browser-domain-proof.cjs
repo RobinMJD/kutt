@@ -25,11 +25,18 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
     const page = await context.newPage(); page.setDefaultTimeout(12000);
     page.on("pageerror", error => errors.push(error.message));
     for (const width of [1440, 390, 320]) {
-      const address = "ownership-" + width + ".example.invalid";
+      const address = (width === 1440 ? "notwww." : width === 390 ? "sub.www." : "") + "ownership-" + width + ".example.invalid";
       await page.setViewportSize({ width, height: 900 }); await page.goto(origin + "/settings");
+      // Widen HTMX's visible-but-not-initialized window. This form must override
+      // delayed settling, otherwise a quick submit navigates to Settings by GET.
+      await page.evaluate(() => { htmx.config.defaultSettleDelay = 500; });
       await page.locator(".show-domain-form").click();
       await page.locator('#add-domain input[name="address"]').fill(address);
+      const challengeResponse = page.waitForResponse(response => new URL(response.url()).pathname === "/api/domains" && response.request().method() === "POST");
       await page.locator("#add-domain").getByRole("button", { name: "Add domain", exact: true }).click();
+      const challenge = await challengeResponse;
+      assert.equal(challenge.status(), 200, "Settings must render a DNS ownership challenge, including for administrators");
+      assert((await challenge.text()).includes('name="proof"'), "Settings must issue a signed DNS challenge before claiming a domain");
       await page.locator("#add-domain").getByRole("button", { name: "Verify ownership", exact: true }).waitFor();
       assert.equal(await page.locator('#add-domain input[name="address"]').inputValue(), address);
       assert((await page.locator(".domain-verification").textContent()).includes("_kutt-verification." + address));
