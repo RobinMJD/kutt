@@ -6,9 +6,11 @@ separately in the roadmap and remains unchecked until all release gates pass.
 ## Aliases and matching
 
 The existing create/edit controls and APIs accept aliases such as
-`campaign/autumn/guide`. Nested aliases have 2 to 8 nonempty ASCII segments made
-of letters, digits, `_` and `-`, with the existing 64-character total limit.
-Legacy single-segment custom-alphabet aliases remain supported. Management and
+`campaign/autumn/guide` or `docs/v1.2/guide.pdf`. Nested aliases have 2 to 8
+nonempty ASCII segments made of letters, digits, `_` and `-`, with single
+interior dots and the existing 64-character total limit. See
+[alias rules](LINK-ALIASES.md) for the complete create/edit/import contract.
+Legacy dot-free single-segment custom-alphabet aliases remain supported. Management and
 static root names are reserved case-insensitively, including `api`, `settings`,
 `login`, `scripts` and `.well-known`. Empty segments, traversal and ambiguous
 encoded slash/backslash/double encoding are rejected.

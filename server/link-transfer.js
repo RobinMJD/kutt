@@ -152,6 +152,7 @@ async function plan(db, req, input, id, fixedAliases) {
         } else fail("Alias is unavailable; no existing link will be overwritten.", 409);
       }
       if (action === "create") {
+        if (!require("./link-alias").valid(address)) fail("Invalid or reserved alias.");
         used.add(history.key(row.domain, address));
         for (const label of labelsFor(row)) newLabels.set(label.kind + ":" + label.name.toLowerCase(), label);
       }

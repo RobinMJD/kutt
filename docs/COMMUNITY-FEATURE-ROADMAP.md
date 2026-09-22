@@ -37,7 +37,7 @@ automatic domain renaming, historical analytics rewriting or data deletion.
 | C16 | Optional separate management hostname and explicit shared-domain grants | Pending | Pending |
 | C17 | Optional consistent destination-domain policy | Pending | Pending |
 | C18 | Private authenticated performance metrics with bounded labels | Pending | Pending |
-| C19 | Safe dotted aliases with reserved-path protections | In progress | Isolated implementation and browser tests; MySQL race remediation and release gates pending |
+| C19 | Safe dotted aliases with reserved-path protections | Implemented; [rules and tests](LINK-ALIASES.md) | Pending parent review/release gates |
 | C20 | Accessible interactive geography chart and text alternative | Pending | Pending |
 | C21 | Profile visit aggregation; safely batch only where warranted | Pending | Pending |
 

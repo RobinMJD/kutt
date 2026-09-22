@@ -57,7 +57,7 @@
         <input type="hidden" name="operation" value="create_link" />
         <label class="workspace-wide">Destination<input name="target" type="url" required maxlength="2040" placeholder="https://example.com/" /></label>
         {{> campaign}}
-        <label>Alias<input name="address" maxlength="64" /></label>
+        <label>Alias<input name="address" maxlength="64" placeholder="docs/v1.2" /></label>
         <label>Domain<select name="domain" aria-label="Domain"><option value="">Default domain</option>{{#each domains}}<option value="{{address}}">{{address}}</option>{{/each}}</select></label>
         <label>Description<input name="description" maxlength="2040" /></label>
         <label>Link password<input name="password" type="password" minlength="3" maxlength="64" autocomplete="new-password" /></label>
@@ -102,7 +102,7 @@
             <input type="hidden" name="edit_revision" value="{{edit_revision}}" />
             <label class="workspace-wide">Destination<input name="target" type="url" value="{{target}}" required maxlength="2040" /></label>
             {{> campaign}}
-            <label>Alias<input name="address" value="{{address}}" required maxlength="64" /></label>
+            <label>Alias<input name="address" value="{{address}}" required maxlength="64" placeholder="docs/v1.2" /></label>
             <label>Description<input name="description" value="{{description}}" maxlength="2040" /></label>
             <label>New password<input name="password" type="password" minlength="3" maxlength="64" autocomplete="new-password" /></label>
             {{#if password_reentry}}<p class="workspace-wide">Password was not retained. Enter it again to change protection.</p>{{/if}}

@@ -102,6 +102,8 @@ on create), `description`, `password`, `paused`, ISO `starts_at`/`ends_at`, and
 `max_visits`. Creation also accepts an owner-controlled `domain`; domain moves
 stay with the personal owner. Unknown fields are rejected. `password: null`
 clears protection. Redirect quotas/history/alias reservations are preserved.
+Aliases follow the shared [alias rules](LINK-ALIASES.md), including safe interior
+dots (`docs/v1.2/guide.pdf`), eight segments, 64 characters and reserved roots.
 Workspace detail responses now include opaque `edit_revision` per link. Supply
 it with a PATCH to get atomic stale-write rejection. Omission retains legacy
 partial-update semantics, so API clients should PATCH only fields they intend to

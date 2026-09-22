@@ -1,5 +1,12 @@
 # Container smoke test
 
+Safe dotted aliases are covered by `dotted-alias-unit.cjs` and
+`dotted-aliases.cjs`. The latter runs in the normal smoke suite or with
+`KUTT_TEST_ONLY=dotted-aliases`: create/edit/admin/workspace/import paths,
+reserved names, dot/traversal/encoding limits, case/domain identity, scoped
+access, redirects, retirement/restore and forwarding-suffix compatibility.
+See [alias rules](../docs/LINK-ALIASES.md). Use only disposable test databases.
+
 Build from a clean checkout without a `.env` file:
 
 ```sh
