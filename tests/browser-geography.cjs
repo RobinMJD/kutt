@@ -1,7 +1,7 @@
 const assert = require("node:assert/strict");
 const { randomBytes } = require("node:crypto");
 const { execFileSync } = require("node:child_process");
-const { mkdirSync } = require("node:fs");
+const { mkdirSync, readFileSync, writeFileSync } = require("node:fs");
 const path = require("node:path");
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
 const { locale, t } = require("./browser-locale.cjs");
@@ -12,7 +12,7 @@ const { locale, t } = require("./browser-locale.cjs");
   assert.equal(new URL(origin).hostname, "127.0.0.1"); assert(/^[a-f0-9]{64}$/.test(container));
   assert(evidence); mkdirSync(evidence, { recursive: true });
   const browser = await chromium.launch({ headless: true }); let page;
-  const errors = [], external = []; let requests = 0, layouts = 0;
+  const errors = [], external = [], exportContrast = []; let requests = 0, layouts = 0;
   try {
     const context = await browser.newContext({ locale, reducedMotion: "reduce" });
     const headers = { Accept: "application/json" };
@@ -46,6 +46,48 @@ const { locale, t } = require("./browser-locale.cjs");
       assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), name + " overflow");
       await page.locator("#analytics-geography").screenshot({ path: path.join(evidence, name + ".png"), animations: "disabled" });
     };
+    const checkExports = async label => {
+      await page.locator(".analytics-summary").screenshot({ path: path.join(evidence, label + "-exports.png"), animations: "disabled" });
+      for (const format of ["csv", "json"]) {
+        const control = page.getByRole("link", { name: format.toUpperCase(), exact: true });
+        assert(await control.isVisible());
+        assert.equal(await control.getAttribute("title"), t("ui.download_" + format));
+        assert.equal(await control.getAttribute("download"), "kutt-analytics." + format);
+        const expected = new URLSearchParams(params); expected.set("format", format);
+        const href = new URL(await control.getAttribute("href"), origin);
+        assert.equal(href.origin, origin); assert.equal(href.pathname, "/api/analytics");
+        assert.deepEqual([...href.searchParams].sort(), [...expected].sort());
+        for (const state of ["normal", "hover", "focus"]) {
+          if (state === "normal") { await page.locator("h1").hover(); await control.evaluate(node => node.blur()); }
+          if (state === "hover") await control.hover();
+          if (state === "focus") { await page.locator("h1").hover(); await control.focus(); }
+          const result = await control.evaluate(node => {
+            const parse = color => color.match(/[\d.]+/g).map(Number);
+            const blend = (a, b) => a.slice(0, 3).map((v, i) => v * (a[3] ?? 1) + b[i] * (1 - (a[3] ?? 1)));
+            const lum = color => color.map(v => v / 255).map(v => v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4).reduce((sum, v, i) => sum + v * [.2126, .7152, .0722][i], 0);
+            const chain = []; for (let p = node; p; p = p.parentElement) chain.unshift(p);
+            let background = [255, 255, 255];
+            for (const p of chain) background = blend(parse(getComputedStyle(p).backgroundColor), background);
+            const style = getComputedStyle(node), a = lum(blend(parse(style.color), background)), b = lum(background);
+            const icon = getComputedStyle(node.querySelector("svg"));
+            return { ratio: (Math.max(a, b) + .05) / (Math.min(a, b) + .05), color: style.color, background, image: style.backgroundImage, opacity: style.opacity, icon: { fill: icon.fill, stroke: icon.stroke, width: icon.width, height: icon.height } };
+          });
+          exportContrast.push({ label, format, state, ...result });
+          writeFileSync(path.join(evidence, "export-contrast.json"), JSON.stringify(exportContrast, null, 2));
+          assert.equal(result.image, "none", "Export contrast checks require the actual solid background");
+          assert.equal(result.opacity, "1");
+          assert(result.ratio >= 4.5, label + " " + format + " " + state + " contrast " + result.ratio.toFixed(3));
+          assert.deepEqual(result.icon, { fill: result.color, stroke: "none", width: "18px", height: "18px" }, "Keep the current-color download icon legible in both themes");
+        }
+        const pending = page.waitForEvent("download"); await page.keyboard.press("Enter");
+        const download = await pending;
+        assert.equal(download.suggestedFilename(), "kutt-analytics." + format);
+        const filename = path.join(evidence, label + "." + format); await download.saveAs(filename);
+        const content = readFileSync(filename, "utf8");
+        if (format === "json") { const report = JSON.parse(content); assert.equal(report.total, baseline.total); assert.deepEqual(report.stats, baseline.stats); }
+        else { assert.match(content, /^section,name,id,visits,links\r\n/); assert.match(content, /\r\ntotal,2024-01-01\/2024-01-01 UTC,,20,1\r\n/); }
+      }
+    };
     for (const width of [1440, 390, 320]) {
       await page.setViewportSize({ width, height: 900 });
       for (const mode of ["light", "dark"]) {
@@ -54,6 +96,7 @@ const { locale, t } = require("./browser-locale.cjs");
         assert.equal(await page.locator("html").getAttribute("lang"), locale);
         await page.getByRole("radio", { name: t("theme." + mode), exact: true }).check();
         assert.equal(await page.locator("html").getAttribute("data-theme"), mode);
+        await checkExports(locale + "-" + width + "-" + mode);
         const geography = page.locator("#analytics-geography"), select = page.locator("#geography-country"), details = page.locator("#geography-details");
         const basis = page.locator("#geography-basis");
         assert.equal(await basis.textContent(), t("geography.basis"));
@@ -152,7 +195,7 @@ const { locale, t } = require("./browser-locale.cjs");
     assert.equal(await page.locator("#analytics-total").textContent(), "20");
     assert.equal(snapshot(), before, "All browsing, selections, assets and report requests add zero analytics");
     assert.deepEqual(errors, []); assert.deepEqual(external, []);
-    console.log(`PASS (${locale}): ${layouts} light/dark 1440/390/320px geography layouts, SVG, pointer/native/keyboard details, report shares, unknowns, table pages, filters, stale/empty/error/retry, hostile text, zero external requests and zero analytics writes`);
+    console.log(`PASS (${locale}): ${layouts} light/dark 1440/390/320px analytics layouts, CSV/JSON export contrast >=4.5 and keyboard downloads, geography SVG, pointer/native/keyboard details, report shares, unknowns, table pages, filters, stale/empty/error/retry, hostile text, zero external requests and zero analytics writes`);
   } catch (error) {
     if (page && !page.isClosed()) await page.screenshot({ path: path.join(evidence, "failure.png"), fullPage: true });
     throw error;

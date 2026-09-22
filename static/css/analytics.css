@@ -20,7 +20,7 @@
 .analytics-summary strong { display: block; font-size: 1.75rem; margin-top: .5rem; }
 .analytics-summary span { font-size: .9rem; }
 .analytics-exports { display: flex; gap: .5rem; margin-left: auto; }
-.analytics-exports svg { width: 18px; height: 18px; }
+.analytics-exports a.button svg { width: 18px; height: 18px; margin: 0; stroke: none; }
 .analytics-download { display: inline-flex; transform: rotate(-90deg); }
 .analytics-canvas { height: 280px; position: relative; width: 100%; }
 .analytics-chart { border-bottom: 1px solid #cbd5da; padding-bottom: 1.5rem; }
