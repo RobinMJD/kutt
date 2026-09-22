@@ -7,9 +7,9 @@ the whole sentence around the escaped provider name. Existing custom
 such configuration to the provider-name setting for multilingual buttons.
 
 C11 provides English (`en`, default), French (`fr`) and Spanish (`es`) for the
-bundled web UI, email and user-facing server/browser feedback. The candidate
-release is `.49`, integrating moderation, sorting, dotted aliases, themes and
-the private metrics listener. Consult [the delivery ledger](COMMUNITY-FEATURE-ROADMAP.md)
+bundled web UI, email and user-facing server/browser feedback. Localization was
+first deployed in `.49`; subsequent features use the same catalogs. Consult
+[the delivery ledger](COMMUNITY-FEATURE-ROADMAP.md)
 for publication, deployment and live acceptance status; source tests alone do
 not establish a completed rollout.
 
@@ -119,9 +119,9 @@ ordinary `label` fields. A custom layout must add these **external** scripts,
 in order, before page-specific and bundled UI scripts:
 
 ```hbs
-<script src="/locales/i18next.js"></script>
-<script src="/scripts/i18n-core.js"></script>
-<script src="/locales/{{locale}}.js"></script>
+<script nonce="{{cspNonce}}" src="/locales/i18next.js"></script>
+<script nonce="{{cspNonce}}" src="/scripts/i18n-core.js"></script>
+<script nonce="{{cspNonce}}" src="/locales/{{locale}}.js"></script>
 ```
 
 Also use `<html lang="{{locale}}">`, the bundled header selector (or its native
@@ -131,6 +131,8 @@ gain these assets; review them during integration. Custom CSS remains later in
 the stylesheet order. Only bundled, validated catalogs are served, as external
 JavaScript with HTML-sensitive characters escaped; no raw catalog JSON is
 injected into HTML. Locale-specific manifests retain the existing install identity.
+Keep the nonce helper when [CSP](CSP.md) is enabled; trusted self-hosted scripts
+still require the current document nonce. Do not copy a nonce between requests.
 
 The bundled layout also retains C14's early theme script before styles and loads
 `theme.css` after `i18n.css`, before custom styles. The footer's `theme_picker`

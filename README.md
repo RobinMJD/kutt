@@ -36,7 +36,8 @@ System/Light/Dark appearance `.47`, private metrics `.48` and localization `.49`
 have also passed their recorded release/deployment gates. Staged/enforced CSP,
 branded QR exports, optional OIDC roles, destination policy, interactive geography
 and indexed visit aggregation are integrated candidates. Separate management
-hosting and explicit shared-domain grants are still being implemented. See the
+hosting and explicit shared-domain grants are integrated and undergoing final
+release validation. See the
 delivery ledger for current evidence; pending additions are not yet complete.
 
 - [Feature roadmap](docs/FEATURE-ROADMAP.md): completed features and release evidence.
@@ -46,7 +47,7 @@ delivery ledger for current evidence; pending additions are not yet complete.
 - [Custom domain ownership](docs/CUSTOM-DOMAINS.md): DNS proof, client compatibility and recovery for new claims.
 - [Upstream PR #1046](https://github.com/thedevs-network/kutt/pull/1046): submitted changes; still awaiting upstream review/merge at the status date above.
 
-SQLite is the fully exercised database engine. PostgreSQL 16 and MySQL 8.4 have
+SQLite is the fully exercised database engine. PostgreSQL 17 and MySQL 8.4 have
 targeted security/concurrency tests; MariaDB remains configuration-only. These
 are **not** full feature-parity guarantees. Security
 reviews and image scans are bounded, dated evidence, not certification that the

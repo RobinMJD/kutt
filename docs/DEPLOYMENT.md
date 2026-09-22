@@ -6,7 +6,7 @@ its hardened wrapper, WAF/Authentik routing, monitoring and private backup paths
 in its separate deployment repository. This public repository contains no real
 secrets, provider bindings or user data.
 
-### Transactional moderation (candidate)
+### Transactional moderation (3.2.6-sr94.45)
 
 [Moderation](MODERATION.md) adds an audit and serialized mutation table. Existing
 data and bans are preserved; future user bans/unbans revoke sessions and API
