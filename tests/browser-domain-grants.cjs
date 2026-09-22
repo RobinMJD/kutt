@@ -98,9 +98,46 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
       const recipientLink = await recipient.request.post(origin + "/api/links", { headers: json,
         data: { customurl: `recipient-${locale}-${theme}`, domain: domain.address, target } });
       assert.equal(recipientLink.status(), 201);
-      await page.getByRole("button", { name: t("domain_grants.revoke_for").replace("{{email}}", accounts.recipient.email), exact: true }).focus();
+      const scopedResponse = await recipient.request.post(origin + "/api/tokens", { headers: json,
+        data: { name: `Confirmation ${locale} ${theme}`, scopes: ["links:read"], domain_scope: domain.id } });
+      assert.equal(scopedResponse.status(), 201); const scoped = await scopedResponse.json();
+      const tokenStatus = async () => (await fixture.request.get(origin + "/api/links", {
+        headers: { ...json, Cookie: "", "X-API-Key": scoped.token }
+      })).status();
+      const openConfirmation = async () => {
+        await page.getByRole("button", { name: t("domain_grants.revoke_for").replace("{{email}}", accounts.recipient.email), exact: true }).focus();
+        await Promise.all([page.waitForNavigation(), page.keyboard.press("Enter")]);
+        assert(await page.getByRole("heading", { name: t("domain_grants.confirm_title"), exact: true }).isVisible());
+      };
+      for (const width of [320, 390, 1440]) {
+        await page.setViewportSize({ width, height: 1000 }); await openConfirmation();
+        assert.equal(await page.locator("html").getAttribute("lang"), locale);
+        assert.equal(await page.locator("html").getAttribute("data-theme"), theme);
+        const content = await page.locator("main").innerText();
+        assert(content.includes(accounts.recipient.email) && content.includes(domain.address));
+        for (const key of ["confirm_tokens", "confirm_health", "confirm_redirects"]) assert(content.includes(t("domain_grants." + key)));
+        assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+        for (const box of await page.locator(".domain-grants h1, .grant-confirm-actions > a, .grant-confirm-actions > button").evaluateAll(nodes => nodes.map(node => {
+          const r = node.getBoundingClientRect(); return { left: r.left, right: r.right, scroll: node.scrollWidth, client: node.clientWidth };
+        }))) { assert(box.left >= 0 && box.right <= width + 1); assert(box.scroll <= box.client + 1); }
+        const consequences = await page.locator(".grant-consequences").boundingBox(), actions = await page.locator(".grant-confirm-actions").boundingBox();
+        assert(actions.y >= consequences.y + consequences.height - 1 && actions.height < 180, "Confirmation actions must follow the warning without inherited gaps");
+        violations.push(...await page.evaluate(() => window.cspViolations));
+        await page.screenshot({ path: path.join(evidence, `${locale}-${theme}-${width}-confirm.png`), fullPage: true });
+        await page.getByRole("link", { name: t("ui.cancel"), exact: true }).focus();
+        await Promise.all([page.waitForNavigation(), page.keyboard.press("Enter")]);
+        assert.equal(await page.locator(".grant-list li").count(), 1);
+        assert.equal(await tokenStatus(), 200, "Cancel must not revoke the recipient's domain-scoped token");
+      }
+      await openConfirmation();
+      await page.getByRole("button", { name: t("domain_grants.revoke"), exact: true }).focus();
+      const confirmationPath = new URL(page.url()).pathname;
+      const confirmationPost = page.waitForResponse(response => response.request().method() === "POST" && new URL(response.url()).pathname === confirmationPath);
       await Promise.all([page.waitForNavigation(), page.keyboard.press("Enter")]);
+      const confirmed = await confirmationPost;
+      assert.equal(confirmed.status(), 303); assert.equal(confirmed.request().headers().origin, origin);
       assert((await page.locator(".grant-list").innerText()).includes(t("domain_grants.empty")));
+      assert.equal(await tokenStatus(), 401, "Only the confirmed POST revokes the scoped token");
       await recipientPage.reload();
       assert.equal(await recipientPage.locator('#domain option[value="' + domain.address + '"]').count(), 0);
       const reportResponse = recipientPage.waitForResponse(response => new URL(response.url()).pathname === "/api/analytics");
@@ -131,7 +168,32 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
       }
       assert.deepEqual(errors, []); assert.deepEqual(violations, []);
       await recipient.close(); await context.close();
-      console.log("PASS: grants native keyboard flow, ownership selectors, revoke, host-only cookies, public protected forms and enforced CSP " + locale + "/" + theme + " 320/390/1440");
+      console.log("PASS: grants native keyboard confirm/cancel, scoped-token revocation, ownership selectors, host-only cookies, public protected forms and enforced CSP " + locale + "/" + theme + " 320/390/1440");
     }
+    const noScriptGrant = await fixture.request.post(origin + "/api/domains/" + domain.id + "/grants", { headers, data: { email: accounts.recipient.email } });
+    assert.equal(noScriptGrant.status(), 201); const grantId = (await noScriptGrant.json()).id;
+    const noScript = await browser.newContext({ javaScriptEnabled: false, locale: "en", viewport: { width: 390, height: 1000 } });
+    await noScript.route("**/*", route => new URL(route.request().url()).origin === origin ? route.continue() : route.abort());
+    await noScript.addCookies([{ name: "token", value: accounts.owner.token, url: origin }]);
+    const nativePage = await noScript.newPage(), catalog = require("../locales/en.json");
+    await nativePage.goto(origin + "/settings/domain-sharing/" + domain.id);
+    const openNative = async () => {
+      await nativePage.getByRole("button", { name: catalog["domain_grants.revoke_for"].replace("{{email}}", accounts.recipient.email), exact: true }).focus();
+      await Promise.all([nativePage.waitForNavigation(), nativePage.keyboard.press("Enter")]);
+      assert(await nativePage.getByRole("heading", { name: catalog["domain_grants.confirm_title"], exact: true }).isVisible());
+    };
+    await openNative();
+    await nativePage.getByRole("link", { name: catalog["ui.cancel"], exact: true }).focus();
+    await Promise.all([nativePage.waitForNavigation(), nativePage.keyboard.press("Enter")]);
+    const retained = await fixture.request.get(origin + "/api/domains/" + domain.id + "/grants", { headers });
+    assert((await retained.json()).data.some(row => row.id === grantId));
+    await openNative();
+    await nativePage.getByRole("button", { name: catalog["domain_grants.revoke"], exact: true }).focus();
+    await Promise.all([nativePage.waitForNavigation(), nativePage.keyboard.press("Enter")]);
+    assert((await nativePage.locator(".grant-list").innerText()).includes(catalog["domain_grants.empty"]));
+    const stale = await nativePage.goto(origin + "/settings/domain-sharing/" + domain.id + "/revoke/" + grantId);
+    assert.equal(stale.status(), 404); assert.equal(await nativePage.locator('input[name="confirm"]').count(), 0);
+    await noScript.close();
+    console.log("PASS: JavaScript-disabled native keyboard cancellation, confirmation and stale-grant page");
   } finally { await browser.close(); }
 })().catch(error => { console.error(error.stack); process.exitCode = 1; });

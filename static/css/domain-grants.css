@@ -14,3 +14,7 @@
 .grant-list li > div { flex: 1 1 200px; min-width: 0; }
 .grant-list form { margin: 0; width: auto; }
 .grant-list time { font-size: 14px; margin-top: 4px; }
+.grant-consequences { padding-left: 24px; }
+.grant-consequences li { margin: 12px 0; overflow-wrap: anywhere; }
+.domain-grants .grant-confirm-actions { display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 16px; width: auto; margin: 24px 0; }
+.grant-confirm-actions .button { min-height: 40px; box-sizing: border-box; }

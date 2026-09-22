@@ -204,7 +204,55 @@ async function main() {
     const health = await checked("PUT", "/api/links/" + shared.id + "/health", { revision: 0, enabled: true, interval_hours: 24 }, recipientToken);
     assert(health.enabled);
     const replay = await create("replay-shared", recipientToken, 201, { "Idempotency-Key": "grants-idempotent-01" });
-    await checked("DELETE", endpoint + "/" + grant.id, undefined, ownerToken, 204, { Origin: origin });
+    const sharingPage = "/settings/domain-sharing/" + domain.uuid;
+    const confirmation = sharingPage + "/revoke/" + grant.id;
+    const html = { Accept: "text/html", Origin: origin };
+    const unchanged = async () => ({
+      grant: await db("domain_grants").where({ id: grant.id }).first(),
+      token: await db("api_tokens").where({ id: scoped.id }).first(),
+      health: await db("link_health").where({ link_id: sharedId }).first()
+    });
+    const beforeConfirmation = await unchanged();
+    for (const locale of ["en", "fr", "es"]) {
+      const response = await request("GET", confirmation, undefined, ownerToken, { ...html, "Accept-Language": locale });
+      assert.equal(response.status, 200); assert.equal(response.headers["cache-control"], "private, no-store");
+      assert.equal(response.headers["referrer-policy"], "same-origin");
+      assert(response.text.includes(recipient.email) && response.text.includes(domain.address));
+      const catalog = require("../locales/" + locale + ".json");
+      const escape = require("handlebars").escapeExpression;
+      for (const key of ["confirm_title", "confirm_tokens", "confirm_health", "confirm_redirects"]) {
+        assert(response.text.includes(escape(catalog["domain_grants." + key])), locale + "/" + key);
+      }
+      assert(response.text.includes('name="confirm" value="' + grant.id + '"'));
+      assert.equal((await request("GET", sharingPage, undefined, ownerToken, html)).status, 200, "Cancel is a read-only return to the list");
+    }
+    const oldForm = await request("POST", sharingPage, { operation: "revoke", grant_id: grant.id }, ownerToken, html);
+    assert.equal(oldForm.status, 303); assert.equal(oldForm.headers.location, confirmation, "Already-open forms must also require confirmation");
+    for (const token of [recipientToken, strangerToken]) {
+      const response = await request("GET", confirmation, undefined, token, html);
+      assert.equal(response.status, 404); assert(!response.text.includes(recipient.email));
+      assert.equal((await request("POST", confirmation, { confirm: grant.id }, token, html)).status, 404);
+    }
+    assert.equal((await request("GET", confirmation, undefined, null, { ...html, "X-API-Key": grantToken.token })).status, 403);
+    assert.equal((await request("GET", confirmation, undefined, ownerToken, html, short)).status, 404);
+    for (const body of [{}, { confirm: randomUUID() }]) {
+      assert.equal((await request("POST", confirmation, body, ownerToken, html)).status, 400);
+    }
+    for (const Origin of ["null", "http://" + short, "https://foreign.invalid"]) {
+      assert.equal((await request("POST", confirmation, { confirm: grant.id }, ownerToken, { ...html, Origin })).status, 403);
+    }
+    // Simulate ownership changing after the owner opened the confirmation page.
+    await db("domains").where({ id: domain.id }).update({ user_id: stranger.id });
+    try {
+      assert.equal((await request("POST", confirmation, { confirm: grant.id }, ownerToken, html)).status, 404);
+    } finally { await db("domains").where({ id: domain.id }).update({ user_id: owner.id }); }
+    assert.deepEqual(await unchanged(), beforeConfirmation, "Reads, cancel, old forms and denied confirmation must not mutate grants, tokens or health");
+    const confirmed = await request("POST", confirmation, { confirm: grant.id }, ownerToken, html);
+    assert.equal(confirmed.status, 303); assert.equal(confirmed.headers.location, sharingPage);
+    for (const method of ["GET", "POST"]) {
+      const stale = await request(method, confirmation, method === "POST" ? { confirm: grant.id } : undefined, ownerToken, html);
+      assert.equal(stale.status, 404); assert(!stale.text.includes('name="confirm"'));
+    }
     assert((await db("api_tokens").where({ id: scoped.id }).first()).revoked_at);
     assert.equal(Number((await db("link_health").where({ link_id: (await db("links").where({ uuid: shared.id }).first()).id }).first()).enabled), 0);
     await create("after-revoke", recipientToken, 400);
@@ -238,6 +286,8 @@ async function main() {
     for (const wrong of [host, short, "foreign.example.invalid"]) await checked("POST", "/api/links/" + protectedLink.id + "/protected", { password: "synthetic-protection" }, null, 404, {}, wrong);
     assert.equal((await request("GET", "/shared-forward/docs/a.pdf?page=2", undefined, undefined, {}, domain.address)).headers.location, target + "/docs/a.pdf?page=2");
     let nextGrant = await checked("POST", endpoint, { email: recipient.email }, adminToken, 201);
+    assert.equal((await request("POST", confirmation, { confirm: grant.id }, ownerToken, html)).status, 404);
+    assert(await db("domain_grants").where({ id: nextGrant.id }).first(), "An old confirmation cannot revoke a later grant to the same recipient");
     await create("scoped-regrant-denied", null, 401, { "X-API-Key": scoped.token });
     await create("regranted");
     assert.equal(Number((await db("link_health").where({ link_id: (await db("links").where({ uuid: shared.id }).first()).id }).first()).enabled), 0);

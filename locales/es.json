@@ -1,5 +1,11 @@
 {
   "domain_grants.title": "Uso compartido de dominios",
+  "domain_grants.confirm_title": "¿Revocar el acceso al dominio?",
+  "domain_grants.confirm_recipient": "{{email}} perderá el permiso para crear o modificar enlaces en {{domain}}.",
+  "domain_grants.confirm_tokens": "Los tokens API de esta cuenta restringidos a este dominio se revocarán permanentemente. Conceder acceso de nuevo no los reactivará.",
+  "domain_grants.confirm_health": "La supervisión de los enlaces de esta cuenta en este dominio se desactivará. Tras conceder acceso de nuevo, deberá activar la supervisión explícitamente.",
+  "domain_grants.confirm_redirects": "Los enlaces existentes y las redirecciones públicas no cambiarán.",
+  "domain_grants.confirm_required": "Confirme la revocación antes de eliminar el acceso.",
   "domain_grants.manage_for": "Gestionar el uso compartido de {{domain}}",
   "domain_grants.owned": "Dominios propios",
   "domain_grants.shared": "Compartidos con usted",

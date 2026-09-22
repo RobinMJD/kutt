@@ -69,6 +69,14 @@ catalogs include all new labels and errors. Granted domains appear in the
 recipient's shortener, workspace-owner and scoped-token selectors, not in their
 owned-domain deletion table. A recipient cannot grant onward access.
 
+The browser's **Revoke access** action first opens a read-only confirmation page
+showing the recipient, domain and token/health consequences. **Cancel** returns
+to the grant list without changing anything. Only the origin-checked confirmation
+POST revokes access, with ownership/admin permission rechecked in the transaction.
+This flow works without JavaScript. An already-revoked grant returns a controlled
+404; an old confirmation cannot revoke a later regrant. API DELETE remains a
+direct, explicitly authorized revoke operation with no confirmation-page step.
+
 A grant permits using the domain for the recipient's own links. It does not
 transfer the domain, existing links, analytics, history, integrations or member
 lists. The domain owner cannot read another creator's links or statistics just
@@ -138,7 +146,10 @@ sh tests/browser-domain-grants.sh IMAGE
 ```
 
 The browser fixture covers 320/390/1440 pixels, all three locales, both themes,
-native keyboard grant/revoke, selector removal and enforced CSP. It also submits
+native keyboard grant/confirm/cancel, confirmation layouts, scoped-token effects,
+selector removal and enforced CSP, plus a JavaScript-disabled confirm/cancel flow.
+The HTTP/SQL fixture verifies non-mutating GET/cancel, legacy-form confirmation,
+origin checks, fresh ownership and stale/regranted IDs. The browser also submits
 actual protected forms on the default, bare custom and `www` custom short hosts,
 using only loopback DNS overrides and synthetic landing responses. OIDC's real
 code/PKCE/signature/logout suite also runs with the separate management origin.

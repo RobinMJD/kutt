@@ -14,6 +14,11 @@ router.get(["/settings/domain-sharing", "/settings/domain-sharing/:id"], require
 router.post("/settings/domain-sharing/:id", require("../handlers/tokens.handler").sessionOnly,
   asyncHandler(auth.jwtPage), asyncHandler(locals.user), domainGrants.boundary,
   helpers.rateLimit({ window: 60, limit: 30, always: true, key: "domain-grants" }), asyncHandler(domainGrants.submit));
+router.get("/settings/domain-sharing/:id/revoke/:grantId", require("../handlers/tokens.handler").sessionOnly,
+  asyncHandler(auth.jwtPage), asyncHandler(locals.user), domainGrants.boundary, asyncHandler((req, res) => domainGrants.confirmPage(req, res)));
+router.post("/settings/domain-sharing/:id/revoke/:grantId", require("../handlers/tokens.handler").sessionOnly,
+  asyncHandler(auth.jwtPage), asyncHandler(locals.user), domainGrants.boundary,
+  helpers.rateLimit({ window: 60, limit: 30, always: true, key: "domain-grants" }), asyncHandler(domainGrants.confirmRevoke));
 router.use("/settings/domain-sharing", domainGrants.pageError);
 const destinationHealth = require("../handlers/link-health.handler");
 router.get("/link/health/:id", require("../handlers/tokens.handler").sessionOnly,
