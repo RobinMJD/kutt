@@ -33,7 +33,7 @@ automatic domain renaming, historical analytics rewriting or data deletion.
 | C12 | Stable allowlisted sorting in personal, admin and workspace tables/API | Complete | `.44`; evidence below |
 | C13 | Branded QR logos embedded in validated PNG/SVG exports | In progress | Isolated implementation and decoder validation; release gates pending |
 | C14 | Accessible dark/system/light theme | Implemented; release gates pending | Candidate `.47`; full source regression and rendered theme/contrast/storage checks passed; publication and deployment pending |
-| C15 | Optional explicit OIDC role mapping and safe demotion/recovery | Pending | Pending |
+| C15 | Optional explicit OIDC role mapping and safe demotion/recovery | Implemented; combined source/database/browser gates passed | Parent integration/release pending; see `OIDC-SECURITY.md` |
 | C16 | Optional separate management hostname and explicit shared-domain grants | Pending | Pending |
 | C17 | Optional consistent destination-domain policy | Pending | Pending |
 | C18 | Private authenticated performance metrics with bounded labels | Pending | Pending |
@@ -225,6 +225,32 @@ review complete while required work remains.
 - Custom templates, native Safari/Firefox and physical assistive technology
   remain separate acceptance surfaces. Publication, exact-wrapper deployment,
   backup/recovery and public acceptance are pending. See [appearance](THEMES.md).
+
+## Evidence: C15
+
+- Mapping is default-off, uses only asymmetrically verified ID-token claims and
+  exact bounded configuration, and retains issuer/subject identity. Enabling or
+  changing policy revokes managed credentials; missing/nonmatching claims demote,
+  malformed claims deny login and commit existing-account demotion. Grant expiry
+  is bounded by signed issuance/expiry and the configured maximum age.
+- An explicitly configured, verified local recovery administrator is required
+  and protected against binding, ban and deletion. Mapped administrators cannot
+  create unmanaged ADMIN accounts. Sessions, scoped/legacy API keys, current-role
+  checks and open event streams observe revocation. Used migration state refuses
+  downgrade; disabling mapping does not restore removed privileges.
+- Full offline combined regression passed, including legacy-off OIDC behavior.
+  Real code/PKCE fixtures passed with RS256, PS256, ES256 and EdDSA. PostgreSQL and
+  MySQL checks passed migration, role transitions, revocation races and recovery
+  protections. Final canonical recovery-ID template formatting was additionally
+  checked in all three locales and the focused RSA suite.
+- Chromium passed 18 English/French/Spanish light/dark layouts at 1440/390/320px,
+  real local-login clicks and native locale-form Origin/303 checks, with screenshot
+  review, no overflow, no external requests and no JavaScript errors. The read-only
+  diagnostics reveal neither tokens nor configured group values.
+- Parent checkout, QR files and package `.47` are unchanged. Real provider/WAF
+  claims and logout, operator-tested recovery credentials, backup/restore, native
+  Safari/Firefox, physical assistive technology and custom templates remain
+  separate acceptance gates. See [mapping and recovery](OIDC-SECURITY.md#optional-administrator-mapping-c15).
 
 ## Evidence: C20
 

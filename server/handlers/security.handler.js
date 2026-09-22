@@ -10,7 +10,7 @@ async function status(req, res) {
   const identities = await knex("oidc_identities").where({ user_id: req.user.id }).select("issuer", "created_at");
   const result = { identities: identities.map(row => ({ issuer: row.issuer, created_at: new Date(Number(row.created_at)).toISOString() })),
     oidc_session_max_seconds: env.OIDC_SESSION_MAX_SECONDS,
-    ...(req.user.admin && { provider: oidc.status() }) };
+    ...(req.user.admin && { provider: oidc.status(), role_mapping: await require("../oidc-roles").status() }) };
   if (!req.isHTML) return res.json(result);
   res.render("security", { title: i18n.t("ui.account_security"), ...result });
 }

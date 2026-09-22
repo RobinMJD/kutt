@@ -23,7 +23,7 @@ passport.use(
         return done(null, false);
       }
       // Authorization must not use the fifteen-minute user cache after revocation.
-      const user = await require("./knex")("users").where({ id: payload.sub }).first();
+      const user = await require("./oidc-roles").fresh(await require("./knex")("users").where({ id: payload.sub }).first());
       if (!user) return done(null, false);
       if (!await require("./oidc-security").validSession(user, payload)) return done(null, false);
       return done(null, user, payload);
@@ -49,7 +49,9 @@ if (!env.DISALLOW_LOGIN_FORM) {
         if (!isMatch) {
           return done(null, false);
         }
-        return done(null, user);
+        const current = await require("./oidc-roles").fresh(await require("./knex")("users").where({ id: user.id }).first());
+        if (!current || current.password !== user.password || Number(current.auth_version) !== Number(user.auth_version)) return done(null, false);
+        return done(null, current);
       } catch (err) {
         return done(err);
       }
@@ -67,8 +69,8 @@ passport.use(
   new LocalAPIKeyStrategy(localAPIKeyOptions, async (apikey, done) => {
     try {
       // Like browser sessions, API authentication must see current revocation state.
-      const user = await require("./knex")("users").where({ apikey }).first();
-      if (!user) {
+      const user = await require("./oidc-roles").fresh(await require("./knex")("users").where({ apikey }).first());
+      if (!user || user.apikey !== apikey) {
         return done(null, false);
       }
       return done(null, user);
@@ -89,7 +91,7 @@ async function prepareOIDC(req, res, next) {
     }, async (request, tokenset, userinfo, done) => {
       try {
         const claims = tokenset.claims();
-        const result = await require("./oidc-security").identity(client.issuer.issuer, claims, userinfo);
+        const result = await require("./oidc-security").identity(client.issuer.issuer, claims, userinfo, tokenset.id_token);
         done(null, result.user, { oi: result.id, os: claims.sid || null, oa: Date.now() });
       } catch (error) { done(error); }
     }));

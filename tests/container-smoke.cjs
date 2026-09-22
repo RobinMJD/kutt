@@ -209,6 +209,7 @@ async function main() {
     assert.equal((await request("GET", "/api/v2/links", undefined, token)).status, 200);
     assert.equal((await request("GET", "/api/v2/tokens", undefined, token)).status, 200);
     await require("./oidc-security.cjs")({ root, directory, env });
+    await require("./oidc-roles.cjs")({ root, directory, env });
     console.log("PASS: additive migration rollback and reapply preserve existing accounts and links");
     console.log("PASS: migrations, SQLite cleanup, bootstrap, login, access control, link CRUD and public redirect");
   } finally {

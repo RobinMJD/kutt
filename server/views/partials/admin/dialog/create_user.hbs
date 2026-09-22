@@ -34,7 +34,7 @@
       {{t "ui.role"}}
       <select name="role" id="create-user-role" hx-preserve="true">
         <option value="USER" selected>{{t "ui.user"}}</option>
-        <option value="ADMIN">{{t "ui.admin"}}</option>
+        {{#if canCreateLocalAdmin}}<option value="ADMIN">{{t "ui.admin"}}</option>{{/if}}
       </select>
       {{#if errors.role}}<p class="error">{{errors.role}}</p>{{/if}}
     </label>

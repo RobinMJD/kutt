@@ -30,11 +30,12 @@ async function lock(db, actor, admin = true) {
   await db("admin_mutation_state").where({ id: 1 }).increment("sequence", 1);
   const current = actor && await db("users").where({ id: actor.id }).forUpdate().first();
   if (!current || current.banned || !current.verified || Number(current.auth_version) !== Number(actor.auth_version) ||
-      (admin && current.role !== ROLES.ADMIN)) fail(i18n.t("moderation.sign_in"), 403);
+      (admin && !await require("./oidc-roles").allowsAdmin(db, current))) fail(i18n.t("moderation.sign_in"), 403);
   return current;
 }
 
 async function protectAdmin(db, row, actor) {
+  if (Number(row.id) === Number(await require("./oidc-roles").protectedId(db))) fail(i18n.t("oidc_roles.protected_account"));
   if (Number(row.id) === Number(actor.id)) fail(i18n.t("moderation.self_protected"));
   if (row.role === ROLES.ADMIN && !row.banned && row.verified) {
     const count = await db("users").where({ role: ROLES.ADMIN, banned: false, verified: true }).count({ total: "id" }).first();

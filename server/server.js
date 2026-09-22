@@ -90,9 +90,9 @@ app.get("*", renders.notFound);
 // handle errors coming from above routes
 app.use(helpers.error);
   
-templatesReady.then(() => app.listen(env.PORT, () => {
+templatesReady.then(() => require("./oidc-roles").initialize()).then(() => app.listen(env.PORT, () => {
   console.log(`> Ready on http://localhost:${env.PORT}`);
 })).catch(() => {
-  console.error("Template initialization failed.");
+  console.error("Startup validation failed. Check templates and, when configured, the protected local OIDC recovery administrator.");
   process.exit(1);
 });

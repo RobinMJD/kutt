@@ -226,22 +226,20 @@ async function totalAdmin(match, params) {
   return typeof count === "number" ? count : parseInt(count);
 }
 
-async function create(params) {
-  let [user] = await knex("users").insert({
-    email: params.email,
-    password: params.password,
-    role: params.role ?? ROLES.USER,
-    verified: params.verified ?? false,
-    banned: params.banned ?? false,
-  }, "*");
-
-  // mysql doesn't return the whole user, but rather the id number only
-  // so we need to fetch the user ourselves
-  if (typeof user === "number") {
-    user = await knex("users").where("id", user).first();
-  }
-
-  return user;
+async function create(params, actor) {
+  return knex.transaction(async db => {
+    const current = await require("../moderation").lock(db, actor);
+    if (params.role === ROLES.ADMIN && !await require("../oidc-roles").canCreateLocalAdmin(current, db)) {
+      throw new utils.CustomError(i18n.t("oidc_roles.local_admin_creation"), 403);
+    }
+    let [user] = await db("users").insert({
+      email: params.email, password: params.password, role: params.role ?? ROLES.USER,
+      verified: params.verified ?? false, banned: params.banned ?? false
+    }, "*");
+    // MySQL returns the inserted ID rather than the row.
+    if (typeof user === "number") user = await db("users").where("id", user).first();
+    return user;
+  });
 }
 
 // check if there exists a user
