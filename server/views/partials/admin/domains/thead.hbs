@@ -10,15 +10,15 @@
             type="text" 
             placeholder="{{t 'ui.search_domain'}}" aria-label="{{t 'ui.search_domains'}}"
             class="table-input search admin" 
-            hx-on:input="onSearchChange(event)" 
-            hx-on:keyup="resetTableNav()"
+            data-ui-search
+            data-ui-reset-nav="keyup"
             value="{{query.search}}"
           />
           <button 
             type="button" 
             aria-label="{{t 'ui.clear_search'}}"
             class="clear" 
-            onclick="clearSeachInput(event)"
+            data-ui-clear-search
           >
             {{> icons/x}}
           </button>
@@ -30,32 +30,32 @@
             type="text" 
             placeholder="{{t 'ui.search_user'}}" aria-label="{{t 'ui.search_users'}}"
             class="table-input search admin" 
-            hx-on:input="onSearchChange(event)" 
-            hx-on:keyup="resetTableNav()"
+            data-ui-search
+            data-ui-reset-nav="keyup"
             value="{{query.user}}"
           />
           <button 
             type="button" 
             aria-label="{{t 'ui.clear_user'}}"
             class="clear" 
-            onclick="clearSeachInput(event)"
+            data-ui-clear-search
           >
             {{> icons/x}}
           </button>
         </div>
-        <select id="domains-select-banned" name="banned" class="table-input ban" hx-on:change="resetTableNav()" aria-label="{{t 'ui.banned_status'}}">
+        <select id="domains-select-banned" name="banned" class="table-input ban" data-ui-reset-nav="change" aria-label="{{t 'ui.banned_status'}}">
           <option value="" selected>{{t "ui.banned_2"}}</option>
           <option value="true">{{t "ui.banned"}}</option>
           <option value="false">{{t "ui.not_banned"}}</option>
         </select>
       </div>
       <div>
-        <select id="domains-select-links" name="links" class="table-input links" hx-on:change="resetTableNav()" aria-label="{{t 'ui.link_ownership'}}">
+        <select id="domains-select-links" name="links" class="table-input links" data-ui-reset-nav="change" aria-label="{{t 'ui.link_ownership'}}">
           <option value="" selected>{{t "ui.links_2"}}</option>
           <option value="true" {{#ifEquals query.links 'true'}}selected{{/ifEquals}}>{{t "ui.with_links"}}</option>
           <option value="false" {{#ifEquals query.links 'true'}}selected{{/ifEquals}}>{{t "ui.no_links"}}</option>
         </select>
-        <select id="domains-select-owner" name="owner" class="table-input owner" hx-on:change="resetTableNav()" aria-label="{{t 'ui.domain_owner_type'}}">
+        <select id="domains-select-owner" name="owner" class="table-input owner" data-ui-reset-nav="change" aria-label="{{t 'ui.domain_owner_type'}}">
           <option value="" selected>{{t "ui.owner_2"}}</option>
           <option value="true" {{#ifEquals query.owner 'true'}}selected{{/ifEquals}}>{{t "ui.with_owner"}}</option>
           <option value="false" {{#ifEquals query.owner 'true'}}selected{{/ifEquals}}>{{t "ui.no_owner"}}</option>
@@ -66,7 +66,7 @@
         {{> list_sort profile='domains' state=query}}
         <button 
           class="table primary"
-          hx-on::before-request='openDialog("admin-table-dialog", null, this)'
+          data-ui-open-dialog="admin-table-dialog"
           hx-get="/add-domain" 
           hx-target="#admin-table-dialog .content-wrapper" 
           hx-indicator="#admin-table-dialog"

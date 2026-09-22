@@ -12,7 +12,7 @@
         <button 
           type="button"
           aria-label="{{t 'ui.copy'}}"
-          hx-on:click="handleShortURLCopyLink(this);" 
+          data-ui-copy
           data-url="{{user.apikey}}"
         >
         {{> icons/copy}}
@@ -20,7 +20,7 @@
         {{> icons/check}}
       </div>
       <p 
-        hx-on:click="handleShortURLCopyLink(this);" 
+        data-ui-copy
         data-url="{{user.apikey}}"
       >
         {{user.apikey}}

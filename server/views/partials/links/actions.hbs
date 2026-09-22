@@ -38,15 +38,7 @@
     hx-target="next tr.edit"
     hx-indicator="next tr.edit"
     hx-sync="this:drop"
-    hx-on::before-request="
-      const tr = event.detail.target;
-      tr.classList.add('show');
-      if (tr.querySelector('.content')) {
-        event.preventDefault();
-        tr.classList.remove('show');
-        tr.removeChild(tr.querySelector('.content'));
-      }
-    "
+    data-ui-edit-toggle
   >
     {{> icons/pencil}}
   </button>
@@ -55,7 +47,7 @@
     type="button"
     aria-label="{{t 'ui.move_value_to_trash' value1=link.address}}"
     title="{{t 'ui.move_to_trash'}}"
-    hx-on::before-request='openDialog("link-dialog", null, this)'
+    data-ui-open-dialog="link-dialog"
     hx-get="/confirm-link-delete" 
     hx-target="#link-dialog .content-wrapper" 
     hx-indicator="#link-dialog" 

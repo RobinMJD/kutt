@@ -455,3 +455,33 @@ CI runs the same helper with isolated, version-pinned Playwright tooling.
 `KUTT_TEST_ONLY=metrics` for configuration/listener/authentication, bounded-label
 privacy, timing/counter, secret-file rotation, restart and public-route isolation
 checks. Only disposable loopback listeners and generated credentials are used.
+
+## Optional CSP
+
+`csp.cjs` is included in the full offline container suite; `KUTT_TEST_ONLY=csp`
+selects the focused mode/nonce/header/HTTP boundary gate. Configuration tests
+reject unknown and policy-valued modes. Source tests reject bundled executable
+attributes and unnonced/inline scripts; concurrent templates cannot override or
+share request nonces. APIs, fragments, public redirects and QR SVG retain their
+existing headers. Locale and theme catalogs are unchanged.
+
+`sh tests/browser-csp.sh IMAGE` creates a disposable loopback fixture and checks
+enforced login, copy, paging/edit, dialogs, chart pixels/map, settings, native
+locale forms and protected-link navigation in EN/FR/ES, light/dark, 1440/390/320px.
+It also verifies blocked inline/wrong-nonce/external scripts, event attributes and
+eval, with a trusted nonce control. Eval executes from a network-loaded script,
+not Playwright's privileged Runtime.evaluate stack. Set
+`KUTT_TEST_CSP_MODE=report-only` for a nonblocking diagnostic/control run.
+
+Pass `dialogs` or `list-sorting` as the runner's second argument for the existing
+modal, pending mutation and delayed list/editor regression suites under enforced
+CSP. Additional selections `logout-navigation`, `validation` and `domain-proof`
+cover revoked sessions, form failures/drafts and the full DNS ownership flow.
+`sh tests/browser-csp-oidc.sh IMAGE` checks enforced SSO-only outage/retry and
+top-level provider cancellation with a synthetic loopback development provider.
+The runner enables only the guarded offline domain-proof fixture, never
+real DNS. `KUTT_TEST_CSP_MODE=enforce sh tests/browser-qr-branding-locales.sh IMAGE`
+runs all 18 QR combinations with actual decoding, clipboard/print/races/cleanup.
+The QR harness reads captured Blob objects directly; it does not add a synthetic
+`fetch(blob:)` requirement to the production policy. See [CSP](../docs/CSP.md) for
+the bounded policy, custom-template compatibility and deployment limitations.

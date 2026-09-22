@@ -6,7 +6,7 @@
     {{t "ui.your_domain"}} <b>"{{address}}"</b> {{t "ui.has_been_deleted"}}
   </p>
   <div class="buttons">
-    <button type="button" hx-on:click="closeDialog()">{{t "ui.close"}}</button>
+    <button type="button" data-ui-close-dialog>{{t "ui.close"}}</button>
   </div>
 </div>
 {{> settings/domain/table}}

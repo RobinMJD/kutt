@@ -21,9 +21,9 @@ const decode = require(process.env.QR_DECODER_MODULE || "./browser-deps/node_mod
     await context.route("**/*", route => new URL(route.request().url()).origin === origin ? route.continue() : route.abort());
     await context.addInitScript(() => {
       const create = URL.createObjectURL.bind(URL), revoke = URL.revokeObjectURL.bind(URL);
-      window.liveBlobs = new Set();
-      URL.createObjectURL = value => { const url = create(value); window.liveBlobs.add(url); return url; };
-      URL.revokeObjectURL = value => { window.liveBlobs.delete(value); revoke(value); };
+      window.liveBlobs = new Set(); window.blobValues = new Map();
+      URL.createObjectURL = value => { const url = create(value); window.liveBlobs.add(url); window.blobValues.set(url, value); return url; };
+      URL.revokeObjectURL = value => { window.liveBlobs.delete(value); window.blobValues.delete(value); revoke(value); };
       Object.defineProperty(navigator, "clipboard", { configurable: true, value: { async write(items) {
         if (window.denyCopy) throw Error("fixture-denial");
         const blob = await items[0].getType("image/png");
@@ -78,7 +78,7 @@ const decode = require(process.env.QR_DECODER_MODULE || "./browser-deps/node_mod
       assert.equal(await page.locator('[name="level"]').inputValue(), "H"); assert(await page.locator('[name="level"]').isDisabled());
       assert(await page.locator("#qr-logo-preview").isVisible());
       const embeddedLogo = await page.evaluate(async () => {
-        const svg = await (await fetch(document.getElementById("qr-svg").href)).text();
+        const svg = await window.blobValues.get(document.getElementById("qr-svg").href).text();
         return new DOMParser().parseFromString(svg, "image/svg+xml").querySelector("image").getAttribute("href");
       });
       assert.equal(await page.locator("#qr-logo-preview").getAttribute("src"), embeddedLogo, "Thumbnail must use only the canonical server raster, never the uploaded metadata");
@@ -110,7 +110,7 @@ const decode = require(process.env.QR_DECODER_MODULE || "./browser-deps/node_mod
       await page.locator("#qr-logo-remove").focus(); await page.keyboard.press("Enter"); await waitReady();
       assert(await page.locator("#qr-logo").evaluate(el => el === document.activeElement));
       assert(!(await page.locator('[name="level"]').isDisabled()));
-      const plain = await page.evaluate(async () => Array.from(new Uint8Array(await (await fetch(document.getElementById("qr-png").href)).arrayBuffer())));
+      const plain = await page.evaluate(async () => Array.from(new Uint8Array(await window.blobValues.get(document.getElementById("qr-png").href).arrayBuffer())));
       await inspect(Buffer.from(plain), "image/png", link.link, false);
       assert.equal(await page.evaluate(() => window.liveBlobs.size), 2);
       await page.locator("#qr-logo").setInputFiles({ name: "bad.svg", mimeType: "image/svg+xml", buffer: Buffer.from("<svg/>") });

@@ -92,13 +92,13 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
     await page.locator("#add-domain button[type=submit]").click();
     try { await invalid("#address", ""); }
     catch (error) { console.log("Domain validation events", await page.evaluate(() => window.validationEvents)); throw error; }
-    await page.locator("#address").fill("validation.example.org");
+    await page.locator("#address").fill("validation.example.invalid");
     const reject = route => route.fulfill({ status: 503, contentType: "text/html", body: "<h1>WAF unavailable</h1>" });
     await page.route("**/api/domains", reject);
     injectedFault = true;
     await page.locator("#add-domain button[type=submit]").click();
     await page.locator("#add-domain [data-request-error]").waitFor();
-    assert.equal(await page.locator("#address").inputValue(), "validation.example.org");
+    assert.equal(await page.locator("#address").inputValue(), "validation.example.invalid");
     assert(await page.locator("#add-domain [data-request-error]").evaluate(node => node === document.activeElement));
     assert.equal(await page.getByText("Domain is not valid.", { exact: true }).isVisible(), false);
     await page.waitForLoadState("networkidle");
@@ -106,8 +106,12 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
     await page.screenshot({ path: path.join(evidence, "domain-waf-failure.png"), fullPage: true });
     await page.unroute("**/api/domains", reject);
     await page.locator("#add-domain button[type=submit]").click();
+    const verify = page.locator("#add-domain").getByRole("button", { name: "Verify ownership", exact: true });
+    await verify.waitFor();
+    assert.equal(await page.locator("#address").inputValue(), "validation.example.invalid");
+    await verify.click();
     await page.locator("#add-domain").waitFor({ state: "detached" });
-    await page.getByText("validation.example.org", { exact: true }).first().waitFor();
+    await page.getByText("validation.example.invalid", { exact: true }).first().waitFor();
     // A slow response from one form must not take focus from another draft.
     await page.locator("#currentpassword").fill("wrong-password");
     await page.locator("#newpassword").fill("synthetic-not-applied");

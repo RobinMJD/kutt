@@ -69,7 +69,7 @@ module.exports = async ({ request, session }) => {
     const event = emit("htmx:before-request", { target: { closest: () => dialog }, xhr, requestConfig: { verb } });
     return { xhr, event };
   };
-  assert(listeners.has("htmx:before-request"), "Track after the hx-on::before-request opener, not its earlier camel-case event");
+  assert(listeners.has("htmx:before-request"), "Track after the capture-phase opener, not its earlier camel-case event");
   window.openDialog("test-dialog", null, opener);
   assert.equal(document.activeElement, close);
   const first = start("get"); assert.equal(first.xhr.timeout, 30000);

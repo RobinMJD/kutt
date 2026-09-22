@@ -412,7 +412,7 @@ function feedMapData(period) {
 }
 
 // handle map tooltip hover
-function mapTooltipHoverOver() {
+function mapTooltipHoverOver(event) {
   const tooltip = document.querySelector("#map-tooltip");
   if (!tooltip) return;
   if (!event.target.dataset.id) return mapTooltipHoverOut();

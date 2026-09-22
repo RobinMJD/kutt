@@ -12,7 +12,9 @@ module.exports = async ({ request, session, account }) => {
   new Script(readFileSync("static/scripts/validation.js", "utf8"));
   assert(readFileSync("static/css/styles.css", "utf8").includes("p.error[hidden]"));
   const domainView = readFileSync("server/views/partials/settings/domain/index.hbs", "utf8");
-  assert(domainView.includes("event.detail.successful &amp;&amp; document.querySelector('#add-domain')"));
+  const uiEvents = readFileSync("static/scripts/ui-events.js", "utf8");
+  assert(domainView.includes("data-ui-domain-load"));
+  assert(uiEvents.includes('event.detail.successful && document.getElementById("add-domain")'));
   assert(domainView.includes('id="domain-load-error" class="error" role="alert" hidden'));
   const badLink = { target: "not a url" };
   assert.equal((await request("POST", "/api/links", badLink, session)).status, 400);
@@ -25,7 +27,8 @@ module.exports = async ({ request, session, account }) => {
   assert.equal(invalidDomain.headers.get("HX-Reswap"), null, "Validation must not signal insertion success");
   const domainForm = await invalidDomain.text();
   assert(domainForm.includes('id="add-domain"') && domainForm.includes("Domain is not valid."));
-  assert(domainForm.includes("event.detail.successful") && domainForm.includes("getResponseHeader('HX-Reswap') === 'none'"));
+  assert(domainForm.includes("data-ui-domain-save"));
+  assert(uiEvents.includes('event.detail.successful && event.detail.xhr.getResponseHeader("HX-Reswap") === "none"'));
   assert.equal((await request("POST", "/api/domains", { address: "not a domain" }, session)).status, 400);
   assert.equal((await request("POST", "/api/domains", { address: "not a domain" })).status, 401);
 

@@ -16,6 +16,7 @@ const links = require("./handlers/links.handler");
 const routes = require("./routes");
 const utils = require("./utils");
 const i18n = require("./i18n");
+const csp = require("./csp");
 
 
 // run the cron jobs
@@ -38,6 +39,7 @@ app.set("trust proxy", env.TRUST_PROXY);
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cookieParser());
 app.use(i18n.middleware);
+app.use(csp.middleware(env.CSP_MODE));
 // Do not send ephemeral logo payloads to the global body-parser error logger.
 const qrJSON = express.json();
 app.use(/^\/api\/(?:v2\/)?links\/[^/]+\/qr\/?$/i, (req, res, next) => {
@@ -81,6 +83,7 @@ app.set("views", [
 ]);
 const templatesReady = utils.registerHandlebarsHelpers();
 i18n.register(hbs);
+csp.register(hbs);
 i18n.assets(app, env.SITE_NAME);
 app.post("/language", i18n.change);
 

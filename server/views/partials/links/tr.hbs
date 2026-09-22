@@ -25,7 +25,7 @@
     <div class="clipboard small">
       <button 
         aria-label="{{t 'ui.copy'}}"
-        hx-on:click="handleShortURLCopyLink(this);"
+        data-ui-copy
         data-url="{{link.url}}"
       >
         {{> icons/copy}}
