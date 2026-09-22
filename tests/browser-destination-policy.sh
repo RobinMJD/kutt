@@ -17,6 +17,7 @@ cid=$(docker run -d --read-only --cap-drop ALL --security-opt no-new-privileges:
   -e DB_CLIENT=better-sqlite3 -e DB_FILENAME=/tmp/kutt-policy.sqlite -e REDIS_ENABLED=false \
   -e MAIL_ENABLED=false -e OIDC_ENABLED=false -e DISALLOW_ANONYMOUS_LINKS=true -e DISALLOW_REGISTRATION=true \
   -e DISALLOW_LOGIN_FORM=false -e ENABLE_RATE_LIMIT=false -e TRUST_PROXY=false -e NODE_APP_INSTANCE=1 \
+  -e "CSP_MODE=${KUTT_TEST_CSP_MODE:-off}" \
   -e 'DESTINATION_ALLOWED_HOSTS=["192.0.2.1","*.a-deliberately-long-hostname-for-responsive-layout-validation.example.invalid"]' \
   --entrypoint sh "$image" -c 'export JWT_SECRET=$(node -e "console.log(require(\"crypto\").randomBytes(48).toString(\"hex\"))"); node node_modules/knex/bin/cli.js migrate:latest && exec node server/server.js')
 attempt=0

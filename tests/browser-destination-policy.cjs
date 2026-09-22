@@ -50,7 +50,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
         await page.locator("#target[aria-invalid=true]").waitFor();
         assert.equal(await page.locator("#target").inputValue(), denied);
         assert((await page.locator("#shortener-form").innerText()).includes(catalog["destination_policy.denied"]));
-        assert(await page.locator("#target").evaluate(node => node === document.activeElement));
+        await page.waitForFunction(() => document.querySelector('#target') === document.activeElement);
         assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
         const allowed = "https://192.0.2.1/" + locale + width + theme;
         await page.locator("#target").fill(allowed);
