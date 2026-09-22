@@ -7,6 +7,23 @@ reserved names, dot/traversal/encoding limits, case/domain identity, scoped
 access, redirects, retirement/restore and forwarding-suffix compatibility.
 See [alias rules](../docs/LINK-ALIASES.md). Use only disposable test databases.
 
+`browser-dotted-aliases.cjs` uses `KUTT_BROWSER_DISPOSABLE=1`, a fresh loopback
+`KUTT_TEST_URL`, optional `PLAYWRIGHT_MODULE`, and `KUTT_EVIDENCE_DIR` outside the
+checkout. It covers native create, personal/admin/workspace edits, rejected
+aliases and retained drafts, redirects and layout at 1440/390/320px. It refuses
+an initialized app, verifies the public redirect response, and substitutes a
+synthetic landing response without contacting the external destination.
+
+Build the candidate image, then run `sh tests/dotted-alias-database.sh IMAGE mysql2`
+and `sh tests/dotted-alias-database.sh IMAGE pg`. Each gate creates its own pinned,
+network-isolated database container with tmpfs storage and removes only that
+container by its captured ID. The HTTP suite refuses an initialized database and
+covers dotted write paths, native collation parity, scoped domains, concurrent
+claims, rollback, trash/restore and unchanged forwarding suffixes.
+Ordinary aliases are controls for both case matching and duplicate-claim races.
+The forced stale-snapshot check requires a normal `409` conflict, never a `500`
+or an unclassified exception; it can expose pre-existing database-engine bugs.
+
 Build from a clean checkout without a `.env` file:
 
 ```sh

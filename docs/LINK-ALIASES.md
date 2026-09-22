@@ -61,3 +61,10 @@ scoped access, redirects, import/export/rename, lifecycle and restart in the
 existing disposable smoke fixture. Run its focused gate with
 `KUTT_TEST_ONLY=dotted-aliases node tests/container-smoke.cjs` in an isolated
 container/checkout without `.env`, never against a deployed database.
+
+`tests/browser-dotted-aliases.cjs` adds actual rendered create/edit/error recovery
+at desktop and mobile sizes. `tests/dotted-alias-database.sh IMAGE mysql2` and
+`tests/dotted-alias-database.sh IMAGE pg` run the standalone HTTP/database gate
+against fresh, network-isolated engines. Case-collision results are compared
+with ordinary aliases on that engine, not assumed to be case-sensitive. See
+[test setup](../tests/README.md) for disposable-instance and evidence settings.
