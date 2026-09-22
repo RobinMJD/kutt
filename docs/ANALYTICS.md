@@ -15,6 +15,13 @@ in the UI and JSON/CSV exports. Tables are paginated; exports include all rows.
 Empty ranges, request errors and retry are distinct states. Date/filter values
 are preserved in the page URL. No visitor IPs or user agents are exported.
 
+Domain and tag filters retain native keyboard-selectable controls in a responsive
+layout. When the selected text cannot fit inside its control, the full value is
+shown directly below as wrapping plain text and associated with the control for
+assistive technology. No tooltip or smaller font is needed to read long values.
+The displayed value updates on selection, resizing and report reload; Clear
+removes it along with the filter. Filtering and export semantics are unchanged.
+
 Both `GET /api/analytics` and `GET /api/v2/analytics` accept:
 
 | Parameter | Meaning |
@@ -203,5 +210,9 @@ metadata, exports, invalid stored dimensions/counts, old API compatibility, bot
 filtering, queued hints, concurrent increments, object-property referrers, rollback,
 restart and index migration. `tests/browser-analytics.cjs` uses only a fresh
 loopback fixture and checks desktop/mobile filters, charts, tables, downloads,
-empty/error/retry states and browser runtime/layout errors. Each future change
+empty/error/retry states and browser runtime/layout errors.
+`tests/browser-domain-grants.cjs`, run by `tests/browser-domain-grants.sh`, also
+checks common and long domain/tag selections, keyboard Apply/reload/Clear, and
+creator-only shared-domain reports before and after grant revocation across
+English/French/Spanish, light/dark and 1440/390/320px layouts. Each future change
 still requires publication, backup restore and live WAF/SSO acceptance.
