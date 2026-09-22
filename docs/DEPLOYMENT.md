@@ -420,6 +420,44 @@ For remote SQL databases or Redis, see [verified transport TLS](TRANSPORT-TLS.md
 Application and migration settings are shared; configure trusted identities and
 certificate-file mounts before enabling TLS. The public WAF/SSO policy is separate.
 
+### Community Features
+
+The [community ledger](COMMUNITY-FEATURE-ROADMAP.md) distinguishes implemented,
+published and accepted deployments. Do not infer live acceptance from a tag.
+
+- [Localization](LOCALIZATION.md) requires shipping `locales/` alongside the
+  server and static assets, including in downstream hardened wrapper images.
+  English is the fallback. Use `OIDC_PROVIDER_NAME` for a translated standard
+  sign-in label; an explicit `OIDC_BUTTON_TEXT` is intentionally verbatim.
+- Stage [CSP](CSP.md) in `report-only` through the real reverse proxy/WAF before
+  `enforce`. Exercise forms, OIDC, QR logos/downloads, charts and HTMX updates.
+  A local browser fixture is not evidence that an external WAF accepts uploads.
+  Retain failed responses and fix application compatibility without disabling
+  WAF, TLS, SSO, CSRF or CSP protections.
+- [OIDC role mapping](OIDC-SECURITY.md#optional-administrator-mapping-c15),
+  [destination policy](DESTINATION-POLICY.md) and the
+  [separate management origin](DOMAIN-SHARING.md) are opt-in. An application
+  update does not authorize new public DNS/routes, automatic grants or changes
+  to the identity provider's policy. Prepare protected recovery access before
+  enabling role mapping, and validate a new management hostname's WAF/SSO/TLS
+  and IdP callback configuration before directing users to it.
+- Explicit domain grants are additive and empty after migration. Revocation
+  permanently invalidates affected scoped tokens and disables their health
+  schedules; regrant does not undo those actions. Existing public links and
+  creator-owned analytics remain available. Validate native confirmation,
+  cancellation, API scopes and creator isolation after deployment.
+- [Private metrics](METRICS.md) use a separate authenticated listener. Keep it
+  internal, mount the collector credential securely, and verify both scraping
+  and missing/down-target alerts. Do not publish a backend port for monitoring.
+
+Never roll back to an image that predates an enabled authorization control.
+After domain grants or OIDC role mapping are used, prefer fix-forward; an older
+image may ignore the new state even if its process starts successfully. Test
+rollback compatibility against an isolated copy, preserve revocation records,
+and keep management unavailable if a safe rollback cannot enforce them.
+
+### Procedure
+
 1. Record the current app/wrapper image digests, configuration checksums,
    database engine/version, schema migrations and health. Preserve secrets,
    Authentik bindings and existing links. Keep unrelated deployment changes.
