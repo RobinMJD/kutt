@@ -22,11 +22,13 @@ function middleware(mode) {
     const api = /^\/api(?:\/|$)/i.test(req.path);
     const render = res.render;
     res.render = function (view, options, callback) {
-      // A fragment's nonce/policy cannot replace its owning document's policy.
-      // API attachments and redirects retain their existing independent headers.
-      if (mode !== "off" && res.locals.layout !== null && !api) {
-        res.set(mode === "enforce" ? "Content-Security-Policy" : "Content-Security-Policy-Report-Only", policy(nonce));
-        res.set("Cache-Control", "private, no-store");
+      if (mode !== "off") {
+        // Intermediary HTML rewriting can inject scripts into documents or fragments.
+        res.set("Cache-Control", "private, no-store, no-transform");
+        // A fragment's nonce/policy cannot replace its owning document's policy.
+        if (res.locals.layout !== null && !api) {
+          res.set(mode === "enforce" ? "Content-Security-Policy" : "Content-Security-Policy-Report-Only", policy(nonce));
+        }
       }
       return render.call(this, view, options, callback);
     };

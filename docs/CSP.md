@@ -24,9 +24,11 @@ rather than replace each other. Do not weaken edge controls to hide conflicts.
 
 ## Policy and boundaries
 
-Rendered full HTML documents receive a fresh 192-bit cryptographic nonce and
-`Cache-Control: private, no-store`. The response header and trusted template
-helpers use the same request-local value, isolated across concurrent requests.
+In either active mode, all HTML sent through `res.render` receives
+`Cache-Control: private, no-store, no-transform`, including HTMX/API fragments
+and rendered error pages. Only full, non-API HTML documents receive the nonce
+policy header. Their fresh 192-bit cryptographic nonce is shared by the response
+header and trusted template helpers, isolated across concurrent requests.
 Body, query, request headers and template model fields cannot supply the nonce.
 Do not cache these documents at a reverse proxy or reuse a nonce in static HTML.
 
@@ -47,13 +49,22 @@ self-hosted scripts. Images allow `data:` and `blob:` for locally generated QR
 previews and sanitized logos; this does not permit fetching arbitrary remote
 resources. Clipboard permissions and secure-context requirements are unchanged.
 
-HTMX fragments do not receive a replacement document policy. API responses,
-static assets and public HTTP redirects retain their existing headers; QR SVG
-attachments keep their independent `default-src 'none'; sandbox` policy. CSP
+HTMX/API fragments do not receive a replacement document policy. Non-rendered
+JSON responses, attachments, static assets and public HTTP redirects retain
+their existing headers; QR SVG attachments keep their independent
+`default-src 'none'; sandbox` policy. CSP
 governs browser documents, not API access or validation of link destinations.
 OIDC authorization/logout and public targets remain top-level navigations, not
 cross-origin forms, frames or script fetches. Protected-link forms still submit
 to the same origin before navigating to their validated destination.
+
+The `no-transform` directive prevents intermediary HTML rewriting that can
+inject scripts without the application nonce. Cloudflare documents that
+[Email Address Obfuscation does not apply to responses with this directive](https://developers.cloudflare.com/waf/tools/scrape-shield/email-address-obfuscation/).
+This avoids its injected email-decoding script without adding a script allowlist
+or changing Cloudflare/WAF configuration. Check that any other HTML-transforming
+proxy respects the directive; edge behavior still requires deployment-specific
+verification. Mode `off` retains the previous response headers.
 
 No `report-uri`, `report-to` or report receiver is installed. Diagnostics stay in
 the browser, so CSP reports cannot disclose document URLs, aliases or tokens to
@@ -107,8 +118,10 @@ change, not a catch-all escape or automatic disabling of protection.
 ## Verification
 
 `tests/csp.cjs` covers strict configuration, concurrent nonce isolation, hostile
-nonce/policy inputs, bundled source contracts, localized HTML, no-store and the
-API/fragment/redirect/SVG boundaries. It runs in the full container suite;
+nonce/policy inputs, bundled source contracts, localized HTML and nonce freshness.
+Real HTTP cases check `no-transform` on full documents, HTMX/API fragments and
+rendered errors, document-only CSP, and unchanged off-mode, JSON/error, static,
+redirect and PNG/SVG attachment headers. It runs in the full container suite;
 `KUTT_TEST_ONLY=csp` selects only its focused development fixture.
 
 ```sh
