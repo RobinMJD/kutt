@@ -128,6 +128,7 @@ async function plan(db, req, input, id, fixedAliases) {
   for (let index = 0; index < raw.length; index++) {
     try {
       const row = normalized(raw[index]);
+      for (const target of [row.target, ...row.routing_rules.map(rule => rule.target)]) require("./destination-policy").requireAllowed(target);
       let domainId = null;
       if (row.domain !== env.DEFAULT_DOMAIN.toLowerCase()) {
         const domain = await db("domains").where({ user_id: req.user.id, address: row.domain, banned: false }).first();

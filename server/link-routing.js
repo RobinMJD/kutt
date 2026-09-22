@@ -107,6 +107,7 @@ async function owned(req, db = knex, write = false) {
   return link;
 }
 async function checkTargets(rules) {
+  for (const rule of rules) require("./destination-policy").requireAllowed(rule.target);
   for (const host of new Set(rules.map(rule => utils.removeWww(new URL(rule.target).hostname)))) {
     await validators.bannedDomain(host);
     await validators.bannedHost(host);

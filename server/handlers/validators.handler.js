@@ -31,7 +31,8 @@ const createLink = [
     .custom(value => utils.urlRegex.test(value) || /^(?!https?|ftp)(\w+:|\/\/)/.test(value))
     .withMessage(() => i18n.t("messages.url_is_not_valid"))
     .custom(value => utils.removeWww(URL.parse(value).host) !== env.DEFAULT_DOMAIN)
-    .withMessage(() => i18n.t("messages.value_urls_are_not_allowed", {value1: env.DEFAULT_DOMAIN})),
+    .withMessage(() => i18n.t("messages.value_urls_are_not_allowed", {value1: env.DEFAULT_DOMAIN})).bail()
+    .custom(value => !!require("../destination-policy").requireAllowed(value)),
   body("password")
     .optional({ nullable: true, checkFalsy: true })
     .custom(checkUser)
@@ -114,7 +115,8 @@ const editLink = [
     .custom(value => utils.urlRegex.test(value) || /^(?!https?|ftp)(\w+:|\/\/)/.test(value))
     .withMessage(() => i18n.t("messages.url_is_not_valid"))
     .custom(value => utils.removeWww(URL.parse(value).host) !== env.DEFAULT_DOMAIN)
-    .withMessage(() => i18n.t("messages.value_urls_are_not_allowed", {value1: env.DEFAULT_DOMAIN})),
+    .withMessage(() => i18n.t("messages.value_urls_are_not_allowed", {value1: env.DEFAULT_DOMAIN})).bail()
+    .custom(value => !!require("../destination-policy").requireAllowed(value)),
   body("password")
     .optional({ nullable: true, checkFalsy: true })
     .isString()
@@ -196,7 +198,8 @@ const addDomain = [
     .isLength({ max: 2040 }).withMessage(() => i18n.t("messages.maximum_homepage_url_length_is_2040")).bail()
     .customSanitizer(utils.addProtocol)
     .custom(value => utils.urlRegex.test(value) || /^(?!https?|ftp)(\w+:|\/\/)/.test(value))
-    .withMessage(() => i18n.t("messages.homepage_is_not_valid"))
+    .withMessage(() => i18n.t("messages.homepage_is_not_valid")).bail()
+    .custom(value => !!require("../destination-policy").requireAllowed(value))
 ];
 
 const addDomainAdmin = [
@@ -225,7 +228,8 @@ const addDomainAdmin = [
     .isLength({ max: 2040 }).withMessage(() => i18n.t("messages.maximum_homepage_url_length_is_2040")).bail()
     .customSanitizer(utils.addProtocol)
     .custom(value => utils.urlRegex.test(value) || /^(?!https?|ftp)(\w+:|\/\/)/.test(value))
-    .withMessage(() => i18n.t("messages.homepage_is_not_valid")),
+    .withMessage(() => i18n.t("messages.homepage_is_not_valid")).bail()
+    .custom(value => !!require("../destination-policy").requireAllowed(value)),
   body("banned")
     .optional({ nullable: true })
     .customSanitizer(sanitizeCheckbox)
