@@ -5,6 +5,22 @@
   const geography = geographyRoot && window.KuttGeography ? window.KuttGeography.create(geographyRoot, window.KuttI18n) : null;
   let chart, controller, serial = 0;
   const element = (tag, text) => { const node = document.createElement(tag); if (text !== undefined) node.textContent = text; return node; };
+  const selectionMeasure = document.createElement("canvas").getContext("2d");
+  function selectedValue(select) {
+    const detail = document.getElementById(select.getAttribute("aria-describedby"));
+    if (!detail) return;
+    const text = select.value ? select.selectedOptions[0]?.textContent || "" : "";
+    detail.textContent = text;
+    const style = getComputedStyle(select);
+    selectionMeasure.font = style.font;
+    // Native selects cannot wrap; expose overflowing values without replacing their keyboard behavior.
+    detail.hidden = !text || selectionMeasure.measureText(text).width <= select.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+  }
+  const choices = [form.elements.domain, form.elements.tag];
+  const updateSelections = () => choices.forEach(selectedValue);
+  const selectionResize = new ResizeObserver(updateSelections);
+  for (const select of choices) { select.addEventListener("change", () => selectedValue(select)); selectionResize.observe(select); }
+  document.fonts.ready.then(updateSelections);
   function table(kind, rows, heading) {
     const container = document.querySelector('[data-table="' + kind + '"]'); container.replaceChildren();
     if (!rows.length) { container.append(element("p", window.KuttI18n.t("ui.no_visits"))); return; }
@@ -41,6 +57,7 @@
     const select = form.elements[name]; select.replaceChildren(new Option(label, ""));
     for (const row of rows) select.add(new Option(row.name, row.id));
     select.value = selected;
+    selectedValue(select);
   }
   async function load() {
     const focus = window.KuttFocus.capture();
