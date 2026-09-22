@@ -55,6 +55,13 @@ const { locale, t } = require("./browser-locale.cjs");
         await page.getByRole("radio", { name: t("theme." + mode), exact: true }).check();
         assert.equal(await page.locator("html").getAttribute("data-theme"), mode);
         const geography = page.locator("#analytics-geography"), select = page.locator("#geography-country"), details = page.locator("#geography-details");
+        const basis = page.locator("#geography-basis");
+        assert.equal(await basis.textContent(), t("geography.basis"));
+        assert.equal(await select.getAttribute("aria-describedby"), "geography-basis");
+        assert(await basis.evaluate(node => {
+          const box = node.getBoundingClientRect(), range = document.createRange(); range.selectNodeContents(node);
+          return [...range.getClientRects()].every(rect => rect.left >= box.left - 1 && rect.right <= box.right + 1 && rect.top >= box.top - 1 && rect.bottom <= box.bottom + 1);
+        }), "The full localized denominator text wraps inside its visible container");
         assert.equal(await geography.getByRole("button").count(), 177);
         const shape = await geography.locator("svg").evaluate(svg => ({ box: svg.getBBox().width, visible: [...svg.querySelectorAll("path")].filter(path => path.getBBox().width > 0 && path.getBBox().height > 0 && getComputedStyle(path).fill !== "none").length }));
         assert(shape.box > 900 && shape.visible === 177, "Nonblank SVG geometry");

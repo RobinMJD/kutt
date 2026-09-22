@@ -43,6 +43,45 @@ async function unit() {
       assert(!/{{-|\$t\(|<\/?[a-z][^>]*>/i.test(catalog[key]), "Catalogs are plain text: " + key);
     }
   }
+  const reviewedCopy = {
+    es: {
+      "dialog.ban_link": "¿Confirma que desea bloquear el enlace «{{value}}»?",
+      "dialog.ban_domain": "¿Confirma que desea bloquear el dominio «{{value}}»?",
+      "dialog.ban_user": "¿Confirma que desea bloquear al usuario «{{value}}»?",
+      "dialog.delete_domain": "¿Confirma que desea eliminar el dominio «{{value}}»?",
+      "dialog.delete_user": "¿Confirma que desea eliminar al usuario «{{value}}»?",
+      "moderation.sign_in": "Vuelva a iniciar sesión con una cuenta autorizada.",
+      "moderation.no_cascade": "Levante cada bloqueo explícitamente; no se admite el restablecimiento en cascada.",
+      "moderation.destination_changed": "El destino ha cambiado. Revise el enlace y vuelva a intentarlo.",
+      "moderation.extra_fields": "Levante cada bloqueo explícitamente; no se aceptan campos adicionales.",
+      "moderation.retry": "No se pudo completar la moderación. Revise el estado actual antes de volver a intentarlo.",
+      "moderation.token_sign_in": "Vuelva a iniciar sesión antes de crear un token.",
+      "sorting.close_editors": "Cierre los editores de enlaces para cambiar el orden.",
+      "moderation.invalid_target": "Elemento no válido para moderación.",
+      "moderation.not_found": "No se ha encontrado el elemento que se desea moderar.",
+      "geography.basis": "Los porcentajes se calculan sobre el total de visitas registradas en el informe actual."
+    },
+    fr: {
+      "geography.basis": "Les pourcentages sont calculés sur l'ensemble des visites enregistrées dans le rapport actuel."
+    }
+  };
+  for (const [locale, copy] of Object.entries(reviewedCopy)) {
+    await i18n.run(locale, () => {
+      for (const [key, expected] of Object.entries(copy)) {
+        assert.equal(i18n.catalogs[locale][key], expected, locale + ": reviewed copy " + key);
+        assert.deepEqual(placeholders(expected), placeholders(i18n.catalogs.en[key]), key + " retains its interpolation contract");
+        const value = '<img src=x onerror="window.injected=1">& {{value}}';
+        assert.equal(i18n.t(key, { value }), expected.replace("{{value}}", value));
+        if (key.startsWith("dialog.")) {
+          const hbs = require("hbs").handlebars;
+          const html = hbs.compile('{{t "' + key + '" value=value}}')({ value });
+          assert.equal(html, hbs.escapeExpression(expected.replace("{{value}}", value)));
+          assert(!html.includes("<img"), "Reviewed confirmation text keeps escaped, nonrecursive interpolation");
+        }
+      }
+    });
+  }
+  console.log("PASS: reviewed formal Spanish management copy, moderation entity wording and French/Spanish geography denominator copy with unchanged escaped placeholders");
   const source = directories => directories.flatMap(directory => fs.readdirSync(path.join(root, directory), { recursive: true })
     .filter(file => /\.(js|hbs|html)$/.test(file)).map(file => path.join(root, directory, file)));
   for (const file of source(["server", "static/scripts"])) {
