@@ -349,6 +349,15 @@ only when the app can be reached exclusively through trusted proxies that
 replace untrusted forwarding headers. Direct local examples default to false;
 the application's legacy default remains true for compatibility.
 
+Prefer `TRUST_PROXY=peers:172.18.0.2,::1/128` with the actual immediate proxy
+addresses or narrowly scoped networks. Express stops at the first untrusted hop.
+`hops:0` through `hops:32` are available for invariant-length topologies; a shorter
+alternate path can let a client supply a trusted address, so peer mode is safer.
+The trusted edge must strip and replace incoming forwarding headers. Boolean
+aliases `true/t/1` and `false/f/0` retain their old meaning; `1` is not one hop.
+Empty or malformed settings fail startup. Existing deployments are not changed
+automatically; validate their real proxy topology before changing trust.
+
 Complete first-admin bootstrap privately before enabling public DNS/routing.
 Configure WAF, TLS and Authentik/OIDC management admission before exposure.
 Short-link redirects stay public. Native API tokens authenticate API clients;

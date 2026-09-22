@@ -28,6 +28,7 @@ db.isPostgres = isPostgres;
 db.isSQLite = isSQLite;
 db.isMySQL = isMySQL;
 
-db.compatibleILIKE = isPostgres ? "andWhereILike" : "andWhereLike";
+// MySQL's whereLike forces utf8_bin, which is invalid for utf8mb4 columns.
+db.compatibleILIKE = isPostgres || isMySQL ? "andWhereILike" : "andWhereLike";
 
 module.exports = db;

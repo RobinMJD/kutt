@@ -30,11 +30,7 @@ require("./passport");
 // create express app
 const app = express();
 
-// this tells the express app that it's running behind a proxy server
-// and thus it should get the IP address from the proxy server
-if (env.TRUST_PROXY) {
-  app.set("trust proxy", true);
-}
+app.set("trust proxy", env.TRUST_PROXY);
 
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cookieParser());

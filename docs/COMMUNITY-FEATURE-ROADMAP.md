@@ -19,16 +19,16 @@ automatic domain renaming, historical analytics rewriting or data deletion.
 
 | ID | Scope | State | Publication / deployment evidence |
 | --- | --- | --- | --- |
-| C01 | Safari analytics classification | Implemented; release gates running | Candidate `.41` |
-| C02 | Prefix-only hostname normalization | Implemented; release gates running | Candidate `.41` |
+| C01 | Safari analytics classification | Complete | `.41`; evidence below |
+| C02 | Prefix-only hostname normalization | Complete | `.41`; evidence below |
 | C03 | Transactional, reversible administrative moderation and session safety | Pending | Pending |
-| C04 | Strict peer/CIDR/hop reverse-proxy trust | Pending | Pending |
+| C04 | Strict peer/CIDR/hop reverse-proxy trust | Implemented; release gates pending | Candidate `.42` |
 | C05 | Compatible staged and enforced Content Security Policy | Pending | Pending |
-| C06 | MySQL utf8mb4 search compatibility and real database tests | Pending | Pending |
+| C06 | MySQL utf8mb4 search compatibility and real database tests | Implemented; release gates pending | Candidate `.42` |
 | C07 | Verified remote database TLS and credential-file configuration | Pending | Pending |
 | C08 | Consistent verified Redis TLS for cache, queues and limiting | Pending | Pending |
-| C09 | Configurable asymmetric OIDC signing algorithm | Pending | Pending |
-| C10 | Custom-domain API routing without homepage interception | Pending | Pending |
+| C09 | Configurable asymmetric OIDC signing algorithm | Implemented; release gates pending | Candidate `.42` |
+| C10 | Custom-domain API routing without homepage interception | Implemented; release gates pending | Candidate `.42` |
 | C11 | Complete English (default), French and Spanish localization | Pending | Pending |
 | C12 | Stable allowlisted sorting in personal, admin and workspace tables/API | Pending | Pending |
 | C13 | Branded QR logos embedded in validated PNG/SVG exports | Pending | Pending |
@@ -75,7 +75,32 @@ review complete while required work remains.
   migration and disposable-write checks passed. Secrets compared without output.
 - Full container regression passed. Independent read-only review found no scoped
   bypass/regression; it also checked actual offline claims and public Host routing.
-  Publication/CI, exact-wrapper regression and deployment gates remain pending.
+  Tag/main CI, exact-wrapper regression, public WAF feature regression and real
+  Authentik-signed logout/replay passed. Deployed image `.41` remains healthy
+  with three fresh probes and zero restarts, alerts, failed units or unhealthy
+  containers over two samples 65 seconds apart. Whole-lab validation passed.
+- Post-release local/NAS backup: `f823a350` / `68ff3911`, 2026-09-21 23:57 UTC.
+  All 63 files byte-restored; exact-image writable SQLite recovery passed.
+  Original records, integrity and foreign keys are unchanged. Fresh wrapper
+  scan: zero Critical/High, three Medium findings; none suppressed.
   Evidence outside the repository:
   `Work/kutt-community-20260922` and the private homelab report folder
   `2026-09-22-kutt-community-41`.
+
+## Evidence: C04 / C06 / C09 / C10
+
+- Strict configuration and real IPv4/IPv6 HTTP tests exercise trusted peers,
+  forged forwarding chains, client budgets, protocol and hop-count topology.
+  Legacy booleans remain booleans, and parser acceptance matches Express.
+- The MySQL utf8mb4 collation error was reproduced before the fix. Disposable
+  MySQL 8.4 and PostgreSQL 17 tests cover Unicode/case matching, counts, owner
+  isolation, pagination and bound hostile input. No stored collation changes.
+- Full OIDC fixtures pass with RS256, PS256, ES256 and EdDSA, including PKCE,
+  wrong-algorithm/published alternate-key denial, unknown keys, signature
+  tampering, signed logout/replay, restart and provider-outage recovery.
+- Custom-host HTTP tests cover exact API routing, anonymous/explicit invalid
+  credential denial, scoped token privacy, CSRF, disabled OIDC, homepage and
+  ordinary alias compatibility. The new malformed-path 400 guard closes a
+  pre-existing empty-alias database lookup rather than normalizing into an API.
+- Full container regression passes. Publication/CI and deployment/restore
+  validation are separate pending gates; these features are not complete yet.

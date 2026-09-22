@@ -19,6 +19,18 @@ module.exports = function({ root, directory, env }) {
     { cwd: directory, env: { ...env, ...extra }, encoding: "utf8", timeout: 10000 });
   assert.equal(runEnv({ JWT_SECRET_FILE: secretFile }).status, 0);
   assert.notEqual(runEnv({ JWT_SECRET_FILE: absent }).status, 0);
+  for (const TRUST_PROXY of ["false", "true", "1", "0", "hops:2", "peers:127.0.0.1,::1/128"]) {
+    assert.equal(runEnv({ TRUST_PROXY }).status, 0, TRUST_PROXY);
+  }
+  for (const TRUST_PROXY of ["", "2", "hops:1.5", "peers:localhost"]) {
+    assert.notEqual(runEnv({ TRUST_PROXY }).status, 0, TRUST_PROXY);
+  }
+  for (const OIDC_ID_TOKEN_SIGNING_ALG of ["RS256", "PS256", "ES256", "EdDSA"]) {
+    assert.equal(runEnv({ OIDC_ID_TOKEN_SIGNING_ALG }).status, 0);
+  }
+  for (const OIDC_ID_TOKEN_SIGNING_ALG of ["", "none", "HS256", "HS384", "HS512", "rs256", "RS256,ES256"]) {
+    assert.notEqual(runEnv({ OIDC_ID_TOKEN_SIGNING_ALG }).status, 0);
+  }
   writeFileSync(secretFile, "\n");
   assert.notEqual(runEnv({ JWT_SECRET_FILE: secretFile }).status, 0, "An empty secret file must not restore an inline/default production secret");
 

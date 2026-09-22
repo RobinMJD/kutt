@@ -23,7 +23,7 @@ permissions:
 jobs:
   sqlite-smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Build production image
@@ -36,3 +36,9 @@ jobs:
         run: docker run --rm --network none --entrypoint node kutt-smoke tests/container-smoke.cjs
       - name: Test isolated Redis worker and rate limits
         run: sh tests/redis-smoke.sh kutt-smoke
+      - name: Test asymmetric OIDC login and logout
+        run: docker run --rm --network none --entrypoint node kutt-smoke tests/oidc-algorithms.cjs
+      - name: Unicode search on real MySQL and PostgreSQL
+        run: |
+          sh tests/search-database.sh kutt-smoke mysql2
+          sh tests/search-database.sh kutt-smoke pg

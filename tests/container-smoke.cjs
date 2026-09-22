@@ -64,6 +64,7 @@ async function main() {
     `], { cwd: directory, env, encoding: "utf8", timeout: 10000 });
     assert.equal(native.status, 0, `SQLite cleanup failed: ${native.stderr}`);
     require("./configuration.cjs")({ root, directory, env });
+    await require("./proxy-trust.cjs")();
     await require("./community-correctness.cjs")({ root, directory, env });
     require("./redis-fixture-cleanup.cjs")({ root });
 

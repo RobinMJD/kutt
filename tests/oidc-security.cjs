@@ -7,16 +7,23 @@ const { setTimeout: delay } = require("node:timers/promises");
 const Database = require("better-sqlite3");
 const { SignJWT, generateKeyPair, exportJWK } = require("jose");
 
-module.exports = async function ({ root, directory, env }) {
-  const { privateKey, publicKey } = await generateKeyPair("RS256");
-  const jwk = { ...await exportJWK(publicKey), kid: "test", alg: "RS256", use: "sig" };
+module.exports = async function ({ root, directory, env, algorithm = "RS256" }) {
+  const { privateKey, publicKey } = await generateKeyPair(algorithm);
+  const jwk = { ...await exportJWK(publicKey), kid: "test", alg: algorithm, use: "sig" };
+  const alternate = algorithm === "ES256" ? "RS256" : "ES256";
+  const otherKey = await generateKeyPair(alternate);
+  const otherJwk = { ...await exportJWK(otherKey.publicKey), kid: "other", alg: alternate, use: "sig" };
+  const unknownKey = await generateKeyPair(algorithm);
+  let signingAlgorithm = algorithm;
+  let useUnknownKey = false;
   const codes = new Map();
   let unavailable = false;
   let profile = { sub: "stable-subject", email: "oidc@example.com", email_verified: true, sid: "session-a" };
   let issuer, app, processExit, output = "";
   const clientSecret = randomBytes(32).toString("hex");
-  const sign = payload => new SignJWT(payload).setProtectedHeader({ alg: "RS256", kid: "test" })
-    .setIssuer(payload.iss ?? issuer).setAudience(payload.aud ?? "test-client").setIssuedAt(payload.iat ?? Math.floor(Date.now() / 1000)).setExpirationTime("5m").sign(privateKey);
+  const sign = payload => new SignJWT(payload).setProtectedHeader({ alg: signingAlgorithm, kid: signingAlgorithm === algorithm ? "test" : "other" })
+    .setIssuer(payload.iss ?? issuer).setAudience(payload.aud ?? "test-client").setIssuedAt(payload.iat ?? Math.floor(Date.now() / 1000)).setExpirationTime("5m")
+    .sign(useUnknownKey ? unknownKey.privateKey : signingAlgorithm === "HS256" ? Buffer.from(clientSecret) : signingAlgorithm === algorithm ? privateKey : otherKey.privateKey);
   const provider = http.createServer(async (req, res) => {
     try {
       const url = new URL(req.url, issuer);
@@ -25,10 +32,10 @@ module.exports = async function ({ root, directory, env }) {
       if (url.pathname === "/.well-known/openid-configuration") return res.end(JSON.stringify({
         issuer, authorization_endpoint: issuer + "/authorize", token_endpoint: issuer + "/token",
         userinfo_endpoint: issuer + "/userinfo", jwks_uri: issuer + "/jwks", response_types_supported: ["code"],
-        subject_types_supported: ["public"], id_token_signing_alg_values_supported: ["RS256"],
+        subject_types_supported: ["public"], id_token_signing_alg_values_supported: [algorithm, alternate],
         token_endpoint_auth_methods_supported: ["client_secret_basic"], code_challenge_methods_supported: ["S256"]
       }));
-      if (url.pathname === "/jwks") return res.end(JSON.stringify({ keys: [jwk] }));
+      if (url.pathname === "/jwks") return res.end(JSON.stringify({ keys: [jwk, otherJwk] }));
       if (url.pathname === "/authorize") {
         assert.equal(url.searchParams.get("code_challenge_method"), "S256");
         const code = randomUUID();
@@ -58,9 +65,10 @@ module.exports = async function ({ root, directory, env }) {
   const port = reserve.address().port;
   await new Promise(resolve => reserve.close(resolve));
   const base = `http://127.0.0.1:${port}`;
-  const filename = path.join(directory, "oidc.sqlite");
+  const filename = path.join(directory, "oidc-" + algorithm + ".sqlite");
   const childEnv = { ...env, NODE_ENV: "development", PORT: String(port), DEFAULT_DOMAIN: `127.0.0.1:${port}`,
-    DB_FILENAME: filename, OIDC_ENABLED: "true", OIDC_ISSUER: issuer, OIDC_CLIENT_ID: "test-client", OIDC_CLIENT_SECRET: clientSecret };
+    DB_FILENAME: filename, OIDC_ENABLED: "true", OIDC_ISSUER: issuer, OIDC_CLIENT_ID: "test-client", OIDC_CLIENT_SECRET: clientSecret,
+    ...(algorithm !== "RS256" ? { OIDC_ID_TOKEN_SIGNING_ALG: algorithm } : {}) };
   const migrate = spawnSync(process.execPath, [path.join(root, "node_modules/knex/bin/cli.js"), "--knexfile", path.join(root, "knexfile.js"), "migrate:latest"],
     { cwd: directory, env: childEnv, encoding: "utf8", timeout: 60000 });
   assert.equal(migrate.status, 0, migrate.stderr);
@@ -110,6 +118,15 @@ module.exports = async function ({ root, directory, env }) {
     assert.equal(adminResponse.status, 201);
     jar.set("token", (await adminResponse.json()).token);
     assert.equal((await request("GET", "/api/auth/security", undefined, new Map())).status, 401);
+    for (const unexpected of [alternate, "HS256"]) {
+      signingAlgorithm = unexpected;
+      assert.equal((await login()).result.status, 401, "Reject unexpected ID token signature " + unexpected);
+    }
+    signingAlgorithm = algorithm;
+    useUnknownKey = true;
+    assert.equal((await login()).result.status, 401, "Unknown signing key must not create a session");
+    useUnknownKey = false;
+    assert.equal(db.prepare("SELECT count(*) AS n FROM oidc_identities").get().n, 0);
     const first = await login();
     assert.equal(first.result.status, 303, await first.result.text());
     assert.equal(first.result.headers.get("location"), "/");
@@ -145,6 +162,20 @@ module.exports = async function ({ root, directory, env }) {
     const diagnostics = await (await request("GET", "/api/auth/security")).json();
     assert.equal(diagnostics.provider.last_auth_error, "OIDC_VERIFIED_EMAIL_REQUIRED");
     assert(!JSON.stringify(diagnostics).includes(clientSecret));
+    for (const unexpected of [alternate, "HS256"]) {
+      signingAlgorithm = unexpected;
+      assert.equal((await logout({})).status, 400, "Reject unexpected logout signature " + unexpected);
+      assert.equal((await request("GET", "/api/links", undefined, second.cookies)).status, 200);
+    }
+    signingAlgorithm = algorithm;
+    useUnknownKey = true;
+    assert.equal((await logout({})).status, 400, "Unknown signing key must not revoke sessions");
+    useUnknownKey = false;
+    const tampered = (await sign({ sub: "stable-subject", sid: "session-b", jti: randomUUID(), events: { "http://schemas.openid.net/event/backchannel-logout": {} } })).split(".");
+    tampered[2] = (tampered[2][0] === "A" ? "B" : "A") + tampered[2].slice(1);
+    assert.equal((await request("POST", "/api/auth/oidc/backchannel", { logout_token: tampered.join(".") }, new Map())).status, 400);
+    assert.equal(db.prepare("SELECT count(*) AS n FROM oidc_logout_events").get().n, 0);
+    assert.equal((await request("GET", "/api/links", undefined, second.cookies)).status, 200);
     for (const overrides of [{ nonce: "no" }, { events: {} }, { sub: "", sid: "" }, { iat: 1 },
       { jti: "" }, { jti: undefined }, { aud: "other-client" }, { iss: issuer + "/other" },
       { events: { "http://schemas.openid.net/event/backchannel-logout": [] } }]) {
@@ -222,7 +253,7 @@ module.exports = async function ({ root, directory, env }) {
     assert.equal((await login()).result.status, 401, "Explicit OIDC registration restriction is enforced");
     assert.equal(db.pragma("quick_check", { simple: true }), "ok");
     assert.equal(db.pragma("foreign_key_check").length, 0);
-    console.log("PASS: code/PKCE, stable identities, email boundary, signed logout/replay, absolute expiry, revocation, outage recovery, binding rollback and guarded downgrade");
+    console.log("PASS: " + algorithm + " code/PKCE, stable identities, email boundary, signed logout/replay, absolute expiry, revocation, outage recovery, binding rollback and guarded downgrade");
   } finally {
     db.close(); await stop(); await new Promise(resolve => provider.close(resolve));
   }

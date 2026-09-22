@@ -221,6 +221,32 @@ with throwaway credentials/storage. It applies migrations and tests competing
 domain claims, queue serialization (including old repeatable-read snapshots),
 fair leases and recovery invalidation. This is not full product database parity.
 
+`sh tests/search-database.sh IMAGE mysql2` and `sh tests/search-database.sh IMAGE pg`
+start digest-pinned disposable engines with tmpfs storage, no external network
+and no published ports. They wait for readiness, run fresh migrations, verify
+utf8mb4/emoji and case-insensitive search, compare filtered totals with paginated
+rows, test owner isolation and bound SQL input, and remove only their own container
+ID. Both run in release and PR CI. MySQL uses its column collation rather than
+Knex's incompatible `utf8_bin` override. No existing database collation is changed.
+
+`proxy-trust.cjs` validates strict configuration and Express compilation, then
+uses real IPv4/IPv6 sockets to check forwarded address/protocol handling,
+untrusted-hop boundaries, spoof resistance, distinct client budgets and the
+documented shorter-path limitation of hop-count mode. It does not infer or
+change the production proxy topology.
+
+`oidc-algorithms.cjs` runs fresh ES256, PS256 and EdDSA provider/app fixtures;
+the main regression suite covers omitted-setting RS256 compatibility. Each
+uses actual code/PKCE login, stable identities, signed logout, replay, expiry,
+restart and outage recovery. Unexpected algorithms (even a key in JWKS), HMAC,
+unknown keys and tampered signatures cannot create or revoke a session. Invalid
+algorithm settings fail configuration validation. Release and PR CI run both.
+
+Custom-host regressions use real HTTP Host headers, not Fetch overrides. A
+homepage must not intercept either API alias or case-insensitive API paths;
+tests preserve root/login redirects and public aliases, reject cross-site and
+invalid explicit credentials, and enforce domain-restricted token privacy.
+
 `browser-domain-proof.cjs` checks the DNS challenge, preserved draft, visible Copy
 icons/feedback, claim and reload at 1440/390/320px. Its loopback-only disposable
 app needs `NODE_OPTIONS=--require=/kutt/tests/domain-proof-offline.cjs`,

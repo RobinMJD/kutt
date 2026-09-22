@@ -5,6 +5,15 @@ administrator through the ordinary settings/API route. Existing owned domains,
 UUIDs and links are unchanged. Do not delete and recreate an existing domain to
 upgrade. DNS proof does not provision certificates, reverse-proxy routes or SSO.
 
+Custom homepages do not intercept `/api` or `/api/...` (including `/api/v2`).
+Requests retain normal API authentication, token domain scopes and mutation
+origin checks; changing the Host header grants no additional rights. Root and
+login-page homepage redirects are unchanged, as are public short links such as
+`/apiary`. This exception matches a complete path segment, not an `api` prefix,
+and does not decode encoded separators or provision a new public route.
+Malformed leading double-slash paths return 400 instead of reaching an
+empty-alias database lookup.
+
 ## Settings
 
 1. Arrange the hostname's HTTPS routing with the deployment administrator. Keep

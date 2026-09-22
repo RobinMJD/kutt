@@ -11,6 +11,19 @@ and secret, and `openid profile email` scopes. The callback remains
 discovery failures fail login closed and retry after ten seconds; public links
 remain usable. Development fixtures alone allow HTTP on 127.0.0.1.
 
+`OIDC_ID_TOKEN_SIGNING_ALG` selects one exact asymmetric signature algorithm:
+`RS256` (default), `PS256`, `ES256` or `EdDSA`. Configure the provider to use the
+same algorithm for ID tokens and back-channel logout, and publish its public key
+in its JWKS. Empty, unknown, unsigned and HMAC choices fail startup. This changes
+neither client-secret authentication nor local session JWTs. Check a complete
+login and signed logout before promoting a provider configuration change.
+
+Compatibility note: older releases accepted any of these four algorithms for
+logout while requiring RS256 for login. Logout now requires the configured ID
+token algorithm too. A provider using different algorithms for those messages
+must be aligned before upgrading. Issuer/subject bindings and session lifetimes
+are unchanged; never recreate accounts or weaken signature checks to migrate.
+
 Accounts bind to the exact `(issuer, sub)` pair, never to an email or display
 name. Configure a stable, non-reassigned provider subject, such as Authentik's
 user UUID. A bound user keeps the same Kutt account if their email changes.
@@ -79,7 +92,7 @@ challenge because its authentication is the signed `logout_token` POST body.
 It does not grant access to management or create sessions.
 
 Tokens must validate against the configured provider's JWKS and exact issuer
-and client audience. Only RS256, PS256, ES256 and EdDSA are accepted, never
+and client audience. Only the configured signing algorithm is accepted, never
 unsigned or shared-secret algorithms. The logout event, recent iat, unique jti,
 subject and/or session ID are validated; nonce is forbidden. Invalid messages
 return a generic 400; successful and replayed notifications return 200. Replay

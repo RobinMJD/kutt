@@ -481,7 +481,7 @@ async function redirect(req, res, next) {
   if (domain?.banned) return res.redirect("/banned");
 
   // 2. Get link
-  if (/%(?:2f|5c|25)/i.test(req.path) || /[\\\u0000-\u001f\u007f]/.test(req.params.id)) {
+  if (req.path.startsWith("//") || /%(?:2f|5c|25)/i.test(req.path) || /[\\\u0000-\u001f\u007f]/.test(req.params.id)) {
     throw new CustomError("Ambiguous short path encoding.", 400);
   }
   const address = req.params.id.replace(/\+$/, "");
@@ -620,6 +620,8 @@ async function redirectProtected(req, res) {
 };
 
 async function redirectCustomDomainHomepage(req, res, next) {
+  // Keep API requests in the authenticated router, even on a custom homepage host.
+  if (/^\/api(?:\/|$)/i.test(req.path)) return next();
   const host = utils.removeWww(req.headers.host);
   if (host === env.DEFAULT_DOMAIN) {
     next();

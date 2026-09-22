@@ -20,6 +20,7 @@ function client() {
       if (endpointURL.protocol !== "https:" && !(env.isDev && endpointURL.hostname === "127.0.0.1")) throw new Error("OIDC_HTTPS_REQUIRED");
     }
     const client = new issuer.Client({ client_id: env.OIDC_CLIENT_ID, client_secret: env.OIDC_CLIENT_SECRET,
+      id_token_signed_response_alg: env.OIDC_ID_TOKEN_SIGNING_ALG,
       redirect_uris: [require("./utils").getSiteURL() + "/login/oidc"], response_types: ["code"] });
     state.ready = true; state.code = "OIDC_READY"; state.last_ready_at = new Date().toISOString();
     return client;
@@ -41,7 +42,7 @@ async function logout(token) {
   keys ||= createRemoteJWKSet(new URL(configured.issuer.jwks_uri), { timeoutDuration: 5000, cooldownDuration: 30000 });
   const { payload } = await jwtVerify(token, keys, {
     issuer: configured.issuer.issuer, audience: env.OIDC_CLIENT_ID,
-    algorithms: ["RS256", "PS256", "ES256", "EdDSA"], clockTolerance: 15,
+    algorithms: [env.OIDC_ID_TOKEN_SIGNING_ALG], clockTolerance: 15,
     requiredClaims: ["iss", "aud", "iat", "jti", "events"]
   });
   await require("./oidc-security").recordLogout(payload);

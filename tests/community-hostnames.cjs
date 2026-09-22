@@ -13,12 +13,15 @@ module.exports = async ({ request, session, database, account, env }) => {
     return response;
   };
   // Undici can replace Host; use a real HTTP request for host-routing assertions.
-  const hostRequest = host => new Promise((resolve, reject) => {
-    const req = http.get({ host: "127.0.0.1", port: env.PORT, path: "/host-same", headers: { Host: host } }, res => {
-      res.resume(); res.on("end", () => resolve({ status: res.statusCode, location: res.headers.location }));
+  const hostRequest = (host, pathname = "/host-same", options = {}) => new Promise((resolve, reject) => {
+    const req = http.request({ host: "127.0.0.1", port: env.PORT, path: pathname,
+      method: options.method || "GET", headers: { Host: host, Accept: "application/json", "Content-Type": "application/json", ...options.headers } }, res => {
+      let body = ""; res.on("data", chunk => body += chunk);
+      res.on("end", () => resolve({ status: res.statusCode, location: res.headers.location, body }));
     });
     req.setTimeout(5000, () => req.destroy(new Error("Host fixture timed out")));
     req.on("error", reject);
+    req.end(options.body === undefined ? undefined : JSON.stringify(options.body));
   });
   try {
     const falseMatch = "notexample.invalid", intended = "notwww.example.invalid";
@@ -54,8 +57,41 @@ module.exports = async ({ request, session, database, account, env }) => {
     const domain = Number(db.prepare("INSERT INTO domains(uuid,address,user_id,banned) VALUES(?,?,?,0)").run(randomUUID(), intended, owner).lastInsertRowid);
     domains.push(domain);
     response = await checked(request("POST", "/api/links", { domain: intended, customurl: "host-same", target: "https://192.0.2.1/host" }, session), 201);
-    assert.deepEqual(await hostRequest(intended), { status: 302, location: "https://192.0.2.1/host" });
-    assert.deepEqual(await hostRequest(falseMatch), { status: 302, location: "/banned" });
+    const customLink = await response.json();
+    assert.equal((await hostRequest(intended)).location, "https://192.0.2.1/host");
+    assert.equal((await hostRequest(falseMatch)).location, "/banned");
+    const homepage = "https://192.0.2.2/home";
+    db.prepare("UPDATE domains SET homepage=? WHERE id=?").run(homepage, domain);
+    for (const pathname of ["/", "/login"]) {
+      const home = await hostRequest(intended, pathname);
+      assert.equal(home.status, 302); assert.equal(home.location, homepage);
+    }
+    assert.equal((await hostRequest(intended)).location, "https://192.0.2.1/host");
+    const cookies = { Cookie: "token=" + session };
+    for (const prefix of ["/api", "/api/v2", "/API", "/Api/v2"]) {
+      const health = await hostRequest(intended, prefix + "/health/?test=1");
+      assert.equal(health.status, 200, health.body); assert.equal(health.location, undefined);
+      assert.equal((await hostRequest(intended, prefix + "/links")).status, 401);
+      assert.equal((await hostRequest(intended, prefix + "/links", { headers: cookies })).status, 200);
+      assert.equal((await hostRequest(intended, prefix + "/links", { headers: { ...cookies, "X-API-Key": "invalid-explicit-key" } })).status, 401);
+      assert.equal((await hostRequest(intended, prefix + "/links", { method: "POST", headers: { ...cookies, Origin: "https://evil.example" },
+        body: { target: "https://192.0.2.1/denied" } })).status, 403);
+      assert.equal((await hostRequest(intended, prefix + "/auth/oidc/backchannel", { method: "POST", body: { logout_token: "invalid" } })).status, 404, "Disabled OIDC stays unavailable, not homepage-redirected");
+    }
+    response = await checked(request("POST", "/api/tokens", { name: "Custom-host boundaries", domain_scope: "default", scopes: ["links:read", "stats:read"] }, session), 201);
+    const key = (await response.json()).token;
+    assert.equal((await hostRequest(intended, "/api/links/" + customLink.id + "/stats", { headers: { "X-API-Key": key } })).status, 404);
+    for (const pathname of ["/api", "/api/", "/api?x=1"]) {
+      assert.notEqual((await hostRequest(intended, pathname)).location, homepage);
+    }
+    response = await checked(request("POST", "/api/links", { domain: intended, customurl: "apiary", target: "https://192.0.2.3/apiary" }, session), 201);
+    assert.equal((await hostRequest(intended, "/apiary")).location, "https://192.0.2.3/apiary");
+    for (const [pathname, expected] of [["/apix", 302], ["/api.foo", 302], ["/api%2Flinks", 404], ["//api/links", 400], ["///api/links", 400]]) {
+      const notAPI = await hostRequest(intended, pathname);
+      assert.equal(notAPI.status, expected, pathname + " must retain non-API behavior");
+      if (expected === 302) assert.equal(notAPI.location, homepage, "Missing aliases retain the custom homepage fallback");
+    }
+    assert.equal((await hostRequest(env.DEFAULT_DOMAIN, "//api/links")).status, 400, "An empty alias segment must not reach an ambiguous database lookup");
     // A real ban on the intended hostname must still be enforced after creation.
     db.prepare("UPDATE domains SET banned=1 WHERE id=?").run(domain);
     await checked(create("https://" + intended + "/blocked"), 400);

@@ -1,5 +1,6 @@
 require("dotenv").config();
-const { cleanEnv, num, str, bool } = require("envalid");
+const { cleanEnv, num, str, bool, makeValidator } = require("envalid");
+const proxyTrust = makeValidator(require("./proxy-trust"));
 
 const supportedDBClients = [
   "pg",
@@ -31,7 +32,7 @@ const spec = {
   DEFAULT_DOMAIN: str({ example: "kutt.to", default: "localhost:3000" }),
   LINK_LENGTH: num({ default: 6 }),
   LINK_CUSTOM_ALPHABET: str({ default: "abcdefghkmnpqrstuvwxyzABCDEFGHKLMNPQRSTUVWXYZ23456789" }),
-  TRUST_PROXY: bool({ default: true }),
+  TRUST_PROXY: proxyTrust({ default: true }),
   DB_CLIENT: str({ choices: supportedDBClients, default: "better-sqlite3" }),
   DB_FILENAME: str({ default: "db/data" }),
   DB_HOST: str({ default: "localhost" }),
@@ -66,6 +67,7 @@ const spec = {
   OIDC_PROMPT: str({ default: "" }),
   OIDC_CLIENT_ID: str({ default: "" }),
   OIDC_CLIENT_SECRET: str({ default: "" }),
+  OIDC_ID_TOKEN_SIGNING_ALG: str({ default: "RS256", choices: ["RS256", "PS256", "ES256", "EdDSA"] }),
   OIDC_SCOPE: str({ default: "openid profile email" }),
   OIDC_EMAIL_CLAIM: str({ default: "email" }),
   OIDC_BUTTON_TEXT: str({ default: "Log in with OIDC" }),
