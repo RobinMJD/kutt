@@ -5,10 +5,16 @@
     <input type="hidden" name="link" value="{{filters.link}}" />
     <label>{{t "ui.from_utc"}}<input type="date" name="start" value="{{filters.start}}" required /></label>
     <label>{{t "ui.through_utc"}}<input type="date" name="end" value="{{filters.end}}" required /></label>
-    <label>{{t "ui.search_links"}}<input type="search" name="q" value="{{filters.q}}" maxlength="200" /></label>
-    <label>{{t "ui.domain"}}<select name="domain" aria-label="{{t 'ui.domain'}}"><option value="{{filters.domain}}">{{#if filters.domain}}{{t "ui.selected_domain"}}{{else}}{{t "ui.all_domains"}}{{/if}}</option></select></label>
-    <label>{{t "ui.tag"}}<select name="tag" aria-label="{{t 'ui.tag'}}"><option value="{{filters.tag}}">{{#if filters.tag}}{{t "ui.selected_tag"}}{{else}}{{t "ui.all_tags"}}{{/if}}</option></select></label>
-    <button type="submit" class="primary">{{t "ui.apply"}}</button><a href="/settings/analytics">{{t "ui.clear"}}</a>
+    <label class="analytics-filter-search">{{t "ui.search_links"}}<input type="search" name="q" value="{{filters.q}}" maxlength="200" /></label>
+    <div class="analytics-filter-choice">
+      <label>{{t "ui.domain"}}<select name="domain" aria-label="{{t 'ui.domain'}}" aria-describedby="analytics-domain-value"><option value="{{filters.domain}}">{{#if filters.domain}}{{t "ui.selected_domain"}}{{else}}{{t "ui.all_domains"}}{{/if}}</option></select></label>
+      <p id="analytics-domain-value" class="analytics-selected-value" hidden></p>
+    </div>
+    <div class="analytics-filter-choice">
+      <label>{{t "ui.tag"}}<select name="tag" aria-label="{{t 'ui.tag'}}" aria-describedby="analytics-tag-value"><option value="{{filters.tag}}">{{#if filters.tag}}{{t "ui.selected_tag"}}{{else}}{{t "ui.all_tags"}}{{/if}}</option></select></label>
+      <p id="analytics-tag-value" class="analytics-selected-value" hidden></p>
+    </div>
+    <div class="analytics-filter-actions"><button type="submit" class="primary">{{t "ui.apply"}}</button><a href="/settings/analytics">{{t "ui.clear"}}</a></div>
   </form>
   <p id="analytics-status" role="status" aria-live="polite">{{t "ui.loading"}}</p>
   <div id="analytics-report" hidden>

@@ -23,6 +23,6 @@ attempt=0
 until curl -fsS "http://127.0.0.1:$port/api/health" >/dev/null 2>&1; do
   attempt=$((attempt+1)); [ "$attempt" -lt 60 ] || exit 1; sleep 1
 done
-KUTT_BROWSER_DISPOSABLE=1 KUTT_TEST_URL="http://localhost:$port" KUTT_EVIDENCE_DIR="$evidence" \
+KUTT_BROWSER_DISPOSABLE=1 KUTT_BROWSER_CONTAINER="$cid" KUTT_TEST_URL="http://localhost:$port" KUTT_EVIDENCE_DIR="$evidence" \
   "$node" "$root/tests/browser-domain-grants.cjs"
 printf 'Browser evidence: %s\n' "$evidence"
