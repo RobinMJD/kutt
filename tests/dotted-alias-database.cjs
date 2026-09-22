@@ -106,14 +106,28 @@ assert(!existsSync(path.join(__dirname, "../.env")));
         assert.equal((await request("GET", "/" + created.address)).headers.get("location"), target);
       }
     }
+    const history = require("../server/link-history"), queries = require("../server/queries/link.queries");
+    const { CustomError } = require("../server/utils");
+    const assertClaimWinner = async (address, uuid) => {
+      const links = await db("links").where({ address, domain_id: null });
+      assert.equal(links.length, 1, address + ": losing link must roll back");
+      assert.equal(links[0].uuid, uuid, address + ": winning link must remain unchanged");
+      const claim = await db("link_alias_claims").where({ key: history.key(process.env.DEFAULT_DOMAIN, address) }).first();
+      assert.equal(claim?.link_uuid, uuid, address + ": claim must belong to the winner");
+      assert.equal(claim.retired_at, null, address + ": winning claim must remain active");
+      const events = await db("link_history").where({ link_id: links[0].id });
+      assert.deepEqual(events.map(row => row.action), ["created"], address + ": losing claim must not alter winner history");
+      // Reasserting an existing owner's active claim is still valid (restore/retry).
+      await db.transaction(transaction => history.claim(transaction, links[0]));
+    };
     const races = [];
     for (const address of ["database/race-control", "database/race.pdf"]) {
       const race = await Promise.all([1, 2].map(() => request("POST", "/api/links", { customurl: address, target })));
-      assert.equal(race.filter(response => response.status === 201).length, 1);
-      assert.equal(Number((await db("links").where({ address }).count({ n: "id" }).first()).n), 1);
+      const winners = race.filter(response => response.status === 201);
+      assert.equal(winners.length, 1, address + ": exactly one HTTP create must win");
+      await assertClaimWinner(address, (await winners[0].json()).id);
       races.push({ address, statuses: race.map(response => response.status) });
     }
-    const history = require("../server/link-history"), queries = require("../server/queries/link.queries");
     await assert.rejects(db.transaction(async transaction => {
       await queries.create({ address: "database/rollback.pdf", target, user_id: user.id }, transaction);
       throw Error("rollback-fixture");
@@ -121,17 +135,18 @@ assert(!existsSync(path.join(__dirname, "../.env")));
     assert.equal(await history.reserved("database/rollback.pdf", null), false);
     const snapshots = [];
     for (const address of ["database/snapshot-control", "database/snapshot.pdf"]) {
-      let refusal;
+      let refusal, winner;
       try {
         await db.transaction(async transaction => {
           // Establish the MySQL repeatable-read snapshot before the winner commits.
           assert.equal(await transaction("link_alias_claims").where({ key: history.key(process.env.DEFAULT_DOMAIN, address) }).first(), undefined);
-          await db.transaction(winner => queries.create({ address, target, user_id: user.id }, winner));
+          winner = await db.transaction(transaction => queries.create({ address, target, user_id: user.id }, transaction));
           await queries.create({ address, target, user_id: user.id }, transaction);
         });
       } catch (error) { refusal = error; }
-      assert.equal(Number((await db("links").where({ address }).count({ n: "id" }).first()).n), 1);
-      snapshots.push({ address, status: refusal?.statusCode ?? null, error: refusal?.name ?? "accepted" });
+      assert(winner, address + ": independent winner must commit");
+      await assertClaimWinner(address, winner.uuid);
+      snapshots.push({ address, status: refusal?.statusCode ?? null, error: refusal?.name ?? "accepted", customError: refusal instanceof CustomError });
     }
     const parent = await create("database/manual.v1"), child = await create("database/manual.v1/guide.pdf", { target: target + "/child" });
     await checked("PUT", "/api/links/" + parent.id + "/forwarding", { revision: 0, path_prefixes: ["guide.pdf", "files"], query_keys: [] });
@@ -141,9 +156,15 @@ assert(!existsSync(path.join(__dirname, "../.env")));
     assert.equal((await request("GET", "/" + child.address)).status, 410);
     await checked("POST", "/api/links/" + child.id + "/restore", {});
     assert.equal((await request("GET", "/" + child.address)).headers.get("location"), child.target);
-    assert(races.every(race => race.statuses.every(status => [201, 400, 409].includes(status))) && snapshots.every(row => row.status === 409),
-      "Claims must return conflicts, not server errors: " + JSON.stringify({ races, snapshots }));
-    console.log("PASS: " + process.env.DB_CLIENT + " dotted HTTP create/edit/admin/workspace/import, bounds, case parity, domains/scopes, claim race/rollback, lifecycle and forwarding");
+    const diagnostics = JSON.stringify({ races, snapshots });
+    for (const race of races) assert(race.statuses.every(status => [201, 400, 409].includes(status)),
+      race.address + ": HTTP loser must return a conflict, never 500: " + diagnostics);
+    for (const snapshot of snapshots) {
+      assert.equal(snapshot.status, 409, snapshot.address + ": stale-snapshot loser must return 409: " + diagnostics);
+      assert.equal(snapshot.customError, true, snapshot.address + ": conflict must use the public CustomError contract: " + diagnostics);
+    }
+    console.log("PASS: " + process.env.DB_CLIENT + " ordinary+dotted HTTP races and forced stale snapshots return conflicts, preserve winner/claim/history, roll back losers and allow owner retries");
+    console.log("PASS: " + process.env.DB_CLIENT + " dotted HTTP create/edit/admin/workspace/import, bounds, case parity, domains/scopes, claim rollback, lifecycle and forwarding");
   } finally {
     if (server) {
       server.kill("SIGTERM");

@@ -22,7 +22,9 @@ covers dotted write paths, native collation parity, scoped domains, concurrent
 claims, rollback, trash/restore and unchanged forwarding suffixes.
 Ordinary aliases are controls for both case matching and duplicate-claim races.
 The forced stale-snapshot check requires a normal `409` conflict, never a `500`
-or an unclassified exception; it can expose pre-existing database-engine bugs.
+or an unclassified exception, for both ordinary and dotted aliases. Both race
+forms also verify that the losing link rolls back, the winning link/claim/history
+remain unchanged, and the same owner can reassert an active claim.
 
 Build from a clean checkout without a `.env` file:
 

@@ -24,7 +24,8 @@ async function claim(db, link) {
   await db("link_alias_claims").insert({ ...match, domain, address: link.address, link_uuid: link.uuid })
     .onConflict("key").ignore();
   const row = await db("link_alias_claims").where(match).first();
-  if (row.link_uuid !== link.uuid || row.retired_at != null) fail("This alias is in use or permanently reserved by a previous link.");
+  // A repeatable-read snapshot can hide the winning concurrent claim.
+  if (!row || row.link_uuid !== link.uuid || row.retired_at != null) fail("This alias is in use or permanently reserved by a previous link.");
 }
 
 async function record(db, link, action, fields = [], actor = {}) {
