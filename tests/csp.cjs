@@ -56,10 +56,59 @@ module.exports = async ({ root, request, session, restart, env }) => {
   assert(!Object.hasOwn(initialConfig, "attributesToSettle"), "Off preserves custom style settling");
   const created = await request("POST", "/api/links", { target: "https://192.0.2.1/csp", customurl: "csp-" + require("node:crypto").randomUUID() }, session);
   assert.equal(created.status, 201); const link = await created.json();
+  const rendered = [
+    { route: "/login", document: true, anonymous: true },
+    { route: "/settings/domain-sharing", document: true },
+    { route: "/settings/domain-sharing/not-a-uuid", document: true, status: 404 },
+    { route: "/link/edit/" + link.id },
+    { route: "/add-domain-form" },
+    { route: "/api/links" },
+    { route: "/API/v2/links" },
+    { route: "/api/links", body: { target: "" }, error: true },
+    { route: "/api/v2/domains", body: { address: "" }, error: true }
+  ];
+  const renderedResponses = async () => {
+    const values = [];
+    for (const test of rendered) {
+      const response = await request(test.body ? "POST" : "GET", test.route, test.body, test.anonymous ? undefined : session,
+        { Accept: "text/html", ...(!test.document && { "HX-Request": "true" }) });
+      assert.equal(response.status, test.status || 200, "Rendered status: " + test.route);
+      assert.match(response.headers.get("content-type"), /^text\/html/);
+      const html = await response.text();
+      assert.equal(/<html\b/.test(html), !!test.document, "Document/fragment: " + test.route);
+      if (test.error) assert.match(html, /class="[^"]*error/, "Rendered validation error: " + test.route);
+      values.push({ cache: response.headers.get("cache-control"), csp: response.headers.get(header), report: response.headers.get(report) });
+    }
+    return values;
+  };
+  const controls = ["/api/health", "/api/v2/links", "/locales/en.js", "/css/styles.css", "/" + link.address,
+    "/api/links/" + link.id + "/qr?format=svg", "/api/links/" + link.id + "/qr?format=png",
+    "/api/links/" + link.id + "/qr?format=invalid"];
+  const controlResponses = async () => {
+    const values = [];
+    for (const route of controls) {
+      const response = await request("GET", route, undefined, session);
+      values.push({ status: response.status, cache: response.headers.get("cache-control"), csp: response.headers.get(header),
+        report: response.headers.get(report), type: response.headers.get("content-type"), location: response.headers.get("location") });
+    }
+    return values;
+  };
+  const offRendered = await renderedResponses(), offControls = await controlResponses();
+  assert(offRendered.every(response => !response.csp && !response.report && !response.cache?.includes("no-transform")));
   try {
     for (const mode of ["report-only", "enforce"]) {
       env.CSP_MODE = mode; await restart();
       const selected = mode === "enforce" ? header : report, other = mode === "enforce" ? report : header;
+      const responses = await renderedResponses();
+      assert.deepEqual(responses.map(response => response.cache), rendered.map(() => "private, no-store, no-transform"),
+        mode + ": documents, HTMX/API fragments and rendered errors prohibit intermediary rewriting");
+      responses.forEach((response, index) => {
+        const policy = mode === "enforce" ? response.csp : response.report;
+        assert.equal(!!policy, !!rendered[index].document, "Nonce policy stays document-only: " + rendered[index].route);
+        assert.equal(mode === "enforce" ? response.report : response.csp, null);
+        if (policy) assert.equal(policy, csp.policy(policy.match(/'nonce-([^']+)'/)[1]));
+      });
+      assert.deepEqual(await controlResponses(), offControls, "JSON/errors, static assets, attachments and redirects are unchanged");
       const nonces = [];
       for (const locale of ["en", "fr", "es"]) {
         const response = await request("GET", "/login?nonce=attacker&cspNonce=attacker&policy=unsafe-eval", undefined, undefined,
@@ -68,7 +117,7 @@ module.exports = async ({ root, request, session, restart, env }) => {
         const policy = response.headers.get(selected), nonce = policy.match(/'nonce-([^']+)'/)[1];
         assert.match(nonce, /^[A-Za-z0-9+/]{32}$/); nonces.push(nonce);
         assert.equal(policy, csp.policy(nonce)); assert(!/unsafe-|report-uri|report-to|https?:|\*/.test(policy));
-        assert.equal(response.headers.get("cache-control"), "private, no-store");
+        assert.equal(response.headers.get("cache-control"), "private, no-store, no-transform");
         const html = await response.text(); assert(html.includes('<html lang="' + locale + '">'));
         for (const script of html.matchAll(/<script\b[^>]*>/g)) assert(script[0].includes('nonce="' + nonce + '"'), script[0]);
         assert(html.includes('"inlineStyleNonce":"' + nonce + '"'));
@@ -98,7 +147,9 @@ module.exports = async ({ root, request, session, restart, env }) => {
       assert.equal(svg.status, 200); assert.equal(svg.headers.get(header), "default-src 'none'; sandbox"); assert.equal(svg.headers.get(report), null);
     }
   } finally { delete env.CSP_MODE; await restart(); }
-  console.log("PASS: optional document-only CSP, localized full pages, no-store, nonce freshness, no reflected policy, real fragments/API/assets/redirects and QR export parity");
+  assert.deepEqual(await renderedResponses(), offRendered, "Off restores the original HTML headers");
+  assert.deepEqual(await controlResponses(), offControls, "Off preserves the original non-rendered headers");
+  console.log("PASS: document-only nonce CSP, no-transform on localized HTML/fragments/errors, off-mode and JSON/assets/redirect/QR header parity");
 };
 module.exports.unit = unit;
 if (require.main === module) unit(path.resolve(__dirname, "..")).catch(error => { console.error(error); process.exitCode = 1; });
