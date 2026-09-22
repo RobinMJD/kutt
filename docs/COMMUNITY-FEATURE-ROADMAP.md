@@ -82,7 +82,7 @@ reviews, reconcile source/release/deployed versions, confirm clean committed and
 pushed changes, and update the documented upstream contribution. Do not mark this
 review complete while required work remains.
 
-## Superseded Candidates: .50 / .51
+## Superseded Candidates: .50 / .51 / .52
 
 Release `.50` (`8b9afa3`) passed source/tag CI, exact-wrapper regression and a
 valid image scan with zero Critical/High findings. Its pre-release local/NAS
@@ -103,6 +103,16 @@ available for evidence. The corrected candidate must repeat all live gates.
 Private evidence is retained under `2026-09-22-kutt-community-50`, including
 the failed public browser check and rollback. No completed feature is inferred
 from these candidate publications.
+
+Candidate `.52` (`247f142`) corrected the browser logo transport and passed the
+full isolated suite and real-database CI gates. It was not deployed: final
+rendered review caught clipping in the token-domain selector and the expanded
+browser run stopped at the DNS ownership fixture. Its CI was deliberately
+cancelled before publication. The next candidate shortens the three translated
+labels and measures the rendered selected text, including compact controls;
+the new assertion fails against `.52`. A fresh `.53` pre-change local/NAS
+backup (`76081583` / `f51935b8`, 06:12:21 UTC) passed 71-file byte verification
+and writable `.49` recovery. These checks are not final deployment acceptance.
 
 ## Evidence: C01 / C02
 
