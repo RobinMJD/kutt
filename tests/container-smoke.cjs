@@ -64,6 +64,9 @@ async function main() {
     `], { cwd: directory, env, encoding: "utf8", timeout: 10000 });
     assert.equal(native.status, 0, `SQLite cleanup failed: ${native.stderr}`);
     require("./configuration.cjs")({ root, directory, env });
+    const visitIndex = spawnSync(process.execPath, ["-e", `(async()=>{const db=require(${JSON.stringify(path.join(root, "server/knex"))});try{await require(${JSON.stringify(path.join(root, "tests/visit-hour-index.cjs"))})(db)}finally{await db.destroy()}})().catch(e=>{console.error(e);process.exitCode=1})`], { cwd: directory, env, encoding: "utf8", timeout: 60000 });
+    assert.equal(visitIndex.status, 0, visitIndex.stderr);
+    console.log(visitIndex.stdout.trim());
     await require("./proxy-trust.cjs")();
     await require("./community-correctness.cjs")({ root, directory, env });
     require("./redis-fixture-cleanup.cjs")({ root });
