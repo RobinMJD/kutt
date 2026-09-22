@@ -38,7 +38,9 @@ download access to other users' links.
   `private, no-store`, `nosniff`; SVG additionally has a restrictive sandbox CSP.
 - 400 invalid options/URL; 401 unauthenticated; 403 insufficient scope; 404
   nonexistent, foreign or banned link/domain-scoped mismatch; 410 trashed link,
-  archived, banned, deleted or no-longer-owned domain. Pause/expiry/quota states
+  archived, banned, deleted or no-longer-available domain. An active custom
+  domain must be owned by or explicitly granted to the link's creator; a grant
+  never gives access to another creator's QR exports. Pause/expiry/quota states
   can be exported, but the page displays their state and scans remain blocked.
 - Generation is limited to 30 requests/minute per path/client when application
   rate limiting is enabled. The existing WAF is not bypassed.

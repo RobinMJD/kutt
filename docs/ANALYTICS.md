@@ -1,10 +1,9 @@
 # Analytics ranges and exports
 
-Released and deployed as `v3.2.6-sr94.11`, verified 2026-09-14. Release CI,
-exact hardened-image regressions, desktop/mobile workflows, fresh NAS restore
-and write test, public WAF checks and real Authentik-signed logout/replay passed.
-Original records and three monitored routes remained healthy after deployment.
-See the roadmap's eleventh deployment evidence and homelab recovery runbook.
+This guide describes the bundled range reports, exports and geography view.
+See the [community source guide](COMMUNITY-FEATURE-ROADMAP.md) for feature scope,
+regression coverage and compatibility boundaries. Source and fixture checks do
+not establish deployment acceptance for another installation.
 
 ## Reports
 
@@ -22,7 +21,7 @@ Both `GET /api/analytics` and `GET /api/v2/analytics` accept:
 | --- | --- |
 | `start`, `end` | `YYYY-MM-DD`, inclusive UTC calendar dates, 1-366 days; supported dates 1000-01-01 through 9999-12-30 |
 | `link` | Exact owned link UUID, optional |
-| `domain` | Owned custom-domain UUID or `default`, optional |
+| `domain` | Available custom-domain UUID, a domain containing the caller's retained links, or `default`; optional |
 | `tag` | Owned tag UUID, optional |
 | `q` | Literal case-insensitive alias/description substring, maximum 200 characters |
 | `format` | `json` (default) or `csv` |
@@ -48,6 +47,13 @@ workspace membership alone does not grant access to another owner's analytics.
 Restricted-domain tokens receive only tags assigned to visible links and allowed
 domain choices, never the account's unrelated metadata.
 
+An available custom domain is owned or explicitly granted. After a grant is
+revoked, the creator can still filter historical analytics for their own retained
+links on that domain; ownership predicates remain enforced on both links and
+visits. This read-only access neither authorizes mutations nor exposes another
+creator's records. Revoked domain-scoped tokens remain unusable; a regrant does
+not reactivate them.
+
 Reports are bounded to 10,000 selected links, 100,000 hourly buckets, 20,000 tag
 assignments and 10,000 distinct values per dimension. Oversized reports return
 422 and ask for narrower filters instead of silently truncating results. Invalid
@@ -57,8 +63,9 @@ remain active. These limits do not change the legacy stats response.
 
 ## Geography (C20)
 
-C20 is an unreleased source change. The historical deployment evidence at the
-top of this document does not cover this chart.
+C20 geography is included in this contribution. Its source behavior and focused
+tests are described below and in the [community guide](COMMUNITY-FEATURE-ROADMAP.md);
+publication and deployment remain separate acceptance gates.
 
 The range-report page includes an interactive geography view in English, French
 and Spanish. Country labels use the selected locale's `Intl.DisplayNames`.
