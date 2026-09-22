@@ -1503,7 +1503,7 @@
   "enum.code.OIDC_ROLE_CLAIM_INVALID": "L’attribut d’administration signé est mal formé ; les droits attribués ont été retirés.",
   "geography.title": "Géographie",
   "geography.table": "Tableau des pays",
-  "geography.basis": "Les parts utilisent toutes les visites suivies du rapport actuel.",
+  "geography.basis": "Les pourcentages sont calculés sur l'ensemble des visites enregistrées dans le rapport actuel.",
   "geography.country_details": "Détails du pays",
   "geography.none_selected": "Aucun pays sélectionné",
   "geography.keyboard": "Les flèches parcourent les pays par ordre alphabétique. Début et Fin accèdent au premier et au dernier pays. Entrée ou Espace sélectionne les détails. Échap efface la sélection.",

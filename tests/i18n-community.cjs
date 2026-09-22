@@ -3,7 +3,7 @@ const { randomUUID } = require("node:crypto");
 const catalogs = require("../server/i18n").catalogs;
 
 module.exports = async ({ request, session, url }) => {
-  for (const locale of ["fr", "es"]) {
+  for (const locale of ["en", "fr", "es"]) {
     const catalog = catalogs[locale], prefix = "i18n-" + randomUUID().slice(0, 8);
     const headers = { "Accept-Language": locale }, links = [];
     const call = (method, route, body, extra = {}) => request(method, route, body, session, { ...headers, ...extra });
@@ -15,6 +15,13 @@ module.exports = async ({ request, session, url }) => {
       for (const api of ["/api", "/api/v2"]) {
         await error(await call("GET", api + "/links?sort[]=address"), "sorting.invalid");
         await error(await call("GET", api + "/moderation?entity=__proto__"), "moderation.invalid_filter");
+        await error(await call("POST", api + "/moderation/link/invalid/unban", {}, { Origin: url }), "moderation.invalid_target");
+        await error(await call("POST", api + "/moderation/link/" + randomUUID() + "/unban", {}, { Origin: url }), "moderation.not_found", 404);
+      }
+      for (const [id, key, status] of [["invalid", "moderation.invalid_target", 400], [randomUUID(), "moderation.not_found", 404]]) {
+        const response = await call("GET", "/admin/moderation/link/" + id, undefined, { Accept: "text/html" });
+        assert.equal(response.status, status);
+        assert((await response.text()).includes(require("hbs").handlebars.escapeExpression(catalog[key])));
       }
       for (const suffix of ["/bad..pdf", "/.hidden", "/bad%2epdf", "/bad\npdf"]) {
         await error(await call("POST", "/api/links", { customurl: prefix + suffix, target: "https://192.0.2.1/i18n" }), "messages.custom_url_is_not_valid");
@@ -57,5 +64,5 @@ module.exports = async ({ request, session, url }) => {
       }
     }
   }
-  console.log("PASS: French/Spanish moderation and strict origins, unchanged audit values, sorting errors/order, dotted alias validation/redirects and import errors");
+  console.log("PASS: English/French/Spanish moderation JSON and HTML errors, strict origins, unchanged audit values, sorting errors/order, dotted alias validation/redirects and import errors");
 };

@@ -45,6 +45,13 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
       await page.getByRole("button", { name: t("ui.ban_user_value", { value1: email }), exact: true }).click();
       const dialog = page.locator("#admin-table-dialog");
       await dialog.getByLabel(t("ui.user_links"), { exact: true }).check();
+      const question = dialog.locator(".content > p").first();
+      assert.equal((await question.textContent()).trim(), t("dialog.ban_user", { value: email }));
+      assert(await question.evaluate(node => {
+        const box = node.getBoundingClientRect(), range = document.createRange(); range.selectNodeContents(node);
+        return [...range.getClientRects()].every(rect => rect.left >= box.left - 1 && rect.right <= box.right + 1 && rect.top >= box.top - 1 && rect.bottom <= box.bottom + 1);
+      }), "The full localized confirmation fits its dialog");
+      await page.screenshot({ path: path.join(evidence, "ban-copy-" + width + ".png"), fullPage: true });
       const banResponse = page.waitForResponse(r => /\/api\/users\/admin\/ban\//.test(r.url()) && r.request().method() === "POST");
       await dialog.getByRole("button", { name: t("ui.ban"), exact: true }).click();
       assert.equal((await banResponse).status(), 200); await settle();
