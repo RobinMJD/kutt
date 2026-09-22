@@ -40,4 +40,5 @@ const db = require("../server/knex");
   console.log("PASS: " + process.env.DB_CLIENT + " Unicode search, case matching, count/list pagination, owner isolation and bound input");
   await require("./list-sort-database.cjs")(db);
   await require("./moderation-database.cjs")(db);
+  await require("./visit-hour-index.cjs")(db);
 })().catch(error => { console.error(error.stack); process.exitCode = 1; }).finally(() => db.destroy());
