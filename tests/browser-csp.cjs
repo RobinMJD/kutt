@@ -115,6 +115,15 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
         await page.locator(".language-selector button").click(); await page.waitForLoadState("networkidle");
         assert.equal(await page.locator("html").getAttribute("lang"), locale);
         assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+        const domainLabel = await page.locator('select[name="domain_scope"]').evaluate(async select => {
+          await document.fonts.ready;
+          const style = getComputedStyle(select), context = document.createElement("canvas").getContext("2d");
+          context.font = style.font;
+          const label = select.selectedOptions[0].textContent.trim();
+          return { label, text: context.measureText(label).width,
+            available: select.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight) - 22 };
+        });
+        assert(domainLabel.text <= domainLabel.available, `Token domain label fits at ${locale}/${theme}/${width}: ${JSON.stringify(domainLabel)}`);
         await page.screenshot({ path: path.join(evidence, `${locale}-${theme}-${width}-settings.png`), fullPage: true });
         await navigate("/" + protectedLink.address);
         await page.locator("#protected-link-password").fill("csp-synthetic-password");
