@@ -114,6 +114,15 @@ the new assertion fails against `.52`. A fresh `.53` pre-change local/NAS
 backup (`76081583` / `f51935b8`, 06:12:21 UTC) passed 71-file byte verification
 and writable `.49` recovery. These checks are not final deployment acceptance.
 
+The DNS fixture exposed a genuine fast-submit HTMX initialization race, fixed
+by scoped zero-settle swaps; it was not an administrator DNS-proof bypass.
+An independent deterministic interleaving also reproduced a grant-list read
+that could combine old-owner authorization with new-owner recipients during
+reassignment. The rare management read now uses the existing guarded
+transaction, with the same lock order as writes; public redirects do not acquire
+that guard. Red/green regressions, SQLite/MySQL/PostgreSQL domain-grant suites,
+security-boundary tests and repeated desktop/mobile DNS workflows passed.
+
 ## Evidence: C01 / C02
 
 - Regression reproduced Safari misclassification before the patch. Installed

@@ -28,6 +28,11 @@ deployment references below are historical.
   `.50` public WAF gate exposed a data-URI transport rejection; its deployment
   was rolled back. Browser uploads now use canonical plain PNG base64 while
   keeping bounded legacy API decoding. The WAF was not weakened.
+- Repeated DNS proof tests reproduced a fast-submit initialization race after
+  loading the inline domain form. Scoped zero-settle swaps make the form ready
+  before interaction; a deliberately extended default settle delay verifies
+  the regression. DNS ownership proof remains mandatory, including in Settings
+  for administrators. Three repeated desktop/mobile runs passed.
 
 These are bounded Chromium desktop/mobile-width checks. Native Safari/Firefox,
 physical QR printing/scanning and operator-specific custom templates remain
