@@ -1,5 +1,11 @@
 {
   "domain_grants.title": "Domain sharing",
+  "domain_grants.confirm_title": "Revoke domain access?",
+  "domain_grants.confirm_recipient": "{{email}} will lose permission to create or change links on {{domain}}.",
+  "domain_grants.confirm_tokens": "This account's API tokens restricted to this domain will be permanently revoked. Granting access again will not restore them.",
+  "domain_grants.confirm_health": "Health monitoring for this account's links on this domain will be disabled. After access is granted again, monitoring must be enabled explicitly.",
+  "domain_grants.confirm_redirects": "Existing links and public redirects will remain unchanged.",
+  "domain_grants.confirm_required": "Confirm the revocation before removing access.",
   "domain_grants.manage_for": "Manage sharing for {{domain}}",
   "domain_grants.owned": "Owned domains",
   "domain_grants.shared": "Shared with you",

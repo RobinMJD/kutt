@@ -5,15 +5,18 @@ suite and with `KUTT_TEST_ONLY=management-domain-grants`. The fresh fixture chec
 raw/forged/encoded Host routing, exact Origin checks, host-only cookies, canonical
 mail and shortcut URLs, protected public forms, grant revocation, token expiry,
 workspace-owner entitlements, import commit/replay, lock races, domain recovery,
-and disabled-setting compatibility. The full suite also repeats signed OIDC
+and disabled-setting compatibility. Native revoke checks include non-mutating
+GET/cancel/old forms, fresh ownership, invalid origins and stale/regranted IDs.
+The full suite also repeats signed OIDC
 callback/logout validation on the separate management host.
 
 Run `sh tests/search-database.sh IMAGE mysql2 tests/management-domain-grants.cjs`
 and the same command with `pg` for isolated real-database gates, including a
 forced stale-snapshot permission check. The `oidc-roles-database.cjs` gate adds
 expired mapped-admin denial for grant writes. `sh tests/browser-domain-grants.sh
-IMAGE` checks native grant/revoke and recipient selectors with enforced CSP at
-320/390/1440px, in EN/FR/ES and light/dark. This browser gate is also integrated
+IMAGE` checks keyboard grant/confirm/cancel, irreversible scoped-token revocation
+and recipient selectors with enforced CSP at 320/390/1440px, in EN/FR/ES and
+light/dark, plus confirmation with JavaScript disabled. This browser gate is also integrated
 into `browser-community.sh`; it uses only disposable loopback accounts and
 captures synthetic screenshots outside the checkout. See
 [domain sharing](../docs/DOMAIN-SHARING.md) for topology and recovery boundaries.

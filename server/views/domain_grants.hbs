@@ -16,8 +16,7 @@
     <ul class="grant-list">
       {{#each selected.data}}
         <li><div><span>{{email}}</span><time datetime="{{created_at}}">{{date created_at}}</time></div>
-          <form method="post" action="/settings/domain-sharing/{{../selected.domain.id}}">
-            <input type="hidden" name="operation" value="revoke" /><input type="hidden" name="grant_id" value="{{id}}" />
+          <form method="get" action="/settings/domain-sharing/{{../selected.domain.id}}/revoke/{{id}}">
             <button type="submit" class="secondary" aria-label="{{t 'domain_grants.revoke_for' email=email}}">{{t "domain_grants.revoke"}}</button>
           </form></li>
       {{else}}<li>{{t "domain_grants.empty"}}</li>{{/each}}

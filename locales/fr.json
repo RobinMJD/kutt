@@ -1,5 +1,11 @@
 {
   "domain_grants.title": "Partage de domaines",
+  "domain_grants.confirm_title": "Révoquer l'accès au domaine ?",
+  "domain_grants.confirm_recipient": "{{email}} ne pourra plus créer ni modifier de liens sur {{domain}}.",
+  "domain_grants.confirm_tokens": "Les jetons API de ce compte limités à ce domaine seront définitivement révoqués. Accorder de nouveau l'accès ne les réactivera pas.",
+  "domain_grants.confirm_health": "La surveillance des liens de ce compte sur ce domaine sera désactivée. Après une nouvelle autorisation d'accès, elle devra être réactivée explicitement.",
+  "domain_grants.confirm_redirects": "Les liens existants et les redirections publiques resteront inchangés.",
+  "domain_grants.confirm_required": "Confirmez la révocation avant de supprimer l'accès.",
   "domain_grants.manage_for": "Gérer le partage de {{domain}}",
   "domain_grants.owned": "Vos domaines",
   "domain_grants.shared": "Partagés avec vous",
