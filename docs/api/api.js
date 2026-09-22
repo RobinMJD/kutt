@@ -54,6 +54,16 @@ module.exports = {
         description: "Get list of links",
         parameters: [
           {
+            name: "sort", in: "query", required: false,
+            description: "Stable list order. Ties use internal insertion order descending; owner and token scope are unchanged.",
+            schema: { type: "string", enum: ["id", "created_at", "address", "target", "visit_count"], default: "id" }
+          },
+          {
+            name: "direction", in: "query", required: false,
+            description: "Direction of the selected sort field. Unknown, empty or structured sort input returns 400.",
+            schema: { type: "string", enum: ["asc", "desc"], default: "desc" }
+          },
+          {
             name: "limit",
             in: "query",
             description: "Limit",

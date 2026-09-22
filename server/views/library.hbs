@@ -8,6 +8,7 @@
     <label>Tag<select name="tag" aria-label="Tag"><option value="">All tags</option>{{#each tags}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}</option>{{/each}}</select></label>
     <label>Collection<select name="collection" aria-label="Collection"><option value="">All collections</option>{{#each collections}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}</option>{{/each}}</select></label>
     <label>State<select name="state" aria-label="State">{{#each states}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select></label>
+    {{> list_sort profile='links' state=filters}}
     <button class="primary" type="submit">Filter</button><a href="/settings/library">Clear</a>
   </form>
   <nav class="library-saved" aria-label="Saved filters">

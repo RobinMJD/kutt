@@ -17,16 +17,19 @@ the upstream hosted service.
 ## Project status
 
 As of **22 September 2026**, the current deployed application version is
-[3.2.6-sr94.41](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.41).
+[3.2.6-sr94.42](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.42).
 All 16 original roadmap features, the selected community improvements and 25
 confirmed UI/UX fixes have passed their recorded release and homelab deployment
 gates. Release `.40` added DNS ownership verification and closed seven security
 findings; `.41` corrects Safari analytics and prefix-only hostname normalization.
+Release `.42` adds proxy-trust, database-search, OIDC-algorithm and custom-host
+API correctness, preserving management authorization and public redirects.
 Exact-image tests, public WAF regression and pre/post off-host writable restores passed.
 
 The next community work list is approved and in progress, including full English,
-French and Spanish translations. Proxy trust, database search, OIDC algorithm
-selection and custom-domain API routing are the next candidate batch. See the
+French and Spanish translations. Verified database/Redis TLS is published in
+`.43` and under deployment validation; stable table sorting is the next candidate.
+See the
 delivery ledger for publication and deployment gates; pending additions are
 not yet claimed as complete.
 
@@ -93,7 +96,7 @@ checked-out source, persists SQLite and custom assets in named volumes, and
 publishes only `127.0.0.1:3000` on the Docker host.
 
 ```sh
-git clone --branch v3.2.6-sr94.41 --depth 1 https://github.com/RobinMJD/kutt.git
+git clone --branch v3.2.6-sr94.42 --depth 1 https://github.com/RobinMJD/kutt.git
 cd kutt
 cp .example.env .env
 chmod 600 .env
@@ -130,7 +133,7 @@ whose data you intend to keep.
 ### Published images and alternative examples
 
 Fork images are published as
-`ghcr.io/robinmjd/kutt:v3.2.6-sr94.41`. For an image-based deployment, replace
+`ghcr.io/robinmjd/kutt:v3.2.6-sr94.42`. For an image-based deployment, replace
 the Compose service's `build` section with an `image` reference, retaining its
 environment and persistent volumes. Pin the tested image digest in production.
 The upstream `kutt/kutt` Docker Hub image does **not** contain these fork changes.

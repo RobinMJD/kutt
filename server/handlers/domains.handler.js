@@ -126,7 +126,7 @@ async function getAdmin(req, res) {
   };
 
   const [data, total] = await Promise.all([
-    query.domain.getAdmin(match, { limit, search, user, links, skip }),
+    query.domain.getAdmin(match, { limit, search, user, links, skip, ...require("../list-sort").parse(req.query, "domains") }),
     query.domain.totalAdmin(match, { search, user, links })
   ]);
 

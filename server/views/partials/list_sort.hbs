@@ -1,0 +1,27 @@
+<div class="list-sort-controls">
+  <label>Sort by
+    <select name="sort" class="list-sort-select table-input" aria-label="Sort by">
+      <option value="id" {{#ifEquals state.sort 'id'}}selected{{/ifEquals}}>Added</option>
+      <option value="created_at" {{#ifEquals state.sort 'created_at'}}selected{{/ifEquals}}>Created</option>
+      {{#ifEquals profile 'users'}}
+        <option value="email" {{#ifEquals state.sort 'email'}}selected{{/ifEquals}}>Email</option>
+        <option value="links_count" {{#ifEquals state.sort 'links_count'}}selected{{/ifEquals}}>Links</option>
+      {{else}}
+        <option value="address" {{#ifEquals state.sort 'address'}}selected{{/ifEquals}}>{{#ifEquals profile 'domains'}}Domain{{else}}Alias{{/ifEquals}}</option>
+        {{#ifEquals profile 'domains'}}
+          <option value="homepage" {{#ifEquals state.sort 'homepage'}}selected{{/ifEquals}}>Homepage</option>
+          <option value="links_count" {{#ifEquals state.sort 'links_count'}}selected{{/ifEquals}}>Links</option>
+        {{else}}
+          <option value="target" {{#ifEquals state.sort 'target'}}selected{{/ifEquals}}>Destination</option>
+          <option value="visit_count" {{#ifEquals state.sort 'visit_count'}}selected{{/ifEquals}}>Views</option>
+        {{/ifEquals}}
+      {{/ifEquals}}
+    </select>
+  </label>
+  <label>Direction
+    <select name="direction" class="list-sort-select table-input" aria-label="Direction">
+      <option value="desc" {{#ifEquals state.direction 'desc'}}selected{{/ifEquals}}>Descending</option>
+      <option value="asc" {{#ifEquals state.direction 'asc'}}selected{{/ifEquals}}>Ascending</option>
+    </select>
+  </label>
+</div>

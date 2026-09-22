@@ -353,3 +353,24 @@ repeats real cache, Bull worker and restart-persistent limiter tests.
 Configuration checks cover CA bundles, default trust, client-key matching,
 sanitized startup failures, file precedence and SQLite pool compatibility.
 Do not use these fixture scripts against a real database or certificate store.
+
+## Stable Sorting
+
+`list-sorting.cjs` runs in the isolated container suite (`KUTT_TEST_ONLY=list-sorting`
+for focused HTTP tests). `list-sort-database.cjs` exercises every sort field and
+direction against the real MySQL/PostgreSQL search fixtures. SQLite uses
+`list-sort-sqlite.cjs` with `KUTT_DATABASE_DISPOSABLE=1`, `DB_CLIENT=better-sqlite3`
+and a fresh `DB_FILENAME=/tmp/kutt-sort-*.sqlite`. CI runs all three engines.
+
+`browser-list-sorting.cjs` requires an empty disposable loopback application,
+`KUTT_BROWSER_DISPOSABLE=1`, `KUTT_TEST_URL` and `KUTT_EVIDENCE_DIR`, plus
+Playwright/Chromium (`PLAYWRIGHT_MODULE` may name an absolute module path).
+It creates fixture users/links, never authenticates to a real deployment, and
+checks desktop/mobile controls, admin transitions, native state, multiple drafts
+and in-flight list/editor response races. Remove its disposable container/data
+afterward; do not run it against retained configuration.
+
+`sh tests/browser-list-sorting.sh IMAGE` provisions and cleans that disposable
+container with a loopback-only port and no real mounts. Set `NODE_BINARY` for an
+alternate Node runtime and `KUTT_BROWSER_PORT` when port 31119 is occupied.
+CI runs the same helper with isolated, version-pinned Playwright tooling.

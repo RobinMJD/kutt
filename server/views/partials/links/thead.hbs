@@ -5,6 +5,7 @@
       <input id="total" name="total" type="hidden" value="{{total}}" />
       <input id="limit" name="limit" type="hidden" value="10" />
       <input id="skip" name="skip" type="hidden" value="0" />
+      {{> list_sort profile='links' state=query}}
     </th>
     {{> links/nav}}
   </tr>

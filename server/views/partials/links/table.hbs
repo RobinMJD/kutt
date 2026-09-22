@@ -11,7 +11,7 @@
     hx-params="not total"
     hx-sync="this:replace"
     hx-select-oob="#total" 
-    hx-trigger="load once, reloadMainTable from:body, click delay:100ms from:button.nav, input changed delay:500ms from:#search"
+    hx-trigger="load once, reloadMainTable from:body, click delay:100ms from:button.nav, input changed delay:500ms from:#search, change from:.list-sort-select"
     hx-on:htmx:after-on-load="updateLinksNav()"
   >
     {{> links/thead}}

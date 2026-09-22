@@ -13,7 +13,7 @@ jobs:
   test-and-publish:
     if: github.repository == 'RobinMJD/kutt'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     permissions:
       contents: read
       packages: write
@@ -33,11 +33,18 @@ jobs:
         run: |
           sh tests/search-database.sh kutt-tested mysql2
           sh tests/search-database.sh kutt-tested pg
+      - name: Stable sorting on SQLite
+        run: docker run --rm --network none --read-only --tmpfs /tmp:mode=1777 --cap-drop ALL --security-opt no-new-privileges:true -e KUTT_DATABASE_DISPOSABLE=1 -e DB_CLIENT=better-sqlite3 -e DB_FILENAME=/tmp/kutt-sort-ci.sqlite -e REDIS_ENABLED=false -e DEFAULT_DOMAIN=localhost -e JWT_SECRET=disposable-sort-fixture-not-a-real-secret --entrypoint node kutt-tested tests/list-sort-sqlite.cjs
       - name: Verified database and Redis TLS
         run: |
           sh tests/transport-tls.sh kutt-tested pg
           sh tests/transport-tls.sh kutt-tested mysql2
           sh tests/transport-tls.sh kutt-tested redis
+      - name: Browser sorting and concurrent draft regression
+        run: |
+          npm install --prefix "$RUNNER_TEMP/kutt-browser" --no-audit --no-fund --package-lock=false playwright@1.62.1
+          node "$RUNNER_TEMP/kutt-browser/node_modules/playwright/cli.js" install --with-deps chromium
+          PLAYWRIGHT_MODULE="$RUNNER_TEMP/kutt-browser/node_modules/playwright" KUTT_EVIDENCE_DIR="$RUNNER_TEMP/kutt-browser-evidence" sh tests/browser-list-sorting.sh kutt-tested
       - name: Authenticate to GitHub Container Registry
         if: startsWith(github.ref, 'refs/tags/')
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0

@@ -9,7 +9,7 @@ const fail = (message, status = 400) => { throw new CustomError(message, status)
 const uuid = value => typeof value === "string" && /^[a-f0-9-]{36}$/i.test(value);
 const kinds = ["tag", "collection"];
 const publicLabel = row => ({ id: row.id, name: row.name, kind: row.kind });
-const publicFilter = row => ({ id: row.id, name: row.name, filters: JSON.parse(row.filters) });
+const publicFilter = row => ({ id: row.id, name: row.name, filters: parseFilters(JSON.parse(row.filters)) });
 
 function nameFields(input) {
   if (typeof input !== "string") fail("A name is required.");
@@ -30,6 +30,7 @@ function parseFilters(input = {}) {
   if (result.q.length > 200 || /[\u0000-\u001f]/.test(result.q)) fail("Search is too long or invalid.");
   if (!['active', 'paused', 'unpaused', 'trash'].includes(result.state)) fail("Invalid link state.");
   for (const key of kinds) if (result[key] && !uuid(result[key])) fail("Invalid label.");
+  Object.assign(result, require("./list-sort").parse(input));
   return result;
 }
 
@@ -74,9 +75,10 @@ async function list(userId, input, domainId) {
     query.whereIn("links.id", knex("library_link_labels").select("link_id").where({ label_id: filters[kind] }));
   }
   const { n } = await query.clone().count("* as n").first();
-  const links = await query.clone().leftJoin("domains", "domains.id", "links.domain_id")
+  const rows = query.clone().leftJoin("domains", "domains.id", "links.domain_id")
     .select("links.*", knex.raw("coalesce(domains.address, links.archived_domain) as domain"))
-    .orderBy("links.id", "desc").offset((page - 1) * limit).limit(limit);
+    .offset((page - 1) * limit).limit(limit);
+  const links = await require("./list-sort").apply(rows, filters);
   const assigned = links.length ? await knex("library_link_labels as rel")
     .join("library_labels as label", "label.id", "rel.label_id")
     .where("label.user_id", userId).whereIn("rel.link_id", links.map(row => row.id))

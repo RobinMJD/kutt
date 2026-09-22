@@ -2,6 +2,10 @@
 <main class="link-archive">
   <div class="archive-heading"><h1>Trash</h1><a href="/">Links</a></div>
   <p>Links: {{total}}</p>
+  <form method="get" action="/settings/trash" class="library-filters" aria-label="Sort trash">
+    <input type="hidden" name="limit" value="{{limit}}" />
+    {{> list_sort profile='links' state=sorting}}<button type="submit">Apply</button>
+  </form>
   <div class="archive-list">
     {{#each links}}{{> links/trash_item}}{{else}}<p>Trash is empty.</p>{{/each}}
   </div>

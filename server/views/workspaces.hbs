@@ -39,6 +39,8 @@
             <button name="operation" value="remove_member" title="Remove member or invitation" aria-label="Remove member or invitation" class="library-icon" data-confirm="Revoke this workspace membership or invitation?">{{> icons/trash}}</button>
           </form></li>{{else}}<li>No other members.</li>{{/each}}</ul>
         <form method="get" action="{{@root.action_url}}" class="workspace-form" aria-label="Find personal link">
+          <input type="hidden" name="q" value="{{q}}" /><input type="hidden" name="state" value="{{state}}" />
+          <input type="hidden" name="page" value="{{page}}" /><input type="hidden" name="sort" value="{{sort}}" /><input type="hidden" name="direction" value="{{direction}}" />
           <label>Find personal link<input type="search" name="share_q" value="{{share_q}}" maxlength="200" /></label><button type="submit">Search</button>
         </form>
         <form method="post" action="{{@root.action_url}}" class="workspace-form" aria-label="Share existing link">
@@ -64,7 +66,8 @@
     </details>{{/if}}
     <form class="workspace-form" method="get" action="{{@root.action_url}}" aria-label="Filter shared links">
       <label>Search<input type="search" name="q" value="{{q}}" maxlength="200" /></label>
-      <label>State<select name="state" aria-label="State"><option value="active" {{#unless trash}}selected{{/unless}}>Not in trash</option><option value="trash" {{#if trash}}selected{{/if}}>In trash</option></select></label><button type="submit">Filter</button>
+      <label>State<select name="state" aria-label="State"><option value="active" {{#unless trash}}selected{{/unless}}>Not in trash</option><option value="trash" {{#if trash}}selected{{/if}}>In trash</option></select></label>
+      {{> list_sort profile='links' state=this}}<button type="submit">Filter</button>
     </form>
     <p>{{total}} links</p><ul class="workspace-links">
       {{#each data}}<li>

@@ -1,5 +1,10 @@
 # Shared workspaces
 
+Shared-link lists support [stable sorting](LIST-SORTING.md) through the UI and
+the `sort` / `direction` API query parameters. Filters, pagination, candidate
+search and native mutations retain normalized sorting state; permissions do not
+change.
+
 Release `v3.2.6-sr94.9` was published and deployed on 2026-09-14. Release CI,
 exact hardened-image regression, desktop/mobile workflows, verified NAS restore
 and live HTTPS/WAF authorization tests passed. Consult the feature roadmap for

@@ -152,10 +152,10 @@ async function getAdmin(match, params) {
     .where(normalizeMatch(match))
     .offset(params.skip)
     .limit(params.limit)
-    .orderBy("users.id", "desc")
     .groupBy(1)
     .groupBy("l.links_count")
     .groupBy("d.domains");
+  require("../list-sort").apply(query, params, "users");
   
   if (params?.search) {
     const id = parseInt(params?.search);

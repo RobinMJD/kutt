@@ -6,6 +6,7 @@ const knex = require("../knex");
 const env = require("../env");
 const history = require("../link-history");
 const filterAdminUser = require("./admin-user-filter");
+const sorting = require("../list-sort");
 
 const CustomError = utils.CustomError;
 
@@ -127,8 +128,8 @@ async function get(match, params) {
     .select(...selectable)
     .where(normalizeMatch(match))
     .offset(params.skip)
-    .limit(params.limit)
-    .orderBy("links.id", "desc");
+    .limit(params.limit);
+  sorting.apply(query, params);
   query[params?.trash ? "whereNotNull" : "whereNull"]("links.deleted_at");
   
   if (params?.search) {
@@ -151,8 +152,8 @@ async function getAdmin(match, params) {
     query.andWhere(key, ...(Array.isArray(value) ? value : [value]));
   });
 
+  sorting.apply(query, params);
   query
-    .orderBy("links.id", "desc")
     .offset(params.skip)
     .limit(params.limit)
   

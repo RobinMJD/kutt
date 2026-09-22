@@ -27,15 +27,17 @@ function page(req) {
 async function trash(req, res) {
   res.set("Cache-Control", "no-store");
   const { limit, skip } = page(req);
+  const sorting = require("../list-sort").parse(req.query);
+  const pageURL = offset => "/settings/trash?" + new URLSearchParams({ ...sorting, skip: offset, limit });
   const match = { user_id: req.user.id,
     ...(req.apiTokenDomain !== undefined && { domain_id: req.apiTokenDomain, archived_domain: null }) };
   const [links, total] = await Promise.all([
-    query.link.get(match, { limit, skip, trash: true }), query.link.total(match, { trash: true })
+    query.link.get(match, { limit, skip, trash: true, ...sorting }), query.link.total(match, { trash: true })
   ]);
   if (!req.isHTML) return res.json({ total, limit, skip, data: links.map(sanitize.link) });
-  return res.render("trash", { title: "Trash", links: links.map(sanitize.link_html), total,
-    previous: skip > 0 ? `/settings/trash?skip=${Math.max(0, skip - limit)}&limit=${limit}` : null,
-    next: skip + limit < total ? `/settings/trash?skip=${skip + limit}&limit=${limit}` : null });
+  return res.render("trash", { title: "Trash", links: links.map(sanitize.link_html), total, sorting, limit,
+    previous: skip > 0 ? pageURL(Math.max(0, skip - limit)) : null,
+    next: skip + limit < total ? pageURL(skip + limit) : null });
 }
 
 async function list(req, res) {

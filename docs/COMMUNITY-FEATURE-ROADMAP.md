@@ -22,15 +22,15 @@ automatic domain renaming, historical analytics rewriting or data deletion.
 | C01 | Safari analytics classification | Complete | `.41`; evidence below |
 | C02 | Prefix-only hostname normalization | Complete | `.41`; evidence below |
 | C03 | Transactional, reversible administrative moderation and session safety | Pending | Pending |
-| C04 | Strict peer/CIDR/hop reverse-proxy trust | Implemented; release gates pending | Candidate `.42` |
+| C04 | Strict peer/CIDR/hop reverse-proxy trust | Complete | `.42`; evidence below |
 | C05 | Compatible staged and enforced Content Security Policy | Pending | Pending |
-| C06 | MySQL utf8mb4 search compatibility and real database tests | Implemented; release gates pending | Candidate `.42` |
+| C06 | MySQL utf8mb4 search compatibility and real database tests | Complete | `.42`; evidence below |
 | C07 | Verified remote database TLS and credential-file configuration | Implemented; release gates pending | Candidate `.43` |
 | C08 | Consistent verified Redis TLS for cache, queues and limiting | Implemented; release gates pending | Candidate `.43` |
-| C09 | Configurable asymmetric OIDC signing algorithm | Implemented; release gates pending | Candidate `.42` |
-| C10 | Custom-domain API routing without homepage interception | Implemented; release gates pending | Candidate `.42` |
+| C09 | Configurable asymmetric OIDC signing algorithm | Complete | `.42`; evidence below |
+| C10 | Custom-domain API routing without homepage interception | Complete | `.42`; evidence below |
 | C11 | Complete English (default), French and Spanish localization | Pending | Pending |
-| C12 | Stable allowlisted sorting in personal, admin and workspace tables/API | Pending | Pending |
+| C12 | Stable allowlisted sorting in personal, admin and workspace tables/API | Implemented; release gates pending | Candidate `.44` |
 | C13 | Branded QR logos embedded in validated PNG/SVG exports | Pending | Pending |
 | C14 | Accessible dark/system/light theme | Pending | Pending |
 | C15 | Optional explicit OIDC role mapping and safe demotion/recovery | Pending | Pending |
@@ -102,8 +102,19 @@ review complete while required work remains.
   credential denial, scoped token privacy, CSRF, disabled OIDC, homepage and
   ordinary alias compatibility. The new malformed-path 400 guard closes a
   pre-existing empty-alias database lookup rather than normalizing into an API.
-- Full container regression passes. Publication/CI and deployment/restore
-  validation are separate pending gates; these features are not complete yet.
+- Full source/exact-wrapper regression, tag/main CI `35670358147` /
+  `35670357525`, Library at 1440/390/320px and 12 HTTPS admin/user keyboard
+  login/navigation workflows passed. Release `.42` is deployed as wrapper
+  `sha256:deafa204c50ace932b88cb6b2e41830f138fd10b3684ce25dbf69bffc31b6ef0`.
+- Fresh pre-change local/NAS backup `89fbbd22` / `bbdb4418` at September 22
+  00:13 UTC and post-change `b2b0a2aa` / `17c9bf0f` at 00:46 UTC passed
+  63-file byte verification and exact-image writable SQLite recovery.
+- Public WAF feature regression, actual Authentik-signed logout/replay and
+  HTTPS webhook delivery passed. Two health samples 65 seconds apart showed
+  three fresh probes and zero restarts/alerts/failed units/unhealthy containers.
+  Whole-lab validation passed; original records/integrity/FK are unchanged.
+  Valid fresh scan: zero Critical/High. Private evidence: homelab report
+  `2026-09-22-kutt-community-42` and local `Work/kutt-community-20260922`.
 
 ## Evidence: C07 / C08
 
@@ -120,3 +131,19 @@ review complete while required work remains.
   database/Redis policy changes are needed for the current SQLite deployment.
 - Publication, exact-wrapper regression and backup/deployment acceptance remain
   pending. See [transport configuration and recovery](TRANSPORT-TLS.md).
+
+## Evidence: C12
+
+- Fixed identifier profiles and scalar directions retain `id DESC` defaults,
+  stable ties, numeric count ordering and null-homepage-last semantics across
+  SQLite, MySQL 8.4 and PostgreSQL 17. Every field/direction, pagination, count
+  parity and owner scoping passed real-database tests.
+- Both API prefixes preserve scoped authorization; malformed/structured sort
+  input is rejected. Saved-filter state survives restart. Workspace native
+  candidate search/mutations and Library error pages retain valid list state.
+- Rendered 1440/390/320px personal/admin/Library/workspace workflows pass,
+  including pagination/reset, independent inline drafts and delayed list/editor
+  response races. Review-found refresh loss and disabled-select serialization
+  problems were fixed and reproduced in the browser regression test.
+- No migration is required. Publication, final regression, exact-image recovery
+  and deployment remain separate gates. See [sorting](LIST-SORTING.md).
