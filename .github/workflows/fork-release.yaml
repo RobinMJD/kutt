@@ -39,6 +39,8 @@ jobs:
         run: |
           sh tests/search-database.sh kutt-tested mysql2 tests/oidc-roles-database.cjs
           sh tests/search-database.sh kutt-tested pg tests/oidc-roles-database.cjs
+          sh tests/search-database.sh kutt-tested mysql2 tests/oidc-role-writes.cjs
+          sh tests/search-database.sh kutt-tested pg tests/oidc-role-writes.cjs
       - name: Shared-domain grants on real MySQL and PostgreSQL
         run: |
           sh tests/search-database.sh kutt-tested mysql2 tests/management-domain-grants.cjs

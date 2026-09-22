@@ -24,7 +24,7 @@ not part of this guide. See [proposal credits](UPSTREAM-PR-REVIEW.md) and the
 | C12 | Allowlisted stable sorting across personal/admin/library/workspace lists; drafts and filters retained | [Sorting](LIST-SORTING.md) | `tests/list-sorting.cjs`, `tests/browser-list-sorting.sh` |
 | C13 | Ephemeral bounded PNG logos in real PNG/SVG exports; canonical plain base64 preferred, exact legacy PNG data URI accepted | [QR branding](QR-BRANDING.md) | `tests/qr-branding.cjs`, `tests/browser-qr-branding-locales.sh` |
 | C14 | System/light/dark appearance, accessible controls and chart/QR contrast | [Themes](THEMES.md) | `tests/theme.cjs`, `tests/browser-theme.sh` |
-| C15 | Opt-in signed OIDC claim-to-admin mapping with bounded expiry, fresh guards and protected local recovery admin | [OIDC roles](OIDC-SECURITY.md) | `tests/oidc-roles.cjs`, `tests/oidc-roles-database.cjs` |
+| C15 | Opt-in signed OIDC claim-to-admin mapping with bounded expiry, transactional write-time guards and protected local recovery admin | [OIDC roles](OIDC-SECURITY.md) | `tests/oidc-roles.cjs`, `tests/oidc-roles-database.cjs`, `tests/oidc-role-writes.cjs` |
 | C16 | Optional management origin and explicit per-user domain grants; no global implicit sharing or cross-owner analytics | [Domain sharing](DOMAIN-SHARING.md) | `tests/management-domain-grants.cjs`, `tests/domain-access-read.cjs`, `tests/browser-domain-grants.sh` |
 | C17 | Optional destination-host policy across writes, imports, routing and health; authorized unchanged-target metadata repair preserved | [Destination policy](DESTINATION-POLICY.md) | `tests/destination-policy.cjs`, `tests/destination-policy-edit-races.cjs` |
 | C18 | Separate opt-in authenticated metrics listener with bounded labels and no URLs/identities | [Metrics](METRICS.md) | `tests/metrics.cjs` |
@@ -76,6 +76,8 @@ docker build -t kutt-test .
 docker run --rm --network none --entrypoint node kutt-test tests/container-smoke.cjs
 sh tests/redis-smoke.sh kutt-test
 sh tests/browser-community.sh kutt-test
+sh tests/search-database.sh kutt-test mysql2 tests/oidc-role-writes.cjs
+sh tests/search-database.sh kutt-test pg tests/oidc-role-writes.cjs
 ```
 
 The browser runner requires the documented Playwright and locked test-decoder
@@ -84,7 +86,12 @@ search, OIDC roles and domain grants, plus real database/Redis TLS. Run the
 additional alias, moderation, sorting, visit and security database fixtures
 listed in the test guide when changing those boundaries. Keep the original
 browser workflows, full SQLite suite and Redis restart coverage alongside the
-new focused selectors.
+new focused selectors. The [release workflow](../.github/workflows/fork-release.yaml)
+runs the role-write regression on both real SQL engines. The full SQLite suite
+also checks mapping enabled and never enabled: expiry, role loss and session
+revocation between authentication and mutation must not commit link edits,
+deletions or history records. Both API prefixes and edit routes are covered,
+with owner, granted-domain and workspace-collaborator controls preserved.
 
 The community browser runner covers enforced CSP, QR branding, destination
 policy and edit recovery, OIDC roles, domain grants and geography. Localization,
