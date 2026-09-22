@@ -57,6 +57,7 @@
 .api-token-list { list-style: none; padding: 0; }
 .api-token-list > li { display: flex; align-items: center; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid var(--table-head-tr-border-color); }
 .api-token-details { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.account-security dd { overflow-wrap: anywhere; }
 .api-token-details code, .api-token-details small { display: block; }
 #tokens-wrapper button[title] { width: 40px; flex: 0 0 40px; padding: 10px; }
 #tokens-wrapper button[title] svg { width: 20px; height: 20px; }

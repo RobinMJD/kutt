@@ -93,8 +93,15 @@ const jwtLoosePage = authenticate("jwt", "messages.unauthorized", false, "page")
 const apikey = authenticate("localapikey", "messages.api_key_is_not_correct", false, null);
 const oidc = authenticate("oidc", "messages.unauthorized_2", true, "page");
 
-function admin(req, res, next) {
-  if (req.user.admin) return next();
+async function admin(req, res, next) {
+  const current = req.user && !req.apiToken && await require("../oidc-roles").fresh(
+    await require("../knex")("users").where({ id: req.user.id }).first());
+  if (current && !current.banned && current.verified && current.role === ROLES.ADMIN &&
+      Number(current.auth_version) === Number(req.user.auth_version)) {
+    req.user = { ...current, admin: true };
+    res.locals.canCreateLocalAdmin = await require("../oidc-roles").canCreateLocalAdmin(current);
+    return next();
+  }
   throw new CustomError(i18n.t("messages.unauthorized_2"), 401);
 }
 

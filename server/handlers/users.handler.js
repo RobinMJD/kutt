@@ -124,7 +124,7 @@ async function create(req, res) {
   const salt = await bcrypt.genSalt(12);
   req.body.password = await bcrypt.hash(req.body.password, salt);
 
-  const user = await query.user.create(req.body);
+  const user = await query.user.create(req.body, req.user);
 
   if (req.body.verification_email && !user.banned && !user.verified) {
     await mail.verification(user);

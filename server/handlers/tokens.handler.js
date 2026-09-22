@@ -60,8 +60,8 @@ async function authenticate(req, res, next) {
   }
   if (!supplied.some(value => value.startsWith("kutt_") && value.length !== 40)) {
     // Invalid explicit credentials must not fall back to an unrelated cookie.
-    const legacy = supplied.length === 1 && await knex("users").where({ apikey: supplied[0] }).first();
-    if (!legacy || legacy.banned || !legacy.verified) {
+    const legacy = supplied.length === 1 && await require("../oidc-roles").fresh(await knex("users").where({ apikey: supplied[0] }).first());
+    if (!legacy || legacy.apikey !== supplied[0] || legacy.banned || !legacy.verified) {
       return res.status(401).json({ error: i18n.t("messages.invalid_api_credential") });
     }
     return next();

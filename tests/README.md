@@ -1,5 +1,14 @@
 # Container smoke test
 
+Geography uses `KUTT_TEST_ONLY=geography` and the full container suite.
+`sh tests/browser-geography.sh IMAGE` checks the existing analytics contract,
+bundled SVG, count/share details, pointer/keyboard/native country selection,
+unknown and unmapped rows, table pages, filter preservation, stale/empty/error
+states, no external requests and zero analytics writes. Run with
+`KUTT_TEST_LOCALE=en|fr|es` for six light/dark layouts per locale at
+1440/390/320px. See [analytics geography](../docs/ANALYTICS.md#geography-c20)
+for fixture safety, API data usage and coverage limits.
+
 Appearance preferences are covered by `KUTT_TEST_ONLY=theme` and the full suite.
 `sh tests/browser-theme.sh IMAGE` checks System/Light/Dark, browser storage and
 cross-tab behavior, real rendered contrast, chart colors/pixels and QR print

@@ -1,6 +1,8 @@
 (() => {
   const form = document.querySelector("#analytics-filters"), status = document.querySelector("#analytics-status");
   if (!form) return;
+  const geographyRoot = document.querySelector("#analytics-geography");
+  const geography = geographyRoot && window.KuttGeography ? window.KuttGeography.create(geographyRoot, window.KuttI18n) : null;
   let chart, controller, serial = 0;
   const element = (tag, text) => { const node = document.createElement(tag); if (text !== undefined) node.textContent = text; return node; };
   function table(kind, rows, heading) {
@@ -11,11 +13,14 @@
       const focus = window.KuttFocus.capture();
       container.replaceChildren();
       const table = element("table"), head = element("thead"), header = element("tr"), body = element("tbody");
-      for (const title of [heading, window.KuttI18n.t("ui.visits")]) { const cell = element("th", title); cell.scope = "col"; header.append(cell); }
+      const headings = [heading, window.KuttI18n.t("ui.visits")];
+      if (kind === "country" && geography) headings.push(window.KuttI18n.t("geography.share"));
+      for (const title of headings) { const cell = element("th", title); cell.scope = "col"; header.append(cell); }
       head.append(header); table.append(head, body);
       for (const item of rows.slice(page * 20, (page + 1) * 20)) {
         const name = kind === "country" ? window.KuttI18n.region(item.name) : ["browser", "os", "referrer"].includes(kind) && ["other", "(other)", "Unknown", "Direct"].includes(item.name) ? window.KuttI18n.t(item.name === "Direct" ? "analytics.direct" : item.name === "Unknown" ? "ui.unknown" : "analytics.other") : item.name;
         const row = element("tr"); row.append(element("td", name), element("td", window.KuttI18n.number(Number(item.visits)))); body.append(row);
+        if (kind === "country" && geography) row.append(element("td", geography.share(item.visits)));
       }
       container.append(table);
       if (rows.length > 20) {
@@ -55,6 +60,7 @@
       document.querySelector("#analytics-links").textContent = window.KuttI18n.number(data.visited_links) + " / " + window.KuttI18n.number(data.matched_links);
       options("domain", data.available_filters.domains, window.KuttI18n.t("ui.all_domains"), data.filters.domain);
       options("tag", data.available_filters.tags, window.KuttI18n.t("ui.all_tags"), data.filters.tag);
+      if (geography) geography.update(data.stats.country, data.total);
       table("days", data.by_day.map(row => ({ name: window.KuttI18n.date(row.date, { dateStyle: "medium", timeZone: "UTC" }), visits: row.visits })), window.KuttI18n.t("ui.date"));
       table("tags", data.tags, window.KuttI18n.t("ui.tag"));
       for (const kind of window.KuttResponses.dimensions) table(kind, data.stats[kind], ({ os: "OS", referrer: window.KuttI18n.t("ui.referrer"), browser: window.KuttI18n.t("ui.browser"), country: window.KuttI18n.t("ui.country") })[kind]);

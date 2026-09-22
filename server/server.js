@@ -106,11 +106,11 @@ app.get("*", renders.notFound);
 // handle errors coming from above routes
 app.use(helpers.error);
   
-templatesReady.then(() => metrics.start()).then(() => {
+templatesReady.then(() => require("./oidc-roles").initialize()).then(() => metrics.start()).then(() => {
   app.listen(env.PORT, () => {
     console.log(`> Ready on http://localhost:${env.PORT}`);
   });
 }).catch(() => {
-  console.error("Application initialization failed. Check templates and the private metrics listener configuration.");
+  console.error("Application initialization failed. Check templates, private metrics configuration and, when configured, the protected local OIDC recovery administrator.");
   process.exit(1);
 });

@@ -37,7 +37,7 @@ async function stream(req, res) {
   const poll = async () => {
     if (pending || !active) return; pending = true;
     try {
-      const user = await knex("users").where({ id: userId }).first();
+      const user = await require("../oidc-roles").fresh(await knex("users").where({ id: userId }).first());
       if (!user || user.banned || !user.verified || auth.exp * 1000 <= Date.now() || !await validSession(user, auth)) {
         res.write("event: revoked\ndata: {}\n\n"); close(); return;
       }

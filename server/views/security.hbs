@@ -21,5 +21,17 @@
       <dt>{{t "ui.oidc_session_limit_seconds"}}</dt><dd>{{number oidc_session_max_seconds}}</dd>
     </dl>
   {{/if}}
+  {{#if role_mapping}}
+    <hr /><h2>{{t "oidc_roles.title"}}</h2>
+    <dl>
+      <dt>{{t "oidc_roles.state"}}</dt><dd>{{#if role_mapping.enabled}}{{t "oidc_roles.enabled"}}{{else}}{{t "oidc_roles.disabled"}}{{/if}}</dd>
+      {{#if role_mapping.enabled}}
+        <dt>{{t "oidc_roles.claim"}}</dt><dd>{{role_mapping.claim}}</dd>
+        <dt>{{t "oidc_roles.values"}}</dt><dd>{{number role_mapping.value_count}}</dd>
+        <dt>{{t "oidc_roles.lease"}}</dt><dd>{{number role_mapping.max_age_seconds}}</dd>
+      {{/if}}
+      {{#if role_mapping.protected_user_id}}<dt>{{t "oidc_roles.recovery"}}</dt><dd>{{role_mapping.protected_user_id}}</dd>{{/if}}
+    </dl>
+  {{/if}}
 </main>
 {{> footer}}

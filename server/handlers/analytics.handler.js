@@ -13,6 +13,6 @@ async function get(req, res) {
 async function page(req, res) {
   await analytics.access(req);
   const filters = analytics.filters(req.query);
-  res.render("analytics", { title: i18n.t("ui.analytics"), filters, custom_styles: [...(res.locals.custom_styles || []), "analytics.css"] });
+  res.render("analytics", { title: i18n.t("ui.analytics"), filters, geography: require("../utils/map.json"), custom_styles: [...(res.locals.custom_styles || []), "analytics.css", "geography.css"] });
 }
 module.exports = { boundary, get, page };
