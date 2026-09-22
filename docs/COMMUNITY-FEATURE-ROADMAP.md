@@ -82,7 +82,7 @@ reviews, reconcile source/release/deployed versions, confirm clean committed and
 pushed changes, and update the documented upstream contribution. Do not mark this
 review complete while required work remains.
 
-## Superseded Candidates: .50 / .51 / .52
+## Superseded Candidates: .50 / .51 / .52 / .53
 
 Release `.50` (`8b9afa3`) passed source/tag CI, exact-wrapper regression and a
 valid image scan with zero Critical/High findings. Its pre-release local/NAS
@@ -122,6 +122,32 @@ reassignment. The rare management read now uses the existing guarded
 transaction, with the same lock order as writes; public redirects do not acquire
 that guard. Red/green regressions, SQLite/MySQL/PostgreSQL domain-grant suites,
 security-boundary tests and repeated desktop/mobile DNS workflows passed.
+
+Candidate `.53` (`5c88b9c`) passed main/tag CI (`35694447199` /
+`35694447602`), the independent contribution CI (`35695069305`), the complete
+exact-wrapper regression, a fresh valid image scan (zero Critical/High) and a
+writable candidate restore. Its public report-only gate and all 18 enforced-CSP
+language/theme/viewport QR, policy and geography layouts passed. The first
+domain-sharing browser layout then found Cloudflare rewriting a recipient email
+and injecting its non-nonced decoder script. Strict CSP correctly rejected that
+script; this was not an application permission failure or a WAF bypass request.
+
+The disposable users, domain and link were removed. Guarded rollback verified
+the new authorization tables were empty, restored the exact `.49` image/config,
+and verified the original records, integrity and foreign keys. `.53` is not an
+accepted release. The fix must prevent proxy rewriting of CSP-rendered HTML,
+including fragments, without allowing additional scripts or relaxing WAF/SSO.
+Repeat live browser, health and recovery gates on the next immutable candidate.
+Private evidence: `2026-09-22-kutt-community-53` and
+`Work/kutt-community-20260922/public-domain-grants-140fb8bdcc68`.
+
+Candidate `.54` adds `Cache-Control: private, no-store, no-transform` to
+rendered HTML in active CSP modes, including HTMX/API fragments and errors.
+Nine real rendered HTTP cases reproduced the missing protection before the
+patch; focused red/green tests now pass while off-mode, JSON, static assets,
+redirects and QR attachment headers remain unchanged. Full-document nonces and
+script permissions are unchanged. Publication and live gates remain pending;
+this focused result is not deployment acceptance.
 
 ## Evidence: C01 / C02
 

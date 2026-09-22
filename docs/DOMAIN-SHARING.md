@@ -104,8 +104,11 @@ permissions. Existing moderation/domain cache invalidation is retained.
 
 Mutations acquire `domain_access_state` before user, workspace, domain or link
 locks. This deliberately serializes domain-dependent management writes and
-grant/moderation/OIDC-role transitions, not reads or public redirects. Recheck
-permissions inside that transaction. MySQL checks use locking current reads,
+grant/moderation/OIDC-role transitions. The management grant-list read also uses
+this guard so a concurrent domain reassignment cannot combine the former owner's
+authorization with the new owner's recipient list. Ordinary reads and public
+redirects do not acquire it. Recheck permissions inside that transaction.
+MySQL checks use locking current reads,
 including when a caller has an older repeatable-read snapshot. Do not introduce
 another write path that locks a user/link first and then acquires the guard.
 
@@ -137,7 +140,13 @@ domains/grants return 404. No bulk user directory or implicit opt-in is exposed.
 
 `tests/management-domain-grants.cjs` runs only with fresh disposable databases.
 It is part of `tests/container-smoke.cjs` and its focused selection
-`KUTT_TEST_ONLY=management-domain-grants`. Real MySQL/PostgreSQL gates reuse:
+`KUTT_TEST_ONLY=management-domain-grants`.
+
+`tests/domain-access-read.cjs` additionally exercises the actual grant-list code
+under a deterministic ownership-transfer interleaving; it is included in the
+same focused selection and full suite.
+
+Real MySQL/PostgreSQL gates reuse:
 
 ```sh
 sh tests/search-database.sh IMAGE mysql2 tests/management-domain-grants.cjs

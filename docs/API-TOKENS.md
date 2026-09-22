@@ -17,10 +17,12 @@ token in a public client application.
 | `webhooks:read` | Read the owner's webhook configuration and delivery history, never signing secrets |
 | `webhooks:write` | Create/edit/rotate/delete the owner's webhooks and queue tests/retries |
 | `events:read` | Read the owner's private management-event journal |
+| `domains:share` | List, grant or revoke explicit access to custom domains the token's account owns |
 
 Both `/api` and `/api/v2` are supported. Tokens never confer administrator
-privileges. Other routes, account changes, domain administration and token
-management are denied. A cookie cannot elevate a scoped request. Public
+privileges. Other routes, account changes, domain administration outside the
+explicit `domains:share` operations, and token management are denied. A cookie
+cannot elevate a scoped request. Public
 short-link redirects need no token.
 Workspace scopes do not grant membership or personal-link access. Invitations,
 roles and sharing require a session; domain-restricted tokens cannot use workspace
@@ -45,15 +47,22 @@ limited to once per minute. Metadata timestamps are UTC.
 ## Domain restrictions
 
 Select a domain in the token form, or send `domain_scope` when creating a token:
-`all` (default, all owned domains), `default` (the installation's default domain),
-or an owned custom domain UUID from `GET /api/v2/domains`. A custom-domain token
+`all` (default, all currently available domains), `default` (the installation's
+default domain), or an owned or explicitly granted custom domain UUID from
+`GET /api/v2/domains/available` (session/legacy account or `links:create` token).
+A custom-domain token
 must send that domain's address in the link creation `domain` field.
 
 Restrictions apply to creation, listing (including totals), editing, deletion
 and statistics. Another domain's link returns 404. A removed, banned or
 transferred custom domain invalidates its restricted tokens immediately.
-Recreating the same hostname does not reactivate them; create a new token.
-Tokens cannot administer domains. Existing tokens retain `all` for compatibility.
+Revoking a grant permanently revokes that recipient's domain-restricted tokens.
+Recreating the same hostname or granting access again does not reactivate them;
+create a new token. `domains:share` permits only explicit sharing of owned
+domains, honors token domain restrictions, and never permits recipients to share
+onward. Other domain administration is denied. Existing tokens retain the
+machine value `all` for compatibility; writes still require current entitlement.
+See [domain sharing](DOMAIN-SHARING.md) for the routes and revocation semantics.
 
 ## Retry-safe link creation
 

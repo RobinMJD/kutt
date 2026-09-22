@@ -33,6 +33,11 @@ deployment references below are historical.
   before interaction; a deliberately extended default settle delay verifies
   the regression. DNS ownership proof remains mandatory, including in Settings
   for administrators. Three repeated desktop/mobile runs passed.
+- The `.53` public QR, policy and geography checks passed in all 18 layouts,
+  but the first grant page exposed Cloudflare email rewriting and an injected
+  decoder blocked by strict CSP. The fixture was cleaned and deployment rolled
+  back to `.49`; final acceptance remains open. The corrective response contract
+  must prevent intermediary HTML transforms, not authorize the injected script.
 
 These are bounded Chromium desktop/mobile-width checks. Native Safari/Firefox,
 physical QR printing/scanning and operator-specific custom templates remain

@@ -22,7 +22,7 @@ Both `GET /api/analytics` and `GET /api/v2/analytics` accept:
 | --- | --- |
 | `start`, `end` | `YYYY-MM-DD`, inclusive UTC calendar dates, 1-366 days; supported dates 1000-01-01 through 9999-12-30 |
 | `link` | Exact owned link UUID, optional |
-| `domain` | Owned custom-domain UUID or `default`, optional |
+| `domain` | Available custom-domain UUID, a domain containing the caller's retained links, or `default`; optional |
 | `tag` | Owned tag UUID, optional |
 | `q` | Literal case-insensitive alias/description substring, maximum 200 characters |
 | `format` | `json` (default) or `csv` |
@@ -47,6 +47,13 @@ not elevate scoped tokens. Personal ownership is required even for administrator
 workspace membership alone does not grant access to another owner's analytics.
 Restricted-domain tokens receive only tags assigned to visible links and allowed
 domain choices, never the account's unrelated metadata.
+
+An available custom domain is owned or explicitly granted. After a grant is
+revoked, the creator can still filter historical analytics for their own retained
+links on that domain; ownership predicates remain enforced on both links and
+visits. This read-only access neither authorizes mutations nor exposes another
+creator's records. Revoked domain-scoped tokens remain unusable; a regrant does
+not reactivate them.
 
 Reports are bounded to 10,000 selected links, 100,000 hourly buckets, 20,000 tag
 assignments and 10,000 distinct values per dimension. Oversized reports return

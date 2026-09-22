@@ -21,7 +21,8 @@ preview for that account. Prefer individually revocable scoped tokens.
 
 Imports create new links owned by the importing account. Original IDs are
 informational and never reused. Banned links are rejected. Custom domains must
-already belong to the account and remain active. Retired custom-domain exports
+remain active and be owned by, or explicitly granted to, the importing account.
+Entitlement is rechecked on confirmation and idempotent replay. Retired custom-domain exports
 retain their original host; they are never silently imported into the default
 domain. HTTP(S) targets only, with no embedded credentials. There are no HTTP
 requests to destinations; existing domain/host ban checks still apply.

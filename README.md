@@ -78,15 +78,19 @@ visit statistics, local accounts and administrator tools. It adds:
 | Moderation | [Atomic administrative bans, explicit recovery and audit](docs/MODERATION.md), with permanent credential revocation and final-administrator protection |
 | Appearance | [System, Light and Dark](docs/THEMES.md), persistent browser preference, readable charts and unchanged white QR exports |
 | Languages | [English (default), French and Spanish](docs/LOCALIZATION.md), separate extensible catalogs, request-local translation and localized UI, feedback, email, dates and numbers |
-| Sign-in | [Stable OIDC identity binding, session revocation, signed back-channel logout and diagnostics](docs/OIDC-SECURITY.md) |
+| Sign-in | [Stable OIDC identities, signed logout, explicit signing algorithms and opt-in administrator-claim mapping](docs/OIDC-SECURITY.md), with bounded grants and protected recovery |
+| Management and domains | [Optional separate management hostname and explicit domain sharing](docs/DOMAIN-SHARING.md), host-only cookies, creator-isolated analytics and permanent scoped-token revocation |
 | Organization | [Tags, collections, saved filters and bulk actions](docs/LIBRARY.md) |
 | Data transfer | [CSV/JSON import and export](docs/TRANSFER.md), templates, dry-run previews and explicit conflict handling |
-| QR codes | [PNG/SVG downloads, PNG clipboard copy and printing](docs/QR-CODES.md), generated locally |
+| QR codes | [PNG/SVG downloads, PNG clipboard copy and printing](docs/QR-CODES.md), with [validated PNG branding](docs/QR-BRANDING.md), generated locally |
 | Collaboration | [Shared workspaces](docs/WORKSPACES.md) with owner/editor/viewer roles and conflict-aware editing |
 | Routing | [Ordered device, language, country and query rules](docs/ROUTING.md), with a redirect preview |
 | Forwarding | [Multi-segment aliases and allowlisted query/path forwarding](docs/FORWARDING.md) |
 | Campaigns | [UTM campaign builder](docs/CAMPAIGNS.md) in personal, admin and workspace editors, with API support |
-| Analytics | [Date ranges, exports, tag summaries and bot filtering](docs/ANALYTICS.md) |
+| Analytics | [Date ranges, exports, tag summaries, bot filtering and interactive country maps](docs/ANALYTICS.md), keyboard controls and a text alternative |
+| Destination policy | [Optional allowed-host policy](docs/DESTINATION-POLICY.md), consistently enforced across writes, imports, redirects and monitoring |
+| Browser protection | [Staged and enforced Content Security Policy](docs/CSP.md), fresh nonces and compatible native/HTMX workflows |
+| Transport and performance | [Verified database/Redis TLS](docs/TRANSPORT-TLS.md), [safe sorting](docs/LIST-SORTING.md) and [profile-led SQLite indexing](docs/VISIT-PERFORMANCE.md) |
 | Privacy | [Per-link tracking opt-outs and administrator-controlled retention](docs/PRIVACY.md) |
 | Integrations | [Signed asynchronous webhooks, delivery history, retries and private live updates](docs/WEBHOOKS.md) |
 | Monitoring | [Opt-in destination checks](docs/DESTINATION-HEALTH.md), private aggregate monitoring and protections against requests to private network destinations |
@@ -181,6 +185,10 @@ an old full environment table from another Kutt version. Important settings:
 | `OIDC_SESSION_MAX_SECONDS` | Absolute OIDC session lifetime; defaults to 3,600 seconds |
 | `TRUST_PROXY` | Examples use `false`; the application's legacy default is `true`. Only trust proxies that are the exclusive backend path and replace untrusted forwarding headers |
 | `CSP_MODE` | Optional `off` (default), `report-only` or `enforce`; see [nonce policy and customization compatibility](docs/CSP.md) before enabling |
+| `MANAGEMENT_ORIGIN` | Empty by default; [separate management hosting](docs/DOMAIN-SHARING.md) requires matching WAF/TLS/SSO routes and IdP callbacks first |
+| `OIDC_ADMIN_MAPPING_ENABLED`, `OIDC_ADMIN_*` | Off by default; use explicit signed claim/value mapping with a tested protected recovery administrator |
+| `DESTINATION_ALLOWED_HOSTS` | Empty disables policy; an explicit empty JSON array denies all destinations. Review [policy and recovery](docs/DESTINATION-POLICY.md) before enabling |
+| `METRICS_*` | Off by default; enable only a private, bearer-authenticated listener. Do not publish the metrics port |
 | `DB_*`, `REDIS_*` | Must match the selected topology, persistent paths and existing credentials |
 | `ENABLE_RATE_LIMIT` | Optional management API limiting; protected-link password and report throttles remain enabled independently |
 | `CUSTOM_DOMAIN_USE_HTTPS` | Controls custom-domain link URLs; it does not provision DNS, TLS certificates or proxy routes |
@@ -323,7 +331,8 @@ URLs and their query strings through proxy/CDN caches.
 | Operate destination checks | [Destination health](docs/DESTINATION-HEALTH.md) |
 | Review hardening and scan limits | [Security maintenance](docs/SECURITY-MAINTENANCE.md) |
 | Reproduce automated checks | [Testing](tests/README.md) |
-| Check implementation/deployment status | [Roadmap](docs/FEATURE-ROADMAP.md) and [UI/UX ledger](docs/UI-UX-REVIEW.md) |
+| Check implementation/deployment status | [Original roadmap](docs/FEATURE-ROADMAP.md), [community ledger](docs/COMMUNITY-FEATURE-ROADMAP.md) and [UI/UX ledger](docs/UI-UX-REVIEW.md) |
+| Add another language | [Catalog and language-registry guide](docs/LOCALIZATION.md) |
 | Review community ideas and attribution | [Community review](docs/UPSTREAM-PR-REVIEW.md) |
 
 ## Contributing and credits
