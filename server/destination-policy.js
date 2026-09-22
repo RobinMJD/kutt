@@ -49,4 +49,28 @@ function requireAllowed(value, status = 400) {
   return value;
 }
 const status = () => ({ enabled: current().enabled, hosts: current().hosts });
-module.exports = { compile, hostname, current, requireAllowed, status };
+
+async function editTarget(req, res, link) {
+  const value = req.body.target;
+  if (!value || current().allows(value)) return;
+  const db = require("./knex"), i18n = require("./i18n");
+  const { CustomError } = require("./utils");
+  const user = await db("users").where({ id: req.user.id, verified: true, banned: false }).first();
+  if (!user || Number(user.auth_version) !== Number(req.user.auth_version)) {
+    throw new CustomError(i18n.t("messages.sign_in_again"), 401);
+  }
+  const admin = req.user.admin && !req.apiToken && user.role === "ADMIN";
+  if ((!admin && link.user_id !== user.id) || (req.apiTokenDomain !== undefined &&
+      (link.domain_id !== req.apiTokenDomain || link.archived_domain))) {
+    throw new CustomError(i18n.t("messages.link_was_not_found"), 404);
+  }
+  if (value === link.target) {
+    // Do not write this snapshot back if another request repairs the target.
+    delete req.body.target;
+    return;
+  }
+  try { requireAllowed(value); }
+  catch (error) { res.locals.errors = { ...res.locals.errors, target: error.message }; throw error; }
+}
+
+module.exports = { compile, hostname, current, requireAllowed, status, editTarget };

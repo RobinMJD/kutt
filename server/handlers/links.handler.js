@@ -173,13 +173,16 @@ async function lifecycle(req, res) {
 async function edit(req, res) {
   const link = await query.link.find({
     uuid: req.params.id,
-    ...(!req.user.admin && { user_id: req.user.id })
-  });
+    ...(!req.user.admin && { user_id: req.user.id }),
+    ...(req.apiTokenDomain !== undefined && { domain_id: req.apiTokenDomain, archived_domain: null })
+  }, { fresh: true });
 
   if (!link) {
     res.set("Cache-Control", "no-store");
     throw new CustomError(i18n.t("messages.link_was_not_found"));
   }
+
+  await require("../destination-policy").editTarget(req, res, link);
 
   let isChanged = false;
   [
@@ -266,11 +269,13 @@ async function editAdmin(req, res) {
   const link = await query.link.find({
     uuid: req.params.id,
     ...(!req.user.admin && { user_id: req.user.id })
-  });
+  }, { fresh: true });
 
   if (!link) {
     throw new CustomError(i18n.t("messages.link_was_not_found"));
   }
+
+  await require("../destination-policy").editTarget(req, res, link);
 
   let isChanged = false;
   [
