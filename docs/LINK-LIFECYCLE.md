@@ -1,5 +1,26 @@
 # Link lifecycle
 
+## Creation schedule
+
+From `3.2.6-sr94.59`, the homepage's advanced creation options use **Start
+date/time (UTC)** and **End date/time (UTC)** instead of a relative duration.
+Select a date and time in the picker, then Apply. The result always uses
+`yyyy-MM-dd HH:mm:ss`, including seconds, independently of the browser language
+or timezone. The picker itself follows the browser's native calendar/time UI.
+
+An empty start means immediately; an empty end means no scheduled expiry.
+Clear removes only the selected boundary; Cancel or Escape discards picker
+changes. When both boundaries are set, end must be later than start. Past
+boundaries are allowed and retain the normal active/expired semantics below.
+Dates survive validation errors and creation response swaps. English, French
+and Spanish labels come from the shared translation catalogs.
+
+This creation-form change does not convert existing links or replace the
+relative-expiry controls in existing link editors. API clients can still send
+`expire_in`; when both it and `ends_at` are set, the earliest expiry wins.
+
+## Existing links
+
 Open a link's Edit action and use **Availability** to pause it, schedule its
 start/end or cap successful redirects. Dates in this form are UTC. Empty dates
 and limits mean no constraint. Saving availability does not change the target,
@@ -74,3 +95,14 @@ password paths, concurrent caps, request-time expiry, restart and retained data.
 `tests/browser-lifecycle.cjs` requires Playwright, `KUTT_BROWSER_DISPOSABLE=1` and
 `KUTT_TEST_URL` pointing to a fresh loopback-only instance. It refuses an already
 initialized app and exercises desktop/mobile editing and redirect enforcement.
+
+The `.59` creation-picker update requires no migration. A rollback to `.58`
+continues enforcing saved start/end policies, although its creation UI reverts
+to relative expiry. Reload browser tabs after an upgrade or rollback. Never
+roll back to a pre-lifecycle image as a UI workaround.
+
+`tests/schedule-creation.cjs` covers creation dates, invalid input/drafts,
+authorization and legacy relative-expiry behavior in both API versions.
+`tests/browser-csp.sh IMAGE date-time` exercises real creation forms in all
+three languages, both themes and desktop/mobile widths under enforced CSP,
+including seconds, UTC persistence, cancel/clear, validation and redirects.

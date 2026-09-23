@@ -60,10 +60,18 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
       await page.getByRole("button", { name: "Shorten link", exact: true }).click();
       await invalid("#customurl", "");
       await page.locator("#customurl").fill("validation-" + width);
-      await page.locator("#expire_in").fill("not a duration");
+      for (const [name, date] of [["starts_at", "2080-03-11"], ["ends_at", "2080-03-10"]]) {
+        await page.locator(`#${name}-display`).click();
+        await page.locator(`#${name}-picker [type=date]`).fill(date);
+        await page.locator(`#${name}-picker [type=time]`).fill("12:34:56");
+        await page.locator(`#${name}-picker [data-date-time-apply]`).click();
+      }
       await page.getByRole("button", { name: "Shorten link", exact: true }).click();
-      await invalid("#expire_in", "");
-      await page.locator("#expire_in").fill("");
+      await invalid("#ends_at-display", "End must be after start");
+      for (const name of ["starts_at", "ends_at"]) {
+        await page.locator(`#${name}-display`).click();
+        await page.locator(`#${name}-picker [data-date-time-clear]`).click();
+      }
       await page.getByRole("button", { name: "Shorten link", exact: true }).click();
       await page.locator("#shorturl .link button").filter({ hasText: "validation-" + width }).waitFor();
       assert.equal(await page.locator("#shortener-form [aria-invalid=true]").count(), 0);

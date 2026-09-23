@@ -106,18 +106,11 @@
           {{#if errors.password}}<p class="error">{{errors.password}}</p>{{/if}}
         </label>
       </div>
+      <div class="advanced-input-wrapper schedule-fields">
+        {{> date_time_field name="starts_at" value=starts_at_input label=(t "schedule.start") choose=(t "schedule.choose_start") empty=(t "schedule.immediately") error=errors.starts_at}}
+        {{> date_time_field name="ends_at" value=ends_at_input label=(t "schedule.end") choose=(t "schedule.choose_end") empty=(t "schedule.no_end") error=errors.ends_at}}
+      </div>
       <div class="advanced-input-wrapper">
-        <label class="expire-in {{#if errors.expire_in}}error{{/if}}">
-          {{t "ui.expire_in"}}
-          <input 
-            type="text" 
-            id="expire_in" 
-            name="expire_in" 
-            placeholder="{{t 'ui.2_minutes_hours_days'}}"
-            hx-preserve="true" 
-          />
-          {{#if errors.expire_in}}<p class="error">{{errors.expire_in}}</p>{{/if}}
-        </label>
         <label class="description {{#if errors.description}}error{{/if}}">
           {{t "ui.description"}}
           <input 

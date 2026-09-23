@@ -416,6 +416,20 @@ Primary references: [PostgreSQL image](https://hub.docker.com/_/postgres),
 
 ## Every upgrade
 
+### Creation date/time picker (.59)
+
+Ship `server/views/partials/date-time-field.hbs`, `static/scripts/date-time.js`,
+`static/css/date-time.css` and the updated EN/FR/ES catalogs together with the
+layout and creation template. Hardened downstream images must include all of
+these assets. Handlebars registers the partial as `date_time_field`.
+
+No schema, secret, SSO, WAF or redirect-route change is required. Start/end use
+the existing UTC lifecycle columns; legacy `expire_in` API requests and existing
+editors retain their semantics. Rollback to the verified `.58` image retains
+and enforces the saved dates. Refresh open tabs after either deployment.
+Validate actual creation, boundary enforcement, preserved drafts and the full
+numeric display at narrow widths, not just the container health endpoint.
+
 For remote SQL databases or Redis, see [verified transport TLS](TRANSPORT-TLS.md).
 Application and migration settings are shared; configure trusted identities and
 certificate-file mounts before enabling TLS. The public WAF/SSO policy is separate.

@@ -1,8 +1,8 @@
 #!/bin/sh
 set -eu
-image=${1:?usage: browser-csp.sh IMAGE [csp|dialogs|list-sorting|logout-navigation|validation|domain-proof]}
+image=${1:?usage: browser-csp.sh IMAGE [csp|dialogs|list-sorting|logout-navigation|validation|domain-proof|date-time]}
 suite=${2:-csp}
-case "$suite" in csp|dialogs|list-sorting|logout-navigation|validation|domain-proof) ;; *) exit 2;; esac
+case "$suite" in csp|dialogs|list-sorting|logout-navigation|validation|domain-proof|date-time) ;; *) exit 2;; esac
 node=${NODE_BINARY:-node}
 root=$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)
 evidence=${KUTT_EVIDENCE_DIR:-$(mktemp -d "${TMPDIR:-/tmp}/kutt-csp.XXXXXX")}
@@ -25,5 +25,8 @@ until curl -fsS "http://127.0.0.1:$port/api/health" >/dev/null 2>&1; do
   attempt=$((attempt+1)); [ "$attempt" -lt 60 ] || exit 1; sleep 1
 done
 printf 'Browser evidence: %s\n' "$evidence"
-KUTT_BROWSER_DISPOSABLE=1 KUTT_TEST_URL="http://127.0.0.1:$port" KUTT_EVIDENCE_DIR="$evidence" \
-  "$node" "$root/tests/browser-$suite.cjs"
+if ! KUTT_BROWSER_DISPOSABLE=1 KUTT_TEST_URL="http://127.0.0.1:$port" KUTT_EVIDENCE_DIR="$evidence" \
+  "$node" "$root/tests/browser-$suite.cjs"; then
+  docker logs --tail 60 "$cid"
+  exit 1
+fi

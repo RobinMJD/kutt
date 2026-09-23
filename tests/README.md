@@ -507,6 +507,12 @@ Pass `dialogs` or `list-sorting` as the runner's second argument for the existin
 modal, pending mutation and delayed list/editor regression suites under enforced
 CSP. Additional selections `logout-navigation`, `validation` and `domain-proof`
 cover revoked sessions, form failures/drafts and the full DNS ownership flow.
+The `date-time` selection runs 18 creation-schedule combinations (EN/FR/ES,
+light/dark, 1440/390/320px) with exact second-level results, explicit UTC in a
+non-UTC browser timezone, cancel/clear, HTMX draft retention, persisted API
+values and public redirect enforcement. It is included in the community runner.
+`KUTT_TEST_ONLY=schedule-creation` selects HTTP/API creation validation,
+authorization and legacy-expiry compatibility in the offline container suite.
 `sh tests/browser-csp-oidc.sh IMAGE` checks enforced SSO-only outage/retry and
 top-level provider cancellation with a synthetic loopback development provider.
 The runner enables only the guarded offline domain-proof fixture, never

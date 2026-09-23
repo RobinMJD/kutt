@@ -28,8 +28,9 @@
     form.querySelectorAll("[data-validation-errors]").forEach(field => clearField(field));
     if (!form.dataset.validationScope) form.dataset.validationScope = form.id || "form-" + (++sequence);
     errors(form).forEach((error, index) => {
-      const field = error.dataset.errorField ? form.elements.namedItem(error.dataset.errorField) :
+      let field = error.dataset.errorField ? form.elements.namedItem(error.dataset.errorField) :
         error.closest("label")?.querySelector("input:not([type=hidden]), select, textarea");
+      if (field?.matches?.("[data-date-time-value][type=hidden]")) field = field.closest("[data-date-time]").querySelector("[data-date-time-display]");
       error.id ||= "validation-" + form.dataset.validationScope + "-" + (field?.name || "general") + "-" + index;
       error.setAttribute("role", "alert"); error.tabIndex = -1;
       if (!field?.setAttribute) { error.dataset.validationGeneral = "true"; return; }
