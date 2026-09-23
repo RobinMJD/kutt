@@ -165,7 +165,7 @@ main.shortener #customurl-label-value { max-width: 100%; overflow-wrap: anywhere
   #main-table-wrapper { margin: 1.5rem 0; }
   #main-table-wrapper h2 { font-size: 20px; }
   #main-table-wrapper .list-search-label { flex-basis: 100%; }
-  .list-sort-controls label { flex-basis: calc(50% - .75rem); }
+  .list-sort-controls label { flex-basis: 100%; }
   .library .library-filters .list-sort-controls { flex-basis: 100%; }
   .settings-nav { grid-template-columns: minmax(0, 1fr); }
   .site-header nav { margin-left: 0; }

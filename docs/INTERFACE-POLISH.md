@@ -12,7 +12,8 @@ new frontend framework or changing APIs, database records or security policy.
   not inherit a low-contrast grey. Use readable semantic colours in both themes,
   stable 36px desktop/40px compact targets and visible keyboard focus.
 - Remove flex growth and oversized gaps between creation and recent links.
-- Keep one select arrow, wrap compact filters and group Settings navigation.
+- Keep one select arrow, stack mobile sort fields to fit translated selections,
+  wrap compact filters and group Settings navigation.
 - Keep Library actions horizontal and Admin filters in a responsive grid.
 - Hide zero-visit analytics charts/maps/tables while retaining totals, filters
   and exports. Populated reports reappear after filtering; no data is discarded.
@@ -35,7 +36,7 @@ Use the Playwright installation instructions in `tests/README.md`. The interface
 suite checks five widths (1440, 1024, 768, 390 and 320), both themes, 22 management
 pages and list/empty/edit/confirmation states under enforced CSP. Actual SVG
 stroke/fill contrast must reach 3:1 on opaque action backgrounds; control geometry,
-focus, search reset, compact rows and empty reports are checked separately.
+focus, selected-label fit, search reset, compact rows and empty reports are checked separately.
 Existing suites verify rendered text, populated reports, exports, dialogs, native
 date/time selection and authorization boundaries. CI runs all three locales.
 
