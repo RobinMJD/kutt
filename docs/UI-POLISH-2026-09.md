@@ -42,8 +42,12 @@ geometry and selected-label assertions remain. The broader locale suite then
 caught a cramped French workspace sort label at 390px. `.63` restores full-width
 mobile sort fields and checks selected-label fit across all captured management
 pages, not only the homepage. The corrected 198-layout locale suite passed.
-None of `.60`, `.61` or `.62` was deployed; immutable tags are not moved. `.59`
-remains the accepted running baseline pending `.63` gates.
+Linux CI then found a tight Spanish Admin selection in the intrinsic-width grid.
+`.64` makes the filter rows fill the available width, uses responsive 150px
+minimum tracks and waits for font readiness before text measurements. The
+198-layout locale suite passes on both macOS and an isolated Ubuntu Playwright
+container. None of `.60` through `.63` was deployed; immutable tags are not
+moved. `.59` remains the accepted running baseline pending `.64` gates.
 
 ## Reproduce The Checks
 

@@ -35,7 +35,7 @@ for exact versioned coverage and historical evidence, and the
 - [Community contribution review](docs/UPSTREAM-PR-REVIEW.md): selected proposals, attribution and deferred ideas.
 - [Community delivery ledger](docs/COMMUNITY-FEATURE-ROADMAP.md): approved additions and current validation status.
 - [UI/UX review](docs/UI-UX-REVIEW.md): fixes, completed human acceptance and the final security remediation gates.
-- [September interface polish](docs/UI-POLISH-2026-09.md): responsive alignment, dark icons, spacing and the `.63` acceptance ledger.
+- [September interface polish](docs/UI-POLISH-2026-09.md): responsive alignment, dark icons, spacing and the `.64` acceptance ledger.
 - [Custom domain ownership](docs/CUSTOM-DOMAINS.md): DNS proof, client compatibility and recovery for new claims.
 - [Upstream PR #1046](https://github.com/thedevs-network/kutt/pull/1046): updated with the tested expanded contribution at `814dc716`; upstream review/merge remains pending.
 

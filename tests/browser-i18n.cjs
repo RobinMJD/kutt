@@ -111,6 +111,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
           const response = await page.goto(origin + route); assert.equal(response.status(), 200, locale + route);
           await page.waitForLoadState("domcontentloaded");
           await page.waitForFunction(() => window.KuttI18n && document.querySelector(".site-header"));
+          await page.evaluate(() => document.fonts.ready);
           assert.equal(await page.locator("html").getAttribute("lang"), locale);
           assert.equal(await page.evaluate(() => window.KuttI18n.locale), locale);
           await assertTheme();
