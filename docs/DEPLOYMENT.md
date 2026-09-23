@@ -416,7 +416,7 @@ Primary references: [PostgreSQL image](https://hub.docker.com/_/postgres),
 
 ## Every upgrade
 
-### Management interface polish (.61)
+### Management interface polish (.62)
 
 `static/css/interface.css` loads after bundled feature styles and before operator
 custom styles. It centralizes control geometry, focus rings and theme-aware

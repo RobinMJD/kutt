@@ -35,8 +35,12 @@ The `.59` UTC start/end picker and existing edit-expiry behavior must remain
 functional. Publication, recovery and live acceptance are pending.
 
 The `.60` source tag was created before the final visual Admin review. It is
-superseded by `.61`, which includes P12; `.60` was not deployed. Immutable tags
-are not moved. `.59` remains the accepted running baseline pending `.61` gates.
+superseded by `.61`, which includes P12. Its sorting screenshot helper tried to
+scroll the Admin `display: contents` wrapper, which has no layout box. The failure
+was reproduced locally; `.62` scrolls the visible select instead. All functional,
+geometry and selected-label assertions remain. Neither `.60` nor `.61` was
+deployed; immutable tags are not moved. `.59` remains the accepted running
+baseline pending `.62` gates.
 
 ## Reproduce The Checks
 

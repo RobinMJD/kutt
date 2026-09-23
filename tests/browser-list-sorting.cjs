@@ -48,7 +48,8 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
         }), name + " selected label fits");
       }
       await page.screenshot({ path: path.join(evidence, name + ".png"), fullPage: true, animations: "disabled" });
-      await page.locator(".list-sort-controls").first().scrollIntoViewIfNeeded();
+      // Admin uses display:contents for the group; scroll a real control box.
+      await page.locator(".list-sort-select:visible").first().scrollIntoViewIfNeeded();
       await page.screenshot({ path: path.join(evidence, name + "-viewport.png"), animations: "disabled" });
     };
     for (const width of [1440, 390, 320]) {
