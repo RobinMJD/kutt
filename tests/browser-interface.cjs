@@ -94,6 +94,11 @@ const { locale, t } = require('./browser-locale.cjs');
       for (const route of ['/settings','/settings/library','/settings/analytics','/settings/workspaces','/settings/trash','/settings/integrations','/settings/security','/settings/retention','/settings/shortcuts','/settings/health','/settings/destination-policy','/settings/domain-sharing','/settings/transfer','/admin','/admin/moderation',...['qr','routing','forwarding','history','health','tracking'].map(p=>'/link/'+p+'/'+link.id),'/stats?id='+link.id]) {
         const response=await page.goto(origin+route); assert.equal(response.status(),200,route); await settle();
         assert(await page.locator('h1,h2').count());
+        if (route === '/admin' && width === 1440) {
+          assert((await page.locator('thead tr.controls').boundingBox()).height < 200, 'Admin filters stay compact');
+          const bottoms=await page.locator('thead th.filters select').evaluateAll(nodes=>nodes.map(n=>n.getBoundingClientRect().bottom));
+          assert(Math.max(...bottoms)-Math.min(...bottoms)<=1, 'Admin filter/sort controls align');
+        }
         if (route === '/settings/library' && width >= 768) assert((await page.locator('.library-links > li').first().boundingBox()).height < 150, 'Library actions do not stretch the row');
         if (route === '/settings/analytics') {
           await page.locator('#analytics-report').waitFor({state:'visible'});

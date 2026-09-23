@@ -19,6 +19,7 @@ dark-mode action icons and excessive empty space above recent links.
 | P09 | Mixed pill inputs, heavy shadows and button motion make controls inconsistent | Shared modest corners, clear borders, no hover displacement; preserve operator overrides | Implemented; verification pending |
 | P10 | Desktop Library actions stack vertically and inflate every row | Wrapped compact action strip with stable targets | Implemented; verification pending |
 | P11 | Zero-visit analytics render a blank chart/map and long zero-only tables | Compact empty state retains totals, filters and exports; populated reports return normally | Implemented; verification pending |
+| P12 | Admin filter/sort controls form uneven rows; account email is oversized | Shared responsive filter grid and smaller account identity text | Implemented; verification pending |
 
 ## Evidence And Limits
 
@@ -32,6 +33,10 @@ acceptance are separate from responsive Chromium checks.
 No API, database, authorization, redirect, WAF or SSO policy changes are intended.
 The `.59` UTC start/end picker and existing edit-expiry behavior must remain
 functional. Publication, recovery and live acceptance are pending.
+
+The `.60` source tag was created before the final visual Admin review. It is
+superseded by `.61`, which includes P12; `.60` was not deployed. Immutable tags
+are not moved. `.59` remains the accepted running baseline pending `.61` gates.
 
 ## Reproduce The Checks
 

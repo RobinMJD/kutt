@@ -111,6 +111,16 @@ main.shortener #customurl-label-value { max-width: 100%; overflow-wrap: anywhere
 #main-table-wrapper .short-link .clipboard button { width: 32px; height: 32px; padding: 7px; }
 #main-table-wrapper .short-link > a { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 #main-table-wrapper table tbody td.short-link.right-fade:after { display: none; }
+#main-table-wrapper.admin-table-wrapper table th.filters > div {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .75rem; align-items: end;
+}
+#main-table-wrapper.admin-table-wrapper table th.filters > div:last-child { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+#main-table-wrapper.admin-table-wrapper table th.filters .list-sort-controls { display: contents; }
+#main-table-wrapper.admin-table-wrapper .search-input-wrapper { width: 100%; min-width: 0; max-width: none; margin: 0; }
+#main-table-wrapper.admin-table-wrapper table th.filters :is(input.search, select.table-input) {
+  box-sizing: border-box; width: 100%; min-width: 0; max-width: none; height: 40px; margin: 0;
+}
+#main-table-wrapper.admin-table-wrapper table th.filters select.table-input { padding: 0 1.8rem 0 .6rem; }
 
 /* Keep page content together; surplus viewport space belongs below it. */
 .main-wrapper > :is(main, .section-container) { flex-grow: 0; }
@@ -129,6 +139,7 @@ main.shortener #customurl-label-value { max-width: 100%; overflow-wrap: anywhere
 .analytics-report-empty :is(.analytics-chart, .geography, .analytics-tables) { display: none; }
 #settings { width: 800px; overflow: visible; }
 #settings h1.settings-welcome { font-size: 26px; overflow-wrap: anywhere; }
+#settings h1.settings-welcome span { font-size: 16px; line-height: 1.5; border: 0; }
 .settings-nav { display: grid; width: 100%; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .25rem 1.25rem; padding: .5rem 0; }
 .settings-nav a { min-height: 40px; display: flex; align-items: center; padding: .4rem .5rem; border-radius: 4px; }
 .settings-nav a:hover { background: var(--table-tr-hover-bg-color); }
@@ -147,6 +158,8 @@ main.shortener #customurl-label-value { max-width: 100%; overflow-wrap: anywhere
   .library-link-meta { grid-column: 2; }
 }
 @media (max-width: 600px) {
+  #main-table-wrapper.admin-table-wrapper table th.filters > div { grid-template-columns: minmax(0, 1fr); }
+  #main-table-wrapper.admin-table-wrapper table th.filters > div:last-child { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   main.shortener { margin-top: .75rem; }
   main.shortener #shorturl h1 { font-size: 24px; }
   #main-table-wrapper { margin: 1.5rem 0; }
