@@ -7,6 +7,14 @@ separate. Subsequent enhancements are tracked in [the community review](UPSTREAM
 
 ## Release gates
 
+### Creation schedule follow-up (.59)
+
+- [ ] Replace homepage relative expiry with explicit UTC start/end pickers,
+  exact `yyyy-MM-dd HH:mm:ss` results and EN/FR/ES labels. Source, full offline
+  regression and 18 disposable browser combinations passed; publication, backup/restore and deployment
+  acceptance must pass before this follow-up is complete. See
+  [lifecycle documentation](LINK-LIFECYCLE.md#creation-schedule).
+
 Implement one feature, run regression and applicable rendered-UI tests, publish
 an immutable fork version, take a consistent production database backup, deploy
 that exact version, verify protected management and public redirects, and record

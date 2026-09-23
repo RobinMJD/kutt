@@ -59,6 +59,13 @@ function createLink(req, res, next) {
   delete req.body.fetched_domain;
   req.linkExpiryInput = req.body.expire_in;
   res.locals.show_advanced = !!req.body.show_advanced;
+  if (req.isHTML) {
+    // Keep schedule drafts when creation validation re-renders the shortener.
+    for (const field of ["starts_at", "ends_at"]) {
+      res.locals[field + "_input"] = typeof req.body[field] === "string" ? req.body[field] : "";
+      if (req.body[field] != null && req.body[field] !== "") res.locals.show_advanced = true;
+    }
+  }
   next();
 }
 

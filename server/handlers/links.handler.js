@@ -97,7 +97,14 @@ async function getAdmin(req, res) {
 };
 
 async function create(req, res) {
-  req.linkLifecycle = linkLifecycle.parse(req.body, {}, req.isHTML);
+  try {
+    req.linkLifecycle = linkLifecycle.parse(req.body, {}, req.isHTML);
+  } catch (error) {
+    if (req.isHTML && error instanceof CustomError && ["starts_at", "ends_at"].includes(error.field)) {
+      res.locals.errors = { ...res.locals.errors, [error.field]: error.message };
+    }
+    throw error;
+  }
   const { reuse, password, customurl, description, target, fetched_domain, expire_in } = req.body;
   const domain_id = fetched_domain ? fetched_domain.id : null;
   if (req.apiTokenDomain !== undefined && domain_id !== req.apiTokenDomain) {

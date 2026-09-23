@@ -3,7 +3,11 @@ const knex = require("./knex");
 
 function parse(body, current = {}, html = false) {
   const { CustomError } = require("./utils");
-  const fail = message => { throw new CustomError(message, 400); };
+  const fail = (message, field) => {
+    const error = new CustomError(message, 400);
+    if (field) error.field = field;
+    throw error;
+  };
   const result = {};
   if (body.paused !== undefined || html) {
     if (html) result.paused = body.paused === "on" || body.paused === "true";
@@ -16,12 +20,12 @@ function parse(body, current = {}, html = false) {
     let value = body[field];
     if (html && typeof value === "string" && /^\d{4}-\d\d-\d\dT\d\d:\d\d(:\d\d)?$/.test(value)) value += "Z";
     if (typeof value !== "string" || !/^\d{4}-\d\d-\d\dT\d\d:\d\d(:\d\d(\.\d{1,3})?)?(Z|[+-]\d\d:\d\d)$/.test(value)) {
-      fail(i18n.t("messages.value_must_be_an_iso_8601_timestamp_with_a_timezone_or", {value1: field}));
+      fail(i18n.t("messages.value_must_be_an_iso_8601_timestamp_with_a_timezone_or", {value1: field}), field);
     }
     const time = Date.parse(value);
     const day = value.slice(0, 10);
     if (!Number.isFinite(time) || time < 0 || new Date(day + "T00:00:00Z").toISOString().slice(0, 10) !== day) {
-      fail(i18n.t("messages.value_is_not_a_valid_date", {value1: field}));
+      fail(i18n.t("messages.value_is_not_a_valid_date", {value1: field}), field);
     }
     result[field] = time;
   }
@@ -37,7 +41,7 @@ function parse(body, current = {}, html = false) {
   if (body.expire_in === null || (html && body.clear_expiry === "on")) result.expire_in = null;
   const combined = { ...current, ...result };
   if (combined.starts_at != null && combined.ends_at != null && Number(combined.ends_at) <= Number(combined.starts_at)) {
-    fail(i18n.t("messages.end_must_be_after_start"));
+    fail(i18n.t("messages.end_must_be_after_start"), "ends_at");
   }
   return result;
 }

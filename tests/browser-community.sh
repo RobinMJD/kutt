@@ -4,7 +4,7 @@ image=${1:?usage: browser-community.sh IMAGE}
 root=$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)
 evidence=${KUTT_EVIDENCE_DIR:-$(mktemp -d "${TMPDIR:-/tmp}/kutt-community-browser.XXXXXX")}
 export KUTT_TEST_CSP_MODE=enforce
-for suite in csp dialogs list-sorting logout-navigation validation domain-proof; do
+for suite in csp dialogs list-sorting logout-navigation validation domain-proof date-time; do
   KUTT_EVIDENCE_DIR="$evidence/csp-$suite" sh "$root/tests/browser-csp.sh" "$image" "$suite"
 done
 KUTT_EVIDENCE_DIR="$evidence/csp-oidc" sh "$root/tests/browser-csp-oidc.sh" "$image"

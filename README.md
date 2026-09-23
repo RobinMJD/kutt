@@ -24,7 +24,7 @@ this operational residual is tracked in the delivery ledger below.
 
 The source includes all 16 original roadmap features and all 21 community
 features, all complete. English (default), French and Spanish use
-[separate catalogs](docs/LOCALIZATION.md) with 1,519 stable keys each. See the
+[separate catalogs](docs/LOCALIZATION.md) with 1,530 stable keys each. See the
 [delivery ledger](docs/COMMUNITY-FEATURE-ROADMAP.md#release-58-accepted-community-closure)
 for exact versioned coverage and historical evidence, and the
 [regression guide](tests/README.md) for reproducible checks.
@@ -43,6 +43,12 @@ reviews and image scans are bounded, dated evidence, not certification that the
 application has no vulnerabilities.
 
 ## Contents
+
+The next `.59` update replaces the homepage's relative expiry with calendar/time
+pickers for UTC start/end, displaying `yyyy-MM-dd HH:mm:ss`. See
+[creation schedules](docs/LINK-LIFECYCLE.md#creation-schedule). Release/deployment
+acceptance is tracked in the feature roadmap; `.58` remains the accepted release
+until those gates pass.
 
 - [Features](#features)
 - [Quick start](#quick-start)
