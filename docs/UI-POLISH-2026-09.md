@@ -13,7 +13,7 @@ dark-mode action icons and excessive empty space above recent links.
 | P03 | Homepage flex growth and 7rem table margin create a large dead zone | Compact, aligned create form and bounded section spacing; surplus space below content | Implemented; verification pending |
 | P04 | Desktop row actions are 24px targets with 14px icons, uneven gaps and pale light-mode colours | Stable 36px desktop / 40px compact targets and contrasting semantic colours | Implemented; verification pending |
 | P05 | Dark Library selects show native and custom arrows together | One painted arrow with native selection behavior retained | Implemented; verification pending |
-| P06 | Mobile sorting and bulk labels have inconsistent widths | Paired responsive sort controls and full-width bulk fields | Implemented; verification pending |
+| P06 | Mobile sorting and bulk labels have inconsistent widths | Full-width mobile sort controls and bulk fields keep translated selections readable | Implemented; verification pending |
 | P07 | Settings navigation is a tight unstructured stack | Labelled responsive navigation grid, readable account heading | Implemented; verification pending |
 | P08 | Dark focus rings, empty-library text and some filled icons lack contrast | Theme-aware focus, text and filled-icon colours | Implemented; verification pending |
 | P09 | Mixed pill inputs, heavy shadows and button motion make controls inconsistent | Shared modest corners, clear borders, no hover displacement; preserve operator overrides | Implemented; verification pending |
@@ -38,9 +38,12 @@ The `.60` source tag was created before the final visual Admin review. It is
 superseded by `.61`, which includes P12. Its sorting screenshot helper tried to
 scroll the Admin `display: contents` wrapper, which has no layout box. The failure
 was reproduced locally; `.62` scrolls the visible select instead. All functional,
-geometry and selected-label assertions remain. Neither `.60` nor `.61` was
-deployed; immutable tags are not moved. `.59` remains the accepted running
-baseline pending `.62` gates.
+geometry and selected-label assertions remain. The broader locale suite then
+caught a cramped French workspace sort label at 390px. `.63` restores full-width
+mobile sort fields and checks selected-label fit across all captured management
+pages, not only the homepage. The corrected 198-layout locale suite passed.
+None of `.60`, `.61` or `.62` was deployed; immutable tags are not moved. `.59`
+remains the accepted running baseline pending `.63` gates.
 
 ## Reproduce The Checks
 

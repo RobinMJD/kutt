@@ -7,7 +7,7 @@ separate. Subsequent enhancements are tracked in [the community review](UPSTREAM
 
 ## Release gates
 
-### Management interface polish (.62)
+### Management interface polish (.63)
 
 Source implementation and the [12-finding UI review](UI-POLISH-2026-09.md)
 cover aligned search/sort controls, dark action contrast, compact creation and

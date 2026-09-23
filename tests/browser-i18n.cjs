@@ -128,7 +128,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
                 node.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
             }).map(node => node.name);
           });
-          assert.deepEqual(clippedSortLabels, [], locale + ' selected sorting labels fit');
+          assert.deepEqual(clippedSortLabels, [], `${locale} ${width} ${route} selected sorting labels fit`);
           for (const icon of await page.locator('.library-link-meta a svg[fill=none]').all()) {
             if (await page.locator('html').getAttribute('data-theme') === 'dark') {
               assert(await icon.evaluate(node => getComputedStyle(node).stroke === getComputedStyle(node.closest('a')).color),

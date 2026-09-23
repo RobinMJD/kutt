@@ -38,6 +38,14 @@ const { locale, t } = require('./browser-locale.cjs');
     };
     const capture = async name => {
       assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), name + ': page overflow');
+      for (const select of await page.locator('.list-sort-select:visible').all()) {
+        assert(await select.evaluate(node => {
+          const style = getComputedStyle(node), context = document.createElement('canvas').getContext('2d');
+          context.font = style.font;
+          return context.measureText(node.selectedOptions[0].textContent.trim()).width <=
+            node.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+        }), name + ': selected sort text fits');
+      }
       await page.screenshot({ path: path.join(evidence, name + '.png'), fullPage: true, animations: 'disabled' });
     };
     const iconPaint = async label => {
@@ -71,10 +79,6 @@ const { locale, t } = require('./browser-locale.cjs');
       for(const control of await page.locator('.actions :is(a,button):visible, .list-sort-select:visible').all()) {
         const box=await control.boundingBox(); assert(box.width>=32 && box.height>=36); assert(box.x>=0 && box.x+box.width<=width+1);
       }
-      for(const select of await page.locator('.list-sort-select').all()) assert(await select.evaluate(n=>{
-        const s=getComputedStyle(n), ctx=document.createElement('canvas').getContext('2d'); ctx.font=s.font;
-        return ctx.measureText(n.selectedOptions[0].textContent.trim()).width<=n.clientWidth-parseFloat(s.paddingLeft)-parseFloat(s.paddingRight);
-      }), label+': selected sort text fits');
       await page.locator('.actions a').first().hover(); await iconPaint(label+'-hover');
       await page.locator('.actions a').first().focus(); await iconPaint(label+'-focus');
       assert.equal(await page.locator('.actions a').first().evaluate(n=>getComputedStyle(n).outlineColor),theme==='dark'?'rgb(143, 196, 255)':'rgb(36, 91, 128)');
