@@ -71,6 +71,11 @@ jobs:
           for locale in fr es; do
             KUTT_TEST_LOCALE="$locale" PLAYWRIGHT_MODULE="$RUNNER_TEMP/kutt-browser/node_modules/playwright" KUTT_EVIDENCE_DIR="$RUNNER_TEMP/kutt-theme-$locale" sh tests/browser-theme.sh kutt-tested
           done
+      - name: Responsive interface and actual icon paint regression
+        run: |
+          for locale in en fr es; do
+            KUTT_TEST_LOCALE="$locale" PLAYWRIGHT_MODULE="$RUNNER_TEMP/kutt-browser/node_modules/playwright" KUTT_EVIDENCE_DIR="$RUNNER_TEMP/kutt-interface-$locale" sh tests/browser-csp.sh kutt-tested interface
+          done
       - name: Community features under enforced CSP
         run: |
           npm ci --prefix tests/browser-deps --no-audit --no-fund

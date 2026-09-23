@@ -73,6 +73,7 @@
       const response = await fetch("/api/analytics?" + params, { headers: { Accept: "application/json" }, signal: controller.signal, cache: "no-store" });
       const data = await window.KuttResponses.read(response, window.KuttResponses.analytics);
       if (current !== serial) return;
+      document.querySelector("#analytics-report").classList.toggle("analytics-report-empty", data.total === 0);
       document.querySelector("#analytics-total").textContent = window.KuttI18n.number(data.total);
       document.querySelector("#analytics-links").textContent = window.KuttI18n.number(data.visited_links) + " / " + window.KuttI18n.number(data.matched_links);
       options("domain", data.available_filters.domains, window.KuttI18n.t("ui.all_domains"), data.filters.domain);

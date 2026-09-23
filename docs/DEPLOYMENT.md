@@ -416,6 +416,21 @@ Primary references: [PostgreSQL image](https://hub.docker.com/_/postgres),
 
 ## Every upgrade
 
+### Management interface polish (.60)
+
+`static/css/interface.css` loads after bundled feature styles and before operator
+custom styles. It centralizes control geometry, focus rings and theme-aware
+action colours without changing application permissions. Custom styles remain
+last and can override these defaults; review them separately on other instances.
+Reload management pages after upgrading. Empty analytics hide visualizations
+only when the total is zero; filters, totals and CSV/JSON exports remain available.
+
+No migration, environment, WAF, SSO or secret change is required. Rollback to
+`.59` needs only the previous image/configuration, never a database restore;
+it restores the old visual defects. Preserve fresh local/NAS verified backups
+and exact-image/public acceptance gates. Current status and reproducible browser
+checks: [UI polish ledger](UI-POLISH-2026-09.md).
+
 ### Creation date/time picker (.59)
 
 Ship `server/views/partials/date-time-field.hbs`, `static/scripts/date-time.js`,

@@ -1,8 +1,8 @@
 #!/bin/sh
 set -eu
-image=${1:?usage: browser-csp.sh IMAGE [csp|dialogs|list-sorting|logout-navigation|validation|domain-proof|date-time]}
+image=${1:?usage: browser-csp.sh IMAGE [csp|dialogs|list-sorting|logout-navigation|validation|domain-proof|date-time|interface]}
 suite=${2:-csp}
-case "$suite" in csp|dialogs|list-sorting|logout-navigation|validation|domain-proof|date-time) ;; *) exit 2;; esac
+case "$suite" in csp|dialogs|list-sorting|logout-navigation|validation|domain-proof|date-time|interface) ;; *) exit 2;; esac
 node=${NODE_BINARY:-node}
 root=$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)
 evidence=${KUTT_EVIDENCE_DIR:-$(mktemp -d "${TMPDIR:-/tmp}/kutt-csp.XXXXXX")}

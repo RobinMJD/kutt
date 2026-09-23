@@ -136,7 +136,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
       await settle();
       assert.equal(await one.locator('[name="description"]').inputValue(), "A draft opened after refresh");
       // Search while an editor is open is deferred, with the selected sort retained.
-      await page.getByRole("textbox", { name: t("ui.search_links"), exact: true }).fill("sort-ui");
+      await page.getByRole("searchbox", { name: t("ui.search_links"), exact: true }).fill("sort-ui");
       await page.waitForTimeout(650);
       assert.equal(await one.locator('[name="description"]').inputValue(), "A draft opened after refresh");
       await tableChange(() => one.getByRole("button", { name: t("ui.close"), exact: true }).click());
