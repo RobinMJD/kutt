@@ -9,11 +9,28 @@ separate. Subsequent enhancements are tracked in [the community review](UPSTREAM
 
 ### Creation schedule follow-up (.59)
 
-- [ ] Replace homepage relative expiry with explicit UTC start/end pickers,
-  exact `yyyy-MM-dd HH:mm:ss` results and EN/FR/ES labels. Source, full offline
-  regression and 18 disposable browser combinations passed; publication, backup/restore and deployment
-  acceptance must pass before this follow-up is complete. See
+- [x] Replace homepage relative expiry with explicit UTC start/end pickers,
+  exact `yyyy-MM-dd HH:mm:ss` results and EN/FR/ES labels. Release `.59` was
+  published, deployed and accepted on 2026-09-23. See
   [lifecycle documentation](LINK-LIFECYCLE.md#creation-schedule).
+
+Source `7f136a23`, main CI `35840997816`, exact-tag CI `35841142587` and curated
+contribution `814dc716` / CI `35841785673` passed. Full isolated source and hardened
+image regression, authorization, API compatibility and 18 local picker layouts
+passed. Live native-picker tests covered EN/1440px, FR/390px and ES/320px, exact
+UTC seconds, clearing and active/scheduled/expired anonymous redirects. The
+separate public community matrix passed 18 layouts, 1,602 browser requests,
+108 contrast states and 36 keyboard downloads with no recorded JS/CSP/network
+failures. Fixtures were removed; full public API, legacy edit-expiry and real
+Authentik-signed logout/replay checks passed.
+
+Pre/post local and NAS backups each passed 75-file byte verification and writable
+recovery. Original records, integrity/FKs, repeated 65-second health samples and
+lab validation passed. No schema or WAF/SSO/CSP/TLS change was needed. A guarded
+image/config rollback to `.58` retains current data and schedules. Fresh scanning
+found zero Critical/High and three Medium BusyBox-package findings with no listed
+fix. Physical Safari/iOS is not claimed. [Release notes](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.59)
+link the immutable CI and source image; historical evidence below stays versioned.
 
 Implement one feature, run regression and applicable rendered-UI tests, publish
 an immutable fork version, take a consistent production database backup, deploy

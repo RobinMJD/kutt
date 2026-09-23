@@ -16,11 +16,13 @@ the upstream hosted service.
 
 ## Project status
 
-As of **22 September 2026**, [3.2.6-sr94.58](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.58)
+As of **23 September 2026**, [3.2.6-sr94.59](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.59)
 is accepted, published and deployed. Application CI, exact-image regression,
 public browser checks, stable health and verified writable recovery passed.
-Final homelab publication CI is blocked before execution by an Actions budget;
-this operational residual is tracked in the delivery ledger below.
+The earlier homelab Actions budget blocker was resolved using its dedicated,
+repository-scoped runner. [Repository hygiene](https://github.com/RobinMJD/homelab/actions/runs/35768670410)
+and [deployment checks](https://github.com/RobinMJD/homelab/actions/runs/35768700778)
+passed; no paid fallback or relaxed checks were used.
 
 The source includes all 16 original roadmap features and all 21 community
 features, all complete. English (default), French and Spanish use
@@ -34,7 +36,7 @@ for exact versioned coverage and historical evidence, and the
 - [Community delivery ledger](docs/COMMUNITY-FEATURE-ROADMAP.md): approved additions and current validation status.
 - [UI/UX review](docs/UI-UX-REVIEW.md): fixes, completed human acceptance and the final security remediation gates.
 - [Custom domain ownership](docs/CUSTOM-DOMAINS.md): DNS proof, client compatibility and recovery for new claims.
-- [Upstream PR #1046](https://github.com/thedevs-network/kutt/pull/1046): updated with the tested expanded contribution at `32aaeea`; upstream review/merge remains pending.
+- [Upstream PR #1046](https://github.com/thedevs-network/kutt/pull/1046): updated with the tested expanded contribution at `814dc716`; upstream review/merge remains pending.
 
 SQLite is the fully exercised database engine. PostgreSQL 17 and MySQL 8.4 have
 targeted security/concurrency tests; MariaDB remains configuration-only. These
@@ -42,13 +44,14 @@ are **not** full feature-parity guarantees. Security
 reviews and image scans are bounded, dated evidence, not certification that the
 application has no vulnerabilities.
 
-## Contents
-
-The next `.59` update replaces the homepage's relative expiry with calendar/time
+The `.59` update replaces the homepage's relative expiry with calendar/time
 pickers for UTC start/end, displaying `yyyy-MM-dd HH:mm:ss`. See
-[creation schedules](docs/LINK-LIFECYCLE.md#creation-schedule). Release/deployment
-acceptance is tracked in the feature roadmap; `.58` remains the accepted release
-until those gates pass.
+[creation schedules](docs/LINK-LIFECYCLE.md#creation-schedule) and the
+[accepted release evidence](docs/FEATURE-ROADMAP.md#creation-schedule-follow-up-59).
+Blank dates mean immediate availability and no scheduled expiration. The legacy
+relative-expiry API and existing edit forms remain compatible.
+
+## Contents
 
 - [Features](#features)
 - [Quick start](#quick-start)
@@ -106,7 +109,7 @@ checked-out source, persists SQLite and custom assets in named volumes, and
 publishes only `127.0.0.1:3000` on the Docker host.
 
 ```sh
-git clone --branch v3.2.6-sr94.58 --depth 1 https://github.com/RobinMJD/kutt.git
+git clone --branch v3.2.6-sr94.59 --depth 1 https://github.com/RobinMJD/kutt.git
 cd kutt
 cp .example.env .env
 chmod 600 .env
@@ -143,7 +146,7 @@ whose data you intend to keep.
 ### Published images and alternative examples
 
 The accepted fork release image is
-`ghcr.io/robinmjd/kutt:v3.2.6-sr94.58`. For an image-based deployment, replace
+`ghcr.io/robinmjd/kutt:v3.2.6-sr94.59`. For an image-based deployment, replace
 the Compose service's `build` section with an `image` reference, retaining its
 environment and persistent volumes. Pin the tested image digest in production.
 The upstream `kutt/kutt` Docker Hub image does **not** contain these fork changes.
