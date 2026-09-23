@@ -16,7 +16,7 @@ the upstream hosted service.
 
 ## Project status
 
-As of **23 September 2026**, [3.2.6-sr94.59](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.59)
+As of **23 September 2026**, [3.2.6-sr94.64](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.64)
 is accepted, published and deployed. Application CI, exact-image regression,
 public browser checks, stable health and verified writable recovery passed.
 The earlier homelab Actions budget blocker was resolved using its dedicated,
@@ -37,7 +37,7 @@ for exact versioned coverage and historical evidence, and the
 - [UI/UX review](docs/UI-UX-REVIEW.md): fixes, completed human acceptance and the final security remediation gates.
 - [September interface polish](docs/UI-POLISH-2026-09.md): responsive alignment, dark icons, spacing and the `.64` acceptance ledger.
 - [Custom domain ownership](docs/CUSTOM-DOMAINS.md): DNS proof, client compatibility and recovery for new claims.
-- [Upstream PR #1046](https://github.com/thedevs-network/kutt/pull/1046): updated with the tested expanded contribution at `814dc716`; upstream review/merge remains pending.
+- [Upstream PR #1046](https://github.com/thedevs-network/kutt/pull/1046): updated with the tested expanded contribution at `af19f0fc`; upstream review/merge remains pending.
 
 SQLite is the fully exercised database engine. PostgreSQL 17 and MySQL 8.4 have
 targeted security/concurrency tests; MariaDB remains configuration-only. These
@@ -45,7 +45,13 @@ are **not** full feature-parity guarantees. Security
 reviews and image scans are bounded, dated evidence, not certification that the
 application has no vulnerabilities.
 
-The `.59` update replaces the homepage's relative expiry with calendar/time
+The `.64` update completes the [12-finding interface review](docs/UI-POLISH-2026-09.md):
+aligned search/sort controls, visible dark-mode icons, compact responsive layouts,
+consistent focus/controls and useful empty analytics. Live browser acceptance
+covered 72 pages across 18 locale/theme/viewport combinations. Public redirects
+and WAF/SSO/CSP/TLS controls remain unchanged.
+
+The preceding `.59` update replaces the homepage's relative expiry with calendar/time
 pickers for UTC start/end, displaying `yyyy-MM-dd HH:mm:ss`. See
 [creation schedules](docs/LINK-LIFECYCLE.md#creation-schedule) and the
 [accepted release evidence](docs/FEATURE-ROADMAP.md#creation-schedule-follow-up-59).
@@ -110,7 +116,7 @@ checked-out source, persists SQLite and custom assets in named volumes, and
 publishes only `127.0.0.1:3000` on the Docker host.
 
 ```sh
-git clone --branch v3.2.6-sr94.59 --depth 1 https://github.com/RobinMJD/kutt.git
+git clone --branch v3.2.6-sr94.64 --depth 1 https://github.com/RobinMJD/kutt.git
 cd kutt
 cp .example.env .env
 chmod 600 .env
@@ -147,7 +153,7 @@ whose data you intend to keep.
 ### Published images and alternative examples
 
 The accepted fork release image is
-`ghcr.io/robinmjd/kutt:v3.2.6-sr94.59`. For an image-based deployment, replace
+`ghcr.io/robinmjd/kutt:v3.2.6-sr94.64`. For an image-based deployment, replace
 the Compose service's `build` section with an `image` reference, retaining its
 environment and persistent volumes. Pin the tested image digest in production.
 The upstream `kutt/kutt` Docker Hub image does **not** contain these fork changes.

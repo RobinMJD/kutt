@@ -9,11 +9,17 @@ separate. Subsequent enhancements are tracked in [the community review](UPSTREAM
 
 ### Management interface polish (.64)
 
-Source implementation and the [12-finding UI review](UI-POLISH-2026-09.md)
+Accepted on 2026-09-23. Source implementation and the [12-finding UI review](UI-POLISH-2026-09.md)
 cover aligned search/sort controls, dark action contrast, compact creation and
 Library layouts, consistent controls and useful empty analytics. No schema,
-authentication or redirect-policy changes. Release/deployment/recovery acceptance
-is pending; `.59` remains the last accepted deployment until recorded otherwise.
+authentication or redirect-policy changes. Source `418a37f5`, main/tag CI
+`35857368501` / `35857368520`, and curated contribution `af19f0fc` / CI
+`35857469610` passed. [Release .64](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.64)
+is published and deployed. Exact-image regression/scan, pre/post off-host
+75-file byte verification and writable restore, full public API and real
+Authentik logout/replay, 72 live browser pages, three native picker workflows,
+original-record checks and repeated health/lab validation passed. The review
+ledger records exact image identities, coverage and native-browser limits.
 
 ### Creation schedule follow-up (.59)
 
