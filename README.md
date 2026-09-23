@@ -31,6 +31,10 @@ and Redis TLS, dotted aliases, interactive geography and indexed visit lookup.
 from independently adapted implementations; the [UI review](docs/UI-UX-REVIEW.md)
 describes browser workflows and remaining acceptance limits.
 
+[Interface polish](docs/INTERFACE-POLISH.md) adds aligned responsive filters,
+theme-aware action icons, compact creation/Library layouts, grouped Settings
+navigation and meaningful empty analytics, with EN/FR/ES rendered regressions.
+
 The 1,519-key English/French/Spanish catalogs also include reviewed copy polish:
 formal Spanish management prompts, clearer moderation errors and natural
 French/Spanish geography percentage explanations. Stable keys, escaped

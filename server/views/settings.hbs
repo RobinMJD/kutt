@@ -4,6 +4,7 @@
     {{t "ui.welcome"}} <span>{{user.email}}</span>.
   </h1>
   <hr />
+  <nav class="settings-nav" aria-label="{{t 'ui.settings'}}">
   <a href="/settings/security">{{t "ui.account_security"}}</a>
   <a href="/settings/integrations">{{t "ui.integrations"}}</a>
   <a href="/settings/health">{{t "ui.destination_monitoring"}}</a>
@@ -13,6 +14,7 @@
   {{#ifEquals user.role "ADMIN"}}<a href="/settings/retention">{{t "ui.analytics_retention"}}</a>{{/ifEquals}}
   <a href="/settings/workspaces">{{t "ui.workspaces"}}</a>
   <a href="/settings/domain-sharing">{{t "domain_grants.title"}}</a>
+  </nav>
   <hr />
   {{> settings/domain/index}}
   <hr />

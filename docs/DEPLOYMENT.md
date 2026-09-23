@@ -416,6 +416,15 @@ Primary references: [PostgreSQL image](https://hub.docker.com/_/postgres),
 
 ## Every upgrade
 
+### Management interface polish
+
+`static/css/interface.css` loads after feature styles and before operator custom
+styles. Reload management pages after upgrading and review custom overrides.
+No migration, environment, secret, WAF or SSO change is required. Rollback to the
+previous image does not require a database restore; it restores the prior visual
+defects. See [the interface guide](INTERFACE-POLISH.md) for scope and reproducible
+responsive/theme checks. A source tag alone is not deployment acceptance.
+
 ### Creation date/time picker (.59)
 
 Ship `server/views/partials/date-time-field.hbs`, `static/scripts/date-time.js`,

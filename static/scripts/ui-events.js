@@ -26,6 +26,7 @@
     if (matches(button, "[data-ui-stats-period]")) changeStatsPeriod({ target: button });
   }, true);
   document.addEventListener("input", event => {
+    if (matches(event.target, '[data-ui-reset-nav="input"]')) resetTableNav();
     if (matches(event.target, "[data-ui-search]")) onSearchChange(event);
   }, true);
   document.addEventListener("keyup", event => {
