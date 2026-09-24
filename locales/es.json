@@ -1486,6 +1486,8 @@
   "enum.moderation_action.unban": "levantamiento del bloqueo",
   "enum.moderation_action.delete": "eliminación",
   "moderation.user_not_found": "No se encontró el usuario.",
+  "moderation.delete_user_preserves_links": "Enlaces conservados: {{count}}. Se eliminarán esta cuenta y sus ajustes privados; sus enlaces y su historial de visitas seguirán disponibles sin propietario.",
+  "moderation.delete_account_preserves_links": "Tus enlaces publicados y su historial de visitas seguirán disponibles sin propietario. Un administrador podrá gestionarlos después de eliminar tu cuenta.",
   "theme.appearance": "Apariencia",
   "theme.system": "Sistema",
   "theme.light": "Claro",

@@ -88,6 +88,28 @@ module.exports = async ({ request, session, database, account, restart, root, di
     const old = await request("GET", "/api/links/" + a.id + "/stats", undefined, session);
     assert.equal(old.status, 200); assert((await old.json()).lastDay.views.length === 24, "Legacy stats response preserved");
 
+    const annual = await create(prefix + "-annual"), annualId = db.prepare("SELECT id FROM links WHERE uuid=?").get(annual.id).id;
+    const now = new Date();
+    const annualStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 11, 1));
+    const beforeAnnual = new Date(annualStart.getTime() - 3600000);
+    const storedDate = date => date.toISOString().slice(0, 19).replace("T", " ");
+    visit(annualId, owner, storedDate(annualStart), 7);
+    visit(annualId, owner, storedDate(beforeAnnual), 11);
+    visit(annualId, owner, storedDate(new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 28, 12))), 3);
+    const annualStats = await (await request("GET", "/api/links/" + annual.id + "/stats", undefined, session)).json();
+    assert.equal(annualStats.lastYear.views[0], 7, "The oldest full calendar month starts at midnight");
+    assert.equal(annualStats.lastYear.views[10], 3, "Previous-month visits stay in their calendar month");
+    assert.equal(annualStats.lastYear.total, 10, "The thirteenth month is excluded");
+
+    const calendar = spawnSync(process.execPath, ["-e", `
+      const assert = require('node:assert/strict');
+      const utils = require(${JSON.stringify(path.join(root, "server/utils"))});
+      assert.equal(utils.getDifferenceFunction('lastYear')(new Date('2026-04-10T12:00:00Z'), new Date('2026-02-25T12:00:00Z')), 2);
+      assert.equal(utils.getStatsPeriods(new Date('2026-04-10T12:00:00Z')).find(([name]) => name === 'lastYear')[1].toISOString(), '2025-05-01T00:00:00.000Z');
+      require(${JSON.stringify(path.join(root, "server/knex"))}).destroy();
+    `], { cwd: directory, env, encoding: "utf8", timeout: 10000 });
+    assert.equal(calendar.status, 0, calendar.stderr);
+
     const current = await create(prefix + "-traffic"), cid = db.prepare("SELECT id FROM links WHERE uuid=?").get(current.id).id;
     const worker = data => spawnSync(process.execPath, ["-e", `(async()=>{await require(${JSON.stringify(path.join(root, "server/queues/visit.js"))})({data:JSON.parse(process.argv[1])});await require(${JSON.stringify(path.join(root, "server/knex.js"))}).destroy()})().catch(e=>{console.error(e.message);process.exit(1)})`, JSON.stringify(data)], { cwd: directory, env, encoding: "utf8", timeout: 30000 });
     const job = { link: { id: cid, user_id: owner }, ip: "127.0.0.1", country: "FR", userAgent: ua, referrer: "not a URL" };

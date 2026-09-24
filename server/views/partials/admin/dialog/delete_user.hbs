@@ -2,7 +2,7 @@
   <h2>{{t "ui.delete_user"}}</h2>
   <p>
     {{t "dialog.delete_user" value=email}}<br/>
-    <b>{{t "ui.all_their_data_including_their_links"}}</b> {{t "ui.will_be_deleted"}}
+    {{t "moderation.delete_user_preserves_links" count=link_count}}
   </p>
   <div class="buttons">
     <button type="button" data-ui-close-dialog>{{t "ui.cancel"}}</button>

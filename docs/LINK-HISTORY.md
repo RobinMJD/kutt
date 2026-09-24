@@ -49,12 +49,13 @@ administrator access from cookies.
 History records creation, changed field names, trash, restore and domain removal,
 with UTC time and actor category/source. It does **not** store previous targets,
 passwords, hashes or token secrets in the audit payload. It is an audit history,
-not a target-version rollback feature. Account deletion still removes that
-account's retained links and associated history, while alias reservations remain.
+not a target-version rollback feature. Account deletion detaches ownership and
+preserves published links, visits, associated history and alias reservations.
+The former user's private labels, collections, tokens and access are removed.
 
 Creation with `reuse: true` ignores trash. Retried idempotent creation for a
 trashed link returns 409 and cannot resurrect it. Creating or renaming to a
-retired alias returns 409; an already-active alias retains the existing 400 error.
+retired alias returns 409; an already-active alias also returns 409.
 Existing links, users, keys and normal API response fields are preserved. New
 responses include nullable ISO `deleted_at`; the deliberate delete behavior
 change is 410 on a trashed public URL instead of redirecting to `/404`.

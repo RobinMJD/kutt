@@ -126,7 +126,7 @@ async function create(req, res) {
     if (customurl && await db("links").where({ address: customurl, domain_id }).whereNull("deleted_at").first()) {
       const error = i18n.t("messages.custom_url_is_already_in_use");
       res.locals.errors = { customurl: error };
-      throw new CustomError(error, 400);
+      throw new CustomError(error, 409);
     }
     const link = await query.link.create({
       password, address: customurl || generatedAddress, domain_id, description,

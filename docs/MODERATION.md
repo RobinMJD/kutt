@@ -23,6 +23,11 @@ destination IP bans created from a link. Each removal has its own confirmation.
 - The audit stores actor ID, target kind/ID, action and UTC time, not passwords,
   tokens, email addresses, link targets or query strings. IDs remain as historical
   references after account deletion. Only administrators can read the audit.
+- User deletion first detaches owned public links and visit aggregates in the
+  same transaction. Their redirects, statistics, domains and alias reservations
+  survive; account credentials and private per-user organization do not. The
+  confirmation shows the affected link count. An older image may still cascade
+  account deletion, so do not roll back to it before reviewing this behavior.
 - SQL is authoritative for bans. Cache invalidation is awaited after commit; a
   failed cache invalidation can be retried without duplicating an audit event.
   A transport error is not proof of rollback: review the current state first.
@@ -78,7 +83,8 @@ credentials. Use explicit unban and reauthentication instead.
 
 `tests/moderation.cjs` runs with the full container regression. Real SQLite,
 MySQL and PostgreSQL fixtures exercise competing administrators, final-admin
-protection, token/ban races, rollback, cache-retry behavior and guarded downgrade.
+protection, token/ban races, retained links/visits/domains on deletion, rollback,
+cache-retry behavior and guarded downgrade.
 `tests/browser-moderation.sh IMAGE` runs keyboard/native confirmation and real
 HTMX ban checkboxes at 1440, 390 and 320 pixels, with screenshots and public
 redirect checks. The Browser plugin was unavailable; these are regular

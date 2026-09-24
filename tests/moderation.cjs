@@ -122,6 +122,22 @@ module.exports = async ({ request, session, database, account, restart }) => {
     await restart();
     assert.equal(db.prepare("SELECT banned FROM domains WHERE id=?").get(domain.id).banned, 1);
     await checked(request("GET", "/api/links", undefined, undefined, { "X-API-Key": credential.token }), 401);
+    const offboardEmail = prefix + "-offboard@example.invalid";
+    await checked(request("POST", "/api/v2/users/admin", { email: offboardEmail, password, verified: false }, session), 201);
+    const offboard = db.prepare("SELECT * FROM users WHERE email=?").get(offboardEmail);
+    createdUsers.push(offboard.id);
+    assert.match(offboard.verification_token, /^[0-9a-f-]{36}$/i, "Admin-created unverified accounts need a mail token");
+    assert(Date.parse(offboard.verification_expires.replace(" ", "T") + "Z") > Date.now());
+    const retained = createLink(offboard.id, null, "https://example.org/retained");
+    db.prepare("INSERT INTO visits(link_id,user_id,total,countries,referrers) VALUES((SELECT id FROM links WHERE uuid=?),?,2,'{}','{}')").run(retained.uuid, offboard.id);
+    const confirmation = await checked(request("GET", "/confirm-user-delete?id=" + offboard.id, undefined, session, { Accept: "text/html" }));
+    assert.match(await confirmation.text(), /Links retained: 1/);
+    await checked(request("DELETE", "/api/v2/users/admin/" + offboard.id, undefined, session));
+    assert.equal(db.prepare("SELECT id FROM users WHERE id=?").get(offboard.id), undefined);
+    assert.equal(db.prepare("SELECT user_id FROM links WHERE uuid=?").get(retained.uuid).user_id, null);
+    assert.equal(db.prepare("SELECT user_id FROM visits WHERE link_id=(SELECT id FROM links WHERE uuid=?)").get(retained.uuid).user_id, null);
+    const retainedPublic = await checked(request("GET", "/" + retained.address), 302);
+    assert.equal(retainedPublic.headers.get("location"), "https://example.org/retained");
     console.log("PASS: atomic moderation, explicit unban, persistent credential revocation, strict flags, authorization, DNS rollback, metadata and private audit");
   } finally {
     for (const uuid of links) db.prepare("DELETE FROM links WHERE uuid=?").run(uuid);

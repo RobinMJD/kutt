@@ -73,7 +73,7 @@ assert(!existsSync(path.join(__dirname, "../.env")));
     for (const [upper, lower] of [["CaseControl", "casecontrol"], ["CaseControl.PDF", "casecontrol.pdf"]]) {
       await create(upper);
       const response = await request("POST", "/api/links", { customurl: lower, target });
-      assert([201, 400].includes(response.status)); statuses.push(response.status);
+      assert([201, 409].includes(response.status)); statuses.push(response.status);
     }
     assert.equal(statuses[0], statuses[1], "Dots must not change case-collision semantics");
     const domain = "dotted.example.invalid";

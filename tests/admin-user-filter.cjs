@@ -42,8 +42,27 @@ module.exports = async ({ request, session, database, account, env }) => {
       assert.equal(response.status, 200);
       assert((await response.text()).includes(kind === "links" ? alias : "filter.example.invalid"));
     }
+    for (const [filter, count] of [[email, 1], ["12345.filter@", 1], [" " + email + " ", 1],
+      [String(owner), 1], ["000" + owner, 1], ["0", 0], ["9".repeat(80), 0],
+      [owner + "nonsense", 0], ["not-present@example.invalid", 0]]) {
+      response = await request("GET", "/api/v2/users/admin?search=" + encodeURIComponent(filter), undefined, session);
+      assert.equal(response.status, 200, "users: " + filter);
+      const result = await response.json();
+      assert.equal(result.total, count, "users count parity: " + filter);
+      assert.equal(result.data.length, count);
+      if (count) assert.equal(result.data[0].email, email);
+    }
+    response = await request("GET", "/api/v2/users/admin?search=" + encodeURIComponent(email) + "&skip=1&limit=1", undefined, session);
+    assert.equal(response.status, 200);
+    const userPage = await response.json();
+    assert.equal(userPage.total, 1); assert.deepEqual(userPage.data, []);
+    response = await request("GET", "/api/v2/users/admin?search[]=" + encodeURIComponent(email), undefined, session);
+    assert.equal(response.status, 400, "Malformed user filters are rejected before querying the database");
+    assert.equal((await request("GET", "/api/v2/users/admin")).status, 401);
+    assert.equal((await request("GET", "/api/v2/users/admin", undefined, ordinary)).status, 401);
+    assert.equal((await request("GET", "/api/v2/users/admin", undefined, session, { "X-API-Key": scoped.token })).status, 403);
     assert.equal((await request("DELETE", "/api/v2/tokens/" + scoped.id, undefined, session)).status, 204);
-    console.log("PASS: admin link/domain numeric-email and ID filters, count/list/pagination parity, HTML and authorization boundaries");
+    console.log("PASS: admin link/domain/user numeric-email and ID filters, count/list/pagination parity, HTML and authorization boundaries");
   } finally {
     if (owner) {
       db.prepare("DELETE FROM links WHERE user_id=?").run(owner);

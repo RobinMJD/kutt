@@ -1,4 +1,4 @@
-const { isAfter } = require("date-fns");
+const { isAfter, isBefore } = require("date-fns");
 
 const utils = require("../utils");
 const redis = require("../redis");
@@ -111,12 +111,13 @@ async function find(match, total) {
 
   for await (const visit of visitsStream) {
     periods.forEach(([type, fromDate]) => {
-      const isIncluded = isAfter(utils.parseDatetime(visit.created_at), fromDate);
+      const visitedAt = utils.parseDatetime(visit.created_at);
+      const isIncluded = type === "lastYear" ? !isBefore(visitedAt, fromDate) : isAfter(visitedAt, fromDate);
       if (!isIncluded) return;
       const diffFunction = utils.getDifferenceFunction(type);
-      const diff = diffFunction(now, utils.parseDatetime(visit.created_at));
+      const diff = diffFunction(now, visitedAt);
       const index = stats[type].views.length - diff - 1;
-      const view = stats[type].views[index];
+      if (index < 0 || index >= stats[type].views.length) return;
       const period = stats[type].stats;
       const countries = typeof visit.countries === "string" ? JSON.parse(visit.countries) : visit.countries;
       const referrers = new Map(Object.entries(period.referrer));

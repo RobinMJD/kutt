@@ -1486,6 +1486,8 @@
   "enum.moderation_action.unban": "levée du blocage",
   "enum.moderation_action.delete": "suppression",
   "moderation.user_not_found": "Utilisateur introuvable.",
+  "moderation.delete_user_preserves_links": "Liens conservés : {{count}}. Ce compte et ses paramètres privés seront supprimés ; ses liens et leur historique de visites resteront disponibles sans propriétaire.",
+  "moderation.delete_account_preserves_links": "Vos liens publiés et leur historique de visites resteront disponibles sans propriétaire. Un administrateur pourra les gérer après la suppression de votre compte.",
   "theme.appearance": "Apparence",
   "theme.system": "Système",
   "theme.light": "Clair",

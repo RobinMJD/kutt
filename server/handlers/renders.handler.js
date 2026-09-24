@@ -186,10 +186,12 @@ async function confirmUserDelete(req, res) {
       message: i18n.t("messages.could_not_find_the_user")
     });
   }
+  const { count } = await require("../knex")("links").where({ user_id: user.id }).count("* as count").first();
   res.render("partials/admin/dialog/delete_user", {
     layout: false,
     email: user.email,
-    id: user.id
+    id: user.id,
+    link_count: i18n.number(Number(count))
   });
 }
 

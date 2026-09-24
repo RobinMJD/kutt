@@ -110,7 +110,7 @@ module.exports = async function ({ request, session, database, account, restart 
     }
     const failedHeaders = { "Idempotency-Key": randomUUID() };
     const reserved = db.prepare("SELECT count(*) AS n FROM link_creation_requests").get().n;
-    assert.equal((await keyed(defaultToken, "POST", "/api/v2/links", input, failedHeaders)).status, 400);
+    assert.equal((await keyed(defaultToken, "POST", "/api/v2/links", input, failedHeaders)).status, 409);
     assert.equal(db.prepare("SELECT count(*) AS n FROM link_creation_requests").get().n, reserved, "Failed insert must roll back its key reservation");
     response = await keyed(defaultToken, "POST", "/api/v2/links", { ...input, customurl: "retry-after-failure" }, failedHeaders);
     assert.equal(response.status, 201);

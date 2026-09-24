@@ -29,9 +29,9 @@ function createViewsChartLabel(ctx) {
   }
 
   if (period === "year") {
-    const nowMonth = new Date().getMonth();  
+    const now = new Date();
     for (let i = 11; i >= 0; --i) {
-      const date = new Date(new Date().setMonth(nowMonth - i));
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
       labels.push(window.KuttI18n.date(date, { month: "short", year: "numeric" }));
     }
   }

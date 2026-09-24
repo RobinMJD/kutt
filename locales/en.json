@@ -1486,6 +1486,8 @@
   "enum.moderation_action.unban": "unban",
   "enum.moderation_action.delete": "delete",
   "moderation.user_not_found": "User was not found.",
+  "moderation.delete_user_preserves_links": "Links retained: {{count}}. This account and its private settings will be removed; its links and visit history will remain available without an owner.",
+  "moderation.delete_account_preserves_links": "Your published links and their visit history will remain available without an owner. An administrator can manage them after your account is removed.",
   "theme.appearance": "Appearance",
   "theme.system": "System",
   "theme.light": "Light",

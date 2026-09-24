@@ -220,7 +220,7 @@ module.exports = async ({ request, session, database, account, root, url }) => {
 
     const simultaneous = input({ starts_at: start + "Z", ends_at: end + "Z" });
     const results = await Promise.all(Array.from({ length: 2 }, () => request("POST", "/api/links", simultaneous, session)));
-    assert.deepEqual(results.map(response => response.status).sort(), [201, 400]);
+    assert.deepEqual(results.map(response => response.status).sort(), [201, 409]);
     assert.equal(db.prepare("SELECT count(*) AS n FROM links WHERE address=?").get(simultaneous.customurl).n, 1);
     const saved = row(simultaneous.customurl);
     assert.equal(saved.starts_at, Date.parse(start + "Z"));

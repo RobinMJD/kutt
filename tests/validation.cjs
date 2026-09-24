@@ -54,6 +54,27 @@ module.exports = async ({ request, session, account }) => {
   assert.equal(response.status, 201);
   const link = await response.json();
   try {
+    const conflict = await request("POST", "/api/v2/links", { customurl: link.address, target: "https://example.org/other" }, session);
+    assert.equal(conflict.status, 409, "An occupied custom alias is a conflict, not a server error");
+    const unchanged = await (await request("GET", "/api/v2/links", undefined, session)).json();
+    assert.equal(unchanged.data.find(row => row.id === link.id).target, "https://example.invalid/validation");
+    const portAlias = "port-" + randomUUID();
+    const portLink = await request("POST", "/api/v2/links", {
+      customurl: portAlias, target: "https://example.org:3/port"
+    }, session);
+    assert.equal(portLink.status, 201, await portLink.clone().text());
+    const portId = (await portLink.json()).id;
+    assert.equal((await request("GET", "/" + portAlias)).headers.get("location"), "https://example.org:3/port");
+    assert.equal((await request("DELETE", "/api/v2/links/" + portId, undefined, session)).status, 200);
+    const expiryLink = await request("POST", "/api/v2/links", {
+      customurl: "expiry-format-" + randomUUID(), target: "https://example.org/expiry", expire_in: "2 days"
+    }, session);
+    assert.equal(expiryLink.status, 201);
+    const expiring = await expiryLink.json();
+    assert.match(expiring.expire_in, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/, "API expiry is ISO 8601 UTC");
+    const listed = await (await request("GET", "/api/v2/links", undefined, session)).json();
+    assert.equal(listed.data.find(row => row.id === expiring.id).expire_in, expiring.expire_in);
+    assert.equal((await request("DELETE", "/api/v2/links/" + expiring.id, undefined, session)).status, 200);
     const denied = await request("POST", "/api/links/" + link.id + "/protected", { password: "wrong-password" }, undefined, html);
     assert.equal(denied.status, 200);
     const page = await denied.text();

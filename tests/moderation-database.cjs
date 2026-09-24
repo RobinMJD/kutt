@@ -3,7 +3,7 @@ const { randomUUID } = require("node:crypto");
 
 module.exports = async db => {
   const moderation = require("../server/moderation"), tokens = require("../server/api-tokens");
-  const ids = [], links = [];
+  const ids = [], links = [], retainedDomains = [];
   const user = async role => {
     const email = randomUUID() + "@example.invalid";
     await db("users").insert({ email, password: "disposable-not-for-login", verified: true, role });
@@ -58,10 +58,34 @@ module.exports = async db => {
       await moderation.moderate("link", uuid, true, survivor);
       assert.equal(invalidations, 2, "An idempotent retry must invalidate again");
     } finally { envModule.exports = env; redis.remove.link = remove; }
+    const retiring = await user("USER");
+    const domainAddress = "retained-" + randomUUID() + ".example.invalid";
+    await db("domains").insert({ address: domainAddress, uuid: randomUUID(), user_id: retiring.id });
+    const domain = await db("domains").where({ address: domainAddress }).first();
+    retainedDomains.push(domain.id);
+    const preservedUuid = randomUUID(); links.push(preservedUuid);
+    await db("links").insert({ uuid: preservedUuid, address: "retained-" + preservedUuid,
+      target: "https://example.org/retained", user_id: retiring.id, domain_id: domain.id });
+    const preserved = await db("links").where({ uuid: preservedUuid }).first();
+    await db("visits").insert({ link_id: preserved.id, user_id: retiring.id, total: 1,
+      countries: JSON.stringify({}), referrers: JSON.stringify({}) });
+    await moderation.removeUser(retiring, survivor, true);
+    assert.equal(await db("users").where({ id: retiring.id }).first(), undefined);
+    assert.equal((await db("links").where({ id: preserved.id }).first()).user_id, null);
+    assert.equal((await db("visits").where({ link_id: preserved.id }).first()).user_id, null);
+    assert.equal((await db("domains").where({ id: domain.id }).first()).user_id, null);
+    const invited = await require("../server/queries/user.queries").create({
+      email: randomUUID() + "@example.invalid", password: "disposable-not-for-login", verified: false
+    }, survivor);
+    ids.push(invited.id);
+    assert.equal(!!invited.verified, false);
+    assert.match(invited.verification_token, /^[0-9a-f-]{36}$/);
+    assert(invited.verification_expires);
     await assert.rejects(require("../server/migrations/20260922000000_moderation").down(db), /Preserve the moderation audit/);
     console.log("PASS: " + db.client.config.client + " moderation concurrency, last administrator, token/ban race, no credential resurrection, rollback and downgrade guard");
   } finally {
     for (const uuid of links) await db("links").where({ uuid }).delete();
+    for (const id of retainedDomains) await db("domains").where({ id }).delete();
     for (const table of ["users", "domains", "links", "hosts"]) await db(table).whereIn("banned_by_id", ids).update({ banned_by_id: null });
     await db("users").whereIn("id", ids).delete();
   }

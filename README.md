@@ -33,6 +33,7 @@ for exact versioned coverage and historical evidence, and the
 
 - [Feature roadmap](docs/FEATURE-ROADMAP.md): completed features and release evidence.
 - [Community contribution review](docs/UPSTREAM-PR-REVIEW.md): selected proposals, attribution and deferred ideas.
+- [Upstream open-issue review](docs/UPSTREAM-OPEN-ISSUES-2026-09-25.md): all 69 open issues classified against this fork, with candidate fixes and delivery boundaries.
 - [Community delivery ledger](docs/COMMUNITY-FEATURE-ROADMAP.md): approved additions and current validation status.
 - [UI/UX review](docs/UI-UX-REVIEW.md): fixes, completed human acceptance and the final security remediation gates.
 - [September interface polish](docs/UI-POLISH-2026-09.md): responsive alignment, dark icons, spacing and the `.64` acceptance ledger.

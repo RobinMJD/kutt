@@ -139,6 +139,10 @@ async function removeUser(user, actor = user, administrative = false) {
     for (const link of await db("links").where({ user_id: row.id })) changed.push({ entity: "link", row: link });
     for (const domain of await db("domains").where({ user_id: row.id })) changed.push({ entity: "domain", row: domain });
     await audit(db, "user", row, "delete", actor);
+    // Existing foreign keys cascade on user deletion. Detach public links and
+    // their aggregates first so removing an account cannot break published URLs.
+    await db("links").where({ user_id: row.id }).update({ user_id: null });
+    await db("visits").where({ user_id: row.id }).update({ user_id: null });
     // Old foreign keys do not SET NULL. Preserve bans without retaining a
     // deleted administrator solely as their attribution; the audit keeps IDs.
     for (const table of Object.values(tables)) await db(table).where({ banned_by_id: row.id }).update({ banned_by_id: null });

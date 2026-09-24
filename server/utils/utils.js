@@ -1,5 +1,5 @@
 const i18n = require("../i18n");
-const { differenceInDays, differenceInHours, differenceInMonths, differenceInMilliseconds, addDays, subHours, subDays, subMonths, subYears, format } = require("date-fns");
+const { differenceInDays, differenceInHours, differenceInCalendarMonths, differenceInMilliseconds, addDays, subHours, subDays, subMonths, startOfMonth, subYears, format } = require("date-fns");
 const { customAlphabet } = require("nanoid");
 const crypto = require("node:crypto");
 const JWT = require("jsonwebtoken");
@@ -25,7 +25,7 @@ class CustomError extends Error {
 }
 
 // Userinfo is a single non-space run; overlapping repetitions caused quadratic backtracking.
-const urlRegex = /^(?:(?:(?:https?|ftp):)?\/\/)(?:\S+@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z0-9\u00a1-\uffff][a-z0-9\u00a1-\uffff_-]{0,62})?[a-z0-9\u00a1-\uffff]\.)+(?:[a-z\u00a1-\uffff]{2,}\.?))(?::\d{2,5})?(?:[/?#]\S*)?$/i;
+const urlRegex = /^(?:(?:(?:https?|ftp):)?\/\/)(?:\S+@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z0-9\u00a1-\uffff][a-z0-9\u00a1-\uffff_-]{0,62})?[a-z0-9\u00a1-\uffff]\.)+(?:[a-z\u00a1-\uffff]{2,}\.?))(?::\d{1,5})?(?:[/?#]\S*)?$/i;
 
 const charsNeedEscapeInRegExp = ".$*+?()[]{}|^-";
 const customAlphabetEscaped = env.LINK_CUSTOM_ALPHABET
@@ -120,7 +120,7 @@ function getDifferenceFunction(type) {
   if (type === "lastDay") return differenceInHours;
   if (type === "lastWeek") return differenceInDays;
   if (type === "lastMonth") return differenceInDays;
-  if (type === "lastYear") return differenceInMonths;
+  if (type === "lastYear") return differenceInCalendarMonths;
   throw new Error(i18n.t("messages.unknown_type"));
 }
 
@@ -158,7 +158,7 @@ function getStatsPeriods(now) {
     ["lastDay", subHours(now, 24)],
     ["lastWeek", subDays(now, 7)],
     ["lastMonth", subDays(now, 30)],
-    ["lastYear", subMonths(now, 12)],
+    ["lastYear", startOfMonth(subMonths(now, 11))],
   ]
 }
 
@@ -259,6 +259,7 @@ const sanitize = {
     return {
       ...link,
       ...timestamps,
+      expire_in: link.expire_in ? parseDatetime(link.expire_in) : null,
       ...require("../link-lifecycle").describe(link),
       banned_by_id: undefined,
       domain_id: undefined,
@@ -300,6 +301,7 @@ const sanitize = {
     return {
       ...link,
       ...timestamps,
+      expire_in: link.expire_in ? parseDatetime(link.expire_in) : null,
       ...require("../link-lifecycle").describe(link),
       domain: link.domain || env.DEFAULT_DOMAIN,
       id: link.uuid,

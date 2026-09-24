@@ -257,7 +257,7 @@ module.exports = {
           }
         },
         responses: {
-          "200": {
+          "201": {
             description: "Created link",
             content: {
               "application/json": {
@@ -266,7 +266,8 @@ module.exports = {
                 }
               }
             }
-          }
+          },
+          "409": { description: "Custom alias is already in use or reserved" }
         },
         security: [
           {
@@ -510,6 +511,12 @@ module.exports = {
           created_at: {
             type: "string",
             format: "date-time"
+          },
+          expire_in: {
+            type: "string",
+            format: "date-time",
+            nullable: true,
+            description: "Expiration instant in UTC ISO 8601 format, or null when unset."
           },
           id: {
             type: "string",

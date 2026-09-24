@@ -7,6 +7,7 @@ const utils = require("../utils");
 const redis = require("../redis");
 const knex = require("../knex");
 const env = require("../env");
+const filterAdminUser = require("./admin-user-filter");
 
 async function find(match) {
   if ((match.id || match.apikey) && env.REDIS_ENABLED) {
@@ -150,12 +151,7 @@ async function getAdmin(match, params) {
   require("../list-sort").apply(query, params, "users");
   
   if (params?.search) {
-    const id = parseInt(params?.search);
-    if (Number.isNaN(id)) {
-      query[knex.compatibleILIKE]("users.email", "%" + params?.search + "%");
-    } else {
-      query.andWhere("users.id", params?.search);
-    }
+    filterAdminUser(query, "users.id", params.search);
   }
 
   if (params?.domains !== undefined) {
@@ -192,12 +188,7 @@ async function totalAdmin(match, params) {
     .where(normalizeMatch(match));
 
   if (params?.search) {
-    const id = parseInt(params?.search);
-    if (Number.isNaN(id)) {
-      query[knex.compatibleILIKE]("users.email", "%" + params?.search + "%");
-    } else {
-      query.andWhere("users.id", params?.search);
-    }
+    filterAdminUser(query, "users.id", params.search);
   }
 
   if (params?.domains !== undefined) {
@@ -236,7 +227,11 @@ async function create(params, actor) {
     }
     let [user] = await db("users").insert({
       email: params.email, password: params.password, role: params.role ?? ROLES.USER,
-      verified: params.verified ?? false, banned: params.banned ?? false
+      verified: params.verified ?? false, banned: params.banned ?? false,
+      ...(!params.verified && {
+        verification_token: randomUUID(),
+        verification_expires: utils.dateToUTC(addMinutes(new Date(), 60))
+      })
     }, "*");
     // MySQL returns the inserted ID rather than the row.
     if (typeof user === "number") user = await db("users").where("id", user).first();

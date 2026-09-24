@@ -1,6 +1,6 @@
 {
   "name": "kutt",
-  "version": "3.2.6-sr94.64",
+  "version": "3.2.6-sr94.65",
   "description": "Modern URL shortener.",
   "main": "./server/server.js",
   "scripts": {
@@ -44,7 +44,7 @@
     "hbs": "4.2.1",
     "helmet": "7.1.0",
     "i18next": "26.4.2",
-    "ioredis": "5.4.2",
+    "ioredis": "5.11.1",
     "isbot": "5.1.19",
     "jose": "4.15.9",
     "jsonwebtoken": "9.0.2",

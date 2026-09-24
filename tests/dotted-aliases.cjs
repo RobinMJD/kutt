@@ -83,7 +83,7 @@ module.exports = async ({ request, session, database, account, restart, root, di
         ]) await checked(request(method, api + route, body, session), 400);
       }
       assert.equal(db.prepare("SELECT address FROM links WHERE uuid=?").get(link.id).address, address);
-      await checked(request("POST", api + "/links", { customurl: address, target }, session), 400);
+      await checked(request("POST", api + "/links", { customurl: address, target }, session), 409);
     }
     const exact64 = await create("a".repeat(60) + ".pdf");
     assert.equal(exact64.address.length, 64);
