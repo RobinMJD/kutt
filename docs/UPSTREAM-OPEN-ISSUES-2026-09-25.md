@@ -1,6 +1,6 @@
 # Upstream Open-Issue Review (25 September 2026)
 
-Snapshot: all 69 open issues at [thedevs-network/kutt](https://github.com/thedevs-network/kutt/issues), compared with the deployed fork baseline `3.2.6-sr94.64`. An upstream-open state does not mean the issue affects this fork. This review distinguishes reproduced defects from requested features and hosted-service problems. The changes below are a `3.2.6-sr94.65` candidate until publication, backup, deployment, and live validation are separately recorded.
+Snapshot: all 69 open issues at [thedevs-network/kutt](https://github.com/thedevs-network/kutt/issues), compared with the deployed fork baseline `3.2.6-sr94.64`. An upstream-open state does not mean the issue affects this fork. This review distinguishes reproduced defects from requested features and hosted-service problems. The eight applicable corrections shipped as `3.2.6-sr94.65`; the delivery evidence is recorded below.
 
 ## Reproduced and Fixed Here (8)
 
@@ -62,4 +62,28 @@ These are not regressions with a demonstrated failure in this deployment. Do not
 
 ## Verification and Delivery Boundary
 
-The candidate image passed the full isolated container suite, focused regressions, Redis/Bull smoke, and the targeted MySQL 8.4/PostgreSQL 17 SQL suites for search, moderation, hourly analytics and dotted aliases. Browser/deployment gates must be recorded before claiming a release. `ioredis` production install audit reported zero vulnerabilities; this does not substitute for image scanning. No live deployment, backup/restore, upstream issue closure or GitHub release is implied by this source review.
+Source commit `406fc810d6780a9b5343df89f6c171a6db5d6379`, tag
+`v3.2.6-sr94.65`, and the immutable GHCR source image
+`sha256:054a624d1ad162f3551d9c8f2b5015f8489e7354820c812bf9c24ce8360444d5`
+match. [Main CI](https://github.com/RobinMJD/kutt/actions/runs/36069433237),
+[tag/image CI](https://github.com/RobinMJD/kutt/actions/runs/36073434230) and
+[Shortcut CI](https://github.com/RobinMJD/kutt/actions/runs/36073434338) passed.
+The exact hardened wrapper image is
+`sha256:2c13ec0b963dade59dec6e8bfaa0f54339d21e4a5c9cb864697e0cc12bab9c09`.
+It passed the full isolated container suite, focused regressions, Redis/Bull
+smoke, targeted MySQL 8.4/PostgreSQL 17 SQL suites, and a current image scan
+with zero Critical/High and three Medium findings. The production package
+audit reported zero vulnerabilities. AAAA-only DNS is not emulated by these
+tests; the dependency update is the bounded fix for #1020.
+
+The live cutover was preceded by local snapshot `9e9600f2` and NAS snapshot
+`50fa1567` with a writable candidate restore. Public WAF smoke, real
+Authentik-signed logout, original-record preservation, two healthy 65-second
+samples with zero Kutt alerts/restarts, and full lab validation passed. A fresh
+post-cutover local snapshot `f28ed77c` and NAS snapshot `dd9b8ddf` restored to
+byte-identical 75-file trees; the restored database passed a disposable write
+using the candidate image. Private evidence and guarded rollback are under
+`/srv/homelab/security-reports/2026-09-25-kutt-upstream-issues-65/`.
+Upstream issue closure/merge is independent of this fork release. The ten
+unreproduced/hosted reports and 20 distinct product requests above remain open
+dispositions, not unverified claims of fixes.

@@ -6,6 +6,36 @@ its hardened wrapper, WAF/Authentik routing, monitoring and private backup paths
 in its separate deployment repository. This public repository contains no real
 secrets, provider bindings or user data.
 
+### Upstream open-issue fixes (3.2.6-sr94.65)
+
+This release fixes eight applicable reports from the
+[25 September upstream issue review](UPSTREAM-OPEN-ISSUES-2026-09-25.md):
+admin Users search, Redis DNS-family handling, preservation of links on user
+offboarding, calendar-year statistics, duplicate-alias conflicts, ISO API expiry
+output, one-digit URL ports and verification of admin-created users.
+
+There is no schema, WAF, Authentik, secret or redirect-policy change. The
+`ioredis` dependency changes from 5.4.2 to 5.11.1. API `expire_in` output is now
+UTC ISO 8601; existing relative-expiry input still works. Deleting a user leaves
+their formerly owned links public and preserves visits/domains, so review that
+ownership consequence before offboarding. Reload open admin pages after update.
+
+The homelab deployment uses the immutable source image digest
+`sha256:054a624d1ad162f3551d9c8f2b5015f8489e7354820c812bf9c24ce8360444d5`
+inside its hardened wrapper. Main/tag CI and exact-wrapper tests passed. A fresh
+pre-change backup was copied to the NAS and restored before cutover; a fresh
+post-change local snapshot `f28ed77c` and NAS snapshot `dd9b8ddf` independently
+restored to identical 75-file trees. Candidate-image writable recovery, public
+WAF/SSO smoke, original-data checks, two healthy samples 65 seconds apart and
+full lab validation passed. The wrapper scan had zero Critical/High and three
+Medium findings. Private logs and guarded rollback are under
+`/srv/homelab/security-reports/2026-09-25-kutt-upstream-issues-65/`.
+
+Image-only rollback to `.64` keeps the current database and secrets; it restores
+the old output format and defects. Do not restore an old database over newer
+links or identities. The rollback script checks the recorded pre-change files
+and image before changing the four Kutt wrapper files.
+
 ### Transactional moderation (3.2.6-sr94.45)
 
 [Moderation](MODERATION.md) adds an audit and serialized mutation table. Existing

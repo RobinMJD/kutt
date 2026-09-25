@@ -16,9 +16,11 @@ the upstream hosted service.
 
 ## Project status
 
-As of **23 September 2026**, [3.2.6-sr94.64](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.64)
-is accepted, published and deployed. Application CI, exact-image regression,
-public browser checks, stable health and verified writable recovery passed.
+As of **25 September 2026**, `3.2.6-sr94.65` is published to GHCR and deployed
+on the homelab. Main/tag CI, exact-image regression, public WAF/SSO checks,
+stable health and verified writable local/NAS recovery passed. The
+[open-issue review](docs/UPSTREAM-OPEN-ISSUES-2026-09-25.md) records eight
+applicable upstream issue fixes and the disposition of all 69 open issues.
 The earlier homelab Actions budget blocker was resolved using its dedicated,
 repository-scoped runner. [Repository hygiene](https://github.com/RobinMJD/homelab/actions/runs/35768670410)
 and [deployment checks](https://github.com/RobinMJD/homelab/actions/runs/35768700778)
@@ -33,7 +35,7 @@ for exact versioned coverage and historical evidence, and the
 
 - [Feature roadmap](docs/FEATURE-ROADMAP.md): completed features and release evidence.
 - [Community contribution review](docs/UPSTREAM-PR-REVIEW.md): selected proposals, attribution and deferred ideas.
-- [Upstream open-issue review](docs/UPSTREAM-OPEN-ISSUES-2026-09-25.md): all 69 open issues classified against this fork, with candidate fixes and delivery boundaries.
+- [Upstream open-issue review](docs/UPSTREAM-OPEN-ISSUES-2026-09-25.md): all 69 open issues classified against this fork, with eight fixes and release evidence.
 - [Community delivery ledger](docs/COMMUNITY-FEATURE-ROADMAP.md): approved additions and current validation status.
 - [UI/UX review](docs/UI-UX-REVIEW.md): fixes, completed human acceptance and the final security remediation gates.
 - [September interface polish](docs/UI-POLISH-2026-09.md): responsive alignment, dark icons, spacing and the `.64` acceptance ledger.
@@ -46,7 +48,7 @@ are **not** full feature-parity guarantees. Security
 reviews and image scans are bounded, dated evidence, not certification that the
 application has no vulnerabilities.
 
-The `.64` update completes the [12-finding interface review](docs/UI-POLISH-2026-09.md):
+The preceding `.64` update completed the [12-finding interface review](docs/UI-POLISH-2026-09.md):
 aligned search/sort controls, visible dark-mode icons, compact responsive layouts,
 consistent focus/controls and useful empty analytics. Live browser acceptance
 covered 72 pages across 18 locale/theme/viewport combinations. Public redirects
@@ -117,7 +119,7 @@ checked-out source, persists SQLite and custom assets in named volumes, and
 publishes only `127.0.0.1:3000` on the Docker host.
 
 ```sh
-git clone --branch v3.2.6-sr94.64 --depth 1 https://github.com/RobinMJD/kutt.git
+git clone --branch v3.2.6-sr94.65 --depth 1 https://github.com/RobinMJD/kutt.git
 cd kutt
 cp .example.env .env
 chmod 600 .env
@@ -154,7 +156,9 @@ whose data you intend to keep.
 ### Published images and alternative examples
 
 The accepted fork release image is
-`ghcr.io/robinmjd/kutt:v3.2.6-sr94.64`. For an image-based deployment, replace
+`ghcr.io/robinmjd/kutt:v3.2.6-sr94.65` (digest
+`sha256:054a624d1ad162f3551d9c8f2b5015f8489e7354820c812bf9c24ce8360444d5`).
+For an image-based deployment, replace
 the Compose service's `build` section with an `image` reference, retaining its
 environment and persistent volumes. Pin the tested image digest in production.
 The upstream `kutt/kutt` Docker Hub image does **not** contain these fork changes.
