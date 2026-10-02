@@ -1,5 +1,38 @@
 # Security maintenance
 
+## October 2 security audit (3.2.6-sr94.66)
+
+The [live audit ledger](SECURITY-AUDIT-2026-10-02.md) separates source fixes,
+release CI, image scanning, homelab deployment and recovery verification. This
+release updates vulnerable `nodemailer` and transitive `ip-address` packages,
+refreshes vulnerable development dependencies, and makes proxy trust opt-in and
+rate limiting on by default. This release's source image defaults to the
+non-root Node user with a writable database directory; the live wrapper already
+ran as UID 1000. Both source-image CI workflows assert that runtime boundary.
+The homelab continues to set both proxy/rate settings explicitly:
+`TRUST_PROXY=true` is safe there only while BunkerWeb strips incoming forwarding
+headers and sends its own validated client address. Other deployments must not
+enable proxy trust without an equivalent trusted edge.
+
+The first-account endpoint previously allowed two concurrent requests to create
+administrators on an empty database. It now serializes the user check and insert
+in one transaction using the existing write guard. The regression reproduces the
+old race and verifies one winner on SQLite, MySQL and PostgreSQL. Existing users
+and data do not migrate. The current homelab was not exposed to this first-run
+race: it has an existing account and BunkerWeb denies public bootstrap routes.
+
+Both candidate npm audits are clean. The source and wrapper image scans have
+zero Critical/High matches but retain three Medium package matches for the one
+unfixed BusyBox `wget` advisory, `CVE-2025-60876`; Kutt does not use that applet
+for outbound requests. A checksum-verified, sentinel-tested Gitleaks scan of
+Git history and current files found test/documentation matches only; no live
+credential was found. GitHub vulnerability alerts are enabled for the fork,
+while automatic dependency PRs remain disabled so updates still pass functional
+and deployment gates. The independent managed deep-scan worker could not start
+under this task's filesystem permission profile; do not treat the direct review
+or scanners as an exhaustive certification. Publication and live acceptance
+remain open until the ledger records verified evidence.
+
 ## Security boundary release (3.2.6-sr94.40)
 
 The September 19 authenticated source review finalized seven medium findings.
@@ -146,9 +179,10 @@ late-response suppression, error/retry and revocation. A desktop browser test
 is not physical iPhone acceptance; native macOS execution and iPhone behavior
 must be described separately in the [Shortcut guide](../examples/IOS-SHORTCUT.md).
 
-Remaining deployment risks include shared-IP rate-limit contention, the legacy
-application proxy-trust default, nonpersistent Redis examples and database-engine
-coverage. Configure them explicitly using [deployment guidance](DEPLOYMENT.md).
+Remaining deployment risks include shared-IP rate-limit contention, unsafe
+explicit proxy trust behind an untrusted edge, nonpersistent Redis examples and
+database-engine coverage. Configure them explicitly using
+[deployment guidance](DEPLOYMENT.md).
 The full feature suite targets SQLite; do not infer PostgreSQL/MariaDB parity
 from configuration validation alone. OS package advisories without a vendor
 fix must be recorded in the release scan rather than suppressed.

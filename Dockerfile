@@ -21,13 +21,15 @@ RUN --mount=type=bind,source=package.json,target=package.json \
       /opt/yarn-* /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/yarn \
       /usr/local/bin/yarnpkg /usr/local/bin/corepack
 
-RUN mkdir -p /var/lib/kutt
+RUN mkdir -p /var/lib/kutt && chown node:node /var/lib/kutt
 
 # copy the rest of source files into the image
 COPY . .
 
 # Keep build-only package tooling out without removing TLS runtime support.
 RUN node tests/image-hardening.cjs
+
+USER node
 
 # expose the port that the app listens on
 EXPOSE 3000

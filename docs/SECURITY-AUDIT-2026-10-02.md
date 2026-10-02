@@ -1,7 +1,7 @@
 # Kutt Advanced Security Audit (2 October 2026)
 
 **Status:** In progress
-**Last updated:** 2026-10-02 09:56 CEST
+**Last updated:** 2026-10-02 10:30 CEST
 **Source baseline:** `55d1d1ad0d3789909a8a9c0d8584beddb2503c2c` (`main`, clean before this ledger)
 **Live baseline:** `local/kutt:3.2.6-sr94.65`, image `sha256:2c13ec0b963dade59dec6e8bfaa0f54339d21e4a5c9cb864697e0cc12bab9c09`, healthy, zero restarts at intake
 **Private deployment evidence:** `/srv/homelab/security-reports/` on Debian3
@@ -17,13 +17,13 @@ public redirects, WAF and Authentik protections must remain intact.
 | --- | --- | --- |
 | Scope and baseline | Complete | Confirmed clean Kutt fork, live `.65` health, NAS mount and pre-existing dirty homelab checkout. |
 | Independent deep source audit | Blocked | The plugin refused to start a read-only worker because this parent has no managed filesystem permission profile. No scan artifact or result exists; do not infer clean coverage. |
-| Direct source and dependency review | In progress | Core auth, tokens, redirect, proxy, outbound HTTP, SQL query construction and CSP paths reviewed. Both production and full npm audits report zero known advisories against the candidate lockfile; documentation build passed. Continue final route and release diff review. |
-| Live deployment and edge audit | In progress | Container isolation and public/management route boundary checked; continue TLS, identity-provider, backups, secret/data permissions, monitoring and negative cases. |
+| Direct source and dependency review | In progress | Core auth, tokens, redirect, proxy, outbound HTTP, SQL query construction and CSP paths reviewed. Both npm audits report zero known advisories against the candidate lockfile; documentation build passed. A pinned Gitleaks 8.29.1 scan covered 1,001 commits and the current tree, with only test/documentation matches after triage. Continue final route and release diff review. |
+| Live deployment and edge audit | In progress | Container isolation, valid public TLS certificate, management 401/public redirect boundary, private secret directories and Prometheus target/probe health checked. Continue identity-provider and post-cutover negative cases. |
 | Finding validation and prioritization | In progress | Package advisories reproduced against the baseline lockfile; source-level proxy default risk distinguished from live deployment guard. Continue reviewing first-run and remaining authorization paths. |
-| Remediation | In progress | Patched Nodemailer, ip-address and development transitive lockfile; changed proxy and rate-limit defaults to secure values with config test and docs. No live change yet. |
-| Candidate verification | In progress | Both npm audits, documentation build and the full isolated exact-image regression passed. Concurrent bootstrap passes on SQLite, MySQL and PostgreSQL. Grype has zero Critical/High and three non-fixable Medium matches for one BusyBox advisory. Versioned `.66` image, release CI and live negative checks remain. |
+| Remediation | In progress | Source fixes committed and pushed as `9a98f52` for version `.66`; live `.65` is unchanged. Main-branch CI is running. |
+| Candidate verification | In progress | Both npm audits, documentation build and full isolated original-candidate, hardened-wrapper and non-root source-image regressions passed. Concurrent bootstrap passes on SQLite, MySQL and PostgreSQL. Wrapper Grype has zero Critical/High and three Medium matches for one BusyBox advisory. Main-branch release CI is still running on the preceding commit; exact final-commit CI remains pending. |
 | Backup and deployment | In progress | Fresh Kutt SQLite online recovery snapshot, local Restic snapshot `0b629a89`, NAS copy `340715fe`, NAS restore (75 files) and candidate-image writable recovery passed. Live service is unchanged; cutover/post-backup remain pending. |
-| Final report and source alignment | Pending | Reconcile findings, source/tag/image/live versions, CI and remaining risks; keep unrelated homelab changes untouched. |
+| Final report and source alignment | Pending | Reconcile commit `9a98f52`, release tag/image, hardened wrapper and live versions after CI; keep unrelated homelab changes untouched. |
 
 ## Findings
 
@@ -35,7 +35,9 @@ public redirects, WAF and Authentik protections must remain intact.
 | KUTT-SEC-004 | Low deployment footgun | Fix in progress | Candidate changes `ENABLE_RATE_LIMIT` default from `false` to `true`; live Compose already explicitly enables it. Config test and example/docs updated. Verify local development and live controls before closure. |
 | KUTT-SEC-005 | Development dependency advisories | Fix in progress | Baseline full audit additionally found five vulnerable development-only packages. `npm audit fix --package-lock-only` updated seven development transitive entries within declared ranges; candidate full audit now reports zero. Documentation build and CI remain to verify. |
 | KUTT-SEC-006 | High on uninitialized deployments | Fixed and tested | Two concurrent `POST /api/v2/auth/create-admin` requests against a fresh isolated database both returned 201 before the fix. Candidate serializes the empty-user check and insert inside one transaction using the existing `domain_access_state` write guard. Concurrent regression passed on SQLite, MySQL and PostgreSQL; exact-image full suite and live deployment remain. The live service has existing users and BunkerWeb blocks public bootstrap, so this is not currently exploitable there. |
-| KUTT-SEC-007 | Medium upstream OS advisory; lower application reachability | Residual/blocked | Candidate Grype reports `CVE-2025-60876` against BusyBox, `busybox-binsh` and `ssl_client` (one advisory represented by three package matches). It affects the BusyBox `wget` applet, which Kutt does not use for outbound HTTP. No fix version is reported for the installed Alpine package. Recheck when Alpine publishes a fixed package; do not replace the tested Node runtime solely to silence an unfixed scanner record. |
+| KUTT-SEC-007 | Medium upstream OS advisory; lower application reachability | Residual/blocked | Candidate Grype reports `CVE-2025-60876` against BusyBox, `busybox-binsh` and `ssl_client` (one advisory represented by three package matches). The [upstream report](https://lists.busybox.net/pipermail/busybox/2025-November/091817.html) concerns BusyBox `wget`, which Kutt does not use for outbound HTTP. No fix version is reported for the installed Alpine package. Recheck when Alpine publishes a fixed package; do not replace the tested Node runtime solely to silence an unfixed scanner record. |
+| KUTT-SEC-008 | Low monitoring gap | Remediated and verified | GitHub Dependabot vulnerability alerts were disabled for `RobinMJD/kutt`. Enabled only the read-only alerts, then verified GitHub's check endpoint returned HTTP 204. Secret scanning and push protection were already enabled. Automatic security-update PRs remain disabled so upgrades still require this project's functional and deployment gates. |
+| KUTT-SEC-009 | Moderate container hardening gap outside the homelab wrapper | Fix in progress | The current published source image defaults to root even though the live hardened wrapper already runs as UID 1000. The candidate source Dockerfile now owns only its intended database directory with the Node user and sets `USER node`; both source-image CI workflows assert UID 1000 and write access to that directory. The rebuilt image passed direct UID/write checks, runtime hardening, full application regression and writable restore of the NAS backup; exact-commit release CI, publication and live wrapper reconciliation remain. |
 
 Statuses are **Open**, **Fix in progress**, **Fixed and tested**,
 **Deployed and verified**, or **Residual/blocked**. Findings are not closed by
@@ -84,6 +86,34 @@ a source patch alone.
   evidence is under `/srv/homelab/security-reports/2026-10-02-kutt-security-audit/`.
 - The candidate lockfile installed in an isolated Node 24 Alpine workspace and
   `npm run docs:build` passed. This does not replace the complete release CI.
+- The versioned `.66` source and hardened-wrapper images both built with the
+  image-hardening check. The wrapper's isolated restore against the NAS copy
+  passed integrity, migration and writeability. Wrapper Grype likewise reports
+  zero Critical/High and only the three BusyBox Medium package matches. The
+  hardened wrapper passed the same full isolated regression suite as the source
+  image.
+- A revised `.66` source image now defaults to UID 1000 rather than root. Direct
+  write checks on `/var/lib/kutt`, the runtime hardening test and an isolated
+  writable restore from the NAS recovery database all passed as UID 1000.
+  Its full application regression passed; exact-commit GitHub release CI is pending.
+- Gitleaks 8.29.1 was checksum-verified against its official release and first
+  confirmed to detect a synthetic token. Its redacted scan covered 1,001 Git
+  commits (nine matches) and the current tree (four matches). The matches are
+  test-generated API keys, historical frontend JWT fixtures and prose/examples
+  that contain words such as `credential` or `Idempotency-Key`; none is a live
+  Kutt credential. No token value or unredacted report is kept in this repo.
+- Live TLS for `shorter-link.com` has a matching certificate valid through
+  12 December 2026. Unauthenticated management API and account-security
+  requests returned 401; the known short link remained publicly redirectable.
+  Prometheus reported `kutt-performance` up and a successful public HTTPS
+  blackbox probe. No failed Debian3 units or unhealthy containers were found.
+- The live Authentik `kutt-oidc` application has exactly two enabled,
+  non-negated group bindings: `authentik Admins` and `Kutt Users`. The OIDC
+  discovery document returns the configured issuer and endpoints. The public
+  login route serves strict CSP, HSTS and no-store headers.
+- GitHub vulnerability alerts are enabled with no currently open Dependabot
+  alerts. GitHub secret scanning and push protection are enabled, with no open
+  secret-scanning alerts; automatic security-update PRs remain disabled.
 
 ## Boundaries and Known Caveats
 

@@ -21,6 +21,10 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Build exact source
         run: docker build -t kutt-tested .
+      - name: Verify non-root image default
+        run: |
+          test "$(docker run --rm --network none --entrypoint id kutt-tested -u)" = 1000
+          docker run --rm --network none --entrypoint sh kutt-tested -ec 'test -w /var/lib/kutt'
       - name: Validate example deployment configuration
         run: python3 tests/compose-config.py
       - name: Isolated regression tests
