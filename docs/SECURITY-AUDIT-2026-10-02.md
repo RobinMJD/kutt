@@ -1,7 +1,7 @@
 # Kutt Advanced Security Audit (2 October 2026)
 
 **Status:** Complete, with two bounded residual risks
-**Last updated:** 2026-10-02 13:40 CEST
+**Last updated:** 2026-10-02 13:56 CEST
 **Source baseline:** `55d1d1ad0d3789909a8a9c0d8584beddb2503c2c` (`main`, clean before this ledger)
 **Live baseline:** `local/kutt:3.2.6-sr94.65`, image `sha256:2c13ec0b963dade59dec6e8bfaa0f54339d21e4a5c9cb864697e0cc12bab9c09`, healthy, zero restarts at intake
 **Accepted release:** `v3.2.6-sr94.66` at `6e2fc332dcdf33a43fab8e7b0efd216c28c53d13`
@@ -37,7 +37,7 @@ public redirects, WAF and Authentik protections must remain intact.
 | KUTT-SEC-004 | Low deployment footgun | Deployed and verified | `ENABLE_RATE_LIMIT` now defaults to `true`; live Compose also explicitly enables it. Configuration, proxy and isolated runtime tests passed; no edge rate limit was removed. |
 | KUTT-SEC-005 | Development dependency advisories | Deployed and verified | Seven development transitive entries were refreshed within declared ranges. Full npm audit, documentation build and exact-commit release CI passed with zero known advisories. |
 | KUTT-SEC-006 | High on uninitialized deployments | Deployed and verified | Two concurrent first-admin requests returned `[201, 201]` before the fix. `.66` serializes the empty-user check and insert transactionally using the existing `domain_access_state` write guard; SQLite, MySQL and PostgreSQL regressions now produce one winner. Live has existing users and public bootstrap returns 404 at BunkerWeb. |
-| KUTT-SEC-007 | Medium upstream OS advisory; lower application reachability | Residual/blocked | Candidate Grype reports `CVE-2025-60876` against BusyBox, `busybox-binsh` and `ssl_client` (one advisory represented by three package matches). The [upstream report](https://lists.busybox.net/pipermail/busybox/2025-November/091817.html) concerns BusyBox `wget`, which Kutt does not use for outbound HTTP. No fix version is reported for the installed Alpine package. Recheck when Alpine publishes a fixed package; do not replace the tested Node runtime solely to silence an unfixed scanner record. |
+| KUTT-SEC-007 | Medium upstream OS advisory; lower application reachability | Residual/blocked | Final Grype reports `CVE-2025-60876` against BusyBox, `busybox-binsh` and `ssl_client` (one advisory represented by three package matches). A network-disabled disposable-container loopback probe confirmed the shipped `busybox wget` accepts raw CR/LF and sends an injected HTTP header, despite third-party claims that revision `1.37.0-r31` was fixed. The [upstream report](https://lists.busybox.net/pipermail/busybox/2025-November/091817.html) concerns `wget`; Kutt does not invoke that applet for outbound HTTP. Grype reports no fixed Alpine package revision. Recheck a future base image and repeat the behavioral probe before removing this residual; do not replace the tested runtime or mix Alpine branches solely to silence a scanner record. |
 | KUTT-SEC-008 | Low monitoring gap | Remediated and verified | GitHub Dependabot vulnerability alerts were disabled for `RobinMJD/kutt`. Enabled only the read-only alerts, then verified GitHub's check endpoint returned HTTP 204. Secret scanning and push protection were already enabled. Automatic security-update PRs remain disabled so upgrades still require this project's functional and deployment gates. |
 | KUTT-SEC-009 | Moderate container hardening gap outside the homelab wrapper | Deployed and verified | The published source image now defaults to UID 1000, matching the live hardened wrapper. CI asserts UID and writable database volume; fresh and legacy disposable volume checks passed, with the [backup-first legacy ownership procedure](DEPLOYMENT.md#october-security-maintenance-326-sr9466) documented. Live `.66` runs UID/GID 1000, read-only root, all capabilities dropped and no host port. |
 | KUTT-SEC-010 | Moderate east-west architecture risk; no direct public exposure | Residual/blocked | The shared Docker `proxy` network has 36 members, so a compromised sibling can reach `kutt:3000` without BunkerWeb. A direct peer-network request to the unauthenticated management API returned 401, and no host port is published; public WAF still protects external traffic. A dedicated Kutt/BunkerWeb network would reduce lateral reach but needs coordinated changes and validation in the shared edge stack, not a narrow Kutt-only rolling change. Do not describe BunkerWeb as protecting requests originating inside the Docker network. |
@@ -156,6 +156,12 @@ a source patch alone.
   A focused redirect-policy run against this final image passed. Final Grype
   JSON reports zero Critical/High and three Medium matches for one unfixed
   BusyBox advisory (`CVE-2025-60876`), with no fix version reported.
+- A loopback-only probe inside the final image, with Docker networking disabled,
+  passed a crafted URL to `/bin/busybox wget` and captured the request in a
+  local Node socket. It contained a separate `X-Audit-Probe: injected` HTTP
+  header, not percent-encoded control bytes. The private proof is
+  `busybox-wget-probe.json` in the evidence directory. This validates the
+  applet vulnerability but not reachability through Kutt's Node HTTP code.
 - The immediate pre-cutover backup completed as local `ac1e17a5` and NAS
   `7166bf3e`. A first validation attempt exposed a disposable `docker run`
   stdin-plumbing error; the private pre/post scripts were corrected and the
