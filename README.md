@@ -39,6 +39,7 @@ for exact versioned coverage and historical evidence, and the
 - [Community delivery ledger](docs/COMMUNITY-FEATURE-ROADMAP.md): approved additions and current validation status.
 - [UI/UX review](docs/UI-UX-REVIEW.md): fixes, completed human acceptance and the final security remediation gates.
 - [September interface polish](docs/UI-POLISH-2026-09.md): responsive alignment, dark icons, spacing and the `.64` acceptance ledger.
+- [October security audit](docs/SECURITY-AUDIT-2026-10-02.md): live/source findings, remediation, validation and deployment status.
 - [Custom domain ownership](docs/CUSTOM-DOMAINS.md): DNS proof, client compatibility and recovery for new claims.
 - [Upstream PR #1046](https://github.com/thedevs-network/kutt/pull/1046): updated with the tested expanded contribution at `af19f0fc`; upstream review/merge remains pending.
 
@@ -193,14 +194,14 @@ an old full environment table from another Kutt version. Important settings:
 | `OIDC_*`, `DISALLOW_LOGIN_FORM` | Configure native SSO and provider admission first; use `DISALLOW_LOGIN_FORM=true` for SSO-only login |
 | `OIDC_ALLOW_REGISTRATION` | Controls new OIDC identities, not local signup; defaults to `true` |
 | `OIDC_SESSION_MAX_SECONDS` | Absolute OIDC session lifetime; defaults to 3,600 seconds |
-| `TRUST_PROXY` | Examples use `false`; the application's legacy default is `true`. Only trust proxies that are the exclusive backend path and replace untrusted forwarding headers |
+| `TRUST_PROXY` | Defaults to `false`. Enable only for an exclusive trusted proxy path that replaces untrusted forwarding headers; prefer explicit peer addresses over trusting all proxies |
 | `CSP_MODE` | Optional `off` (default), `report-only` or `enforce`; see [nonce policy and customization compatibility](docs/CSP.md) before enabling |
 | `MANAGEMENT_ORIGIN` | Empty by default; [separate management hosting](docs/DOMAIN-SHARING.md) requires matching WAF/TLS/SSO routes and IdP callbacks first |
 | `OIDC_ADMIN_MAPPING_ENABLED`, `OIDC_ADMIN_*` | Off by default; use explicit signed claim/value mapping with a tested protected recovery administrator |
 | `DESTINATION_ALLOWED_HOSTS` | Empty disables policy; an explicit empty JSON array denies all destinations. Review [policy and recovery](docs/DESTINATION-POLICY.md) before enabling |
 | `METRICS_*` | Off by default; enable only a private, bearer-authenticated listener. Do not publish the metrics port |
 | `DB_*`, `REDIS_*` | Must match the selected topology, persistent paths and existing credentials |
-| `ENABLE_RATE_LIMIT` | Optional management API limiting; protected-link password and report throttles remain enabled independently |
+| `ENABLE_RATE_LIMIT` | Defaults to `true` for management API protection. Disable only behind an equivalent tested rate limit; protected-link password and report throttles remain enabled independently |
 | `CUSTOM_DOMAIN_USE_HTTPS` | Controls custom-domain link URLs; it does not provision DNS, TLS certificates or proxy routes |
 | `MAIL_*`, `REPORT_EMAIL`, `CONTACT_EMAIL` | Configure SMTP for verification/recovery/report workflows; mail is disabled by default |
 

@@ -53,6 +53,10 @@ jobs:
         run: |
           sh tests/search-database.sh kutt-smoke mysql2 tests/management-domain-grants.cjs
           sh tests/search-database.sh kutt-smoke pg tests/management-domain-grants.cjs
+      - name: Concurrent admin bootstrap on real MySQL and PostgreSQL
+        run: |
+          sh tests/search-database.sh kutt-smoke mysql2 tests/bootstrap-database.cjs
+          sh tests/search-database.sh kutt-smoke pg tests/bootstrap-database.cjs
       - name: Verified database and Redis TLS
         run: |
           sh tests/transport-tls.sh kutt-smoke pg

@@ -115,9 +115,14 @@ async function main() {
     }
     assert(ready, `Server did not start: ${output}`);
 
-    const account = { email: "smoke@example.com", password: randomBytes(32).toString("hex") };
-    let response = await request("POST", "/api/v2/auth/create-admin", account);
-    assert.equal(response.status, 201, "Admin bootstrap failed");
+    let account = { email: "smoke@example.com", password: randomBytes(32).toString("hex") };
+    const contender = { email: "bootstrap-rival@example.com", password: randomBytes(32).toString("hex") };
+    const bootstrap = await Promise.all([account, contender].map(candidate =>
+      request("POST", "/api/v2/auth/create-admin", candidate)));
+    assert.deepEqual(bootstrap.map(result => result.status).sort(), [201, 400],
+      "Concurrent admin bootstrap must create exactly one administrator");
+    if (bootstrap[1].status === 201) account = contender;
+    let response = bootstrap.find(result => result.status === 201);
     const bootstrapToken = (await response.json()).token;
     assert(bootstrapToken);
     assert.equal((await request("GET", "/api/v2/links", undefined, bootstrapToken)).status, 200, "Bootstrap must issue a usable session");

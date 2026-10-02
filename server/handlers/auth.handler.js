@@ -146,19 +146,20 @@ function completeBrowserLogin(req, res, token) {
 }
 
 async function createAdminUser(req, res) {
-  const isThereAUser = await query.user.findAny();
-  if (isThereAUser) {
-    throw new CustomError(i18n.t("messages.can_not_create_the_admin_user_because_a_user_already_exists"), 400);
-  }
-  
   const salt = await bcrypt.genSalt(12);
   const password = await bcrypt.hash(req.body.password, salt);
 
-  const user = await query.user.add({
-    email: req.body.email, 
-    password, 
-    role: ROLES.ADMIN, 
-    verified: true 
+  const user = await require("../knex").transaction(async db => {
+    await require("../domain-access").lock(db);
+    if (await db("users").select("id").forUpdate().first()) {
+      throw new CustomError(i18n.t("messages.can_not_create_the_admin_user_because_a_user_already_exists"), 400);
+    }
+    return query.user.add({
+      email: req.body.email,
+      password,
+      role: ROLES.ADMIN,
+      verified: true
+    }, undefined, db);
   });
 
   const token = utils.signToken(user);

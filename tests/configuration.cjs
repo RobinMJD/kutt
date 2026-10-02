@@ -19,6 +19,13 @@ module.exports = function({ root, directory, env }) {
     { cwd: directory, env: { ...env, ...extra }, encoding: "utf8", timeout: 10000 });
   assert.equal(runEnv({ JWT_SECRET_FILE: secretFile }).status, 0);
   assert.notEqual(runEnv({ JWT_SECRET_FILE: absent }).status, 0);
+  const defaultsEnv = { ...env };
+  delete defaultsEnv.TRUST_PROXY;
+  delete defaultsEnv.ENABLE_RATE_LIMIT;
+  const defaults = spawnSync(process.execPath, ["-e", `const settings = require(${JSON.stringify(path.join(root, "server/env.js"))}); console.log(JSON.stringify({ proxy: settings.TRUST_PROXY, rateLimit: settings.ENABLE_RATE_LIMIT }));`],
+    { cwd: directory, env: defaultsEnv, encoding: "utf8", timeout: 10000 });
+  assert.equal(defaults.status, 0, defaults.stderr);
+  assert.deepEqual(JSON.parse(defaults.stdout.trim()), { proxy: false, rateLimit: true });
   for (const TRUST_PROXY of ["false", "true", "1", "0", "hops:2", "peers:127.0.0.1,::1/128"]) {
     assert.equal(runEnv({ TRUST_PROXY }).status, 0, TRUST_PROXY);
   }

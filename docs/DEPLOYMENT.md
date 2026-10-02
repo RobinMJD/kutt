@@ -6,6 +6,21 @@ its hardened wrapper, WAF/Authentik routing, monitoring and private backup paths
 in its separate deployment repository. This public repository contains no real
 secrets, provider bindings or user data.
 
+### October security maintenance (3.2.6-sr94.66)
+
+This candidate updates Nodemailer and the transitive `ip-address` package,
+refreshes development-only dependencies, changes the standalone defaults to
+`TRUST_PROXY=false` and `ENABLE_RATE_LIMIT=true`, and serializes first-run
+administrator creation. The homelab explicitly enables trusted-proxy mode only
+behind its BunkerWeb forwarding-header guard and already enables rate limits.
+No migration, credential rotation, Authentik/WAF policy change or public-link
+behavior change is required. An image-only rollback to `.65` preserves data
+but restores the old package versions and first-run race; never replace newer
+live data with a pre-deployment database snapshot. See the
+[security audit ledger](SECURITY-AUDIT-2026-10-02.md) for actual publication,
+deployment, recovery and residual-risk status; this section alone is not a
+claim that the candidate is live.
+
 ### Upstream open-issue fixes (3.2.6-sr94.65)
 
 This release fixes eight applicable reports from the
@@ -397,7 +412,7 @@ port and persistent path to match their topology. Review existing `*_FILE`
 settings, which take precedence over inline values. Set `TRUST_PROXY=true`
 only when the app can be reached exclusively through trusted proxies that
 replace untrusted forwarding headers. Direct local examples default to false;
-the application's legacy default remains true for compatibility.
+the application now defaults to false if the setting is omitted.
 
 Prefer `TRUST_PROXY=peers:172.18.0.2,::1/128` with the actual immediate proxy
 addresses or narrowly scoped networks. Express stops at the first untrusted hop.

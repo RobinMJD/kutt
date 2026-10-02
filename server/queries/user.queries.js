@@ -38,7 +38,7 @@ async function find(match) {
   return user;
 }
 
-async function add(params, user) {
+async function add(params, user, db = knex) {
   const data = {
     email: params.email,
     password: params.password,
@@ -49,12 +49,12 @@ async function add(params, user) {
   };
   
   if (user) {
-    const changed = await knex("users")
+    const changed = await db("users")
       .where({ id: user.id, verified: false, auth_version: user.auth_version }).increment("auth_version", 1)
       .update({ ...data, ...require("../account-tokens"), updated_at: utils.dateToUTC(new Date()) });
     if (!changed) throw new utils.CustomError(i18n.t("messages.account_changed_please_sign_in_or_request_account_recovery"), 409);
   } else {
-    await knex("users").insert(data);
+    await db("users").insert(data);
   }
   
   if (env.REDIS_ENABLED) {
@@ -62,7 +62,7 @@ async function add(params, user) {
   }
   
   // Callers mint sessions immediately; include the persisted ID and auth version.
-  return knex("users").where({ email: data.email }).first();
+  return db("users").where({ email: data.email }).first();
 }
 
 async function update(match, update, methods) {

@@ -45,6 +45,10 @@ jobs:
         run: |
           sh tests/search-database.sh kutt-tested mysql2 tests/management-domain-grants.cjs
           sh tests/search-database.sh kutt-tested pg tests/management-domain-grants.cjs
+      - name: Concurrent admin bootstrap on real MySQL and PostgreSQL
+        run: |
+          sh tests/search-database.sh kutt-tested mysql2 tests/bootstrap-database.cjs
+          sh tests/search-database.sh kutt-tested pg tests/bootstrap-database.cjs
       - name: Alias claims on real MySQL and PostgreSQL
         run: |
           sh tests/dotted-alias-database.sh kutt-tested mysql2
