@@ -54,9 +54,11 @@
   <td class="domains-homepage right-fade">
     <span class="table-field-label" aria-hidden="true">{{t "ui.homepage"}}</span>
     {{#if homepage}}
-      <a href="{{homepage}}" title="{{homepage}}" target="_blank" rel="noopener noreferrer">
-        {{homepage}}
-      </a>
+      {{#if (safeDestinationHref homepage)}}
+        <a href="{{homepage}}" title="{{homepage}}" target="_blank" rel="noopener noreferrer">{{homepage}}</a>
+      {{else}}
+        <span title="{{homepage}}">{{homepage}}</span>
+      {{/if}}
     {{else}}
       {{t "ui.no_homepage"}}
     {{/if}}

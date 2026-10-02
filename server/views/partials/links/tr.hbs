@@ -1,9 +1,11 @@
 <tr id="tr-{{id}}" {{#if swap_oob}}hx-swap-oob="true"{{/if}}>
   <td class="original-url right-fade">
     <span class="table-field-label" aria-hidden="true">{{t "ui.original_url"}}</span>
-    <a href="{{target}}" title="{{target}}" target="_blank" rel="noopener noreferrer">
-      {{target}}
-    </a>
+    {{#if (safeDestinationHref target)}}
+      <a href="{{target}}" title="{{target}}" target="_blank" rel="noopener noreferrer">{{target}}</a>
+    {{else}}
+      <span title="{{target}}">{{target}}</span>
+    {{/if}}
     {{#if description}}
       <p class="description">
         {{description}}

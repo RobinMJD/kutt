@@ -56,10 +56,28 @@ module.exports = async function ({ request, session, database, account, restart,
     db.prepare("UPDATE links SET target=? WHERE uuid=?").run("javascript:alert(1)", unsafeStored.id);
     const refusedStored = await checked(request("GET", "/" + unsafeStored.address), 410);
     assert.equal(refusedStored.headers.get("location"), null);
+    const htmlHeaders = { Accept: "text/html", "HX-Request": "true" };
+    for (const endpoint of ["/api/links", "/api/links/admin"]) {
+      const html = await (await checked(request("GET", endpoint + "?search=" + encodeURIComponent(unsafeStored.address), undefined, session, htmlHeaders))).text();
+      assert(html.includes("javascript:alert(1)"), endpoint);
+      assert(!/<a[^>]*href="javascript:alert\(1\)"/i.test(html), endpoint + " must not link an unsafe stored target");
+    }
+    const safeStored = await create(allowed);
+    for (const endpoint of ["/api/links", "/api/links/admin"]) {
+      const html = await (await checked(request("GET", endpoint + "?search=" + encodeURIComponent(safeStored.address), undefined, session, htmlHeaders))).text();
+      assert(html.includes('href="' + allowed + '"'), endpoint + " must retain safe target links");
+    }
     const old = await create(denied), guarded = await create(denied, { password: "test-password", max_visits: 2 });
     const editable = await create(allowed);
     const customHost = prefix + ".example.invalid";
     const customDomain = Number(db.prepare("INSERT INTO domains(uuid,address,user_id,homepage,banned) VALUES(?,?,?,?,0)").run(randomUUID(), customHost, owner, denied).lastInsertRowid);
+    db.prepare("UPDATE domains SET homepage=? WHERE id=?").run("javascript:alert(1)", customDomain);
+    const domainHtml = await (await checked(request("GET", "/api/domains/admin?search=" + encodeURIComponent(customHost), undefined, session, htmlHeaders))).text();
+    assert(domainHtml.includes("javascript:alert(1)"));
+    assert(!/<a[^>]*href="javascript:alert\(1\)"/i.test(domainHtml), "Admin domain table must not link an unsafe stored homepage");
+    db.prepare("UPDATE domains SET homepage=? WHERE id=?").run(denied, customDomain);
+    const safeDomainHtml = await (await checked(request("GET", "/api/domains/admin?search=" + encodeURIComponent(customHost), undefined, session, htmlHeaders))).text();
+    assert(safeDomainHtml.includes('href="' + denied + '"'), "Admin domain table must retain safe homepage links");
     const transfer = { format: "json", conflict: "abort", content: JSON.stringify({ schema_version: 1, links: [{ address: prefix + "/import", target: denied }] }) };
     const prepared = await json(request("POST", "/api/transfer/preview", transfer, session));
     assert(prepared.valid && prepared.preview_token);

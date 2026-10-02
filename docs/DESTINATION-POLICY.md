@@ -45,7 +45,9 @@ without sending an outbound request.
 
 Existing rows are **not rewritten or deleted**. A stored destination with an
 unsafe scheme returns an uncached 410 without a `Location` header until it is
-repaired. Owners can inspect/export records, repair a destination, or edit
+repaired. Management tables show an unsafe stored target or homepage as text,
+never a clickable external link. Owners can inspect/export records, repair a
+destination, or edit
 unrelated metadata. Policy rejection does not grant
 access to another owner's link or bypass a token's domain restrictions.
 

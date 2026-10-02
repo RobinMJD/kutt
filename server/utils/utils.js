@@ -387,6 +387,7 @@ function getUseragentOS(agent) {
 }
 
 function registerHandlebarsHelpers() {
+  hbs.registerHelper("safeDestinationHref", value => require("../destination-policy").current().allows(value));
   hbs.registerHelper("hasNextPage", function(total, limit, skip) {
     return Number(total) > Number(skip || 0) + Number(limit || 10);
   });
