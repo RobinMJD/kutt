@@ -11,7 +11,13 @@ module.exports = async function ({ request, session, database, account, restart,
   assert.deepEqual(compiled.hosts, ["192.0.2.1", "example.com", "*.trusted.example", "xn--bcher-kva.example", "[2001:db8::1]"]);
   for (const url of ["https://192.0.2.1/a?q=x#f", "http://EXAMPLE.COM.:8080/path", "https://a.b.trusted.example", "https://bücher.example", "http://[2001:db8::1]:8080/"]) assert(compiled.allows(url), url);
   for (const url of ["https://notexample.com", "https://www.example.com", "https://trusted.example", "https://trusted.example.attacker.test", "https://user:pass@example.com", "ftp://example.com", "javascript:alert(1)", "//example.com", "https://example.com\\@evil.test", "https://example.com/\n", null, {}]) assert.equal(compiled.allows(url), false);
-  assert(policy.compile("").allows("mailto:test@example.com"), "Disabled policy preserves legacy destinations");
+  const baseline = policy.compile("");
+  for (const url of ["https://example.com", "http://example.com", "ftp://example.com/file", "//example.com/path", "mailto:test@example.com", "tel:+33123456789", "sms:+33123456789", "geo:48.85,2.35", "magnet:?xt=urn:btih:example"]) {
+    assert(baseline.allows(url), url);
+  }
+  for (const url of ["javascript:alert(1)", "JaVaScRiPt:alert(1)", "data:text/html,hi", "vbscript:msgbox(1)", "file:///etc/passwd", "blob:https://example.com/id", "https:example.com", "https:///example.com", "https://user:pass@example.com", "//user@example.com/path", "https://example.com\\@evil.test", "mailto:", null, {}]) {
+    assert.equal(baseline.allows(url), false, String(url));
+  }
   assert.equal(policy.compile("[]").allows("https://example.com"), false);
   for (const input of [" ", "null", "{}", '"example.com"', '["https://example.com"]', '["example.com:443"]', '["*.com"]', '["*.192.0.2.1"]', '["127.1"]', '["0x7f000001"]', '["999.999.999.999"]', '["bad..example"]', '["example.com/"]', '["user@example.com"]', '["*"]', '[null]', JSON.stringify(Array(101).fill("example.com"))]) {
     assert.throws(() => policy.compile(input), /DESTINATION_ALLOWED_HOSTS/, input);
@@ -43,6 +49,13 @@ module.exports = async function ({ request, session, database, account, restart,
   const startPolicy = async value => { env.DESTINATION_ALLOWED_HOSTS = value; await restart(); };
   try {
     assert.deepEqual(await json(request("GET", "/api/destination-policy", undefined, session)), { enabled: false, hosts: [] });
+    for (const target of ["javascript:alert(1)", "data:text/html,hi", "vbscript:msgbox(1)", "file:///etc/passwd"]) {
+      await checked(request("POST", "/api/links", { target, customurl: prefix + "-unsafe" }, session), 400);
+    }
+    const unsafeStored = await create(allowed);
+    db.prepare("UPDATE links SET target=? WHERE uuid=?").run("javascript:alert(1)", unsafeStored.id);
+    const refusedStored = await checked(request("GET", "/" + unsafeStored.address), 410);
+    assert.equal(refusedStored.headers.get("location"), null);
     const old = await create(denied), guarded = await create(denied, { password: "test-password", max_visits: 2 });
     const editable = await create(allowed);
     const customHost = prefix + ".example.invalid";
@@ -127,7 +140,7 @@ module.exports = async function ({ request, session, database, account, restart,
     assert.equal((await request("GET", "/" + guarded.address, undefined, undefined, { Authorization: "Basic " + Buffer.from("user:test-password").toString("base64") })).headers.get("location"), denied);
     await require("./destination-policy-edit.cjs")({ request, session, database, account, restart, env, root, directory });
     assert.equal(db.pragma("quick_check", { simple: true }), "ok"); assert.deepEqual(db.pragma("foreign_key_check"), []);
-    console.log("PASS: destination allowlist grammar/IDNA/wildcards, fail-closed startup, default compatibility, API/scopes/localized UI, create/edit/import/workspace denial, public/protected/HEAD counters, repair and restart rollback");
+    console.log("PASS: destination allowlist grammar/IDNA/wildcards, mandatory safe schemes, fail-closed startup, API/scopes/localized UI, create/edit/import/workspace denial, public/protected/HEAD counters, repair and restart rollback");
   } finally {
     env.DESTINATION_ALLOWED_HOSTS = "";
     await restart();

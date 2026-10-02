@@ -1,6 +1,20 @@
 const { domainToASCII } = require("node:url");
 const { isIP } = require("node:net");
 
+const externalAppSchemes = new Set(["mailto:", "tel:", "sms:", "geo:", "magnet:"]);
+
+function safeDestination(value) {
+  if (typeof value !== "string" || !value || value.length > 2040 || /[\s\u0000-\u001f\u007f\\]/.test(value)) return false;
+  const protocolRelative = value.startsWith("//");
+  const candidate = protocolRelative ? "https:" + value : value;
+  let url;
+  try { url = new URL(candidate); } catch { return false; }
+  if (url.username || url.password) return false;
+  if (externalAppSchemes.has(url.protocol)) return value.slice(value.indexOf(":") + 1).length > 0;
+  if (!/^(?:https?|ftp):\/\/[^/]/i.test(candidate)) return false;
+  return ["http:", "https:", "ftp:"].includes(url.protocol) && !!url.hostname;
+}
+
 function hostname(value) {
   if (typeof value !== "string" || !value || value.length > 253 || /[\s\u0000-\u001f\u007f/@?#%\\]/.test(value)) return null;
   if (value.startsWith("[")) {
@@ -18,7 +32,7 @@ function hostname(value) {
 }
 
 function compile(raw) {
-  if (raw === "") return Object.freeze({ enabled: false, hosts: Object.freeze([]), allows: () => true });
+  if (raw === "") return Object.freeze({ enabled: false, hosts: Object.freeze([]), allows: safeDestination });
   const invalid = () => { throw new Error("DESTINATION_ALLOWED_HOSTS must be a JSON array of at most 100 exact hosts or *.domain rules."); };
   let entries;
   try { entries = JSON.parse(raw); } catch { invalid(); }
@@ -31,7 +45,7 @@ function compile(raw) {
   });
   const hosts = [...new Set(rules.map(rule => (rule.wildcard ? "*." : "") + rule.host))];
   return Object.freeze({ enabled: true, hosts: Object.freeze(hosts), allows(value) {
-    if (typeof value !== "string" || value.length > 2040 || /[\s\u0000-\u001f\u007f\\]/.test(value)) return false;
+    if (!safeDestination(value)) return false;
     let url;
     try { url = new URL(value); } catch { return false; }
     if (!["http:", "https:"].includes(url.protocol) || url.username || url.password) return false;

@@ -1,7 +1,7 @@
 # Kutt Advanced Security Audit (2 October 2026)
 
 **Status:** In progress
-**Last updated:** 2026-10-02 10:38 CEST
+**Last updated:** 2026-10-02 11:25 CEST
 **Source baseline:** `55d1d1ad0d3789909a8a9c0d8584beddb2503c2c` (`main`, clean before this ledger)
 **Live baseline:** `local/kutt:3.2.6-sr94.65`, image `sha256:2c13ec0b963dade59dec6e8bfaa0f54339d21e4a5c9cb864697e0cc12bab9c09`, healthy, zero restarts at intake
 **Private deployment evidence:** `/srv/homelab/security-reports/` on Debian3
@@ -17,13 +17,13 @@ public redirects, WAF and Authentik protections must remain intact.
 | --- | --- | --- |
 | Scope and baseline | Complete | Confirmed clean Kutt fork, live `.65` health, NAS mount and pre-existing dirty homelab checkout. |
 | Independent deep source audit | Blocked | The plugin refused to start a read-only worker because this parent has no managed filesystem permission profile. No scan artifact or result exists; do not infer clean coverage. |
-| Direct source and dependency review | In progress | Core auth, tokens, redirect, proxy, outbound HTTP, SQL query construction and CSP paths reviewed. Both npm audits report zero known advisories against the candidate lockfile; documentation build passed. A pinned Gitleaks 8.29.1 scan covered 1,001 commits and the current tree, with only test/documentation matches after triage. Continue final route and release diff review. |
+| Direct source and dependency review | In progress | Core auth, tokens, redirect, proxy, outbound HTTP, SQL query construction and CSP paths reviewed. A follow-up route review found unsafe URI schemes accepted when the optional destination host policy is disabled (SEC-011). Both npm audits report zero known advisories against the candidate lockfile; documentation build passed. A pinned Gitleaks 8.29.1 scan covered 1,001 commits and the current tree, with only test/documentation matches after triage. |
 | Live deployment and edge audit | In progress | Container isolation, valid public TLS certificate, management 401/public redirect boundary, private secret directories and Prometheus target/probe health checked. Continue identity-provider and post-cutover negative cases. |
 | Finding validation and prioritization | In progress | Package advisories reproduced against the baseline lockfile; source-level proxy default risk distinguished from live deployment guard. Continue reviewing first-run and remaining authorization paths. |
-| Remediation | In progress | Source fixes committed and pushed as `9a98f52`, followed by non-root source-image hardening in `ae6931e`; live `.65` is unchanged. Exact-commit main-branch CI is running. |
-| Candidate verification | In progress | Both npm audits, documentation build and full isolated original-candidate, hardened-wrapper and non-root source-image regressions passed. Concurrent bootstrap passes on SQLite, MySQL and PostgreSQL. Grype on both hardened wrapper and non-root source image has zero Critical/High and three Medium matches for the same BusyBox advisory. Exact-commit main-branch release CI is running. |
-| Backup and deployment | In progress | Fresh Kutt SQLite online recovery snapshot, local Restic snapshot `0b629a89`, NAS copy `340715fe`, NAS restore (75 files) and candidate-image writable recovery passed. Live service is unchanged; cutover/post-backup remain pending. |
-| Final report and source alignment | Pending | Reconcile commit `ae6931e`, release tag/image, hardened wrapper and live versions after CI; keep unrelated homelab changes untouched. |
+| Remediation | In progress | Source fixes `9a98f52`, non-root hardening `ae6931e`, and backup-first compatibility guidance `fa76441` are pushed. SEC-011 safe-scheme fix and regression are being validated locally; the `fa76441` CI is superseded for release purposes. Live `.65` is unchanged. |
+| Candidate verification | In progress | Both npm audits, documentation build and full isolated original-candidate, hardened-wrapper and non-root source-image regressions passed. Concurrent bootstrap passes on SQLite, MySQL and PostgreSQL. SEC-011 focused tests pass on the rebuilt final source image; the broader scheme-candidate suite and final image scan are still running. Earlier Grype scans found zero Critical/High and three Medium matches for the same BusyBox advisory. Exact-commit CI for the amended source has not yet run. |
+| Backup and deployment | In progress | Kutt SQLite online recovery snapshot, local Restic snapshot `0b629a89`, NAS copy `340715fe`, NAS restore (75 files) and candidate-image writable recovery passed. Guarded fresh-backup, cutover, rollback and post-backup scripts are staged privately and syntax-checked. Live service is unchanged; release publication, immediate pre-cutover backup and cutover remain pending. |
+| Final report and source alignment | Pending | Reconcile release candidate `fa76441`, release tag/image, hardened wrapper and live versions after CI; keep unrelated homelab changes untouched. |
 
 ## Findings
 
@@ -38,6 +38,8 @@ public redirects, WAF and Authentik protections must remain intact.
 | KUTT-SEC-007 | Medium upstream OS advisory; lower application reachability | Residual/blocked | Candidate Grype reports `CVE-2025-60876` against BusyBox, `busybox-binsh` and `ssl_client` (one advisory represented by three package matches). The [upstream report](https://lists.busybox.net/pipermail/busybox/2025-November/091817.html) concerns BusyBox `wget`, which Kutt does not use for outbound HTTP. No fix version is reported for the installed Alpine package. Recheck when Alpine publishes a fixed package; do not replace the tested Node runtime solely to silence an unfixed scanner record. |
 | KUTT-SEC-008 | Low monitoring gap | Remediated and verified | GitHub Dependabot vulnerability alerts were disabled for `RobinMJD/kutt`. Enabled only the read-only alerts, then verified GitHub's check endpoint returned HTTP 204. Secret scanning and push protection were already enabled. Automatic security-update PRs remain disabled so upgrades still require this project's functional and deployment gates. |
 | KUTT-SEC-009 | Moderate container hardening gap outside the homelab wrapper | Fix in progress | The current published source image defaults to root even though the live hardened wrapper already runs as UID 1000. The candidate source Dockerfile now owns only its intended database directory with the Node user and sets `USER node`; both source-image CI workflows assert UID 1000 and write access to that directory. The rebuilt image passed direct UID/write checks, runtime hardening, full application regression and writable restore of the NAS backup. A disposable root-owned legacy volume failed as expected, then passed after a one-time UID 1000 ownership change; the [backup-first upgrade procedure](DEPLOYMENT.md#october-security-maintenance-326-sr9466) documents this compatibility step. Exact-commit release CI, publication and live wrapper reconciliation remain. |
+| KUTT-SEC-010 | Moderate east-west architecture risk; no direct public exposure | Residual/blocked | The shared Docker `proxy` network has 36 members, so a compromised sibling can reach `kutt:3000` without BunkerWeb. A direct peer-network request to the unauthenticated management API returned 401, and no host port is published; public WAF still protects external traffic. A dedicated Kutt/BunkerWeb network would reduce lateral reach but needs coordinated changes and validation in the shared edge stack, not a narrow Kutt-only rolling change. Do not describe BunkerWeb as protecting requests originating inside the Docker network. |
+| KUTT-SEC-011 | Moderate unsafe redirect URI acceptance; browser impact varies by client | Fix in progress | With `DESTINATION_ALLOWED_HOSTS` unset, the create-link validator accepted `javascript:` and `data:` targets; a disposable Express redirect emitted `Location: javascript:alert(1)`. This proves an unsafe response, not script execution in a particular browser. A mandatory safe-scheme baseline now permits web URLs and common external-app schemes but rejects script, data, file, blob, unknown schemes and web URLs with embedded credentials at writes and on existing-link redirects. Focused API/runtime regressions pass on the rebuilt final UID 1000 image; full suite, release CI and live deployment remain. |
 
 Statuses are **Open**, **Fix in progress**, **Fixed and tested**,
 **Deployed and verified**, or **Residual/blocked**. Findings are not closed by
@@ -103,6 +105,29 @@ a source patch alone.
   of only that volume restored node-user write access. The deployment guide
   makes backup, service stop and the exact Compose command explicit. The live
   wrapper's volume is already owned for UID 1000 and is unaffected.
+- A separate fresh named volume inherited UID/GID 1000 ownership. The default
+  source container command started with a read-only root filesystem, dropped
+  capabilities and no network; it applied all 29 SQLite migrations, answered
+  HTTP on loopback and passed SQLite integrity. The disposable container and
+  volume were removed afterward.
+- A final-tree Gitleaks pass had the same four previously triaged fixture/prose
+  matches; the three new security-audit commits had no matches.
+- The separately installed homelab wrapper lockfile has the same production
+  dependencies and overrides as the fork source. A fresh npm audit of that
+  lockfile also returned zero known advisories.
+- Vendored htmx 2.0.1 and Chart.js 4.4.4 are not in npm's lockfile. Their
+  [maintainer](https://github.com/bigskysoftware/htmx/security)
+  [advisory](https://github.com/chartjs/Chart.js/security/advisories) pages
+  currently list none. An [open Chart.js defaults-path gadget report](https://github.com/chartjs/Chart.js/issues/12265)
+  requires untrusted input to reach `Chart.defaults` path APIs; Kutt constructs
+  charts with fixed options and only assigns a validated locale to defaults.
+  This is reachability analysis, not a general claim that vendored scripts are
+  vulnerability-free. Upgrade them separately with the browser regression suite.
+- The create-link validator on the current candidate accepted `javascript:` and
+  `data:` destinations while the optional host allowlist was blank. A disposable
+  Express request confirmed the resulting 302 can carry a `javascript:`
+  `Location`. The new scheme baseline is enforced by the destination-policy
+  check at creation and again at redirect, without changing stored rows.
 - Gitleaks 8.29.1 was checksum-verified against its official release and first
   confirmed to detect a synthetic token. Its redacted scan covered 1,001 Git
   commits (nine matches) and the current tree (four matches). The matches are
@@ -128,6 +153,9 @@ a source patch alone.
   source-only scan does not establish live WAF/SSO/backup health.
 - The live homelab Git checkout had unrelated existing changes at intake; do not
   reset, broadly stage or overwrite them to close this audit.
+- The guarded deployment replaces only the four checksum-verified Kutt wrapper
+  files (`Dockerfile`, `docker-compose.yml`, and the two `security/package*`
+  files). It neither rewrites nor commits the other dirty homelab files.
 - Do not weaken Authentik, WAF, TLS, private backend networking or public-link
   behavior to make a test pass.
 - No credentials or private database contents belong in this ledger.

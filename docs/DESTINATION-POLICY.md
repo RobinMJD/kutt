@@ -12,7 +12,11 @@ separate SSRF restrictions used by background HTTP probes.
 DESTINATION_ALLOWED_HOSTS='["example.com","*.trusted.example","xn--bcher-kva.example"]'
 ```
 
-- Empty/unset: disabled, preserving existing destination behavior.
+- Empty/unset: no host allowlist. A mandatory safe-scheme baseline still allows
+  HTTP, HTTPS, FTP, protocol-relative web URLs, `mailto:`, `tel:`, `sms:`,
+  `geo:` and `magnet:` destinations. Script, data, file, blob and unknown
+  schemes and web URLs with embedded credentials are rejected even without a
+  host allowlist.
 - `[]`: enabled, denying every destination.
 - Exact entries match only that hostname; `example.com` does not include `www`.
 - `*.trusted.example` includes nested subdomains, but not `trusted.example` itself.
@@ -39,8 +43,10 @@ consuming a visit allowance. A rejected existing redirect returns an uncached 41
 without a `Location` header. Health probes report `DESTINATION_POLICY_DENIED`
 without sending an outbound request.
 
-Existing rows are **not rewritten or deleted**. Owners can inspect/export records,
-repair a destination, or edit unrelated metadata. Policy rejection does not grant
+Existing rows are **not rewritten or deleted**. A stored destination with an
+unsafe scheme returns an uncached 410 without a `Location` header until it is
+repaired. Owners can inspect/export records, repair a destination, or edit
+unrelated metadata. Policy rejection does not grant
 access to another owner's link or bypass a token's domain restrictions.
 
 Edit forms may submit an unchanged, now-disallowed stored target while updating
@@ -68,12 +74,14 @@ Spanish using the shared locale catalogs.
    password-protected links, imports, custom-domain roots and shared workspaces.
 4. Apply the environment to all processes, restart, and verify authorized edits,
    anonymous allowed redirects and uncached denied redirects through the real WAF.
-5. To roll back this feature, clear `DESTINATION_ALLOWED_HOSTS` and restart all
-   processes. No database migration or data rollback is required. Do not clear it
-   merely to hide an invalid configuration or a genuine untrusted destination.
+5. To remove the optional host allowlist, clear `DESTINATION_ALLOWED_HOSTS` and
+   restart all processes. The mandatory safe-scheme baseline remains enabled.
+   No database migration or data rollback is required. Do not clear the host
+   policy merely to hide an invalid configuration or an untrusted destination.
 
-The homelab default remains disabled until a host policy has been intentionally
-approved; shipping this feature does not silently block existing public links.
+The homelab has no host allowlist until one has been intentionally approved.
+The mandatory scheme baseline can block legacy links that use unsafe or unknown
+schemes; inventory destinations before upgrading and repair any such links.
 
 ## Tests
 
