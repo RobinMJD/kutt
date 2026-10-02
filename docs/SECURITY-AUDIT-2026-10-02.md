@@ -1,12 +1,14 @@
 # Kutt Advanced Security Audit (2 October 2026)
 
-**Status:** In progress
-**Last updated:** 2026-10-02 11:48 CEST
+**Status:** Complete, with two bounded residual risks
+**Last updated:** 2026-10-02 13:40 CEST
 **Source baseline:** `55d1d1ad0d3789909a8a9c0d8584beddb2503c2c` (`main`, clean before this ledger)
 **Live baseline:** `local/kutt:3.2.6-sr94.65`, image `sha256:2c13ec0b963dade59dec6e8bfaa0f54339d21e4a5c9cb864697e0cc12bab9c09`, healthy, zero restarts at intake
-**Private deployment evidence:** `/srv/homelab/security-reports/` on Debian3
+**Accepted release:** `v3.2.6-sr94.66` at `6e2fc332dcdf33a43fab8e7b0efd216c28c53d13`
+**Live image:** `local/kutt:3.2.6-sr94.66`, `sha256:682dbd1a736398cb95f1b8469ac76c3c908fd258dddba18be4279db8bdce15fa`
+**Private deployment evidence:** `/srv/homelab/security-reports/2026-10-02-kutt-security-audit/` on Debian3
 
-This file tracks the audit as it runs. A finding is not fixed merely because a
+This ledger records the audit from intake to deployed acceptance. A finding is not fixed merely because a
 source patch exists: tests, protected public routes, backup/restore and the
 deployed image must be checked separately. Existing links, users, secrets,
 public redirects, WAF and Authentik protections must remain intact.
@@ -17,36 +19,37 @@ public redirects, WAF and Authentik protections must remain intact.
 | --- | --- | --- |
 | Scope and baseline | Complete | Confirmed clean Kutt fork, live `.65` health, NAS mount and pre-existing dirty homelab checkout. |
 | Independent deep source audit | Blocked | The plugin refused to start a read-only worker because this parent has no managed filesystem permission profile. No scan artifact or result exists; do not infer clean coverage. |
-| Direct source and dependency review | Complete | Core auth, tokens, redirect, proxy, outbound HTTP, SQL query construction, templates and CSP paths reviewed. Follow-up route/template reviews found unsafe URI schemes accepted at writes (SEC-011) and still linked from legacy records in management tables (SEC-012). Both npm audits report zero known advisories against the candidate lockfile; documentation build passed. A pinned Gitleaks 8.29.1 scan covered 1,001 commits and the current tree, with only test/documentation matches after triage. |
-| Live deployment and edge audit | In progress | Container isolation, valid public TLS certificate, management 401/public redirect boundary, private secret directories and Prometheus target/probe health checked. Continue identity-provider and post-cutover negative cases. |
+| Direct source and dependency review | Complete | Core auth, tokens, redirect, proxy, outbound HTTP, SQL query construction, templates and CSP paths reviewed. Follow-up route/template reviews found unsafe URI schemes accepted at writes (SEC-011) and still linked from legacy records in management tables (SEC-012). Both npm audits report zero known advisories against the release lockfile; documentation build passed. A pinned Gitleaks 8.29.1 scan covered 1,001 commits and the current tree, with only test/documentation matches after triage. |
+| Live deployment and edge audit | Complete | Container isolation, valid public TLS certificate, management/API 401, public redirect 302, Authentik authorization-code/PKCE start, private secrets and Prometheus target/probe health checked before/after. No authenticated browser ceremony or dedicated edge-network migration was claimed. |
 | Finding validation and prioritization | Complete | Package advisories and first-run admin race reproduced against the baseline. SEC-012 reproduced as `href="javascript:alert(1)"` in an isolated personal-link HTML response before its fix; the admin templates shared the same pattern. All 12 findings have a remediation or explicit residual-risk decision. |
-| Remediation | In progress | Source fixes through `764c93f` are pushed. The SEC-012 template/helper change passed focused tests. Documentation now describes the mandatory safe-scheme baseline and legacy unsafe-link rendering. Live `.65` is unchanged. |
-| Candidate verification | In progress | Both npm audits, documentation build, full isolated source/wrapper regressions and cross-database bootstrap passed on prior candidates. The latest scheme/template candidate passes focused personal/admin/domain unsafe-and-safe HTML regressions; its full isolated suite is still running. The `18bbbdc` CI was canceled as superseded; final exact-commit CI must follow the documentation correction. Final-image Grype before the template-only change reports zero Critical/High and three Medium BusyBox package matches. |
-| Backup and deployment | In progress | Kutt SQLite online recovery snapshot, local Restic snapshot `0b629a89`, NAS copy `340715fe`, NAS restore (75 files) and candidate-image writable recovery passed. Guarded fresh-backup, cutover, rollback and post-backup scripts are staged privately and syntax-checked. Live service is unchanged; release publication, immediate pre-cutover backup and cutover remain pending. |
-| Final report and source alignment | Pending | Reconcile the final release commit, tag/image, hardened wrapper and live versions after CI; keep unrelated homelab changes untouched. |
+| Remediation | Complete | Ten actionable findings are deployed and verified. Source fixes were committed at `6e2fc33`, published as `.66`, and adopted by the hardened live wrapper. No database row, credential, WAF or SSO policy was replaced. |
+| Candidate verification | Complete | Production/full npm audits report zero advisories; full exact-image and wrapper regressions, cross-database bootstrap, scheme/template tests and docs build passed. Main CI [`36992005037`](https://github.com/RobinMJD/kutt/actions/runs/36992005037) and tag CI [`36996467483`](https://github.com/RobinMJD/kutt/actions/runs/36996467483) passed. Final wrapper Grype reports zero Critical/High and three Medium BusyBox matches. |
+| Backup and deployment | Complete | Immediate pre-cutover local/NAS snapshots `ac1e17a5`/`7166bf3e`, then post-cutover `71f7e075`/`11e3eb80`, each passed NAS restore, byte match and writable database check. Guarded cutover checked original records and image. Public routes, two 35-second monitoring samples and full lab validator passed. Guarded image-only rollback remains available. |
+| Final report and source alignment | Complete | Immutable GHCR source digest `sha256:7949e1d32c178c4d8fbd43f809885f08d263a1387994ac7218314b0f63b20a9e` is pinned in the hardened wrapper. Live runs `.66` with zero restarts; source, release, deployment and recovery docs are reconciled. Unrelated homelab checkout changes remain untouched. |
 
 ## Findings
 
 | ID | Severity | Status | Evidence and remediation |
 | --- | --- | --- | --- |
-| KUTT-SEC-001 | High package advisory; lower current live reachability | Fix in progress | Baseline `nodemailer@9.1.1` is vulnerable. Candidate uses `10.0.13`; candidate production and full npm audits report zero. Live `MAIL_ENABLED=false`; mail composition test and deployment remain. |
-| KUTT-SEC-002 | Moderate package advisories | Fix in progress | Baseline `ip-address@10.3.1` through `geoip-lite` is vulnerable. Candidate override `10.7.1` audits clean; geography and deployment tests remain. |
-| KUTT-SEC-003 | Moderate deployment footgun | Fix in progress | Candidate changes `TRUST_PROXY` default from `true` to `false`; live Compose explicitly enables it behind a BunkerWeb guard that strips external forwarding headers. Config test added. Isolated/full tests and live version reconciliation remain. |
-| KUTT-SEC-004 | Low deployment footgun | Fix in progress | Candidate changes `ENABLE_RATE_LIMIT` default from `false` to `true`; live Compose already explicitly enables it. Config test and example/docs updated. Verify local development and live controls before closure. |
-| KUTT-SEC-005 | Development dependency advisories | Fix in progress | Baseline full audit additionally found five vulnerable development-only packages. `npm audit fix --package-lock-only` updated seven development transitive entries within declared ranges; candidate full audit now reports zero. Documentation build and CI remain to verify. |
-| KUTT-SEC-006 | High on uninitialized deployments | Fixed and tested | Two concurrent `POST /api/v2/auth/create-admin` requests against a fresh isolated database both returned 201 before the fix. Candidate serializes the empty-user check and insert inside one transaction using the existing `domain_access_state` write guard. Concurrent regression passed on SQLite, MySQL and PostgreSQL; exact-image full suite and live deployment remain. The live service has existing users and BunkerWeb blocks public bootstrap, so this is not currently exploitable there. |
+| KUTT-SEC-001 | High package advisory; lower current live reachability | Deployed and verified | Baseline `nodemailer@9.1.1` is vulnerable. `.66` uses `10.0.13`; production/full npm audits are clean, mail composition and exact-image regressions passed. Live `MAIL_ENABLED=false`; image digest reconciled. |
+| KUTT-SEC-002 | Moderate package advisories | Deployed and verified | Baseline `ip-address@10.3.1` through `geoip-lite` is vulnerable. `.66` overrides to `10.7.1`; geography and exact-image regressions passed and npm audits are clean. |
+| KUTT-SEC-003 | Moderate deployment footgun | Deployed and verified | `TRUST_PROXY` now defaults to `false`; live Compose explicitly enables it only behind a verified BunkerWeb guard that strips external forwarding headers. Proxy spoofing/config tests and deployed boundary checks passed. |
+| KUTT-SEC-004 | Low deployment footgun | Deployed and verified | `ENABLE_RATE_LIMIT` now defaults to `true`; live Compose also explicitly enables it. Configuration, proxy and isolated runtime tests passed; no edge rate limit was removed. |
+| KUTT-SEC-005 | Development dependency advisories | Deployed and verified | Seven development transitive entries were refreshed within declared ranges. Full npm audit, documentation build and exact-commit release CI passed with zero known advisories. |
+| KUTT-SEC-006 | High on uninitialized deployments | Deployed and verified | Two concurrent first-admin requests returned `[201, 201]` before the fix. `.66` serializes the empty-user check and insert transactionally using the existing `domain_access_state` write guard; SQLite, MySQL and PostgreSQL regressions now produce one winner. Live has existing users and public bootstrap returns 404 at BunkerWeb. |
 | KUTT-SEC-007 | Medium upstream OS advisory; lower application reachability | Residual/blocked | Candidate Grype reports `CVE-2025-60876` against BusyBox, `busybox-binsh` and `ssl_client` (one advisory represented by three package matches). The [upstream report](https://lists.busybox.net/pipermail/busybox/2025-November/091817.html) concerns BusyBox `wget`, which Kutt does not use for outbound HTTP. No fix version is reported for the installed Alpine package. Recheck when Alpine publishes a fixed package; do not replace the tested Node runtime solely to silence an unfixed scanner record. |
 | KUTT-SEC-008 | Low monitoring gap | Remediated and verified | GitHub Dependabot vulnerability alerts were disabled for `RobinMJD/kutt`. Enabled only the read-only alerts, then verified GitHub's check endpoint returned HTTP 204. Secret scanning and push protection were already enabled. Automatic security-update PRs remain disabled so upgrades still require this project's functional and deployment gates. |
-| KUTT-SEC-009 | Moderate container hardening gap outside the homelab wrapper | Fix in progress | The current published source image defaults to root even though the live hardened wrapper already runs as UID 1000. The candidate source Dockerfile now owns only its intended database directory with the Node user and sets `USER node`; both source-image CI workflows assert UID 1000 and write access to that directory. The rebuilt image passed direct UID/write checks, runtime hardening, full application regression and writable restore of the NAS backup. A disposable root-owned legacy volume failed as expected, then passed after a one-time UID 1000 ownership change; the [backup-first upgrade procedure](DEPLOYMENT.md#october-security-maintenance-326-sr9466) documents this compatibility step. Exact-commit release CI, publication and live wrapper reconciliation remain. |
+| KUTT-SEC-009 | Moderate container hardening gap outside the homelab wrapper | Deployed and verified | The published source image now defaults to UID 1000, matching the live hardened wrapper. CI asserts UID and writable database volume; fresh and legacy disposable volume checks passed, with the [backup-first legacy ownership procedure](DEPLOYMENT.md#october-security-maintenance-326-sr9466) documented. Live `.66` runs UID/GID 1000, read-only root, all capabilities dropped and no host port. |
 | KUTT-SEC-010 | Moderate east-west architecture risk; no direct public exposure | Residual/blocked | The shared Docker `proxy` network has 36 members, so a compromised sibling can reach `kutt:3000` without BunkerWeb. A direct peer-network request to the unauthenticated management API returned 401, and no host port is published; public WAF still protects external traffic. A dedicated Kutt/BunkerWeb network would reduce lateral reach but needs coordinated changes and validation in the shared edge stack, not a narrow Kutt-only rolling change. Do not describe BunkerWeb as protecting requests originating inside the Docker network. |
-| KUTT-SEC-011 | Moderate unsafe redirect URI acceptance; browser impact varies by client | Fix in progress | With `DESTINATION_ALLOWED_HOSTS` unset, the create-link validator accepted `javascript:` and `data:` targets; a disposable Express redirect emitted `Location: javascript:alert(1)`. This proves an unsafe response, not script execution in a particular browser. A mandatory safe-scheme baseline now permits web URLs and common external-app schemes but rejects script, data, file, blob, unknown schemes and web URLs with embedded credentials at writes and on existing-link redirects. Focused API/runtime regressions pass on the rebuilt final UID 1000 image; full suite, release CI and live deployment remain. |
-| KUTT-SEC-012 | Moderate legacy unsafe-target management link | Fix in progress | Existing rows with unsafe target/homepage strings remain stored for operator repair. The personal link table rendered `href="javascript:alert(1)"` in an isolated HTML response before the fix; Handlebars escapes HTML but does not make that URL safe. Admin link/domain templates had the same pattern. Default source CSP is off; client execution depends on browser/CSP behavior. A shared helper now renders only policy-allowed destinations as links. Focused personal/admin/domain HTML tests pass for both unsafe text and safe clickable HTTPS destinations; full release CI and deployment remain. |
+| KUTT-SEC-011 | Moderate unsafe redirect URI acceptance; browser impact varies by client | Deployed and verified | With `DESTINATION_ALLOWED_HOSTS` unset, baseline writes accepted `javascript:`/`data:` and emitted an unsafe `Location`. `.66` enforces a mandatory safe-scheme baseline at writes and redirects, denying script/data/file/blob/unknown schemes and web URLs with credentials. Focused and full exact-image tests passed; the public known-safe link still redirects without auth. No browser script execution was claimed. |
+| KUTT-SEC-012 | Moderate legacy unsafe-target management link | Deployed and verified | Baseline personal table rendered an unsafe `javascript:` href; admin/domain templates shared it. `.66` preserves stored rows for repair but renders only policy-allowed targets as links. Focused personal/admin/domain and full exact-image regressions passed. No unsafe fixture was written to production to test this. |
 
 Statuses are **Open**, **Fix in progress**, **Fixed and tested**,
-**Deployed and verified**, or **Residual/blocked**. Findings are not closed by
+**Deployed and verified**, **Remediated and verified** (external configuration),
+or **Residual/blocked**. Findings are not closed by
 a source patch alone.
 
-## Checks Completed So Far
+## Verification Evidence
 
 - Live image `.65` is healthy with no published host port. The container runs as
   UID/GID 1000 with read-only root, all capabilities dropped,
@@ -100,7 +103,7 @@ a source patch alone.
   writable restore from the NAS recovery database all passed as UID 1000.
   Its full application regression passed. Grype on this non-root image reported
   zero Critical/High and the same three non-fixable BusyBox Medium package
-  matches as the wrapper. Exact-commit GitHub release CI is running.
+  matches as the wrapper. Exact-commit main and tag release CI passed.
 - A disposable root-owned Docker named volume reproduced the expected upgrade
   incompatibility: UID 1000 could not write it. A one-time ownership transfer
   of only that volume restored node-user write access. The deployment guide
@@ -147,6 +150,37 @@ a source patch alone.
 - GitHub vulnerability alerts are enabled with no currently open Dependabot
   alerts. GitHub secret scanning and push protection are enabled, with no open
   secret-scanning alerts; automatic security-update PRs remain disabled.
+- The immutable `.66` source image is pinned in the final hardened wrapper;
+  final wrapper ID is
+  `sha256:682dbd1a736398cb95f1b8469ac76c3c908fd258dddba18be4279db8bdce15fa`.
+  A focused redirect-policy run against this final image passed. Final Grype
+  JSON reports zero Critical/High and three Medium matches for one unfixed
+  BusyBox advisory (`CVE-2025-60876`), with no fix version reported.
+- The immediate pre-cutover backup completed as local `ac1e17a5` and NAS
+  `7166bf3e`. A first validation attempt exposed a disposable `docker run`
+  stdin-plumbing error; the private pre/post scripts were corrected and the
+  entire gate reran successfully. The NAS copy restored with byte-matched
+  database and secrets, original records, integrity and a writable check.
+- The guarded one-container cutover installed only the four recorded wrapper
+  files. Original user/link records and SQLite integrity/foreign keys were
+  unchanged. The `.66` container is healthy with zero restarts, UID/GID 1000,
+  read-only root, all capabilities dropped and no published host port.
+- Post-cutover, `/ggl` returned a public 302 to the original target;
+  `/settings/security` and `/api/v2/links` returned 401 without credentials;
+  `/api/v2/auth/create-admin` returned 404 at the edge; `/login/oidc` started
+  Authentik authorization-code flow with PKCE S256. Login HTML retained strict
+  CSP/HSTS/no-store. These are route/security smoke checks, not a new
+  authenticated-user browser acceptance ceremony.
+- Two post-cutover monitoring samples 35 seconds apart each had three required
+  probes up, zero failed systemd units, zero unhealthy containers, zero Kutt
+  alerts and zero Kutt restarts. `scripts/validate-change.sh --all` passed;
+  it reported only non-failing template warnings in unrelated Mail Bridge and
+  Passkey Readiness Portal stacks.
+- The post-cutover online backup completed as local `71f7e075` and NAS
+  `11e3eb80`; its NAS restore byte-matched the recovery database and private
+  secrets, preserved original records and passed image-based writable recovery.
+  The guarded `rollback66.sh --apply` would restore only the previous wrapper
+  and image, retaining newer live data and secrets if a later regression appears.
 
 ## Boundaries and Known Caveats
 

@@ -8,7 +8,7 @@ secrets, provider bindings or user data.
 
 ### October security maintenance (3.2.6-sr94.66)
 
-This candidate updates Nodemailer and the transitive `ip-address` package,
+This release updates Nodemailer and the transitive `ip-address` package,
 refreshes development-only dependencies, changes the standalone defaults to
 `TRUST_PROXY=false` and `ENABLE_RATE_LIMIT=true`, and serializes first-run
 administrator creation. The homelab explicitly enables trusted-proxy mode only
@@ -37,15 +37,31 @@ The command changes ownership only in the existing Kutt database volume; it
 does not reset, replace or copy database contents. Use the actual service name
 if it differs from the example's `server`. A disposable old-style root-owned
 volume failed the new image's write check, then passed after this exact
-ownership change. The homelab wrapper already ran as UID 1000, so it does not
+ownership change. The homelab wrapper already ran as UID 1000, so it did not
 need the step. No schema migration, credential rotation or Authentik/WAF policy
 change is required. Safe public links remain unauthenticated, but unsafe legacy
 destinations now return 410. An image-only rollback to `.65` preserves data but
 restores the old package versions, first-run race and unsafe-link behavior;
-never replace newer live data with a pre-deployment database snapshot. See the
-[security audit ledger](SECURITY-AUDIT-2026-10-02.md) for actual publication,
-deployment, recovery and residual-risk status; this section alone is not a
-claim that the candidate is live.
+never replace newer live data with a pre-deployment database snapshot.
+
+The accepted source tag is `v3.2.6-sr94.66` at `6e2fc332dcdf33a43fab8e7b0efd216c28c53d13`.
+Its immutable GHCR digest is
+`sha256:7949e1d32c178c4d8fbd43f809885f08d263a1387994ac7218314b0f63b20a9e`;
+the Debian3 hardened wrapper image is
+`sha256:682dbd1a736398cb95f1b8469ac76c3c908fd258dddba18be4279db8bdce15fa`.
+Main/tag CI and the exact wrapper's isolated regression passed. Immediately
+before cutover, local snapshot `ac1e17a5` was copied to NAS snapshot
+`7166bf3e`, restored and passed an image-based writable database check. After
+cutover, local `71f7e075` and NAS `11e3eb80` independently passed the same
+restore check. The original user and link records were unchanged. Public
+redirect, unauthenticated management denial, Authentik authorization-code/PKCE
+start, two monitoring samples, and the lab validator passed. The final wrapper
+scan reports zero Critical/High and three Medium matches for one unfixed
+BusyBox advisory. Private evidence and the guarded image-only rollback script
+(`rollback66.sh --apply`) are under
+`/srv/homelab/security-reports/2026-10-02-kutt-security-audit/` on Debian3.
+The [security audit ledger](SECURITY-AUDIT-2026-10-02.md) records the
+residual risks and limits of these checks.
 
 ### Upstream open-issue fixes (3.2.6-sr94.65)
 

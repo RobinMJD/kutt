@@ -16,9 +16,11 @@ the upstream hosted service.
 
 ## Project status
 
-As of **25 September 2026**, `3.2.6-sr94.65` is published to GHCR and deployed
-on the homelab. Main/tag CI, exact-image regression, public WAF/SSO checks,
-stable health and verified writable local/NAS recovery passed. The
+As of **2 October 2026**, `3.2.6-sr94.66` is published to GHCR and deployed
+on the homelab. Main/tag CI, exact-image regression, public redirect and
+management-boundary checks, stable health and verified writable local/NAS
+recovery passed. The [security audit](docs/SECURITY-AUDIT-2026-10-02.md)
+records the fixes and two bounded residual risks. The preceding `.65`
 [open-issue review](docs/UPSTREAM-OPEN-ISSUES-2026-09-25.md) records eight
 applicable upstream issue fixes and the disposition of all 69 open issues.
 The earlier homelab Actions budget blocker was resolved using its dedicated,
@@ -120,7 +122,7 @@ checked-out source, persists SQLite and custom assets in named volumes, and
 publishes only `127.0.0.1:3000` on the Docker host.
 
 ```sh
-git clone --branch v3.2.6-sr94.65 --depth 1 https://github.com/RobinMJD/kutt.git
+git clone --branch v3.2.6-sr94.66 --depth 1 https://github.com/RobinMJD/kutt.git
 cd kutt
 cp .example.env .env
 chmod 600 .env
@@ -157,8 +159,8 @@ whose data you intend to keep.
 ### Published images and alternative examples
 
 The accepted fork release image is
-`ghcr.io/robinmjd/kutt:v3.2.6-sr94.65` (digest
-`sha256:054a624d1ad162f3551d9c8f2b5015f8489e7354820c812bf9c24ce8360444d5`).
+`ghcr.io/robinmjd/kutt:v3.2.6-sr94.66` (digest
+`sha256:7949e1d32c178c4d8fbd43f809885f08d263a1387994ac7218314b0f63b20a9e`).
 For an image-based deployment, replace
 the Compose service's `build` section with an `image` reference, retaining its
 environment and persistent volumes. Pin the tested image digest in production.
