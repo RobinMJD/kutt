@@ -25,6 +25,15 @@ old race and verifies one winner on SQLite, MySQL and PostgreSQL. Existing users
 and data do not migrate. The current homelab was not exposed to this first-run
 race: it has an existing account and BunkerWeb denies public bootstrap routes.
 
+The optional destination host allowlist no longer disables scheme safety when
+unset. New links reject script, data, file, blob and unknown schemes and web
+URLs with embedded credentials. Existing unsafe rows are retained but cannot
+redirect; authorized users can repair them. Management tables render their
+unsafe targets and homepages as text rather than clickable links. Safe short-link
+redirects remain public; this is a targeted behavior change for unsafe targets.
+The [destination policy](DESTINATION-POLICY.md) documents supported schemes,
+legacy recovery and the optional host allowlist.
+
 Both candidate npm audits are clean. The source and wrapper image scans have
 zero Critical/High matches but retain three Medium package matches for the one
 unfixed BusyBox `wget` advisory, `CVE-2025-60876`; Kutt does not use that applet

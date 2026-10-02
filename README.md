@@ -97,7 +97,7 @@ visit statistics, local accounts and administrator tools. It adds:
 | Forwarding | [Multi-segment aliases and allowlisted query/path forwarding](docs/FORWARDING.md) |
 | Campaigns | [UTM campaign builder](docs/CAMPAIGNS.md) in personal, admin and workspace editors, with API support |
 | Analytics | [Date ranges, exports, tag summaries, bot filtering and interactive country maps](docs/ANALYTICS.md), keyboard controls and a text alternative |
-| Destination policy | [Optional allowed-host policy](docs/DESTINATION-POLICY.md), consistently enforced across writes, imports, redirects and monitoring |
+| Destination policy | [Mandatory safe-scheme baseline and optional allowed-host policy](docs/DESTINATION-POLICY.md), enforced across writes, imports, redirects, management links and monitoring |
 | Browser protection | [Staged and enforced Content Security Policy](docs/CSP.md), fresh nonces and compatible native/HTMX workflows |
 | Transport and performance | [Verified database/Redis TLS](docs/TRANSPORT-TLS.md), [safe sorting](docs/LIST-SORTING.md) and [profile-led SQLite indexing](docs/VISIT-PERFORMANCE.md) |
 | Privacy | [Per-link tracking opt-outs and administrator-controlled retention](docs/PRIVACY.md) |
@@ -198,7 +198,7 @@ an old full environment table from another Kutt version. Important settings:
 | `CSP_MODE` | Optional `off` (default), `report-only` or `enforce`; see [nonce policy and customization compatibility](docs/CSP.md) before enabling |
 | `MANAGEMENT_ORIGIN` | Empty by default; [separate management hosting](docs/DOMAIN-SHARING.md) requires matching WAF/TLS/SSO routes and IdP callbacks first |
 | `OIDC_ADMIN_MAPPING_ENABLED`, `OIDC_ADMIN_*` | Off by default; use explicit signed claim/value mapping with a tested protected recovery administrator |
-| `DESTINATION_ALLOWED_HOSTS` | Empty disables policy; an explicit empty JSON array denies all destinations. Review [policy and recovery](docs/DESTINATION-POLICY.md) before enabling |
+| `DESTINATION_ALLOWED_HOSTS` | Empty disables the optional host allowlist, not the mandatory safe-scheme check; an explicit empty JSON array denies all destinations. Review [policy and recovery](docs/DESTINATION-POLICY.md) before enabling |
 | `METRICS_*` | Off by default; enable only a private, bearer-authenticated listener. Do not publish the metrics port |
 | `DB_*`, `REDIS_*` | Must match the selected topology, persistent paths and existing credentials |
 | `ENABLE_RATE_LIMIT` | Defaults to `true` for management API protection. Disable only behind an equivalent tested rate limit; protected-link password and report throttles remain enabled independently |

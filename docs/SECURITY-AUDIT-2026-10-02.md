@@ -1,7 +1,7 @@
 # Kutt Advanced Security Audit (2 October 2026)
 
 **Status:** In progress
-**Last updated:** 2026-10-02 11:43 CEST
+**Last updated:** 2026-10-02 11:48 CEST
 **Source baseline:** `55d1d1ad0d3789909a8a9c0d8584beddb2503c2c` (`main`, clean before this ledger)
 **Live baseline:** `local/kutt:3.2.6-sr94.65`, image `sha256:2c13ec0b963dade59dec6e8bfaa0f54339d21e4a5c9cb864697e0cc12bab9c09`, healthy, zero restarts at intake
 **Private deployment evidence:** `/srv/homelab/security-reports/` on Debian3
@@ -20,10 +20,10 @@ public redirects, WAF and Authentik protections must remain intact.
 | Direct source and dependency review | Complete | Core auth, tokens, redirect, proxy, outbound HTTP, SQL query construction, templates and CSP paths reviewed. Follow-up route/template reviews found unsafe URI schemes accepted at writes (SEC-011) and still linked from legacy records in management tables (SEC-012). Both npm audits report zero known advisories against the candidate lockfile; documentation build passed. A pinned Gitleaks 8.29.1 scan covered 1,001 commits and the current tree, with only test/documentation matches after triage. |
 | Live deployment and edge audit | In progress | Container isolation, valid public TLS certificate, management 401/public redirect boundary, private secret directories and Prometheus target/probe health checked. Continue identity-provider and post-cutover negative cases. |
 | Finding validation and prioritization | Complete | Package advisories and first-run admin race reproduced against the baseline. SEC-012 reproduced as `href="javascript:alert(1)"` in an isolated personal-link HTML response before its fix; the admin templates shared the same pattern. All 12 findings have a remediation or explicit residual-risk decision. |
-| Remediation | In progress | Source fixes through `18bbbdc` are pushed. The SEC-012 template/helper change has passed focused tests and is being prepared for the amended release CI. Live `.65` is unchanged. |
-| Candidate verification | In progress | Both npm audits, documentation build, full isolated source/wrapper regressions and cross-database bootstrap passed. The latest scheme/template candidate passes focused personal/admin/domain unsafe-and-safe HTML regressions; its full isolated suite is still running. The `18bbbdc` CI was canceled as superseded. Final-image Grype before the template-only change reports zero Critical/High and three Medium BusyBox package matches. |
+| Remediation | In progress | Source fixes through `764c93f` are pushed. The SEC-012 template/helper change passed focused tests. Documentation now describes the mandatory safe-scheme baseline and legacy unsafe-link rendering. Live `.65` is unchanged. |
+| Candidate verification | In progress | Both npm audits, documentation build, full isolated source/wrapper regressions and cross-database bootstrap passed on prior candidates. The latest scheme/template candidate passes focused personal/admin/domain unsafe-and-safe HTML regressions; its full isolated suite is still running. The `18bbbdc` CI was canceled as superseded; final exact-commit CI must follow the documentation correction. Final-image Grype before the template-only change reports zero Critical/High and three Medium BusyBox package matches. |
 | Backup and deployment | In progress | Kutt SQLite online recovery snapshot, local Restic snapshot `0b629a89`, NAS copy `340715fe`, NAS restore (75 files) and candidate-image writable recovery passed. Guarded fresh-backup, cutover, rollback and post-backup scripts are staged privately and syntax-checked. Live service is unchanged; release publication, immediate pre-cutover backup and cutover remain pending. |
-| Final report and source alignment | Pending | Reconcile release candidate `18bbbdc`, release tag/image, hardened wrapper and live versions after CI; keep unrelated homelab changes untouched. |
+| Final report and source alignment | Pending | Reconcile the final release commit, tag/image, hardened wrapper and live versions after CI; keep unrelated homelab changes untouched. |
 
 ## Findings
 

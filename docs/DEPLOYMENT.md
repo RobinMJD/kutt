@@ -13,6 +13,12 @@ refreshes development-only dependencies, changes the standalone defaults to
 `TRUST_PROXY=false` and `ENABLE_RATE_LIMIT=true`, and serializes first-run
 administrator creation. The homelab explicitly enables trusted-proxy mode only
 behind its BunkerWeb forwarding-header guard and already enables rate limits.
+The mandatory destination baseline rejects script, data, file, blob and unknown
+URI schemes and web URLs with embedded credentials even without an optional
+host allowlist. Stored legacy values are preserved for repair but redirect to
+an uncached 410 and appear as plain text rather than clickable management links.
+Inventory any intentional custom-scheme links before upgrading; normal web and
+supported external-app destinations remain available.
 The source image now runs as UID/GID 1000 instead of root. A fresh named SQLite
 volume inherits the writable directory from the image. An existing volume
 created by a root-running image may be root-owned and block startup. Before
@@ -32,11 +38,11 @@ does not reset, replace or copy database contents. Use the actual service name
 if it differs from the example's `server`. A disposable old-style root-owned
 volume failed the new image's write check, then passed after this exact
 ownership change. The homelab wrapper already ran as UID 1000, so it does not
-need the step. No schema migration, credential rotation, Authentik/WAF policy
-change or public-link behavior change is required. An image-only rollback to
-`.65` preserves data but restores the old package versions and first-run race;
-never replace newer
-live data with a pre-deployment database snapshot. See the
+need the step. No schema migration, credential rotation or Authentik/WAF policy
+change is required. Safe public links remain unauthenticated, but unsafe legacy
+destinations now return 410. An image-only rollback to `.65` preserves data but
+restores the old package versions, first-run race and unsafe-link behavior;
+never replace newer live data with a pre-deployment database snapshot. See the
 [security audit ledger](SECURITY-AUDIT-2026-10-02.md) for actual publication,
 deployment, recovery and residual-risk status; this section alone is not a
 claim that the candidate is live.
