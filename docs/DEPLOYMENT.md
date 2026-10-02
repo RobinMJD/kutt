@@ -13,9 +13,29 @@ refreshes development-only dependencies, changes the standalone defaults to
 `TRUST_PROXY=false` and `ENABLE_RATE_LIMIT=true`, and serializes first-run
 administrator creation. The homelab explicitly enables trusted-proxy mode only
 behind its BunkerWeb forwarding-header guard and already enables rate limits.
-No migration, credential rotation, Authentik/WAF policy change or public-link
-behavior change is required. An image-only rollback to `.65` preserves data
-but restores the old package versions and first-run race; never replace newer
+The source image now runs as UID/GID 1000 instead of root. A fresh named SQLite
+volume inherits the writable directory from the image. An existing volume
+created by a root-running image may be root-owned and block startup. Before
+upgrading such an installation, take and verify a recoverable backup, stop the
+server, then run the following one-time command from its Compose directory
+using the newly built/pulled image:
+
+```sh
+docker compose stop server
+docker compose run --rm --no-deps --user 0:0 --entrypoint sh server -ec 'chown -R 1000:1000 /var/lib/kutt'
+docker compose up -d --no-deps server
+docker compose ps server
+```
+
+The command changes ownership only in the existing Kutt database volume; it
+does not reset, replace or copy database contents. Use the actual service name
+if it differs from the example's `server`. A disposable old-style root-owned
+volume failed the new image's write check, then passed after this exact
+ownership change. The homelab wrapper already ran as UID 1000, so it does not
+need the step. No schema migration, credential rotation, Authentik/WAF policy
+change or public-link behavior change is required. An image-only rollback to
+`.65` preserves data but restores the old package versions and first-run race;
+never replace newer
 live data with a pre-deployment database snapshot. See the
 [security audit ledger](SECURITY-AUDIT-2026-10-02.md) for actual publication,
 deployment, recovery and residual-risk status; this section alone is not a

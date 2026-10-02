@@ -13,6 +13,10 @@ The homelab continues to set both proxy/rate settings explicitly:
 `TRUST_PROXY=true` is safe there only while BunkerWeb strips incoming forwarding
 headers and sends its own validated client address. Other deployments must not
 enable proxy trust without an equivalent trusted edge.
+Existing root-owned SQLite volumes require the documented one-time ownership
+change before running the non-root image. The upgrade procedure is in
+[deployment guidance](DEPLOYMENT.md#october-security-maintenance-326-sr9466);
+the homelab wrapper already uses UID 1000 and does not require it.
 
 The first-account endpoint previously allowed two concurrent requests to create
 administrators on an empty database. It now serializes the user check and insert
