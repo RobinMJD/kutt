@@ -6,7 +6,7 @@ its hardened wrapper, WAF/Authentik routing, monitoring and private backup paths
 in its separate deployment repository. This public repository contains no real
 secrets, provider bindings or user data.
 
-### Statistics reset and security patches (3.2.6-sr94.67.1)
+### Statistics reset and security patches (3.2.6-sr94.67.2)
 
 [Reset statistics](STATISTICS-RESET.md) clears only the selected owner's visit
 aggregates and displayed count after explicit confirmation. Existing tracking
@@ -19,7 +19,7 @@ reuse the old wrapper dependencies underneath the new source image.
 Release, backup/restore and deployment acceptance remain pending. Follow the
 gates below; keep WAF/SSO and public redirect controls unchanged.
 The unpublished `.67` candidate stopped at a Redis/TLS test-observer race;
-`.67.1` registers completion events before enqueueing the disposable stale job.
+`.67.2` registers completion events before enqueueing the disposable stale job.
 Production queue and TLS settings are unchanged; the failed tag is not moved.
 
 ### October security maintenance (3.2.6-sr94.66)

@@ -4,6 +4,7 @@
   "stats_reset.confirm": "¿Borrar permanentemente todas las estadísticas de este enlace y empezar a contar desde cero? Esta acción es irreversible. El enlace, su destino, caducidad, contraseña y límite de redirecciones no cambiarán.",
   "stats_reset.pending": "Restableciendo estadísticas...",
   "stats_reset.success": "Estadísticas restablecidas. Las nuevas visitas se contarán desde cero.",
+  "stats_reset.refresh_failed": "El restablecimiento se guardó, pero las estadísticas no se pudieron actualizar.",
   "stats_reset.check": "Recarga las estadísticas para comprobar el estado guardado antes de volver a intentarlo.",
   "stats_reset.invalid": "Confirma el restablecimiento e indica la revisión actual de las estadísticas.",
   "stats_reset.conflict": "Las estadísticas o el seguimiento han cambiado en otra sesión. Recarga antes de restablecer.",

@@ -4,6 +4,7 @@
   "stats_reset.confirm": "Effacer définitivement toutes les statistiques de ce lien et reprendre le comptage à zéro ? Cette action est irréversible. Le lien, sa destination, son expiration, son mot de passe et sa limite de redirections resteront inchangés.",
   "stats_reset.pending": "Réinitialisation des statistiques...",
   "stats_reset.success": "Statistiques réinitialisées. Les nouvelles visites seront comptées à partir de zéro.",
+  "stats_reset.refresh_failed": "La réinitialisation a été enregistrée, mais les statistiques n'ont pas pu être actualisées.",
   "stats_reset.check": "Rechargez les statistiques pour vérifier l'état enregistré avant de réessayer.",
   "stats_reset.invalid": "Confirmez la réinitialisation et indiquez la révision actuelle des statistiques.",
   "stats_reset.conflict": "Les statistiques ou le suivi ont changé ailleurs. Rechargez avant de réinitialiser.",

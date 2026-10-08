@@ -5,6 +5,9 @@ permanent deletion to discard test traffic before sharing the link. Cancel
 makes no request. The page refreshes its total and charts after success; new
 tracked visits start at zero. Labels and messages are available in English,
 French and Spanish.
+If the write succeeds but the statistics panel cannot refresh, the page says
+that the reset was saved and asks for a reload. It never claims stale charts
+are fresh, nor automatically repeats the destructive request.
 
 ## Boundaries
 
@@ -69,7 +72,7 @@ do not deploy while the origin is unreachable.
 
 ## Verification Status
 
-Target release: `3.2.6-sr94.67.1`. Focused API, Redis/Bull cache/queue fencing,
+Target release: `3.2.6-sr94.67.2`. Focused API, Redis/Bull cache/queue fencing,
 and English/French/Spanish browser tests pass. Full regression, publication,
 CI, backup/restore and live acceptance remain pending. During validation on
 2026-10-09, an independent origin/network interruption produced Cloudflare 522
@@ -80,6 +83,9 @@ The `.67` candidate was not published or deployed: its Redis-over-TLS test
 observer missed a completed job already removed by the worker. The `.67.1`
 fixture subscribes before enqueueing and retains bounded completion and TLS
 checks. No production TLS or queue behavior was relaxed.
+The `.67.1` workflows were then canceled before publication after identifying
+HTMX's resolved HTTP-error response behavior. The `.67.2` candidate verifies
+the rendered revision and covers a saved reset followed by a failed refresh.
 
 The release also pins compatible security patches `handlebars@4.7.10` and
 `proxy-addr@2.0.8`, following newly published upstream advisories:
@@ -95,5 +101,5 @@ explicit confirmation, transaction rollback, delayed jobs, stale/concurrent
 resets, opt-out, quotas, other-link preservation and restart. Rendered tests
 use `sh tests/browser-csp.sh IMAGE stats-reset` with `KUTT_TEST_LOCALE=en|fr|es`
 on a fresh disposable loopback fixture, never production. They cover cancel,
-conflict recovery, keyboard confirmation, new visits and charts at
+conflict recovery, saved-write/failed-refresh recovery, keyboard confirmation, new visits and charts at
 1440/390/320px in light/dark mode under enforced CSP.

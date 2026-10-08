@@ -4,6 +4,7 @@
   "stats_reset.confirm": "Permanently erase all statistics for this link and start counting from zero? This cannot be undone. The link, destination, expiry, password and redirect limit will stay unchanged.",
   "stats_reset.pending": "Resetting statistics...",
   "stats_reset.success": "Statistics reset. New visits will be counted from zero.",
+  "stats_reset.refresh_failed": "The reset was saved, but the statistics could not refresh.",
   "stats_reset.check": "Reload statistics to check the saved state before trying again.",
   "stats_reset.invalid": "Confirm the reset and provide the current statistics revision.",
   "stats_reset.conflict": "Statistics or tracking changed elsewhere. Reload before resetting.",

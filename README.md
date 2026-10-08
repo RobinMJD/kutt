@@ -16,7 +16,7 @@ the upstream hosted service.
 
 ## Project status
 
-The next release, `.67.1`, adds owner-confirmed [per-link statistics reset](docs/STATISTICS-RESET.md)
+The next release, `.67.2`, adds owner-confirmed [per-link statistics reset](docs/STATISTICS-RESET.md)
 with API support and queue/cache fencing, plus compatible template/proxy security
 patches. Implementation and focused tests pass; publication and live acceptance
 remain pending. The last accepted deployment is recorded below.

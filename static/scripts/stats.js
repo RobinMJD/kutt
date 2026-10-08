@@ -16,7 +16,17 @@
         body: JSON.stringify({ confirm: true, revision })
       });
       await window.KuttResponses.read(response, value => value?.id === id && value.visit_count === 0 && value.reset_revision === revision + 1);
-      await htmx.ajax("GET", "/api/links/" + encodeURIComponent(id) + "/stats", { target: "#stats-section", swap: "innerHTML" });
+      try {
+        await htmx.ajax("GET", "/api/links/" + encodeURIComponent(id) + "/stats", { target: "#stats-section", swap: "innerHTML" });
+        // HTMX resolves HTTP errors too; require the acknowledged generation to be rendered.
+        const refreshed = document.querySelector("#stats-section [data-stats-reset]");
+        const renderedRevision = Number(refreshed?.dataset.resetRevision);
+        if (refreshed?.dataset.statsReset !== id || !Number.isSafeInteger(renderedRevision) || renderedRevision < revision + 1) {
+          throw new Error("Statistics panel was not refreshed");
+        }
+      } catch {
+        throw new Error(window.KuttI18n.t("stats_reset.refresh_failed"));
+      }
       status.textContent = window.KuttI18n.t("stats_reset.success");
     } catch (error) {
       status.classList.add("error");
