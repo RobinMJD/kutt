@@ -74,7 +74,11 @@ async function add(params) {
 async function find(match, total) {
   // Once retention has been configured, never read/write legacy cache entries:
   // a concurrent purge must not leave deleted aggregates visible via Redis.
-  const cacheable = match.link_id && env.REDIS_ENABLED && (await require("../analytics-privacy").retention()).revision === 0;
+  // After a tracking change/reset, never consume or repopulate the legacy key.
+  // A pre-reset reader may finish late and otherwise resurrect deleted charts.
+  const cacheable = match.link_id && env.REDIS_ENABLED &&
+    (await require("../analytics-privacy").tracking(match.link_id)).revision === 0 &&
+    (await require("../analytics-privacy").retention()).revision === 0;
   if (cacheable) {
     const key = redis.key.stats(match.link_id);
     const cached = await redis.client.get(key);

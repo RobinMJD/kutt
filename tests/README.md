@@ -1,5 +1,11 @@
 # Container smoke test
 
+Per-link analytics reset runs in the full suite or with
+`KUTT_TEST_ONLY=stats-reset`. Rendered confirmation/cancel, stale-error recovery,
+keyboard operation and refreshed charts run with `sh tests/browser-csp.sh IMAGE
+stats-reset`, in EN/FR/ES and light/dark 1440/390/320px. All fixtures are disposable
+and loopback-only. See [statistics reset](../docs/STATISTICS-RESET.md).
+
 Management-host isolation and explicit per-user domain grants run in the full
 suite and with `KUTT_TEST_ONLY=management-domain-grants`. The fresh fixture checks
 raw/forged/encoded Host routing, exact Origin checks, host-only cookies, canonical

@@ -7,6 +7,14 @@ separate. Subsequent enhancements are tracked in [the community review](UPSTREAM
 
 ## Release gates
 
+### Per-link statistics reset (.67)
+
+In progress: owner-only confirmed UI/API reset, English/French/Spanish copy,
+audit, cache/queued-visit fencing and preserved redirect quotas. No schema or
+WAF/SSO change. Focused authorization, rollback, Redis and responsive browser
+tests pass. Publication, exact-release CI, recoverable backup, deployment and
+live acceptance are required before completion. See [the reset ledger](STATISTICS-RESET.md).
+
 ### Management interface polish (.64)
 
 Accepted on 2026-09-23. Source implementation and the [12-finding UI review](UI-POLISH-2026-09.md)

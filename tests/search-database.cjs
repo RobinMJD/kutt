@@ -41,4 +41,5 @@ const db = require("../server/knex");
   await require("./list-sort-database.cjs")(db);
   await require("./moderation-database.cjs")(db);
   await require("./visit-hour-index.cjs")(db);
+  await require("./stats-reset-database.cjs")(db);
 })().catch(error => { console.error(error.stack); process.exitCode = 1; }).finally(() => db.destroy());

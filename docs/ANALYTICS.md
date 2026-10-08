@@ -233,3 +233,8 @@ restart and index migration. `tests/browser-analytics.cjs` uses only a fresh
 loopback fixture and checks desktop/mobile filters, charts, tables, downloads,
 empty/error/retry states and browser runtime/layout errors. Each future change
 still requires publication, backup restore and live WAF/SSO acceptance.
+# Per-Link Reset
+
+Discard test traffic using **Reset statistics** on the link's Statistics page.
+See [reset boundaries, API and recovery](STATISTICS-RESET.md). Reset deletes
+analytics only; it never resets redirect quotas or changes link settings.

@@ -6,6 +6,19 @@ its hardened wrapper, WAF/Authentik routing, monitoring and private backup paths
 in its separate deployment repository. This public repository contains no real
 secrets, provider bindings or user data.
 
+### Statistics reset and security patches (3.2.6-sr94.67)
+
+[Reset statistics](STATISTICS-RESET.md) clears only the selected owner's visit
+aggregates and displayed count after explicit confirmation. Existing tracking
+revisions fence delayed jobs. Redirect quotas, link settings and identities are
+unchanged. There is no new migration; image rollback retains data but does not
+undo a reset. Newly patched Handlebars/proxy-addr versions must also be applied
+in any deployment wrapper that maintains its own dependency lockfile. Do not
+reuse the old wrapper dependencies underneath the new source image.
+
+Release, backup/restore and deployment acceptance remain pending. Follow the
+gates below; keep WAF/SSO and public redirect controls unchanged.
+
 ### October security maintenance (3.2.6-sr94.66)
 
 This release updates Nodemailer and the transitive `ip-address` package,

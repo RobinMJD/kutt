@@ -32,6 +32,23 @@ module.exports = {
     }
   ],
   paths: {
+    "/links/{id}/stats/reset": {
+      post: {
+        tags: ["links"], summary: "Permanently reset one owned link's statistics",
+        description: "Owner only, including administrator sessions. Named tokens need stats:reset and an allowed domain. Foreign Origin/cross-site requests are denied. Read reset_revision from GET /links/{id}/stats (stats:read for named tokens). Atomically deletes detailed visit buckets and zeros visit_count; preserves redirect_count, redirect limits, availability, tracking opt-out and every link setting. Invalidates queued pre-reset analytics and writes a statistics_reset audit entry. No automatic retries: reload after ambiguous failures. Available under /api and /api/v2.",
+        security: [{ SessionAuth: [] }, { APIKeyAuth: [] }],
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "string", format: "uuid" } }],
+        requestBody: { required: true, content: { "application/json": { schema: {
+          type: "object", additionalProperties: false, required: ["confirm", "revision"], properties: {
+            confirm: { type: "boolean", enum: [true] }, revision: { type: "integer", minimum: 0 }
+          }
+        } } } },
+        responses: { "200": { description: "id, visit_count (0), reset_revision (previous revision + 1)" },
+          "400": { description: "Confirmation/current revision required" }, "401": { description: "Authentication required" },
+          "403": { description: "Origin, scope or current domain entitlement denied" }, "404": { description: "Not owned or unavailable" },
+          "409": { description: "Stale revision; reload before resetting" }, "410": { description: "Restore link/domain first" }, "429": { description: "Rate limited" } }
+      }
+    },
     "/domains/available": {
       get: {
         tags: ["domains"], summary: "List currently available owned or explicitly granted short domains",

@@ -16,6 +16,11 @@ the upstream hosted service.
 
 ## Project status
 
+The next release, `.67`, adds owner-confirmed [per-link statistics reset](docs/STATISTICS-RESET.md)
+with API support and queue/cache fencing, plus compatible template/proxy security
+patches. Implementation and focused tests pass; publication and live acceptance
+remain pending. The last accepted deployment is recorded below.
+
 As of **2 October 2026**, `3.2.6-sr94.66` is published to GHCR and deployed
 on the homelab. Main/tag CI, exact-image regression, public redirect and
 management-boundary checks, stable health and verified writable local/NAS
@@ -30,7 +35,7 @@ passed; no paid fallback or relaxed checks were used.
 
 The source includes all 16 original roadmap features and all 21 community
 features, all complete. English (default), French and Spanish use
-[separate catalogs](docs/LOCALIZATION.md) with 1,530 stable keys each. See the
+[separate catalogs](docs/LOCALIZATION.md) with matching stable keys. See the
 [delivery ledger](docs/COMMUNITY-FEATURE-ROADMAP.md#release-58-accepted-community-closure)
 for exact versioned coverage and historical evidence, and the
 [regression guide](tests/README.md) for reproducible checks.
@@ -98,7 +103,7 @@ visit statistics, local accounts and administrator tools. It adds:
 | Routing | [Ordered device, language, country and query rules](docs/ROUTING.md), with a redirect preview |
 | Forwarding | [Multi-segment aliases and allowlisted query/path forwarding](docs/FORWARDING.md) |
 | Campaigns | [UTM campaign builder](docs/CAMPAIGNS.md) in personal, admin and workspace editors, with API support |
-| Analytics | [Date ranges, exports, tag summaries, bot filtering and interactive country maps](docs/ANALYTICS.md), keyboard controls and a text alternative |
+| Analytics | [Date ranges, exports, tag summaries, bot filtering and interactive country maps](docs/ANALYTICS.md), keyboard controls, a text alternative and [owner-confirmed statistics reset](docs/STATISTICS-RESET.md) |
 | Destination policy | [Mandatory safe-scheme baseline and optional allowed-host policy](docs/DESTINATION-POLICY.md), enforced across writes, imports, redirects, management links and monitoring |
 | Browser protection | [Staged and enforced Content Security Policy](docs/CSP.md), fresh nonces and compatible native/HTMX workflows |
 | Transport and performance | [Verified database/Redis TLS](docs/TRANSPORT-TLS.md), [safe sorting](docs/LIST-SORTING.md) and [profile-led SQLite indexing](docs/VISIT-PERFORMANCE.md) |

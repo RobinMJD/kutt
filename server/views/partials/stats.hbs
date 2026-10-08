@@ -17,6 +17,11 @@
     </h2>
     <p>{{link.target}}</p>
     <a href="/settings/analytics?link={{link.id}}">{{t "ui.date_range_and_exports"}}</a>
+    {{#if can_reset_stats}}
+      <button type="button" class="danger" data-stats-reset="{{link.id}}" data-reset-revision="{{reset_revision}}">
+        {{> icons/reload}} {{t "stats_reset.button"}}
+      </button>
+    {{/if}}
   </div>
   <main id="stats">
     <div class="stats-head">

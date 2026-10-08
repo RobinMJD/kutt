@@ -6,6 +6,7 @@ const { CustomError } = require("../utils");
 
 // New API routes are unavailable to scoped tokens unless explicitly allowlisted.
 const routes = [
+  ["POST", /^\/links\/([a-f0-9-]{36})\/stats\/reset\/?$/i, "stats:reset"],
   ["GET", /^\/domains\/available\/?$/i, "links:create"],
   ["GET", /^\/domains\/[a-f0-9-]{36}\/grants\/?$/i, "domains:share"],
   ["POST", /^\/domains\/[a-f0-9-]{36}\/grants\/?$/i, "domains:share"],

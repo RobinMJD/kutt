@@ -147,6 +147,10 @@ main.shortener #customurl-label-value { max-width: 100%; overflow-wrap: anywhere
 .settings-nav a { min-height: 40px; display: flex; align-items: center; padding: .4rem .5rem; border-radius: 4px; }
 .settings-nav a:hover { background: var(--table-tr-hover-bg-color); }
 .integrations-page button svg { flex-shrink: 0; }
+.stats-info { flex-wrap: wrap; gap: .75rem; }
+.stats-info [data-stats-reset] { display: inline-flex; align-items: center; gap: .4rem; min-height: 40px; white-space: normal; }
+.stats-info [data-stats-reset] svg { width: 18px; height: 18px; flex-shrink: 0; }
+#stats-reset-status { margin-top: 1rem; margin-bottom: 0; overflow-wrap: anywhere; }
 .integrations-page button { gap: .4rem; }
 .site-header nav > ul { flex-direction: row; }
 .site-header nav > ul > li:has(.language-selector) { order: 1; }

@@ -8,6 +8,7 @@ const validators = require("./validators.handler");
 const map = require("../utils/map.json");
 const transporter = require("../mail");
 const query = require("../queries");
+const knex = require("../knex");
 const queue = require("../queues");
 const utils = require("../utils");
 const env = require("../env");
@@ -623,13 +624,14 @@ async function redirectCustomDomainHomepage(req, res, next) {
 };
 
 async function stats(req, res) {
+  res.set("Cache-Control", "private, no-store");
   const { user } = req;
   const uuid = req.params.id;
 
   const link = await query.link.find({
     ...(!user.admin && { user_id: user.id }),
     uuid
-  });
+  }, { fresh: true });
 
   if (!link) {
     if (req.isHTML) {
@@ -640,7 +642,12 @@ async function stats(req, res) {
     throw new CustomError(i18n.t("messages.link_could_not_be_found"));
   }
 
+  const reset_revision = (await require("../analytics-privacy").tracking(link.id)).revision;
   const stats = await query.visit.find({ link_id: link.id }, link.visit_count);
+  link.visit_count = (await knex("links").where({ id: link.id }).first("visit_count")).visit_count;
+  if ((await require("../analytics-privacy").tracking(link.id)).revision !== reset_revision) {
+    throw new CustomError(i18n.t("stats_reset.conflict"), 409);
+  }
 
   if (!stats) {
     throw new CustomError(i18n.t("messages.could_not_get_the_short_link_stats_try_again_later"));
@@ -651,13 +658,16 @@ async function stats(req, res) {
       link: utils.sanitize.link_html(link),
       stats,
       map,
+      can_reset_stats: link.user_id === user.id && !link.banned && !link.deleted_at && !link.archived_domain && !req.apiToken,
+      reset_revision,
     });
     return;
   }
 
   return res.status(200).send({
     ...stats,
-    ...utils.sanitize.link(link)
+    ...utils.sanitize.link(link),
+    reset_revision
   });
 };
 

@@ -1,3 +1,30 @@
+// Delegate because the statistics panel is loaded/replaced by HTMX.
+(() => {
+  let busy = false;
+  document.addEventListener("click", async event => {
+    const button = event.target.closest("[data-stats-reset]");
+    if (!button || busy) return;
+    if (!window.confirm(window.KuttI18n.t("stats_reset.confirm"))) return;
+    const status = document.getElementById("stats-reset-status");
+    busy = true; button.disabled = true; status.hidden = false;
+    status.classList.remove("error"); status.textContent = window.KuttI18n.t("stats_reset.pending");
+    try {
+      const id = button.dataset.statsReset, revision = Number(button.dataset.resetRevision);
+      const response = await fetch("/api/links/" + encodeURIComponent(id) + "/stats/reset", {
+        method: "POST", cache: "no-store", signal: AbortSignal.timeout(30000),
+        headers: { Accept: "application/json", "Content-Type": "application/json" },
+        body: JSON.stringify({ confirm: true, revision })
+      });
+      await window.KuttResponses.read(response, value => value?.id === id && value.visit_count === 0 && value.reset_revision === revision + 1);
+      await htmx.ajax("GET", "/api/links/" + encodeURIComponent(id) + "/stats", { target: "#stats-section", swap: "innerHTML" });
+      status.textContent = window.KuttI18n.t("stats_reset.success");
+    } catch (error) {
+      status.classList.add("error");
+      status.textContent = window.KuttI18n.failure(error) + " " + window.KuttI18n.t("stats_reset.check");
+    } finally { busy = false; if (button.isConnected) button.disabled = false; }
+  });
+})();
+
 // create views chart label
 function createViewsChartLabel(ctx) {
   const period = ctx.dataset.period;

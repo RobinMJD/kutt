@@ -79,6 +79,35 @@ async function main() {
     assert(stats.every(row => !row.referrers.includes("private") && !row.referrers.includes("notStored")));
     assert.equal(await client.zcard("bull:visit:failed"), 0);
 
+    response = await request("GET", "/api/links/" + link.id + "/stats", undefined, token);
+    assert.equal(response.status, 200);
+    const previousStats = await response.json();
+    assert.equal(previousStats.lastDay.total, 3);
+    const internal = db.prepare("SELECT id,user_id FROM links WHERE uuid=?").get(link.id);
+    const cacheKey = "s:" + internal.id;
+    assert(await client.get(cacheKey), "Exercise a populated legacy analytics cache");
+    response = await request("POST", "/api/links/" + link.id + "/stats/reset", { confirm: true, revision: 0 }, token);
+    assert.equal(response.status, 200);
+    assert.equal(count(), 0);
+    // Model a pre-reset reader that repopulates the old key after the commit.
+    await client.set(cacheKey, JSON.stringify(previousStats), "EX", 900);
+    const afterReset = await (await request("GET", "/api/links/" + link.id + "/stats", undefined, token)).json();
+    assert.equal(afterReset.visit_count, 0); assert.equal(afterReset.lastDay.total, 0);
+    const Queue = require("bull");
+    const queue = new Queue("visit", { redis: require("../server/redis-options")({ REDIS_HOST: "127.0.0.1", REDIS_PORT: 6379, REDIS_DB: 0, REDIS_ENABLED: true, ...material }) });
+    try {
+      const delayed = await queue.add({ link: internal, tracking_revision: 0,
+        userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 Version/18.0 Safari/605.1.15" });
+      await delayed.finished();
+      assert.equal(count(), 0, "A delayed pre-reset Bull job cannot restore test visits");
+    } finally { await queue.close(); }
+    assert.equal((await request("GET", "/redis-visit", undefined, undefined, {
+      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 Version/18.0 Safari/605.1.15"
+    })).status, 302);
+    for (let i = 0; i < 150 && count() < 1; i++) await delay(100);
+    assert.equal(count(), 1);
+    assert.equal((await (await request("GET", "/api/links/" + link.id + "/stats", undefined, token)).json()).lastDay.total, 1);
+
     const aliases = ["/api/auth/login", "/API/AUTH/LOGIN", "/api/v2/auth/login", "/Api/V2/Auth/LoGiN", "/api/auth/LOGIN/"];
     for (const alias of aliases) assert.equal((await request("POST", alias, { ...account, password: "wrong-password" })).status, 401);
     assert.equal((await request("POST", "/api/v2/auth/login", account)).status, 429);
@@ -112,7 +141,7 @@ async function main() {
     try { writer.prepare("UPDATE users SET apikey=? WHERE id=?").run(randomBytes(24).toString("hex"), cached.id); } finally { writer.close(); }
     assert.equal((await request("GET", "/api/users", undefined, undefined, { "X-API-Key": apikey })).status, 401, "A cached old API key cannot authenticate after rotation");
     assert(!/UnhandledPromiseRejection|unhandled error event|MODULE_NOT_FOUND/.test(output));
-    console.log("PASS: real Redis/Bull visit processing, referrer privacy, restart-persistent rate limits and fresh API authentication/domain proof after revocation and rotation");
+    console.log("PASS: Redis/Bull visits, reset cache fencing and delayed jobs, referrer privacy, restart-persistent rate limits and fresh API authentication/domain proof after revocation and rotation");
   } finally {
     await stop(); if (db) db.close(); client.disconnect(); rmSync(directory, { recursive: true, force: true });
   }

@@ -1,0 +1,31 @@
+const assert = require("node:assert/strict");
+const { randomUUID } = require("node:crypto");
+
+module.exports = async db => {
+  assert.equal(process.env.KUTT_DATABASE_DISPOSABLE, "1");
+  assert(/^kutt_search_/.test(process.env.DB_NAME));
+  const users = require("../server/queries/user.queries");
+  const links = require("../server/queries/link.queries");
+  const visits = require("../server/queries/visit.queries");
+  const { reset } = require("../server/stats-reset");
+  const owner = await users.add({ email: randomUUID() + "@example.invalid", password: "disposable-fixture", verified: true });
+  const user = await db("users").where({ id: owner.id }).first();
+  const link = await links.create({ user_id: owner.id, address: "reset-" + randomUUID(), target: "https://192.0.2.1/reset", max_visits: 5 });
+  const row = await db("links").where({ uuid: link.uuid }).first();
+  const data = { link_id: row.id, user_id: user.id, tracking_revision: 0, country: "fr", browser: "chrome", os: "windows", referrer: "Direct" };
+  await visits.add(data);
+  const req = revision => ({ user, params: { id: row.uuid }, body: { confirm: true, revision } });
+  const results = await Promise.allSettled([reset(req(0)), reset(req(0))]);
+  assert.equal(results.filter(result => result.status === "fulfilled").length, 1);
+  assert.equal(results.find(result => result.status === "rejected").reason.statusCode, 409);
+  assert.equal(Number((await db("links").where({ id: row.id }).first()).visit_count), 0);
+  assert.equal((await db("visits").where({ link_id: row.id })).length, 0);
+  assert.equal(Number((await db("link_tracking").where({ link_id: row.id }).first()).revision), 1);
+  assert.equal((await db("link_history").where({ link_id: row.id, action: "statistics_reset" })).length, 1);
+  await visits.add(data);
+  assert.equal(Number((await db("links").where({ id: row.id }).first()).visit_count), 0);
+  await visits.add({ ...data, tracking_revision: 1 });
+  assert.equal(Number((await db("links").where({ id: row.id }).first()).visit_count), 1);
+  assert.equal(Number((await db("links").where({ id: row.id }).first()).max_visits), 5);
+  console.log("PASS: " + process.env.DB_CLIENT + " serialized statistics reset, audit, bucket deletion, delayed visit fence and retained lifecycle");
+};

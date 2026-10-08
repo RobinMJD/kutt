@@ -11,6 +11,9 @@ const env = require("../env");
 const history = require("../handlers/link-history.handler");
 
 const router = Router();
+router.post("/:id/stats/reset", (req, res, next) => { req.isHTML = false; next(); },
+  asyncHandler(auth.apikey), asyncHandler(auth.jwt),
+  helpers.rateLimit({ window: 60, limit: 6 }), asyncHandler(require("../stats-reset").handler));
 const destinationHealth = require("../handlers/link-health.handler");
 router.get("/health", asyncHandler(auth.apikey), asyncHandler(auth.jwt), destinationHealth.boundary, asyncHandler(destinationHealth.list));
 router.get("/:id/health", asyncHandler(auth.apikey), asyncHandler(auth.jwt), destinationHealth.boundary, asyncHandler(destinationHealth.get));

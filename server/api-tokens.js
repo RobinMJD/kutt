@@ -10,6 +10,7 @@ const SCOPES = Object.freeze({
   "links:update": "messages.edit_links",
   "links:delete": "messages.delete_links",
   "stats:read": "messages.read_statistics",
+  "stats:reset": "stats_reset.scope",
   "workspaces:read": "messages.read_joined_workspaces",
   "workspaces:write": "messages.manage_shared_workspace_links",
   "webhooks:read": "messages.read_owner_wide_webhook_configuration_and_deliveries",
