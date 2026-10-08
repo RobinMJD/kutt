@@ -7,7 +7,7 @@ separate. Subsequent enhancements are tracked in [the community review](UPSTREAM
 
 ## Release gates
 
-### Per-link statistics reset (.67)
+### Per-link statistics reset (.67.1)
 
 In progress: owner-only confirmed UI/API reset, English/French/Spanish copy,
 audit, cache/queued-visit fencing and preserved redirect quotas. No schema or

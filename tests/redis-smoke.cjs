@@ -95,12 +95,26 @@ async function main() {
     assert.equal(afterReset.visit_count, 0); assert.equal(afterReset.lastDay.total, 0);
     const Queue = require("bull");
     const queue = new Queue("visit", { redis: require("../server/redis-options")({ REDIS_HOST: "127.0.0.1", REDIS_PORT: 6379, REDIS_DB: 0, REDIS_ENABLED: true, ...material }) });
+    const jobId = "stale-reset-" + randomBytes(12).toString("hex");
+    const { once } = require("node:events");
+    const registered = ["global:completed", "global:failed"].map(event =>
+      once(queue, "registered:" + event, { signal: AbortSignal.timeout(15000) }));
+    let timeout, finishTimeout;
+    const finished = new Promise((resolve, reject) => {
+      finishTimeout = () => reject(new Error("Delayed visit did not finish promptly"));
+      queue.on("global:completed", id => { if (String(id) === jobId) resolve(); });
+      queue.on("global:failed", (id, reason) => { if (String(id) === jobId) reject(new Error(reason)); });
+    });
+    // Observe both subscriptions before submitting: the worker removes completed
+    // jobs immediately, so Job.finished() can miss an already-removed TLS job.
     try {
-      const delayed = await queue.add({ link: internal, tracking_revision: 0,
-        userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 Version/18.0 Safari/605.1.15" });
-      await delayed.finished();
+      await Promise.all(registered);
+      timeout = setTimeout(finishTimeout, 15000);
+      await queue.add({ link: internal, tracking_revision: 0,
+        userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 Version/18.0 Safari/605.1.15" }, { jobId });
+      await finished;
       assert.equal(count(), 0, "A delayed pre-reset Bull job cannot restore test visits");
-    } finally { await queue.close(); }
+    } finally { clearTimeout(timeout); await queue.close(); }
     assert.equal((await request("GET", "/redis-visit", undefined, undefined, {
       "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 Version/18.0 Safari/605.1.15"
     })).status, 302);

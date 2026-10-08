@@ -60,19 +60,26 @@ older in-flight reader. No Redis flush, dependency or schema migration is needed
 
 Older images already understand the tracking fence, so image-only rollback to
 the previously verified `.66` preserves link data and queued-visit boundaries,
-but removes the reset endpoint/UI. It cannot restore deleted statistics. Keep
+but removes the reset endpoint/UI. It cannot restore deleted statistics. For
+Redis-backed installations, the old image may read stale pre-reset cached
+aggregates: invalidate only the affected link's statistics keys or leave Redis
+disabled until their TTL expires. Never flush a shared Redis database. Keep
 the normal pre-deployment consistent backup and isolated restore validation;
 do not deploy while the origin is unreachable.
 
 ## Verification Status
 
-Target release: `3.2.6-sr94.67`. Focused API, Redis/Bull cache/queue fencing,
+Target release: `3.2.6-sr94.67.1`. Focused API, Redis/Bull cache/queue fencing,
 and English/French/Spanish browser tests pass. Full regression, publication,
 CI, backup/restore and live acceptance remain pending. During validation on
 2026-10-09, an independent origin/network interruption produced Cloudflare 522
 and lost Proxmox/VM Tailscale connectivity. It recovered without a host reboot,
 container restart or WAF change. No real link's counters were reset. Do not
 infer deployment from source.
+The `.67` candidate was not published or deployed: its Redis-over-TLS test
+observer missed a completed job already removed by the worker. The `.67.1`
+fixture subscribes before enqueueing and retains bounded completion and TLS
+checks. No production TLS or queue behavior was relaxed.
 
 The release also pins compatible security patches `handlebars@4.7.10` and
 `proxy-addr@2.0.8`, following newly published upstream advisories:
