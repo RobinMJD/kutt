@@ -72,13 +72,43 @@ do not deploy while the origin is unreachable.
 
 ## Verification Status
 
-Target release: `3.2.6-sr94.67.2`. Focused API, Redis/Bull cache/queue fencing,
-and English/French/Spanish browser tests pass. Full regression, publication,
-CI, backup/restore and live acceptance remain pending. During validation on
-2026-10-09, an independent origin/network interruption produced Cloudflare 522
+Acceptance tracker (2026-10-09; source `acc91a2`):
+
+| Gate | Status | Evidence |
+| --- | --- | --- |
+| UI/API implementation and focused authorization | Passed | Owner/scope/domain/origin isolation, transaction rollback and generation fences. |
+| Local rendered acceptance | Passed | EN/FR/ES, light/dark, 1440/390/320px; saved reset with failed refresh, reload recovery and subsequent visitors. |
+| Exact release CI | Passed | [Main run 37858899945](https://github.com/RobinMJD/kutt/actions/runs/37858899945) and [tag run 37858914355, attempt 2](https://github.com/RobinMJD/kutt/actions/runs/37858914355/attempts/2) passed all gates. The unchanged tag rerun passed after an existing logout check stopped on `ERR_NETWORK_CHANGED`. The full existing-feature browser suite also passed locally; no test relaxation. |
+| Recoverable baseline backup | Passed | Local/NAS consistent backup, byte-matched recovery database/secrets and isolated writable restore; refresh before cutover if stale. |
+| Exact hardened wrapper and fresh image scan | Passed | Published source digest `sha256:5381aae825699e437833eb419920cb79427586efcd52c38248274de4603bb514`; wrapper `sha256:561cd0e42d6cc11c6ee72058c0cd18a7f600048485623d97e91da5f335354c70`. Full isolated regression and writable restored-data checks passed. Fresh Grype scan: zero Critical/High, three Medium matches for unfixed `CVE-2025-60876`. |
+| Deployment and public/UI acceptance | Passed | Live `.67.2` is healthy with zero restarts. Public API scope/revocation/409 checks and real desktop/mobile light/dark reset, cancel, keyboard confirmation and subsequent visits passed. Original records unchanged; no real statistics reset. |
+| Post-change backup and monitoring | Passed | Post-change local/NAS backup and isolated writable restore passed. Repeated healthy monitoring samples, no new alerts compared with baseline and full lab validator passed. |
+| Documentation closeout | Recorded | README, feature roadmap, deployment/recovery and dated security follow-up updated. Application-release CI receipts above apply to the deployed source; documentation-only commits do not replace that source image. |
+
+Accepted deployment: `3.2.6-sr94.67.2`, source `acc91a274a79d34005b76291f803a6bb9eb8e03b`,
+published in [the versioned release](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.67.2).
+Focused API, Redis/Bull cache/queue fencing, English/French/Spanish browser tests,
+main/tag CI, full exact-wrapper regression, publication, backup/restore and live
+acceptance passed. The live browser used disposable app identities through the
+real public HTTPS/WAF route; this is not a new interactive Authentik login ceremony.
+The Authentik authorization-code/PKCE initiation separately passed.
+
+Immediately before deployment, local snapshot `497b364e` was copied to NAS
+`79cad53e`; the restored database and three secret files byte-matched and passed
+an isolated writable candidate-image check. After deployment, local `32cc7730`
+and NAS `e9907fd1` passed the same check, including the four wrapper files.
+Private logs, full snapshot IDs and guarded image-only rollback (`rollback67.sh --apply`)
+are under `/srv/homelab/security-reports/2026-10-09-kutt-stats-reset/` on Debian3.
+The source release stays at `acc91a2`; a subsequent documentation-only closeout
+commit does not change the deployed application or move its immutable tag.
+
+During validation on 2026-10-09, an independent origin/network interruption produced Cloudflare 522
 and lost Proxmox/VM Tailscale connectivity. It recovered without a host reboot,
 container restart or WAF change. No real link's counters were reset. Do not
-infer deployment from source.
+infer deployment from source. Simultaneous external connectivity failures support
+a shared network interruption; the exact router/ISP/power cause remains unconfirmed.
+Preexisting global package/update/scanner warnings remain outside this release;
+healthy Kutt probes do not mean the whole homelab has no outstanding alerts.
 The `.67` candidate was not published or deployed: its Redis-over-TLS test
 observer missed a completed job already removed by the worker. The `.67.1`
 fixture subscribes before enqueueing and retains bounded completion and TLS

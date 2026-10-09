@@ -16,13 +16,35 @@ undo a reset. Newly patched Handlebars/proxy-addr versions must also be applied
 in any deployment wrapper that maintains its own dependency lockfile. Do not
 reuse the old wrapper dependencies underneath the new source image.
 
-Release, backup/restore and deployment acceptance remain pending. Follow the
-gates below; keep WAF/SSO and public redirect controls unchanged.
+Accepted on 2026-10-09: source `acc91a274a79d34005b76291f803a6bb9eb8e03b`,
+tag `v3.2.6-sr94.67.2`, immutable upstream image
+`sha256:5381aae825699e437833eb419920cb79427586efcd52c38248274de4603bb514`
+and Debian3 hardened wrapper
+`sha256:561cd0e42d6cc11c6ee72058c0cd18a7f600048485623d97e91da5f335354c70`.
+Main CI `37858899945` and tag CI `37858914355` attempt 2 passed; the unchanged
+rerun followed a transient `ERR_NETWORK_CHANGED` in an existing logout test.
+The full existing-feature browser suite also passed locally; no checks were relaxed.
+Full exact-wrapper regression, scoped/anonymous/stale-reset public API checks,
+desktop/mobile light/dark UI and keyboard/cancel acceptance, original-record
+verification, Authentik PKCE initiation, repeated healthy monitoring and the
+full lab validator passed. WAF/SSO and public redirect controls are unchanged.
+This does not claim a new interactive Authentik login or zero global lab alerts.
+
+Pre-cutover local/NAS snapshots `497b364e` / `79cad53e` and post-cutover
+`32cc7730` / `e9907fd1` passed isolated writable restore and byte checks for
+the consistent database, secrets and, post-cutover, the four wrapper files.
+Fresh wrapper scan: zero Critical/High; three Medium matches for one unfixed
+BusyBox advisory. [The reset ledger](STATISTICS-RESET.md) records scope and limits.
+Private full snapshot IDs, scan/regression evidence and guarded image-only
+rollback (`rollback67.sh --apply`) are in
+`/srv/homelab/security-reports/2026-10-09-kutt-stats-reset/` on Debian3.
+Retain current data and secrets during rollback; never restore a pre-cutover
+database over newer writes just to undo an image update.
 The unpublished `.67` candidate stopped at a Redis/TLS test-observer race;
 `.67.2` registers completion events before enqueueing the disposable stale job.
 Production queue and TLS settings are unchanged; the failed tag is not moved.
 
-### October security maintenance (3.2.6-sr94.66)
+### Historical October security maintenance (3.2.6-sr94.66)
 
 This release updates Nodemailer and the transitive `ip-address` package,
 refreshes development-only dependencies, changes the standalone defaults to

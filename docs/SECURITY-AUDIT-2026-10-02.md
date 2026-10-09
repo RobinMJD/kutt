@@ -188,6 +188,20 @@ a source patch alone.
   The guarded `rollback66.sh --apply` would restore only the previous wrapper
   and image, retaining newer live data and secrets if a later regression appears.
 
+## 9 October Follow-up
+
+Release `.67.2` adds owner-confirmed statistics reset and compatible security
+patches `handlebars@4.7.10` / `proxy-addr@2.0.8`, in both the source and the
+homelab wrapper's dependency lock. Source dependency audits report zero findings.
+The fresh exact-wrapper Grype scan reports zero Critical/High and three Medium
+matches for the same unfixed BusyBox advisory `CVE-2025-60876`.
+The existing shared proxy-network residual also remains. This is a bounded
+release follow-up, not a new exhaustive audit or proof of no vulnerabilities.
+[The reset ledger](STATISTICS-RESET.md) and [deployment receipt](DEPLOYMENT.md)
+record passed main/tag CI, exact-image regression, authorization/queue/cache
+checks, pre/post backup and writable NAS restore, live browser acceptance and
+repeated monitoring. The historical `.66` evidence above remains unchanged.
+
 ## Boundaries and Known Caveats
 
 - This audit covers both the Kutt fork source and its Debian3 deployment. A

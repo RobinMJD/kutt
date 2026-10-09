@@ -16,12 +16,16 @@ the upstream hosted service.
 
 ## Project status
 
-The next release, `.67.2`, adds owner-confirmed [per-link statistics reset](docs/STATISTICS-RESET.md)
+As of **9 October 2026**, `3.2.6-sr94.67.2` is published and deployed, adding
+owner-confirmed [per-link statistics reset](docs/STATISTICS-RESET.md)
 with API support and queue/cache fencing, plus compatible template/proxy security
-patches. Implementation and focused tests pass; publication and live acceptance
-remain pending. The last accepted deployment is recorded below.
+patches. Main/tag CI, full exact-image regression, local/NAS writable recovery,
+public API authorization, desktop/mobile UI acceptance and repeated monitoring
+passed. Existing users, links and secrets are preserved. Open a link's Statistics
+page and choose **Reset statistics**; confirmation clears test analytics without
+changing link settings or redirect quotas. WAF/SSO and public redirects are unchanged.
 
-As of **2 October 2026**, `3.2.6-sr94.66` is published to GHCR and deployed
+The preceding **2 October 2026** release, `3.2.6-sr94.66`, was published to GHCR and deployed
 on the homelab. Main/tag CI, exact-image regression, public redirect and
 management-boundary checks, stable health and verified writable local/NAS
 recovery passed. The [security audit](docs/SECURITY-AUDIT-2026-10-02.md)
@@ -127,7 +131,7 @@ checked-out source, persists SQLite and custom assets in named volumes, and
 publishes only `127.0.0.1:3000` on the Docker host.
 
 ```sh
-git clone --branch v3.2.6-sr94.66 --depth 1 https://github.com/RobinMJD/kutt.git
+git clone --branch v3.2.6-sr94.67.2 --depth 1 https://github.com/RobinMJD/kutt.git
 cd kutt
 cp .example.env .env
 chmod 600 .env
@@ -164,8 +168,8 @@ whose data you intend to keep.
 ### Published images and alternative examples
 
 The accepted fork release image is
-`ghcr.io/robinmjd/kutt:v3.2.6-sr94.66` (digest
-`sha256:7949e1d32c178c4d8fbd43f809885f08d263a1387994ac7218314b0f63b20a9e`).
+`ghcr.io/robinmjd/kutt:v3.2.6-sr94.67.2` (digest
+`sha256:5381aae825699e437833eb419920cb79427586efcd52c38248274de4603bb514`).
 For an image-based deployment, replace
 the Compose service's `build` section with an `image` reference, retaining its
 environment and persistent volumes. Pin the tested image digest in production.

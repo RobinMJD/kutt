@@ -9,11 +9,14 @@ separate. Subsequent enhancements are tracked in [the community review](UPSTREAM
 
 ### Per-link statistics reset (.67.2)
 
-In progress: owner-only confirmed UI/API reset, English/French/Spanish copy,
+Accepted on 2026-10-09: owner-only confirmed UI/API reset, English/French/Spanish copy,
 audit, cache/queued-visit fencing and preserved redirect quotas. No schema or
 WAF/SSO change. Focused authorization, rollback, Redis and responsive browser
-tests pass. Publication, exact-release CI, recoverable backup, deployment and
-live acceptance are required before completion. See [the reset ledger](STATISTICS-RESET.md).
+tests passed. Publication, main/tag CI, full exact-wrapper regression/scan,
+pre/post recoverable NAS backup and writable restore, deployed public API and
+desktop/mobile UI acceptance, record preservation and repeated monitoring passed.
+Source `acc91a2`; existing users/links/secrets preserved and no real link counters
+reset. See [the reset ledger](STATISTICS-RESET.md) for receipts and remaining limits.
 
 ### Management interface polish (.64)
 
