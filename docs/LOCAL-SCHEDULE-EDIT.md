@@ -74,3 +74,9 @@ not live acceptance or required GitHub CI.
 A read-only live check on 2026-10-09 confirmed `.67.2` running and healthy,
 zero container restarts and an HTTP 302 response from the public HTTPS root.
 No live database, configuration or deployment source was changed for `.69`.
+
+A separate [live service validation](SERVICE-VALIDATION-2026-10-09.md) passed
+39 smoke checks on `.67.2` and preserved original records. It identified and
+repaired a shared monitoring DNS-path issue without deploying `.69`, restarting
+Kutt/DNS, or weakening filtering, WAF or SSO. Its local restore evidence is not
+a verified deployment backup for the pending candidate.
