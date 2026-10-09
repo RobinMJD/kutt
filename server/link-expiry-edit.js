@@ -44,7 +44,7 @@ async function save(req, res, link, values) {
   try {
     const [updated] = await require("./queries").link.update({ id: link.id, uuid: link.uuid, user_id: link.user_id ?? null, deleted_at: null,
       ...(req.apiTokenDomain !== undefined && { domain_id: req.apiTokenDomain, archived_domain: null }) }, values,
-      { id: req.user.id, apiToken: req.apiToken }, { expiryExpected: req.expiryExpected, request: req });
+      { id: req.user.id, apiToken: req.apiToken }, { expiryExpected: req.expiryExpected, scheduleExpected: req.scheduleExpected, request: req });
     if (!updated) throw new (require("./utils").CustomError)(i18n.t("messages.link_changed_ownership_or_is_no_longer_available_reload_the_editor"), 409);
     return updated;
   } catch (error) {
@@ -55,6 +55,10 @@ async function save(req, res, link, values) {
         // Refresh only conflict metadata, never another form or its drafts.
         res.locals.expire_in = view.expire_in;
         res.locals.expiry_snapshot = view.expiry_snapshot;
+        res.locals.availability_snapshot = view.availability_snapshot;
+        if (req.scheduleExpected !== undefined) Object.assign(res.locals, { schedule_conflict: true,
+          current_start: view.starts_at_local_input, current_end: view.ends_at_local_input,
+          current_label: view.lifecycle_label, current_limit: view.max_visits });
       }
     }
     throw error;

@@ -15,16 +15,30 @@ boundaries are allowed and retain the normal active/expired semantics below.
 Dates survive validation errors and creation response swaps. English, French
 and Spanish labels come from the shared translation catalogs.
 
-This creation-form change does not convert existing links or replace the
-relative-expiry controls in existing link editors. API clients can still send
+The `.59` creation-form change did not convert existing links. The `.69` editor
+update described below consolidates stored deadlines. API clients can still send
 `expire_in`; when both it and `ends_at` are set, the earliest expiry wins.
 
 ## Existing links
 
 Open a link's Edit action and use **Availability** to pause it, schedule its
-start/end or cap successful redirects. Dates in this form are UTC. Empty dates
+start/end or cap successful redirects. From `.69`, dates in personal and admin
+editors use the **browser's local timezone**, with `yyyy-MM-dd HH:mm:ss` results
+and seconds preserved. Dates are converted to timezone-aware UTC before saving.
+The explicitly UTC creation and workspace controls keep their existing behavior.
+Empty dates
 and limits mean no constraint. Saving availability does not change the target,
-alias or password. The list and form show the resulting status.
+alias or password. End is the only expiry control: Clear removes the deadline,
+and saving it clears any legacy relative expiry atomically. The list and form
+show the resulting status. Description/target saves do not alter the schedule.
+
+Nonexistent spring daylight-saving times are rejected. A newly chosen repeated
+autumn time uses the browser's earlier occurrence; reopening and applying an
+unchanged repeated time preserves its exact stored occurrence and milliseconds.
+Without JavaScript, the fallback accepts an explicit ISO date/time with a
+timezone; it never guesses a local timezone on the server. Concurrent policy
+changes are rejected atomically; current saved values appear beside retained
+drafts for review/retry. Public visits and unrelated edits do not cause conflicts.
 
 ## API
 
@@ -32,6 +46,9 @@ Both API prefixes support `PATCH /api/v2/links/:id/lifecycle`. Authenticate as
 the owner with a session, legacy API key or scoped token with `links:update`.
 Administrator sessions do not override ownership on this endpoint. Domain
 restrictions apply. Browser cross-origin mutations are rejected.
+The separate `PATCH /api/v2/links/admin/:id/lifecycle` endpoint uses the existing
+fresh administrator-session gate; non-admins, legacy keys and scoped API tokens
+cannot use it. The owner endpoint's boundaries remain unchanged.
 
 ```json
 {
@@ -45,7 +62,8 @@ restrictions apply. Browser cross-origin mutations are rejected.
 Missing fields retain their values. `paused` must be boolean; dates require an
 ISO 8601 timezone, or `null` to clear. `max_visits` is an integer 1..2147483647,
 or `null` for unlimited. End must be later than start. `expire_in: null` clears
-the previous relative expiry; the form exposes this as Remove previous expiry.
+the previous relative expiry for legacy API clients. The browser editor no longer
+exposes Remove previous expiry or relative durations.
 Invalid input returns 400 and another owner's link returns 404. The same new
 policy fields are accepted by link creation and included in its idempotency
 fingerprint. Creation without them and existing retry keys remain compatible.
@@ -100,6 +118,17 @@ The `.59` creation-picker update requires no migration. A rollback to `.58`
 continues enforcing saved start/end policies, although its creation UI reverts
 to relative expiry. Reload browser tabs after an upgrade or rollback. Never
 roll back to a pre-lifecycle image as a UI workaround.
+
+Migration `20261009000000_canonical_link_expiry` transfers each non-null legacy
+expiry to `ends_at` and clears `expire_in`, retaining the earlier instant when
+both exist. This includes paused, banned and trashed links, without changing
+identity, target, counts, secrets or other fields. Invalid stored timestamps
+abort the transaction; never discard them to force an upgrade. The down migration
+keeps normalized deadlines because lifecycle-capable rollback images enforce
+them. Back up and restore-test before upgrading. Legacy API calls made after
+migration remain supported, and the editor still shows their effective deadline.
+Reload editors opened before upgrading. Publication/deployment status is in
+[the local schedule ledger](LOCAL-SCHEDULE-EDIT.md).
 
 `tests/schedule-creation.cjs` covers creation dates, invalid input/drafts,
 authorization and legacy relative-expiry behavior in both API versions.

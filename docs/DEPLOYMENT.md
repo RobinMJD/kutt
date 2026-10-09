@@ -6,6 +6,27 @@ its hardened wrapper, WAF/Authentik routing, monitoring and private backup paths
 in its separate deployment repository. This public repository contains no real
 secrets, provider bindings or user data.
 
+### Canonical local-time editing (3.2.6-sr94.69)
+
+Pending acceptance. Personal/admin edit forms use one local-time End control,
+not a relative duration or separate removal checkbox. The data-only migration
+`20261009000000_canonical_link_expiry` retains the earlier of the two existing
+deadlines, then clears the legacy field. Invalid stored dates abort the upgrade.
+Signed policy snapshots fence concurrent edits inside the authorized database
+transaction. The owner API remains owner-only; the separate admin endpoint
+requires a fresh administrator session and rejects API keys/tokens.
+
+Before deploying, restore a fresh consistent backup into the candidate image;
+compare link/user/count fingerprints, effective deadlines and secrets before
+and after migration. Verify SQLite integrity/FKs and preserve the original
+snapshot. Down migration leaves normalized deadlines enforced; a compatible
+image rollback does not reconstruct the removed legacy values. Never use a
+pre-lifecycle image or replace the live database to undo a display change.
+Reload browser editors. Public redirects, WAF, Authentik, TLS and CSP must stay
+enabled. [The acceptance ledger](LOCAL-SCHEDULE-EDIT.md) records exact gates;
+`.67.2` remains the accepted live image until they pass. This release also
+contains the `.68` country-label correction below.
+
 ### Country label normalization (3.2.6-sr94.68)
 
 Pending acceptance: shared server/browser region-name formatting now normalizes

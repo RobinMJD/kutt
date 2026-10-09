@@ -279,7 +279,7 @@ async function batchRemove(match) {
   }
 }
 
-async function update(match, update, actor = {}, { expiryExpected, request } = {}) {
+async function update(match, update, actor = {}, { expiryExpected, scheduleExpected, request } = {}) {
   if (update.password) {
     const salt = await bcrypt.genSalt(12);
     update.password = await bcrypt.hash(update.password, salt);
@@ -295,7 +295,7 @@ async function update(match, update, actor = {}, { expiryExpected, request } = {
   await knex.transaction(async db => {
     await require("../domain-access").lock(db);
     const selection = db("links").where(match);
-    if ((expiryExpected !== undefined || update.target !== undefined) && !knex.client.config.client.includes("sqlite")) selection.forUpdate();
+    if ((expiryExpected !== undefined || scheduleExpected !== undefined || update.target !== undefined) && !knex.client.config.client.includes("sqlite")) selection.forUpdate();
     const current = await selection;
     for (const link of current) {
       await require("../domain-access").link(db, link);
@@ -303,6 +303,7 @@ async function update(match, update, actor = {}, { expiryExpected, request } = {
       if (request) await require("../domain-access").writeLink(db, request, link, "links:update");
     }
     for (const link of current) require("../link-expiry-edit").check(link, expiryExpected);
+    for (const link of current) require("../link-schedule-edit").check(link, scheduleExpected);
     for (const link of current) {
       if (update.target !== undefined && update.target !== link.target) require("../destination-policy").requireAllowed(update.target);
     }

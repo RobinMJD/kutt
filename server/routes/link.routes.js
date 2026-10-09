@@ -84,6 +84,16 @@ router.post(
 );
 
 router.patch(
+  "/admin/:id/lifecycle",
+  locals.viewTemplate("partials/links/lifecycle"),
+  asyncHandler(auth.apikey),
+  asyncHandler(auth.jwt),
+  asyncHandler(auth.admin),
+  (req, res, next) => { req.adminLifecycle = true; next(); },
+  asyncHandler(link.lifecycle)
+);
+
+router.patch(
   "/:id/lifecycle",
   locals.viewTemplate("partials/links/lifecycle"),
   asyncHandler(auth.apikey),

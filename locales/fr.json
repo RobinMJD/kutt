@@ -1,4 +1,12 @@
 {
+  "schedule.current_value": "Valeur enregistrée actuelle :",
+  "schedule.current_policy": "Disponibilité enregistrée actuelle :",
+  "schedule.start_local": "Date/heure de début (locale)",
+  "schedule.end_local": "Date/heure de fin (locale)",
+  "schedule.time_local": "Heure locale",
+  "schedule.conflict": "La disponibilité a été modifiée ailleurs. Vérifiez les derniers paramètres, puis enregistrez à nouveau vos dates.",
+  "schedule.missing_end": "Rechargez l’éditeur avant de modifier la date de fin.",
+  "schedule.fallback_utc": "Sans JavaScript, saisissez une date/heure ISO avec son fuseau horaire (par exemple, 2030-01-01T12:00:00Z).",
   "stats_reset.button": "Réinitialiser les statistiques",
   "stats_reset.scope": "Réinitialiser les statistiques des liens",
   "stats_reset.confirm": "Effacer définitivement toutes les statistiques de ce lien et reprendre le comptage à zéro ? Cette action est irréversible. Le lien, sa destination, son expiration, son mot de passe et sa limite de redirections resteront inchangés.",

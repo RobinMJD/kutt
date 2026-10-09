@@ -42,4 +42,5 @@ const db = require("../server/knex");
   await require("./moderation-database.cjs")(db);
   await require("./visit-hour-index.cjs")(db);
   await require("./stats-reset-database.cjs")(db);
+  await require("./deadline-migration.cjs")(db);
 })().catch(error => { console.error(error.stack); process.exitCode = 1; }).finally(() => db.destroy());

@@ -1,4 +1,12 @@
 {
+  "schedule.current_value": "Current saved value:",
+  "schedule.current_policy": "Current saved policy:",
+  "schedule.start_local": "Start date/time (local)",
+  "schedule.end_local": "End date/time (local)",
+  "schedule.time_local": "Time (local)",
+  "schedule.conflict": "Availability changed elsewhere. Review the latest settings, then save your dates again.",
+  "schedule.missing_end": "Reload the editor before changing the end date.",
+  "schedule.fallback_utc": "Without JavaScript, enter an ISO date/time including its timezone (for example, 2030-01-01T12:00:00Z).",
   "stats_reset.button": "Reset statistics",
   "stats_reset.scope": "Reset link statistics",
   "stats_reset.confirm": "Permanently erase all statistics for this link and start counting from zero? This cannot be undone. The link, destination, expiry, password and redirect limit will stay unchanged.",

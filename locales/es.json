@@ -1,4 +1,12 @@
 {
+  "schedule.current_value": "Valor guardado actual:",
+  "schedule.current_policy": "Disponibilidad guardada actual:",
+  "schedule.start_local": "Fecha/hora de inicio (local)",
+  "schedule.end_local": "Fecha/hora de fin (local)",
+  "schedule.time_local": "Hora local",
+  "schedule.conflict": "La disponibilidad cambió en otro lugar. Revisa los ajustes actuales y vuelve a guardar tus fechas.",
+  "schedule.missing_end": "Vuelve a cargar el editor antes de cambiar la fecha de fin.",
+  "schedule.fallback_utc": "Sin JavaScript, introduce una fecha/hora ISO con su zona horaria (por ejemplo, 2030-01-01T12:00:00Z).",
   "stats_reset.button": "Restablecer estadísticas",
   "stats_reset.scope": "Restablecer estadísticas de los enlaces",
   "stats_reset.confirm": "¿Borrar permanentemente todas las estadísticas de este enlace y empezar a contar desde cero? Esta acción es irreversible. El enlace, su destino, caducidad, contraseña y límite de redirecciones no cambiarán.",

@@ -1,5 +1,17 @@
 # UI/UX Review And Remediation Ledger
 
+### October 9 local schedule follow-up
+
+Pending `.69` replaces the personal/admin edit duration and removal checkbox
+with one End field, switches edit scheduling to browser-local time, and aligns
+Paused. Legacy deadlines migrate to the earlier canonical End without changing
+counts or identities. Signed snapshots protect against stale policy changes;
+current saved values are visible beside retained drafts on a conflict. Local
+validation passed 18 schedule layouts, 18 unchanged UTC creation workflows and
+198 localized page layouts. Publication, recoverable deployment and live
+acceptance remain pending; `.67.2` is still the accepted live version. See
+[the current status and recovery ledger](LOCAL-SCHEDULE-EDIT.md).
+
 Last updated: 2026-09-22 (Europe/Paris).
 
 **Status: all 25 UI findings and four explicit user-assisted acceptance gates are closed. Release .40 also fixes the seven finalized security findings and has passed exact-image, public deployment and pre/post writable-recovery validation.**

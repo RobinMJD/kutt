@@ -1,14 +1,15 @@
-<form id="lifecycle-{{id}}" class="link-lifecycle" method="post" action="/api/links/{{id}}/lifecycle"
-  hx-patch="/api/links/{{id}}/lifecycle" hx-select="#lifecycle-{{id}}" hx-swap="outerHTML settle:0ms">
+<form id="lifecycle-{{id}}" class="link-lifecycle" method="post" action="/api/links/{{#if admin_lifecycle}}admin/{{/if}}{{id}}/lifecycle"
+  hx-patch="/api/links/{{#if admin_lifecycle}}admin/{{/if}}{{id}}/lifecycle" hx-select="#lifecycle-{{id}}" hx-swap="outerHTML settle:0ms">
   <fieldset>
     <legend>{{t "ui.availability"}}</legend>
-    <label><input type="checkbox" name="paused" {{#if paused}}checked{{/if}} /> {{t "ui.paused"}}</label>
-    <label>{{t "ui.start_utc"}}<input type="datetime-local" step="1" name="starts_at" value="{{starts_at_input}}" /></label>
-    <label>{{t "ui.end_utc"}}<input type="datetime-local" step="1" name="ends_at" value="{{ends_at_input}}" /></label>
+    <label class="lifecycle-checkbox"><input type="checkbox" name="paused" {{#if paused}}checked{{/if}} /> <span>{{t "ui.paused"}}</span></label>
+    {{> date_time_field name="starts_at" key=id local=true value=starts_at_local_input label=(t "schedule.start_local") choose=(t "schedule.choose_start") empty=(t "schedule.immediately") conflict=schedule_conflict current=current_start}}
+    {{> date_time_field name="ends_at" key=id local=true value=ends_at_local_input label=(t "schedule.end_local") choose=(t "schedule.choose_end") empty=(t "schedule.no_end") conflict=schedule_conflict current=current_end}}
     <label>{{t "ui.maximum_redirects"}}<input type="number" name="max_visits" min="1" max="2147483647" step="1" value="{{max_visits}}" /></label>
-    <label><input type="checkbox" name="clear_expiry" {{#if clear_expiry}}checked{{/if}} /> {{t "ui.remove_previous_expiry"}}</label>
+    <input type="hidden" name="schedule_mode" value="absolute" />
+    <input type="hidden" name="availability_snapshot" value="{{availability_snapshot}}" />
     <input type="hidden" name="expiry_snapshot" value="{{expiry_snapshot}}" />
-    {{#if error}}<small>{{t "ui.current_expiry"}} {{#if expire_in}}{{expire_in}}{{else}}{{t "ui.none"}}{{/if}}</small>{{/if}}
+    {{#if schedule_conflict}}<small class="lifecycle-current">{{t "schedule.current_policy"}} {{current_label}} &middot; {{t "ui.maximum_redirects"}}: {{#if current_limit}}{{current_limit}}{{else}}{{t "ui.none"}}{{/if}}</small>{{/if}}
     <p>{{lifecycle_label}} &middot; {{t "lifecycle.redirects" count=redirect_count formatted=(number redirect_count)}}</p>
     <button type="submit" class="primary" id="availability-submit-{{id}}">{{t "ui.save_availability"}}</button>
   </fieldset>

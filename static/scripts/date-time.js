@@ -24,8 +24,28 @@
       const input = field.querySelector("[data-date-time-value]"), display = field.querySelector("[data-date-time-display]");
       const date = field.querySelector("[data-date-time-date]"), time = field.querySelector("[data-date-time-time]");
       const open = field.querySelector("[data-date-time-open]"), error = field.querySelector("[data-date-time-error]");
+      const local = field.hasAttribute("data-date-time-local");
+      const wallTime = value => {
+        if (!local) return canonical(value);
+        if (!value) return "";
+        const instant = new Date(value);
+        if (!Number.isFinite(instant.getTime())) return null;
+        const pad = (value, size = 2) => String(value).padStart(size, "0");
+        return `${pad(instant.getFullYear(), 4)}-${pad(instant.getMonth() + 1)}-${pad(instant.getDate())}T${pad(instant.getHours())}:${pad(instant.getMinutes())}:${pad(instant.getSeconds())}`;
+      };
+      const storedTime = value => {
+        if (!local) return canonical(value);
+        if (canonical(value) === null) return null;
+        // Retain the exact instant when editing an unchanged ambiguous DST time.
+        if (wallTime(input.value) === value) return input.value;
+        const instant = new Date(value);
+        const iso = Number.isFinite(instant.getTime()) ? instant.toISOString() : null;
+        return iso && instant.getTime() >= 0 && wallTime(iso) === value ? iso : null;
+      };
+      const current = field.querySelector("[data-date-time-current]");
+      if (current?.dataset.dateTimeCurrent) current.textContent = (wallTime(current.dataset.dateTimeCurrent) || current.dataset.dateTimeCurrent).replace("T", " ");
       let opener;
-      const render = () => { display.value = (canonical(input.value) ?? input.value).replace("T", " "); };
+      const render = () => { display.value = (wallTime(input.value) ?? input.value).replace("T", " "); };
       const expanded = value => [open, display].forEach(node => node.setAttribute("aria-expanded", String(value)));
       const close = () => {
         dialog.close(); date.disabled = time.disabled = true;
@@ -37,7 +57,8 @@
         input.dispatchEvent(new Event("change", { bubbles: true }));
       };
       const apply = () => {
-        const value = canonical(date.value + "T" + time.value);
+        const wall = canonical(date.value + "T" + time.value);
+        const value = wall === null ? null : storedTime(wall);
         if (!date.value || !time.value || value === null || !date.checkValidity() || !time.checkValidity()) {
           error.textContent = window.KuttI18n.t("schedule.invalid"); error.hidden = false;
           (!date.value || !date.checkValidity() ? date : time).focus(); return;
@@ -48,7 +69,7 @@
         if (isBusy(field)) return;
         opener = event.currentTarget;
         date.disabled = time.disabled = false;
-        const value = canonical(input.value);
+        const value = wallTime(input.value);
         date.value = value ? value.slice(0, 10) : "";
         time.value = value ? value.slice(11) : "00:00:00";
         error.hidden = true; expanded(true); dialog.showModal(); date.focus();

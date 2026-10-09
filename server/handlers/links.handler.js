@@ -156,20 +156,23 @@ async function create(req, res) {
 
 async function lifecycle(req, res) {
   require("../management-origin").sameOrigin(req);
-  const link = await query.link.find({ uuid: req.params.id, user_id: req.user.id }, { fresh: true });
+  const link = await query.link.find({ uuid: req.params.id, ...(!req.adminLifecycle && { user_id: req.user.id }) }, { fresh: true });
   if (!link) throw new CustomError(i18n.t("messages.link_was_not_found"), 404);
   res.locals.id = link.uuid;
   Object.assign(res.locals, utils.sanitize.link_html(link));
+  res.locals.admin_lifecycle = !!req.adminLifecycle;
   const update = linkLifecycle.parse(req.body, link, req.isHTML);
   if (!Object.keys(update).length) throw new CustomError(i18n.t("messages.provide_at_least_one_lifecycle_setting"), 400);
   if (req.isHTML) {
     Object.assign(res.locals, linkLifecycle.describe({ ...link, ...update }), { clear_expiry: req.body.clear_expiry === "on" });
-    if (update.expire_in === null) req.expiryExpected = require("../link-expiry-edit").read(req.body.expiry_snapshot, link.uuid).expiry;
+    if (req.body.schedule_mode === "absolute") {
+      req.scheduleExpected = require("../link-schedule-edit").read(req.body.availability_snapshot, link.uuid);
+    } else if (update.expire_in === null) req.expiryExpected = require("../link-expiry-edit").read(req.body.expiry_snapshot, link.uuid).expiry;
   }
   const updated = await require("../link-expiry-edit").save(req, res, link, update);
   res.set("Cache-Control", "no-store");
   if (req.isHTML) return res.render("partials/links/lifecycle", {
-    ...utils.sanitize.link_html(updated), clear_expiry: false, success: i18n.t("messages.lifecycle_updated")
+    ...utils.sanitize.link_html(updated), admin_lifecycle: !!req.adminLifecycle, success: i18n.t("messages.lifecycle_updated")
   });
   return res.json(utils.sanitize.link(updated));
 }

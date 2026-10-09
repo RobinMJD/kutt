@@ -1,19 +1,19 @@
 <div class="date-time-field">
-  <label for="{{name}}" data-date-time-label>{{label}}</label>
-  <div data-date-time>
-    <input id="{{name}}" name="{{name}}" type="datetime-local" step="1"
-      min="1970-01-01T00:00:00" max="9999-12-31T23:59:59" value="{{value}}" hx-preserve="true" data-date-time-value />
+  <label for="{{name}}{{#if key}}-{{key}}{{/if}}" data-date-time-label>{{label}}</label>
+  <div data-date-time {{#if local}}data-date-time-local{{/if}}>
+    <input id="{{name}}{{#if key}}-{{key}}{{/if}}" name="{{name}}" {{#if local}}type="text" value="{{value}}"{{else}}type="datetime-local" step="1"
+      min="1970-01-01T00:00:00" max="9999-12-31T23:59:59" value="{{value}}"{{/if}} hx-preserve="true" data-date-time-value />
     <div class="date-time-result" data-date-time-result hidden>
-      <input id="{{name}}-display" type="text" readonly data-date-time-display placeholder="{{empty}}"
-        aria-haspopup="dialog" aria-controls="{{name}}-picker" aria-expanded="false" />
+      <input id="{{name}}{{#if key}}-{{key}}{{/if}}-display" type="text" readonly data-date-time-display placeholder="{{empty}}"
+        aria-haspopup="dialog" aria-controls="{{name}}{{#if key}}-{{key}}{{/if}}-picker" aria-expanded="false" />
       <button type="button" data-date-time-open aria-label="{{choose}}" title="{{choose}}"
-        aria-haspopup="dialog" aria-controls="{{name}}-picker" aria-expanded="false">{{> icons/calendar}}</button>
+        aria-haspopup="dialog" aria-controls="{{name}}{{#if key}}-{{key}}{{/if}}-picker" aria-expanded="false">{{> icons/calendar}}</button>
     </div>
-    <dialog id="{{name}}-picker" class="date-time-dialog" aria-labelledby="{{name}}-picker-title" data-date-time-dialog>
-      <h2 id="{{name}}-picker-title">{{label}}</h2>
+    <dialog id="{{name}}{{#if key}}-{{key}}{{/if}}-picker" class="date-time-dialog" aria-labelledby="{{name}}{{#if key}}-{{key}}{{/if}}-picker-title" data-date-time-dialog>
+      <h2 id="{{name}}{{#if key}}-{{key}}{{/if}}-picker-title">{{label}}</h2>
       <div class="date-time-parts">
         <label>{{t "schedule.date"}}<input type="date" data-date-time-date min="1970-01-01" max="9999-12-31" /></label>
-        <label>{{t "schedule.time"}}<input type="time" data-date-time-time step="1" /></label>
+        <label>{{#if local}}{{t "schedule.time_local"}}{{else}}{{t "schedule.time"}}{{/if}}<input type="time" data-date-time-time step="1" /></label>
       </div>
       <p class="error" role="alert" data-date-time-error hidden></p>
       <div class="date-time-actions">
@@ -22,6 +22,8 @@
         <button type="button" class="primary" data-date-time-apply>{{t "schedule.apply"}}</button>
       </div>
     </dialog>
+    {{#if conflict}}<small>{{t "schedule.current_value"}} <span data-date-time-current="{{current}}">{{#if current}}{{current}}{{else}}{{empty}}{{/if}}</span></small>{{/if}}
   </div>
+  {{#if local}}<noscript><small>{{t "schedule.fallback_utc"}}</small></noscript>{{/if}}
   {{#if error}}<p class="error" data-error-field="{{name}}">{{error}}</p>{{/if}}
 </div>

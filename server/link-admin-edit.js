@@ -5,7 +5,7 @@ const utils = require("./utils");
 async function view(id) {
   const [link] = await query.link.getAdmin({ uuid: id }, { limit: 1, skip: 0 });
   if (!link) throw new utils.CustomError(i18n.t("messages.link_was_not_found"), 404);
-  return utils.sanitize.link_admin(link);
+  return { ...utils.sanitize.link_admin(link), admin_lifecycle: true };
 }
 
 // Run only after the route's admin gate. Metadata always comes from the current

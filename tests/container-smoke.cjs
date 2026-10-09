@@ -67,6 +67,9 @@ assert([undefined, "stats-reset", "management-domain-grants", "destination-polic
     const visitIndex = spawnSync(process.execPath, ["-e", `(async()=>{const db=require(${JSON.stringify(path.join(root, "server/knex"))});try{await require(${JSON.stringify(path.join(root, "tests/visit-hour-index.cjs"))})(db)}finally{await db.destroy()}})().catch(e=>{console.error(e);process.exitCode=1})`], { cwd: directory, env, encoding: "utf8", timeout: 60000 });
     assert.equal(visitIndex.status, 0, visitIndex.stderr);
     console.log(visitIndex.stdout.trim());
+    const deadlines = spawnSync(process.execPath, ["-e", `(async()=>{const db=require(${JSON.stringify(path.join(root, "server/knex"))});try{await require(${JSON.stringify(path.join(root, "tests/deadline-migration.cjs"))})(db)}finally{await db.destroy()}})().catch(e=>{console.error(e);process.exitCode=1})`], { cwd: directory, env, encoding: "utf8", timeout: 60000 });
+    assert.equal(deadlines.status, 0, deadlines.stderr);
+    console.log(deadlines.stdout.trim());
     await require("./proxy-trust.cjs")();
     await require("./community-correctness.cjs")({ root, directory, env });
     require("./redis-fixture-cleanup.cjs")({ root });
@@ -168,6 +171,9 @@ assert([undefined, "stats-reset", "management-domain-grants", "destination-polic
       }
       throw new Error(`Restart failed: ${output}`);
     };
+    if (process.env.KUTT_TEST_ONLY === "expiry-edit") {
+      await require("./schedule-edit.cjs")({ request, session: token, database: env.DB_FILENAME });
+    }
     if (process.env.KUTT_TEST_ONLY) {
       await require("./" + process.env.KUTT_TEST_ONLY + ".cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, root, directory, env, url });
       return;
@@ -179,6 +185,7 @@ assert([undefined, "stats-reset", "management-domain-grants", "destination-polic
     await require("./i18n.cjs")({ request, session: token, url });
     await require("./csp.cjs")({ root, request, session: token, restart, env });
     await require("./expiry-edit.cjs")({ request, session: token, database: env.DB_FILENAME, restart });
+    await require("./schedule-edit.cjs")({ request, session: token, database: env.DB_FILENAME });
     await require("./link-history.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart });
     await require("./library.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart, root, directory, env });
     await require("./list-sorting.cjs")({ request, session: token, database: env.DB_FILENAME, account, restart });

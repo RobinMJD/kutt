@@ -18,7 +18,7 @@ function parse(body, current = {}, html = false) {
     if (body[field] === undefined) continue;
     if (body[field] === null || (html && body[field] === "")) { result[field] = null; continue; }
     let value = body[field];
-    if (html && typeof value === "string" && /^\d{4}-\d\d-\d\dT\d\d:\d\d(:\d\d)?$/.test(value)) value += "Z";
+    if (html && body.schedule_mode !== "absolute" && typeof value === "string" && /^\d{4}-\d\d-\d\dT\d\d:\d\d(:\d\d)?$/.test(value)) value += "Z";
     if (typeof value !== "string" || !/^\d{4}-\d\d-\d\dT\d\d:\d\d(:\d\d(\.\d{1,3})?)?(Z|[+-]\d\d:\d\d)$/.test(value)) {
       fail(i18n.t("messages.value_must_be_an_iso_8601_timestamp_with_a_timezone_or", {value1: field}), field);
     }
@@ -38,7 +38,10 @@ function parse(body, current = {}, html = false) {
       result.max_visits = value;
     }
   }
-  if (body.expire_in === null || (html && body.clear_expiry === "on")) result.expire_in = null;
+  if (html && body.schedule_mode === "absolute") {
+    if (body.ends_at === undefined) fail(i18n.t("schedule.missing_end"), "ends_at");
+    result.expire_in = null;
+  } else if (body.expire_in === null || (html && body.clear_expiry === "on")) result.expire_in = null;
   const combined = { ...current, ...result };
   if (combined.starts_at != null && combined.ends_at != null && Number(combined.ends_at) <= Number(combined.starts_at)) {
     fail(i18n.t("messages.end_must_be_after_start"), "ends_at");
@@ -56,7 +59,9 @@ function describe(link, now = Date.now()) {
     deleted_at: iso(link.deleted_at), paused: !!link.paused, starts_at: iso(link.starts_at), ends_at: iso(link.ends_at),
     max_visits: link.max_visits == null ? null : Number(link.max_visits),
     redirect_count: Number(link.redirect_count || 0), lifecycle_label: i18n.t(stateKeys[state]), lifecycle_status: state,
-    starts_at_input: iso(link.starts_at)?.slice(0, 19), ends_at_input: iso(link.ends_at)?.slice(0, 19)
+    starts_at_input: iso(link.starts_at)?.slice(0, 19),
+    ends_at_input: iso(require("./link-deadline").effectiveEnd(link))?.slice(0, 19),
+    starts_at_local_input: iso(link.starts_at), ends_at_local_input: iso(require("./link-deadline").effectiveEnd(link))
   };
 }
 

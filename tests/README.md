@@ -157,10 +157,16 @@ an external installation. The test refuses an initialized app, checks desktop
 and mobile controls, persists/reloads policies, verifies public redirects and
 captures screenshots to `KUTT_EVIDENCE_DIR` (or a fresh temporary directory).
 
-`tests/browser-expiry-edit.cjs` uses the same isolation settings on a fresh instance
-and requires `KUTT_EVIDENCE_DIR`. It tests personal/admin expiry intent, conflict
-review/retry, sibling draft preservation and paused public redirects at
-1440/390/320px. `tests/expiry-edit.cjs` is included in the full container suite;
+`tests/browser-expiry-edit.cjs` and `tests/browser-lifecycle.cjs` now delegate to
+the canonical `tests/browser-local-schedule.cjs` suite. Run it with
+`sh tests/browser-csp.sh IMAGE local-schedule`: 18 EN/FR/ES, light/dark,
+1440/390/320px workflows in New York, Paris and Kathmandu, under enforced CSP.
+It checks local conversion, exact seconds, paused alignment, sibling drafts,
+clearing/reload, stale policy recovery, DST gap/fold and public redirects.
+`tests/expiry-edit.cjs` retains legacy API/old-form concurrency coverage;
+`tests/schedule-edit.cjs` adds canonical End and owner/admin boundaries, while
+`tests/deadline-migration.cjs` checks populated conversion/rollback on SQLite,
+MySQL and PostgreSQL. All are included in required regression suites;
 `KUTT_TEST_ONLY=expiry-edit` runs its focused API/rendered-fragment regression.
 
 `KUTT_TEST_ONLY=admin-edit` tests fresh owner/domain metadata on admin editor

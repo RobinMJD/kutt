@@ -27,7 +27,8 @@ module.exports = async ({ request, session, database, account, env, restart }) =
         assert(page.includes('hx-patch="/api/links/admin/{id}"'));
         assert(page.includes('hx-select="#edit-form-' + id + '"'));
         assert(!page.includes('hx-patch="/api/links/{id}"'));
-        assert(!page.includes("Save availability"));
+        assert(page.includes("Save availability"));
+        assert(page.includes(`hx-patch="/api/links/admin/${id}/lifecycle"`), "Administrative schedule control must use the fresh admin gate, not the owner route");
         assert(page.includes(expectedEmail || "Anonymous"));
         if (expectedEmail) assert(page.includes('aria-label="View links by this user"'));
         assert(page.includes(domainId ? "admin-edit.example.invalid/" : env.DEFAULT_DOMAIN + "/"));
@@ -43,7 +44,8 @@ module.exports = async ({ request, session, database, account, env, restart }) =
         const before = state();
         page = await body(request("PATCH", endpoint, { ...payload, [key]: value, email: "forged@example.invalid", user_id: 9999, domain: "forged.invalid" }, session, html));
         assert(page.includes(error)); context(page);
-        assert.equal(field(page, key), value);
+        if (key === "expire_in") assert(!page.includes('name="expire_in"'), "Legacy duration validation must not resurrect the removed control");
+        else assert.equal(field(page, key), value);
         assert(!page.includes("forged@example.invalid")); assert(!page.includes("forged.invalid"));
         assert.deepEqual(state(), before);
         page = await body(request("PATCH", endpoint, { ...payload, description: "Corrected " + key }, session, html));

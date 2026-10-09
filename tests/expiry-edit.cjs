@@ -11,6 +11,10 @@ module.exports = async ({ request, session, database, restart }) => {
     return response.text();
   };
   const field = (page, name) => {
+    if (name === "expire_in") {
+      assert(!page.includes('name="expire_in"'), "Relative expiry is no longer an editor control");
+      return JSON.parse(Buffer.from(field(page, "expiry_snapshot").split(".")[0], "base64url").toString()).input;
+    }
     const tag = page.match(new RegExp(`<input[^>]*name="${name}"[^>]*>`));
     assert(tag, `Missing ${name}`);
     return tag[0].match(/value="([^"]*)"/)?.[1] || "";
@@ -35,7 +39,6 @@ module.exports = async ({ request, session, database, restart }) => {
       // atomic with that conflict. The response retains the draft for review.
       page = await body(request("PATCH", endpoint, { ...stale, expire_in: "3 days", description: "Must not save" }, session, html));
       assert(page.includes("Expiry changed elsewhere."));
-      assert.equal(field(page, "expire_in"), "3 days");
       assert.equal(state(link.id).description, "Unrelated edit");
       assert.equal(state(link.id).expire_in, null);
       page = await body(request("PATCH", endpoint, { expire_in: "3 days", expiry_snapshot: field(page, "expiry_snapshot") }, session, html));
@@ -49,7 +52,6 @@ module.exports = async ({ request, session, database, restart }) => {
       // Validation must not silently advance the stale optimistic snapshot.
       const rejected = await body(request("PATCH", endpoint, { expire_in: "4 days", expiry_snapshot: snapshot, address: "bad alias" }, session, html));
       assert.equal(field(rejected, "expiry_snapshot"), snapshot);
-      assert.equal(field(rejected, "expire_in"), "4 days");
       assert.equal(state(link.id).expire_in, saved);
       for (const expiry_snapshot of [snapshot + "x", "", "not-a-snapshot"]) {
         const rejected = await body(request("PATCH", endpoint, { expire_in: "4 days", expiry_snapshot }, session, html));
@@ -71,7 +73,7 @@ module.exports = async ({ request, session, database, restart }) => {
         let result = await body(request("PATCH", endpoint + "/lifecycle", { clear_expiry: "on", expiry_snapshot: token, paused: "on", max_visits: "23", ends_at: "2081-01-01T00:00" }, session, html));
         assert(result.includes("Expiry changed elsewhere."));
         assert.deepEqual(state(link.id), before);
-        assert(result.includes('name="clear_expiry" checked'));
+        assert(!result.includes('name="clear_expiry"'), "Clearing is now the End field's Clear action");
         result = await body(request("PATCH", endpoint + "/lifecycle", { clear_expiry: "on", expiry_snapshot: field(result, "expiry_snapshot"), paused: "on", max_visits: "23", ends_at: "2081-01-01T00:00" }, session, html));
         assert(result.includes("Lifecycle updated."));
         assert.equal(state(link.id).expire_in, null);
