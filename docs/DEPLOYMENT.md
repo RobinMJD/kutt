@@ -6,6 +6,16 @@ its hardened wrapper, WAF/Authentik routing, monitoring and private backup paths
 in its separate deployment repository. This public repository contains no real
 secrets, provider bindings or user data.
 
+### Country label normalization (3.2.6-sr94.68)
+
+Pending acceptance: shared server/browser region-name formatting now normalizes
+two-letter ISO code case, fixing Statistics map labels without changing stored
+counts or visitor location collection. No schema/dependency/WAF/SSO change is
+required. [The country-label ledger](COUNTRY-LABEL-FIX.md) tracks release,
+backup/restore, exact-image and live acceptance. Until those gates pass, `.67.2`
+remains the accepted deployment. Rollback preserves counts but restores the
+incorrect lowercase labels; never overwrite live analytics to fix display text.
+
 ### Statistics reset and security patches (3.2.6-sr94.67.2)
 
 [Reset statistics](STATISTICS-RESET.md) clears only the selected owner's visit

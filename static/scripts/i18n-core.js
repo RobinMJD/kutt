@@ -34,7 +34,9 @@
       const key = "enum." + group + "." + value;
       return engine.exists(key) ? t(key) : String(value ?? "");
     };
-    const region = value => /^[A-Z]{2}$/.test(value) ? new Intl.DisplayNames(locale, { type: "region" }).of(value) : t("ui.unknown");
+    const region = value => typeof value === "string" && /^[a-z]{2}$/i.test(value)
+      ? new Intl.DisplayNames(locale, { type: "region" }).of(value.toUpperCase())
+      : t("ui.unknown");
     const failure = error => ["TypeError", "SyntaxError", "AbortError", "NetworkError", "NotReadableError"].includes(error?.name) || !error?.message ? t("common.request_failed") : error.message;
     const duration = milliseconds => {
       const absolute = Math.abs(milliseconds);

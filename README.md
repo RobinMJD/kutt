@@ -16,6 +16,10 @@ the upstream hosted service.
 
 ## Project status
 
+The next release, `.68`, fixes lowercase country-code names displayed as
+"Unknown" on the Statistics map. Counts are retained; no analytics reset or
+GeoIP collection change is needed. [Validation tracker](docs/COUNTRY-LABEL-FIX.md).
+
 As of **9 October 2026**, `3.2.6-sr94.67.2` is published and deployed, adding
 owner-confirmed [per-link statistics reset](docs/STATISTICS-RESET.md)
 with API support and queue/cache fencing, plus compatible template/proxy security

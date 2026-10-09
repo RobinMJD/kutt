@@ -134,6 +134,20 @@ async function unit() {
     context.catalog = i18n.catalogs[locale]; context.locale = locale;
     const browser = vm.runInContext("KuttI18nCore.create(locale, catalog)", context);
     await i18n.run(locale, async () => {
+      const displayNames = new Intl.DisplayNames(locale, { type: "region" });
+      const regionTemplate = hbs.compile('<path aria-label="{{region code}}"></path>');
+      for (const { id } of require("../server/utils/map.json").layers) {
+        const expected = displayNames.of(id.toUpperCase());
+        for (const code of [id, id.toUpperCase(), id[0].toUpperCase() + id[1]]) {
+          assert.equal(i18n.current().region(code), expected, locale + ": server map label " + code);
+          assert.equal(browser.region(code), expected, locale + ": browser map label " + code);
+          assert.equal(regionTemplate({ code }), '<path aria-label="' + escape(expected) + '"></path>');
+        }
+      }
+      for (const code of [undefined, null, [], ["FR"], {}, 12, "", "F", "FRA", "unknown", " FR", "FR ", "<img>"]) {
+        assert.equal(i18n.current().region(code), i18n.t("ui.unknown"));
+        assert.equal(browser.region(code), i18n.t("ui.unknown"));
+      }
       assert.equal(browser.t("ui.edit_value", { value1: hostile }), i18n.t("ui.edit_value", { value1: hostile }));
       for (const count of [0, 1, 2, 1000000]) assert.equal(browser.t("library.selected", { count }), i18n.t("library.selected", { count }));
       const { render: mail } = require("../server/mail/render");
@@ -148,6 +162,7 @@ async function unit() {
   }
   for (const bad of ["//evil.invalid", "/\\evil.invalid", "/\nevil.invalid", "https://evil.invalid", ["/settings"], null]) assert.equal(i18n.safeReturn(bad), "/");
   assert.equal(i18n.safeReturn("/settings/library?q=one%20two"), "/settings/library?q=one%20two");
+  console.log("PASS: all 177 map country labels, server/browser/template parity, EN/FR/ES, lowercase/uppercase/mixed case and malformed-value fallback");
   console.log("PASS: i18n catalog/key/placeholder parity, all template compilation, hostile escaping, Node/browser format parity, plural categories, mail and 90 concurrent locale contexts");
 }
 
