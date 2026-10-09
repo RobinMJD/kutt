@@ -12,10 +12,11 @@ Accepted live release remains `.67.2`. This candidate includes `.68` country lab
 | Reuse accessible calendar/time picker with local `yyyy-MM-dd HH:mm:ss` results | Implemented |
 | Preserve earliest legacy/absolute deadline in transactional migration | Passed populated SQLite, PostgreSQL 17 and MySQL 8.4 tests, including multi-batch conversion and rollback |
 | Keep legacy API, owner boundaries and protected admin editing | Implemented; focused regression passed |
-| Signed atomic stale-policy refusal, retained drafts and current saved values | Implemented; focused regression passed |
+| Signed atomic stale-policy refusal, retained drafts and current saved values | Passed; an old editor opened before migration cannot clear the migrated deadline |
 | EN/FR/ES, light/dark, desktop/390/320px, local zones and DST checks | 18-layout final run passed; UTC creation's separate 18-layout regression and 198 localized page layouts also passed |
-| Final full application and database regressions | Full application rerun in progress; PostgreSQL/MySQL suites passed |
-| Commit, push, versioned tag and required GitHub CI | Pending |
+| Final full application and database regressions | Full application rerun passed on the final compatibility guard; PostgreSQL/MySQL suites passed |
+| Source commit and push | Initial implementation pushed (`5d33607`); final compatibility guard and this closeout are committed together |
+| Versioned release and required GitHub CI | Candidate `3.2.6-sr94.69`; image/release publication and required Actions execution remain blocked |
 | Recoverable pre/post backup, deployment and public/authenticated acceptance | Pending; required publication checks remain gated |
 
 ## Choices And Recovery
@@ -26,6 +27,10 @@ timezone. Stored instants stay UTC; seconds display does not truncate an
 unchanged timestamp's milliseconds. Empty End plus Save clears both deadlines.
 Description updates never reapply an expiry duration. A conflicting save shows
 current saved settings and retains drafts; changing visit counts is not a conflict.
+Pre-migration HTML editors also require their signed legacy expiry snapshot for
+every availability save; if migration changed that expiry, the old draft is
+refused atomically rather than silently erasing the migrated End. JSON API
+clients keep their existing semantics.
 
 The migration retains `min(legacy expiry, ends_at)`, clears only the legacy
 field, and does not touch users, targets, identities, secrets or analytics.
@@ -41,3 +46,31 @@ WAF, SSO, CSP, public redirects and domain/token checks are not weakened.
 Browser plugin not available; bundled Playwright/Chromium is used. Native
 Safari/Firefox and physical phone acceptance are not claimed. Evidence stays
 outside Git; this public ledger contains no credentials or user records.
+
+## Publication Blocker
+
+On 2026-10-09, a manual dispatch of `fork-release.yaml` returned HTTP 422:
+`Actions has been disabled for this repository.` The repository permissions API
+still reports Actions enabled and the workflow reports `active`. The cause of
+that contradiction is not established; billing or account restrictions are not
+assumed. Required release checks have not run, so no `.69` image publication,
+live migration, verified deployment backup or authenticated live acceptance is
+claimed. Resolve the restriction in GitHub Actions, run the required checks on
+the final versioned source, then follow `DEPLOYMENT.md`; do not bypass the gate
+or weaken WAF/SSO to publish.
+
+## Local Evidence And Live Boundary
+
+The final full application regression passed with image
+`sha256:5c80fc06473e45127d10a69d164adeb01f04138ae928982011d691a3b7657b1e`.
+Its isolated fixtures include the pre-migration-tab conflict, API compatibility,
+ordinary-user/admin isolation, analytics, reset counters, redirects, migrations
+and identity/write-boundary regressions. The final browser matrix passed 18
+local-time workflows; separate UTC creation and localized-page regressions
+passed 18 and 198 layouts respectively. Migration tests passed on populated
+SQLite, PostgreSQL 17 and MySQL 8.4. These are local/disposable-fixture results,
+not live acceptance or required GitHub CI.
+
+A read-only live check on 2026-10-09 confirmed `.67.2` running and healthy,
+zero container restarts and an HTTP 302 response from the public HTTPS root.
+No live database, configuration or deployment source was changed for `.69`.

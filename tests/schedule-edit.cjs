@@ -18,6 +18,13 @@ module.exports = async ({ request, session, database }) => {
       assert.equal(Date.parse(value(page, "ends_at")), Date.parse(state(link.id).expire_in + "Z"), "Legacy deadline is visible in End");
       const payload = { schedule_mode: "absolute", availability_snapshot: value(page, "availability_snapshot"),
         ends_at: "2080-06-01T12:34:56Z", starts_at: "", max_visits: "23", paused: "on" };
+      const legacyEnd = Date.parse(state(link.id).expire_in + "Z");
+      db.prepare("UPDATE links SET ends_at=?,expire_in=NULL WHERE uuid=?").run(legacyEnd, link.id);
+      const migrated = state(link.id);
+      const staleOldForm = await text(request("PATCH", endpoint, { starts_at: "", ends_at: "", paused: "on", expiry_snapshot: value(page, "expiry_snapshot") }, session, html));
+      assert(staleOldForm.includes("Expiry changed elsewhere."));
+      assert.deepEqual(state(link.id), migrated, "An editor opened before migration cannot clear the migrated deadline");
+      assert(staleOldForm.includes("Current saved value:"), "Show current End alongside the rejected old draft");
       await request("PATCH", "/api/links/" + link.id + "/lifecycle", { ends_at: "2081-01-01T00:00:00Z" }, session);
       const before = state(link.id);
       let result = await text(request("PATCH", endpoint, payload, session, html));

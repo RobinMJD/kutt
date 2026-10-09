@@ -56,7 +56,7 @@ async function save(req, res, link, values) {
         res.locals.expire_in = view.expire_in;
         res.locals.expiry_snapshot = view.expiry_snapshot;
         res.locals.availability_snapshot = view.availability_snapshot;
-        if (req.scheduleExpected !== undefined) Object.assign(res.locals, { schedule_conflict: true,
+        if (req.scheduleExpected !== undefined || req.expiryExpected !== undefined) Object.assign(res.locals, { schedule_conflict: true,
           current_start: view.starts_at_local_input, current_end: view.ends_at_local_input,
           current_label: view.lifecycle_label, current_limit: view.max_visits });
       }

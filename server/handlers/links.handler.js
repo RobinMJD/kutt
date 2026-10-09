@@ -167,7 +167,11 @@ async function lifecycle(req, res) {
     Object.assign(res.locals, linkLifecycle.describe({ ...link, ...update }), { clear_expiry: req.body.clear_expiry === "on" });
     if (req.body.schedule_mode === "absolute") {
       req.scheduleExpected = require("../link-schedule-edit").read(req.body.availability_snapshot, link.uuid);
-    } else if (update.expire_in === null) req.expiryExpected = require("../link-expiry-edit").read(req.body.expiry_snapshot, link.uuid).expiry;
+    } else {
+      // A pre-migration editor may carry a blank End beside a legacy expiry.
+      // Fence every old-form save so it cannot erase the migrated deadline.
+      req.expiryExpected = require("../link-expiry-edit").read(req.body.expiry_snapshot, link.uuid).expiry;
+    }
   }
   const updated = await require("../link-expiry-edit").save(req, res, link, update);
   res.set("Cache-Control", "no-store");
