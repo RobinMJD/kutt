@@ -2,14 +2,16 @@
 
 ### October 9 local schedule follow-up
 
-Pending `.69` replaces the personal/admin edit duration and removal checkbox
+Manually deployed `.69` replaces the personal/admin edit duration and removal checkbox
 with one End field, switches edit scheduling to browser-local time, and aligns
 Paused. Legacy deadlines migrate to the earlier canonical End without changing
 counts or identities. Signed snapshots protect against stale policy changes;
 current saved values are visible beside retained drafts on a conflict. Local
 validation passed 18 schedule layouts, 18 unchanged UTC creation workflows and
-198 localized page layouts. Publication, recoverable deployment and live
-acceptance remain pending; `.67.2` is still the accepted live version. See
+198 localized page layouts. The native wrapper's 18 workflows and live
+editor/map layouts passed, along with 39 public regression checks and four
+strict health samples. Pre/post NAS byte-identical writable recovery passed;
+remote CI remains blocked, not passed. Verified 10 October 2026. See
 [the current status and recovery ledger](LOCAL-SCHEDULE-EDIT.md).
 
 Last updated: 2026-09-22 (Europe/Paris).

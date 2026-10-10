@@ -1,6 +1,8 @@
 # Deployment and recoverable upgrades
 
 The fork image is published to `ghcr.io/robinmjd/kutt` on versioned releases.
+The explicitly authorized [one-off manual `.69` deployment](MANUAL-DEPLOYMENT-2026-10-09.md)
+is an exception: remote CI is blocked and no `.69` GHCR image is available.
 Use an immutable digest, not a moving tag, for production. The homelab maintains
 its hardened wrapper, WAF/Authentik routing, monitoring and private backup paths
 in its separate deployment repository. This public repository contains no real
@@ -8,7 +10,9 @@ secrets, provider bindings or user data.
 
 ### Canonical local-time editing (3.2.6-sr94.69)
 
-Pending acceptance. Personal/admin edit forms use one local-time End control,
+Live on Debian3 under the one-off manual exception; pre/post NAS writable recovery,
+39 public regression checks and live UI acceptance passed, as recorded above.
+Personal/admin edit forms use one local-time End control,
 not a relative duration or separate removal checkbox. The data-only migration
 `20261009000000_canonical_link_expiry` retains the earlier of the two existing
 deadlines, then clears the legacy field. Invalid stored dates abort the upgrade.
@@ -24,17 +28,17 @@ image rollback does not reconstruct the removed legacy values. Never use a
 pre-lifecycle image or replace the live database to undo a display change.
 Reload browser editors. Public redirects, WAF, Authentik, TLS and CSP must stay
 enabled. [The acceptance ledger](LOCAL-SCHEDULE-EDIT.md) records exact gates;
-`.67.2` remains the accepted live image until they pass. This release also
+`.69` is now the live image; retain `.67.2` for guarded image-only rollback. This release also
 contains the `.68` country-label correction below.
 
 ### Country label normalization (3.2.6-sr94.68)
 
-Pending acceptance: shared server/browser region-name formatting now normalizes
+Included in the manual `.69` deployment: shared server/browser region-name formatting now normalizes
 two-letter ISO code case, fixing Statistics map labels without changing stored
 counts or visitor location collection. No schema/dependency/WAF/SSO change is
 required. [The country-label ledger](COUNTRY-LABEL-FIX.md) tracks release,
-backup/restore, exact-image and live acceptance. Until those gates pass, `.67.2`
-remains the accepted deployment. Rollback preserves counts but restores the
+backup/restore, exact-image and live acceptance. Live `.69` browser acceptance
+passed 18 layouts and all 177 country labels. Rollback preserves counts but restores the
 incorrect lowercase labels; never overwrite live analytics to fix display text.
 
 ### Statistics reset and security patches (3.2.6-sr94.67.2)

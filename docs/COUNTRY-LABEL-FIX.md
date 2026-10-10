@@ -1,5 +1,13 @@
 # Country Label Fix (.68)
 
+Current status (2026-10-10): included in the manually deployed `.69` image.
+All 177 live map labels and France tooltips passed 18 EN/FR/ES light/dark
+desktop/mobile layouts, with unchanged synthetic counts and verified cleanup.
+The [manual deployment receipt](MANUAL-DEPLOYMENT-2026-10-09.md) supersedes the
+historical blocked-publication tracker below. Pre/post NAS writable recovery,
+39 public regression checks and repeated monitoring passed; remote CI and `.69`
+GHCR publication are not claimed.
+
 ## Cause
 
 The legacy Statistics map stores ISO country IDs in lowercase (`fr`), whereas
@@ -13,7 +21,7 @@ missing or non-string values still use the translated Unknown label. There is
 no migration, analytics rewrite, recount, reset or change to GeoIP collection.
 Genuinely unavailable visitor locations remain unknown; do not invent countries.
 
-## Acceptance Tracker
+## Historical .68 Attempt (Superseded By Manual .69 Acceptance)
 
 | Gate | Status |
 | --- | --- |
@@ -25,12 +33,13 @@ Genuinely unavailable visitor locations remain unknown; do not invent countries.
 | Deployed desktop/mobile UI and existing-service acceptance | Pending. |
 | Post-change recovery, monitoring and documentation | Pending. |
 
-The existing accepted deployment remains `.67.2` until release/deployment gates
-pass. WAF, Authentik SSO, public redirects, links, users, secrets and real visit
+That initial attempt retained `.67.2` while release/deployment gates were blocked.
+The subsequent authorized manual deployment is tracked above. WAF, Authentik
+SSO, public redirects, links, users, secrets and real visit
 statistics must remain unchanged. Browser plugin unavailable; rendered checks
 use existing Playwright fixtures with enforced CSP.
 
-## Pending Deployment Receipt (2026-10-09)
+## Historical Blocked Deployment Receipt (2026-10-09)
 
 Source `256ef326be72a6dfff41468f3b1209cbdb504877` and immutable tag
 `v3.2.6-sr94.68` are pushed. Main release run
@@ -51,7 +60,8 @@ France highlighted but labelled `Unknown: 9`. Day/year switching and before/afte
 database comparisons passed; the disposable identity/link were removed. No real
 link was reset or modified. The local corrected image passed the full existing
 isolated application regression and the rendered country-label checks above.
-Live corrected-image acceptance is still pending, not inferred from local tests.
+At that checkpoint, live corrected-image acceptance was pending. The subsequent
+manual `.69` deployment passed the live acceptance recorded at the top of this file.
 
 Pre-change local/NAS snapshots `a22e2c08` / `e43af037` were restored from the NAS
 in isolation; the consistent SQLite backup and three secret files matched and

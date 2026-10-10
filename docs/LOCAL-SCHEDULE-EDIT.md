@@ -1,7 +1,9 @@
 # Canonical Local-Time Link Editing
 
-Last updated: 2026-10-09. Candidate `3.2.6-sr94.69`; **not deployed**.
-Accepted live release remains `.67.2`. This candidate includes `.68` country labels.
+Last updated: 2026-10-10. `3.2.6-sr94.69` is live and healthy under an explicitly
+authorized one-off manual deployment. Pre/post NAS recovery and live acceptance
+passed. This release includes `.68` country labels. See the
+[exact manual deployment receipt](MANUAL-DEPLOYMENT-2026-10-09.md).
 
 ## Changes
 
@@ -16,8 +18,8 @@ Accepted live release remains `.67.2`. This candidate includes `.68` country lab
 | EN/FR/ES, light/dark, desktop/390/320px, local zones and DST checks | 18-layout final run passed; UTC creation's separate 18-layout regression and 198 localized page layouts also passed |
 | Final full application and database regressions | Full application rerun passed on the final compatibility guard; PostgreSQL/MySQL suites passed |
 | Source commit and push | Initial implementation pushed (`5d33607`); final compatibility guard and this closeout are committed together |
-| Versioned release and required GitHub CI | Candidate `3.2.6-sr94.69`; image/release publication and required Actions execution remain blocked |
-| Recoverable pre/post backup, deployment and public/authenticated acceptance | Pending; required publication checks remain gated |
+| Versioned release and required GitHub CI | Source/tag pushed; remote CI and GHCR publication remain blocked. Operator explicitly authorized only this manual deployment |
+| Recoverable pre/post backup, deployment and public/authenticated acceptance | Pre/post encrypted local/NAS restores and writable checks passed (`a9cc2637` / `e8eb34d5`); actual-data migration and recovery preflight passed; 39 public regression checks, live browser acceptance and four strict monitoring samples passed; no rollback performed |
 
 ## Choices And Recovery
 
@@ -55,9 +57,11 @@ still reports Actions enabled and the workflow reports `active`. The cause of
 that contradiction is not established; billing or account restrictions are not
 assumed. Required release checks have not run, so no `.69` image publication,
 live migration, verified deployment backup or authenticated live acceptance is
-claimed. Resolve the restriction in GitHub Actions, run the required checks on
-the final versioned source, then follow `DEPLOYMENT.md`; do not bypass the gate
-or weaken WAF/SSO to publish.
+claimed by that original blocked attempt. The operator subsequently authorized
+manual deployment for this occurrence. Exact native-image tests, migration,
+recovery and live checks remain mandatory; the new receipt records them.
+Resolve Actions before the next normal release. This exception does not weaken
+WAF/SSO or turn blocked remote CI into a successful result.
 
 ## Local Evidence And Live Boundary
 
@@ -73,7 +77,9 @@ not live acceptance or required GitHub CI.
 
 A read-only live check on 2026-10-09 confirmed `.67.2` running and healthy,
 zero container restarts and an HTTP 302 response from the public HTTPS root.
-No live database, configuration or deployment source was changed for `.69`.
+No live database, configuration or deployment source was changed for `.69`
+during that earlier read-only check. The later manual cutover is recorded
+separately and preserves canonical original records and secret-file hashes.
 
 A separate [live service validation](SERVICE-VALIDATION-2026-10-09.md) passed
 39 smoke checks on `.67.2` and preserved original records. It identified and

@@ -16,15 +16,19 @@ the upstream hosted service.
 
 ## Project status
 
-The pending `.69` release consolidates link editing around a single End date/time,
+The manually deployed `.69` release consolidates link editing around a single End date/time,
 uses browser-local start/end pickers and aligns Paused. Existing deadlines are
 migrated without extending validity; the legacy API remains compatible.
 [Validation and recovery tracker](docs/LOCAL-SCHEDULE-EDIT.md).
+This one-off deployment was explicitly authorized while GitHub Actions is
+blocked. Remote CI and `.69` GHCR publication are not claimed; exact-image
+tests, pre/post NAS writable recovery and live acceptance passed and are recorded in the
+[manual deployment receipt](docs/MANUAL-DEPLOYMENT-2026-10-09.md).
 It also includes `.68`, which fixes lowercase country-code names displayed as
 "Unknown" on the Statistics map. Counts are retained; no analytics reset or
 GeoIP collection change is needed. [Validation tracker](docs/COUNTRY-LABEL-FIX.md).
 
-As of **9 October 2026**, `3.2.6-sr94.67.2` is published and deployed, adding
+The preceding **9 October 2026** release, `3.2.6-sr94.67.2`, is published and was deployed, adding
 owner-confirmed [per-link statistics reset](docs/STATISTICS-RESET.md)
 with API support and queue/cache fencing, plus compatible template/proxy security
 patches. Main/tag CI, full exact-image regression, local/NAS writable recovery,
@@ -79,7 +83,7 @@ pickers for UTC start/end, displaying `yyyy-MM-dd HH:mm:ss`. See
 [creation schedules](docs/LINK-LIFECYCLE.md#creation-schedule) and the
 [accepted release evidence](docs/FEATURE-ROADMAP.md#creation-schedule-follow-up-59).
 Blank dates mean immediate availability and no scheduled expiration. The legacy
-relative-expiry API remains compatible. From pending `.69`, personal/admin
+relative-expiry API remains compatible. From `.69`, personal/admin
 editing uses local dates and no longer exposes a relative duration; the explicit
 UTC creation controls retain their behavior.
 
