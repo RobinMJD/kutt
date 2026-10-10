@@ -18,7 +18,7 @@ passed. This release includes `.68` country labels. See the
 | EN/FR/ES, light/dark, desktop/390/320px, local zones and DST checks | 18-layout final run passed; UTC creation's separate 18-layout regression and 198 localized page layouts also passed |
 | Final full application and database regressions | Full application rerun passed on the final compatibility guard; PostgreSQL/MySQL suites passed |
 | Source commit and push | Initial implementation pushed (`5d33607`); final compatibility guard and this closeout are committed together |
-| Versioned release and required GitHub CI | Source/tag pushed; remote CI and GHCR publication remain blocked. Operator explicitly authorized only this manual deployment |
+| Versioned release and required GitHub CI | Versioned source release published; remote release CI and GHCR publication remain blocked. Operator explicitly authorized only this manual deployment |
 | Recoverable pre/post backup, deployment and public/authenticated acceptance | Pre/post encrypted local/NAS restores and writable checks passed (`a9cc2637` / `e8eb34d5`); actual-data migration and recovery preflight passed; 39 public regression checks, live browser acceptance and four strict monitoring samples passed; no rollback performed |
 
 ## Choices And Recovery

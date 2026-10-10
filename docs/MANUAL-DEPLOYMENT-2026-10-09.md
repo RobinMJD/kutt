@@ -46,6 +46,22 @@ and links were removed before the post-change snapshot; original fingerprints
 and three secret hashes passed. The laptop-only connectivity interruption did
 not stop the service or invalidate the completed server-side recovery checks.
 
+Publication: [versioned source release](https://github.com/RobinMJD/kutt/releases/tag/v3.2.6-sr94.69)
+and [isolated homelab deployment PR #64](https://github.com/RobinMJD/homelab/pull/64).
+These do not imply successful Kutt release CI or registry publication.
+
+On 10 October, a new strict monitoring check observed intermittent timeouts
+from the independent NAS canary while Debian3 public/internal probes passed.
+The canary subsequently reached Kutt normally without a service restart or
+configuration change. Separately, the NAS host resolver (`127.0.0.1`, NextDNS)
+returned sinkhole addresses `0.0.0.0` / `::` for the apex `shorter-link.com`;
+its host HTTPS client therefore reported a certificate-name mismatch. This is
+not proof of an invalid Kutt certificate or homelab outage. Do not bypass TLS,
+replace the filtered resolver or weaken DNS policy. Review the applicable
+NextDNS profile's apex-domain allowlist with authorized policy access; a
+wildcard-only allowlist is not evidence that this host's apex is permitted.
+NAS Docker/sudo access is not available to the tested noninteractive SSH user.
+
 The rendered-map observer was corrected for legitimate server/browser ICU
 territory-name differences. A fixture cleanup hit a SQLite lock upgrade and was
 completed with an immediate transaction, then independently verified. The full
